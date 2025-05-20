@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "@types/winston": "^2.4.4",
+    "express": "^5.1.0",
+    "node-cron": "^4.0.5",
+    "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.2",
+    "@types/node-cron": "^3.0.11"
+  }
+}
