@@ -2,11 +2,12 @@ import React from 'react';
 
 const GoalCard = () => {
   return (
-    <div className="bg-white p-4 rounded-xl shadow-md space-y-4">
-      <div className="flex justify-between items-center">
+    <div className="bg-white p-4 rounded-xl shadow-md space-y-4 border">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-700">Bali Trip</h3>
-          <p className="text-sm text-gray-400">2027</p>
+          <h3 className="text-lg font-bold text-gray-800">Bali Trip</h3>
+          <p className="text-sm text-gray-500">2027</p>
         </div>
         <img
           src="https://via.placeholder.com/50"
@@ -15,40 +16,37 @@ const GoalCard = () => {
         />
       </div>
 
-      {/* Donut Chart Simulation */}
-      <div className="relative w-24 h-24 mx-auto">
-        <svg viewBox="0 0 36 36" className="w-full h-full">
-          <path
-            className="text-orange-400"
-            strokeDasharray="60, 100"
-            d="M18 2.0845
-              a 15.9155 15.9155 0 0 1 0 31.831
-              a 15.9155 15.9155 0 0 1 0 -31.831"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-          />
-          <text
-            x="18"
-            y="20.35"
-            className="fill-gray-700 text-sm"
-            textAnchor="middle"
-          >
-            60%
-          </text>
-        </svg>
+      {/* Chart & Stats */}
+      <div className="flex items-center justify-between">
+        {/* Donut chart using conic gradient */}
+        <div className="relative w-24 h-24 rounded-full bg-[conic-gradient(#f97316_0%_60%,#fde047_60%_100%)]">
+          <div className="absolute top-1/2 left-1/2 w-16 h-16 bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
+            <span className="font-bold text-orange-500">60%</span>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="flex-1 ml-4 space-y-2">
+          <div className="flex justify-between text-sm text-gray-600">
+            <span>Spent</span>
+            <span>R12,000</span>
+          </div>
+          <div className="flex justify-between text-sm text-gray-600">
+            <span>Remaining</span>
+            <span>R8,000</span>
+          </div>
+          <div className="flex justify-between text-sm text-gray-600">
+            <span>Days Left</span>
+            <span>89</span>
+          </div>
+        </div>
       </div>
 
-      {/* Placeholder for goal details */}
-      <div className="space-y-1">
-        <div className="h-2 bg-gray-200 rounded-full">
-          <div className="h-2 bg-orange-400 rounded-full w-[60%]"></div>
-        </div>
-        <div className="text-right">
-          <button className="text-sm px-4 py-1 rounded-full bg-gradient-to-r from-green-300 to-green-500 text-white">
-            View
-          </button>
-        </div>
+      {/* View button */}
+      <div className="text-right">
+        <button className="text-sm px-4 py-1 rounded-full bg-gradient-to-r from-green-300 to-green-500 text-white shadow hover:from-green-400 hover:to-green-600">
+          View
+        </button>
       </div>
     </div>
   );

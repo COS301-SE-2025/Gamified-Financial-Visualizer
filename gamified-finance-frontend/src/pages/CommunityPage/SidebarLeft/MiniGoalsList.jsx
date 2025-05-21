@@ -3,17 +3,22 @@ import React from 'react';
 const miniGoals = [
   {
     name: 'Bali Trip',
-    image: 'https://via.placeholder.com/40',
+    image: require('../../../assets/Images/pixelBroken.jpeg'),
     progress: 75,
   },
   {
     name: 'GTA 6',
-    image: 'https://via.placeholder.com/40',
+    image: require('../../../assets/Images/pixelPond.jpeg'),
     progress: 40,
   },
   {
     name: 'PC Build',
-    image: 'https://via.placeholder.com/40',
+    image: require('../../../assets/Images/pixelMoonLight.jpeg'),
+    progress: 20,
+  },
+  {
+    name: 'New Apartment',
+    image: require('../../../assets/Images/pixelNintendo.jpeg'),
     progress: 20,
   },
 ];
@@ -29,9 +34,10 @@ const MiniGoalsList = () => {
           <div className="flex items-center space-x-2">
             <img
               src={goal.image}
-              alt={goal.name}
+              alt={goal.title}
               className="w-10 h-10 rounded-full object-cover"
             />
+
             <div>
               <h5 className="text-sm font-semibold text-gray-700">
                 {goal.name}

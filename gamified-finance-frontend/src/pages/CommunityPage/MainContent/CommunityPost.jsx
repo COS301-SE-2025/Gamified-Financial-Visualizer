@@ -1,28 +1,56 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
-const CommunityPost = () => {
+const CommunityPost = ({ title, year, avatar, bannerImage, themeColors, headerColor }) => {
   return (
-    <div className="bg-white p-5 rounded-xl shadow-md space-y-4">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-bold text-gray-700">Bali Trip 2027</h3>
-          <p className="text-sm text-gray-500">Goal Progress: 60%</p>
-        </div>
+    <div className="bg-white rounded-xl shadow-md border overflow-hidden">
+      {/* Header */}
+      <div
+        className="flex items-center space-x-2 text-white px-4 py-2"
+        style={{ backgroundColor: headerColor }}
+      >
         <img
-          src="https://via.placeholder.com/60"
-          alt="Bali Trip"
-          className="rounded-xl w-16 h-16 object-cover"
+          src={avatar}
+          alt="avatar"
+          className="rounded-full w-8 h-8 object-cover"
         />
+        <div>
+          <h3 className="text-sm font-semibold leading-tight">{title}</h3>
+          <p className="text-xs">{year}</p>
+        </div>
       </div>
 
-      <p className="text-sm text-gray-600">
-        Just booked our accommodation! 🌴 Can't wait to hit the beach. Anyone
-        else saving for Bali?
-      </p>
+      {/* Banner */}
+      <div className="relative">
+        <img src={bannerImage} alt={title} className="w-full h-48 object-cover" />
 
-      <div className="flex justify-between text-sm text-gray-500">
-        <span>24 Comments</span>
-        <span className="text-blue-500 font-medium cursor-pointer">Join</span>
+        {/* Color bubbles */}
+        <div className="absolute -bottom-5 right-4 flex">
+          {themeColors.map((color, index) => (
+            <div
+              key={index}
+              className={`w-10 h-10 rounded-full border-2 border-white shadow -ml-2 first:ml-0`}
+              style={{ backgroundColor: color }}
+            ></div>
+          ))}
+        </div>
+
+      </div>
+
+      {/* Body */}
+      <div className="px-4 pt-6 pb-4 space-y-2">
+        <div className="space-y-1">
+          <div className="w-3/4 h-2 bg-gray-300 rounded-full"></div>
+          <div className="w-2/3 h-2 bg-gray-200 rounded-full"></div>
+          <div className="w-1/2 h-2 bg-gray-300 rounded-full"></div>
+        </div>
+
+        {/* View Button */}
+        <Link to={`/community/${title.toLowerCase().replace(/\s+/g, '-')}`}>
+          <button className="...">
+            View
+          </button>
+        </Link>
       </div>
     </div>
   );
