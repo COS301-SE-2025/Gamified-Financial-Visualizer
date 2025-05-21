@@ -1,19 +1,31 @@
 import { Pool } from 'pg';
 import { logger } from '../config/logger';
+import { stat } from 'fs';
 
 const pool = new Pool();
 
-export async function createGoal(goal) {
-   const { id, user_id, name, target_amount, current_amount, start_date, end_date } = goal;
+interface Goal {
+   id: number;
+   user_id: number;
+   name: string;
+   target_amount: number;
+   current_amount: number;
+   start_date: string;
+   end_date: string;
+   status: string;
+}
+
+export async function createGoal(goal: Goal) {
+   const { id, user_id, name, target_amount, current_amount, start_date, end_date, status } = goal;
 
    const query = `
-     INSERT INTO goals (id, user_id, name, target_amount, current_amount, start_date, end_date)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     INSERT INTO goals (id, user_id, name, target_amount, current_amount, start_date, end_date, status)
+     VALUES ($1, $2, $3, $4, $5, $6, $7 , $8)
      ON CONFLICT (id) DO NOTHING;
    `;
 
    try {
-      await pool.query(query, [ id, user_id, name, target_amount, current_amount, start_date, end_date ]);
+      await pool.query(query, [ id, user_id, name, target_amount, current_amount, start_date, end_date, stat ]);
       logger.info(`[GoalService] Created goal: ${id}`);
    } catch (error) {
       logger.error(`[GoalService] Error creating goal ${id}:`, error);
@@ -21,7 +33,7 @@ export async function createGoal(goal) {
    }
 }
 
-export async function getGoal(id) {
+export async function getGoal(id: number) {
    const query = `
      SELECT * FROM goals WHERE id = $1;
    `;
@@ -35,7 +47,7 @@ export async function getGoal(id) {
    }
 }
 
-export async function getUserGoals(user_id) {
+export async function getUserGoals(user_id: number) {
    const query = `
      SELECT * FROM goals WHERE user_id = $1;
    `;
@@ -49,17 +61,26 @@ export async function getUserGoals(user_id) {
    }
 }
 
-export async function updateGoal(id, updates) {
-   const { name, target_amount, current_amount, start_date, end_date } = updates;
+interface UpdateGoal {
+   name?: string;
+   target_amount?: number;
+   current_amount?: number;
+   start_date?: string;
+   end_date?: string;
+   status?: string;
+}
+
+export async function updateGoal(id: number, updates: UpdateGoal) {
+   const { name, target_amount, current_amount, start_date, end_date , status} = updates;
 
    const query = `
      UPDATE goals
-     SET name = $1, target_amount = $2, current_amount = $3, start_date = $4, end_date = $5
-     WHERE id = $6;
+     SET name = $1, target_amount = $2, current_amount = $3, start_date = $4, end_date = $5, status = $6
+     WHERE id = $7;
    `;
 
    try {
-      await pool.query(query, [ name, target_amount, current_amount, start_date, end_date, id ]);
+      await pool.query(query, [ name, target_amount, current_amount, start_date, end_date, status ]);
       logger.info(`[GoalService] Updated goal: ${id}`);
    } catch (error) {
       logger.error(`[GoalService] Error updating goal ${id}:`, error);
@@ -67,7 +88,7 @@ export async function updateGoal(id, updates) {
    }
 }
 
-export async function deleteGoal(id) {
+export async function deleteGoal(id: number) {
    const query = `
      DELETE FROM goals WHERE id = $1;
    `;
@@ -81,7 +102,14 @@ export async function deleteGoal(id) {
    }
 }
 
-export async function addTransactionToGoal(goal_id, transaction) {
+interface GoalTransaction {
+   id: number;
+   user_id: number;
+   amount: number;
+   date: string;
+}
+
+export async function addTransactionToGoal(goal_id: number, transaction: GoalTransaction) {
    const { id, user_id, amount, date } = transaction;
 
    const query = `
@@ -100,10 +128,10 @@ export async function addTransactionToGoal(goal_id, transaction) {
 }
 
 // if goal is completed, update the goal status and add points to the user
-export async function completeGoal(goal_id) {
+export async function completeGoal(goal_id: number) {
    const query = `
      UPDATE goals
-     SET status = 'completed'
+     SET status = 'Completed'
      WHERE id = $1;
    `;
 
@@ -122,7 +150,7 @@ export async function completeGoal(goal_id) {
    }
 }
 
-export async function reduceProgress(goal_id, amount) {
+export async function reduceProgress(goal_id: number, amount: number) {
    const query = `
      UPDATE goals
      SET current_amount = current_amount - $1
@@ -144,3 +172,18 @@ export async function reduceProgress(goal_id, amount) {
       throw error;
    }
 }
+
+export async function getAllGoals() {
+   const query = `
+     SELECT * FROM goals;
+   `;
+
+   try {
+      const result = await pool.query(query);
+      return result.rows;
+   } catch (error) {
+      logger.error(`[GoalService] Error fetching all goals:`, error);
+      throw error;
+   }
+}
+
