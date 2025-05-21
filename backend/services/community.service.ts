@@ -173,3 +173,128 @@ export async function getLeaderboard() {
       throw error;
    }
 }
+
+export async function getUserPoints(user_id) {
+   const query = `
+     SELECT points FROM users WHERE id = $1;
+   `;
+
+   try {
+      const result = await pool.query(query, [ user_id ]);
+      return result.rows[ 0 ];
+   }
+   catch (error) {
+      logger.error(`[CommunityService] Error fetching points for user ${user_id}:`, error);
+      throw error;
+   }
+}
+
+export async function updateUserPoints(user_id, points) {
+   const query = `
+     UPDATE users SET points = points + $1 WHERE id = $2;
+   `;
+
+   try {
+      await pool.query(query, [ points, user_id ]);
+      logger.info(`[CommunityService] Updated points for user ${user_id}`);
+   } catch (error) {
+      logger.error(`[CommunityService] Error updating points for user ${user_id}:`, error);
+      throw error;
+   }
+}
+
+export async function getUserAchievements(user_id) {
+   const query = `
+     SELECT * FROM achievements WHERE user_id = $1;
+   `;
+
+   try {
+      const result = await pool.query(query, [ user_id ]);
+      return result.rows;
+   } catch (error) {
+      logger.error(`[CommunityService] Error fetching achievements for user ${user_id}:`, error);
+      throw error;
+   }
+}
+
+export async function addAchievement(user_id, achievement) {
+   const query = `
+     INSERT INTO achievements (user_id, achievement)
+     VALUES ($1, $2);
+   `;
+
+   try {
+      await pool.query(query, [ user_id, achievement ]);
+      logger.info(`[CommunityService] Added achievement for user ${user_id}: ${achievement}`);
+   } catch (error) {
+      logger.error(`[CommunityService] Error adding achievement for user ${user_id}:`, error);
+      throw error;
+   }
+}
+
+export async function removeAchievement(user_id, achievement) {
+   const query = `
+     DELETE FROM achievements WHERE user_id = $1 AND achievement = $2;
+   `;
+
+   try {
+      await pool.query(query, [ user_id, achievement ]);
+      logger.info(`[CommunityService] Removed achievement for user ${user_id}: ${achievement}`);
+   } catch (error) {
+      logger.error(`[CommunityService] Error removing achievement for user ${user_id}:`, error);
+      throw error;
+   }
+}
+
+
+export async function createFriendGoal(user_id, goal ) {
+   const { name, target_amount, current_amount, start_date, end_date } = goal;
+   
+   const query = `
+     INSERT INTO goal_friends (user_id, name, target_amount, current_amount, start_date, end_date)
+     VALUES ($1, $2, $3, $4, $5, $6)
+     RETURNING id;
+   `;
+
+   try {
+      const result = await pool.query(query, [ user_id, name, target_amount, current_amount, start_date, end_date ]);
+      logger.info(`[CommunityService] Created friend goal for user ${user_id}: ${goal.name}`);
+      return result.rows[ 0 ].id;
+   } catch (error) {
+      logger.error(`[CommunityService] Error creating friend goal for user ${user_id}:`, error);
+      throw error;
+   }
+}
+
+export async function addFriendsToGoal(user_id, goal_id, friend_ids) {
+   const query = `
+     INSERT INTO goal_friends (user_id, goal_id, friend_id)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (user_id, goal_id, friend_id) DO NOTHING;
+   `;
+
+   try {
+      for (const friend_id of friend_ids) {
+         await pool.query(query, [ user_id, goal_id, friend_id ]);
+      }
+      logger.info(`[CommunityService] Added friends to goal ${goal_id} for user ${user_id}`);
+   } catch (error) {
+      logger.error(`[CommunityService] Error adding friends to goal ${goal_id} for user ${user_id}:`, error);
+      throw error;
+   }
+}
+export async function removeFriendsFromGoal(user_id, goal_id, friend_ids) {
+   const query = `
+     DELETE FROM goal_friends WHERE user_id = $1 AND goal_id = $2 AND friend_id = $3;
+   `;
+
+   try {
+      for (const friend_id of friend_ids) {
+         await pool.query(query, [ user_id, goal_id, friend_id ]);
+      }
+      logger.info(`[CommunityService] Removed friends from goal ${goal_id} for user ${user_id}`);
+   } catch (error) {
+      logger.error(`[CommunityService] Error removing friends from goal ${goal_id} for user ${user_id}:`, error);
+      throw error;
+   }
+}
