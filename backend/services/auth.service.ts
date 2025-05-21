@@ -6,11 +6,11 @@ import { logger } from '../config/logger';
 
 const pool = new Pool();
 
-export async function createUserProfile(userRecord) {
-   const { uid, email, username, name, surname, hash_password } = userRecord;
+export async function register(userRecord) {
+   const { uid, email, username, name, surname, hash_password , salt} = userRecord;
 
    const query = `
-    INSERT INTO users (id, email, username, name, surname, hash_password)
+    INSERT INTO users (id, email, username, name, surname, hash_password, salt)
     VALUES ($1, $2, $3, $4, $5, $6)
     ON CONFLICT (id) DO NOTHING;
   `;
@@ -111,6 +111,8 @@ export async function changePassword(uid, newPassword) {
    }
 }
 
+
+// TODO: needs to be confirmed with frontend
 export async function twofaSetup(uid, secret) {
    const query = `
     UPDATE users SET two_factor_secret = $1 WHERE id = $2;

@@ -14,7 +14,7 @@ export async function createTransaction(transaction) {
 
    // if
    const query = `
-    INSERT INTO transactions (id, user_id, amount, type, status)
+    INSERT INTO transactions (id, user_id, amount, type, description, account_id, date, category_id)
     VALUES ($1, $2, $3, $4, $5)
     ON CONFLICT (id) DO NOTHING;
   `;
@@ -24,6 +24,82 @@ export async function createTransaction(transaction) {
       logger.info(`[TransactionService] Created transaction: ${id}`);
    } catch (error) {
       logger.error(`[TransactionService] Error creating transaction ${id}:`, error);
+      throw error;
+   }
+}
+
+export async function createAccount(userid, bankName, accountName, balance, type ) {
+   const query = `
+    INSERT INTO accounts (user_id, bank_name, account_name, balance, type)
+    VALUES ($1, $2, $3, $4, $5, $6)
+    ON CONFLICT (account_number) DO NOTHING;
+  `;
+
+   try {
+      await pool.query(query, [ userid, bankName, accountName, balance, type ]);
+      logger.info(`[TransactionService] Created account for user ${userid}`);
+   } catch (error) {
+      logger.error(`[TransactionService] Error creating account for user ${userid}:`, error);
+      throw error;
+   }
+}
+
+
+export async function getAccount(user_id) {
+   const query = `
+    SELECT * FROM accounts WHERE user_id = $1;
+  `;
+
+   try {
+      const result = await pool.query(query, [ user_id ]);
+      return result.rows;
+   } catch (error) {
+      logger.error(`[TransactionService] Error fetching account for user ${user_id}:`, error);
+      throw error;
+   }
+}
+
+
+export async function getTransactionByAccount(account_id) {
+   const query = `
+    SELECT * FROM transactions WHERE account_id = $1;
+  `;
+
+   try {
+      const result  = await pool.query(query, [ account_id ]);
+      return result.rows;
+   }
+   catch (error) {
+      logger.error(`[TransactionService] Error fetching transactions for account ${account_id}:`, error);
+      throw error;
+   }
+}
+
+export async function getTransactionByCategory(category_id) {
+   const query = `
+    SELECT * FROM transactions WHERE category_id = $1;
+  `;
+
+   try {
+      const result = await pool.query(query, [ category_id ]);
+      return result.rows;
+   } 
+   catch (error) {
+      logger.error(`[TransactionService] Error fetching transactions for category ${category_id}:`, error);
+      throw error;
+   }
+}
+
+export async function deleteAccount(account_id, userID) {
+   const query = `
+    DELETE FROM accounts WHERE id = $1 AND user_id = $2;
+  `;
+
+   try {
+      await pool.query(query, [ account_id, userID ]);
+      logger.info(`[TransactionService] Deleted account: ${account_id}`);
+   } catch (error) {
+      logger.error(`[TransactionService] Error deleting account ${account_id}:`, error);
       throw error;
    }
 }
@@ -57,6 +133,7 @@ export async function getUserTransactions(user_id) {
    }
 }
 
+/*
 export async function updateTransaction(id, status) {
    // update transaction fields 
    const query = `
@@ -73,6 +150,8 @@ export async function updateTransaction(id, status) {
       throw error;
    }
 }
+*/
+
 
 export async function deleteTransaction(id) {
    const query = `
@@ -88,19 +167,7 @@ export async function deleteTransaction(id) {
    }
 }
 
-export async function getTransactionByUserId(user_id) {
-   const query = `
-    SELECT * FROM transactions WHERE user_id = $1;
-  `;
 
-   try {
-      const result = await pool.query(query, [ user_id ]);
-      return result.rows;
-   } catch (error) {
-      logger.error(`[TransactionService] Error fetching transactions for user ${user_id}:`, error);
-      throw error;
-   }
-}
 
 export async function getBalance(user_id) {
    const query = `

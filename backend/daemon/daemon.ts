@@ -1,11 +1,11 @@
 // daemon.ts
 // Entry point for starting background workers and schedulers
 
-import { initWorkers } from "./workers";
-import { initSchedulers } from "./schedulers";
+import { initWorkers } from "./workers/index";
+import { initSchedulers } from "./schedulers/index";
 import { logger } from "../config/logger";
 
-async function startDaemon() {
+async function startDaemon() { 
    try {
       logger.info("[Daemon] Starting workers...");
       await initWorkers();
