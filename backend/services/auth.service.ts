@@ -6,8 +6,17 @@ import { logger } from '../config/logger';
 
 const pool = new Pool();
 
-export async function register(userRecord) {
-   const { uid, email, username, name, surname, hash_password , salt} = userRecord;
+interface UserRecord {
+   uid: string;
+   email: string;
+   username: string;
+   name: string;
+   surname: string;
+   hash_password: string;
+}
+
+export async function register(userRecord: UserRecord) {
+   const { uid, email, username, name, surname, hash_password} = userRecord;
 
    const query = `
     INSERT INTO users (id, email, username, name, surname, hash_password, salt)
@@ -24,7 +33,7 @@ export async function register(userRecord) {
    }
 }
 
-export async function getUserProfile(uid) {
+export async function getUserProfile(uid: number) {
    const query = `
     SELECT * FROM users WHERE id = $1;
   `;
@@ -38,7 +47,7 @@ export async function getUserProfile(uid) {
    }
 }
 
-export async function login(username, password) {
+export async function login(username: string, password: string) {
    const query = `
     SELECT * FROM users WHERE username = $1 AND hash_password = $2;
   `;
@@ -54,7 +63,7 @@ export async function login(username, password) {
    }
 }
 
-export async function updateUserProfile(uid, updates) {
+export async function updateUserProfile(uid: string, updates: Partial<UserRecord>) {
    const query = `
     UPDATE users SET email = $1, username = $2, name = $3, surname = $4
     WHERE id = $5;
@@ -69,7 +78,7 @@ export async function updateUserProfile(uid, updates) {
    }
 }
 
-export async function deleteUserProfile(uid) {
+export async function deleteUserProfile(uid: string) {
    const query = `
     DELETE FROM users WHERE id = $1;
   `;
@@ -83,7 +92,7 @@ export async function deleteUserProfile(uid) {
    }
 }
 
-export async function getUserByEmail(email) {
+export async function getUserByEmail(email: string) {
    const query = `
     SELECT * FROM users WHERE email = $1;
   `;
@@ -97,7 +106,7 @@ export async function getUserByEmail(email) {
    }
 }
 
-export async function changePassword(uid, newPassword) {
+export async function changePassword(uid: string, newPassword: string) {
    const query = `
     UPDATE users SET hash_password = $1 WHERE id = $2;
   `;
@@ -113,6 +122,7 @@ export async function changePassword(uid, newPassword) {
 
 
 // TODO: needs to be confirmed with frontend
+/*
 export async function twofaSetup(uid, secret) {
    const query = `
     UPDATE users SET two_factor_secret = $1 WHERE id = $2;
@@ -126,3 +136,4 @@ export async function twofaSetup(uid, secret) {
       throw error;
    }
 }
+*/

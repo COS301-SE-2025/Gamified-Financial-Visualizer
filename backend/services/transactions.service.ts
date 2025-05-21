@@ -4,7 +4,19 @@ import { logger } from '../config/logger';
 
 const pool = new Pool();
 
-export async function createTransaction(transaction) {
+interface Transaction {
+   id: number;
+   user_id: number;
+   amount: number;
+   type: string; // income or expense
+   description: string;
+   account_id: number;
+   date: string; // YYYY-MM-DD format
+   category_id: number;
+}
+
+
+export async function createTransaction(transaction: Transaction) {
    const { id, user_id, amount, type, description , account_id, date,category_id } = transaction;
 
    // create 
@@ -15,12 +27,12 @@ export async function createTransaction(transaction) {
    // if
    const query = `
     INSERT INTO transactions (id, user_id, amount, type, description, account_id, date, category_id)
-    VALUES ($1, $2, $3, $4, $5)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     ON CONFLICT (id) DO NOTHING;
   `;
 
    try {
-      await pool.query(query, [ id, user_id, amount, type, status ]);
+      await pool.query(query, [ id, user_id, amount, type, description, account_id, date, category_id ]);
       logger.info(`[TransactionService] Created transaction: ${id}`);
    } catch (error) {
       logger.error(`[TransactionService] Error creating transaction ${id}:`, error);
@@ -28,7 +40,7 @@ export async function createTransaction(transaction) {
    }
 }
 
-export async function createAccount(userid, bankName, accountName, balance, type ) {
+export async function createAccount(userid:number, bankName: string, accountName:string, balance: number, type:string ) {
    const query = `
     INSERT INTO accounts (user_id, bank_name, account_name, balance, type)
     VALUES ($1, $2, $3, $4, $5, $6)
@@ -45,7 +57,7 @@ export async function createAccount(userid, bankName, accountName, balance, type
 }
 
 
-export async function getAccount(user_id) {
+export async function getAccount(user_id: number) {
    const query = `
     SELECT * FROM accounts WHERE user_id = $1;
   `;
@@ -60,7 +72,7 @@ export async function getAccount(user_id) {
 }
 
 
-export async function getTransactionByAccount(account_id) {
+export async function getTransactionByAccount(account_id: number) {
    const query = `
     SELECT * FROM transactions WHERE account_id = $1;
   `;
@@ -75,7 +87,7 @@ export async function getTransactionByAccount(account_id) {
    }
 }
 
-export async function getTransactionByCategory(category_id) {
+export async function getTransactionByCategory(category_id: number) {
    const query = `
     SELECT * FROM transactions WHERE category_id = $1;
   `;
@@ -90,7 +102,7 @@ export async function getTransactionByCategory(category_id) {
    }
 }
 
-export async function deleteAccount(account_id, userID) {
+export async function deleteAccount(account_id: number, userID: number) {
    const query = `
     DELETE FROM accounts WHERE id = $1 AND user_id = $2;
   `;
@@ -104,7 +116,7 @@ export async function deleteAccount(account_id, userID) {
    }
 }
 
-export async function getTransaction(id) {
+export async function getTransaction(id: number) {
    const query = `
     SELECT * FROM transactions WHERE id = $1;
   `;
@@ -118,7 +130,7 @@ export async function getTransaction(id) {
    }
 }
 
-export async function getUserTransactions(user_id) {
+export async function getUserTransactions(user_id: number) {
    const query = `
     SELECT * FROM transactions WHERE user_id = $1;
   `;
@@ -153,7 +165,7 @@ export async function updateTransaction(id, status) {
 */
 
 
-export async function deleteTransaction(id) {
+export async function deleteTransaction(id: number) {
    const query = `
     DELETE FROM transactions WHERE id = $1;
   `;
@@ -169,7 +181,7 @@ export async function deleteTransaction(id) {
 
 
 
-export async function getBalance(user_id) {
+export async function getBalance(user_id: number) {
    const query = `
     SELECT SUM(amount) AS balance FROM transactions WHERE user_id = $1;
   `;
@@ -183,7 +195,7 @@ export async function getBalance(user_id) {
    }
 }
 
-export async function getTransactionByType(type) {
+export async function getTransactionByType(type: string) {
    const query = `
     SELECT * FROM transactions WHERE type = $1;
   `;
@@ -197,7 +209,7 @@ export async function getTransactionByType(type) {
    }
 }
 
-export async function getExpenseTotalByRange(user_id, startDate, endDate) {
+export async function getExpenseTotalByRange(user_id: number, startDate: number, endDate: number) {
    const query = `
     SELECT SUM(amount) AS total_expense
     FROM transactions

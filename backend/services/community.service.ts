@@ -4,7 +4,7 @@ import { logger } from '../config/logger';
 
 const pool = new Pool();
 
-export async function inviteFriend(user_id, friend_id) {
+export async function inviteFriend(user_id: number, friend_id: number) {
    const query = `
      INSERT INTO friends (user_id, friend_id)
      VALUES ($1, $2)
@@ -20,7 +20,7 @@ export async function inviteFriend(user_id, friend_id) {
    }
 }
 
-export async function getFriends(user_id) {
+export async function getFriends(user_id: number) {
    const query = `
      SELECT * FROM friends WHERE user_id = $1;
    `;
@@ -34,7 +34,7 @@ export async function getFriends(user_id) {
    }
 }
 
-export async function removeFriend(user_id, friend_id) {
+export async function removeFriend(user_id: number, friend_id: number) {
    const query = `
      DELETE FROM friends WHERE user_id = $1 AND friend_id = $2;
    `;
@@ -48,7 +48,7 @@ export async function removeFriend(user_id, friend_id) {
    }
 }
 
-export async function getFriendRequests(user_id) {
+export async function getFriendRequests(user_id: number) {
    const query = `
      SELECT * FROM friend_requests WHERE user_id = $1;
    `;
@@ -62,7 +62,7 @@ export async function getFriendRequests(user_id) {
    }
 }
 
-export async function acceptFriendRequest(user_id, friend_id) {
+export async function acceptFriendRequest(user_id: number, friend_id: number) {
    const query = `
      INSERT INTO friends (user_id, friend_id)
      VALUES ($1, $2)
@@ -85,7 +85,7 @@ export async function acceptFriendRequest(user_id, friend_id) {
    }
 }
 
-export async function rejectFriendRequest(user_id, friend_id) {
+export async function rejectFriendRequest(user_id: number, friend_id: number) {
    const query = `
      DELETE FROM friend_requests WHERE user_id = $1 AND friend_id = $2;
    `;
@@ -99,7 +99,7 @@ export async function rejectFriendRequest(user_id, friend_id) {
    }
 }
 
-export async function sendFriendRequest(user_id, friend_id) {
+export async function sendFriendRequest(user_id: number, friend_id: number) {
    const query = `
      INSERT INTO friend_requests (user_id, friend_id)
      VALUES ($1, $2)
@@ -116,7 +116,7 @@ export async function sendFriendRequest(user_id, friend_id) {
    }
 }
 
-export async function inviteToGoal(user_id, goal_id, friend_id) {
+export async function inviteToGoal(user_id: number, goal_id: number, friend_id: number) {
    const query = `
      INSERT INTO goal_invitations (user_id, goal_id, friend_id)
      VALUES ($1, $2, $3)
@@ -132,7 +132,7 @@ export async function inviteToGoal(user_id, goal_id, friend_id) {
    }
 }
 
-export async function leaveGoal(user_id, goal_id) {
+export async function leaveGoal(user_id: number, goal_id: number) {
    const query = `
      DELETE FROM goal_invitations WHERE user_id = $1 AND goal_id = $2;
    `;
@@ -146,7 +146,7 @@ export async function leaveGoal(user_id, goal_id) {
    }
 }
 
-export async function getCommunityGoals(user_id) {
+export async function getCommunityGoalsForUser(user_id: number) {
    const query = `
      SELECT * FROM community_goals WHERE user_id = $1;
    `;
@@ -174,7 +174,7 @@ export async function getLeaderboard() {
    }
 }
 
-export async function getUserPoints(user_id) {
+export async function getUserPoints(user_id: number) {
    const query = `
      SELECT points FROM users WHERE id = $1;
    `;
@@ -189,7 +189,7 @@ export async function getUserPoints(user_id) {
    }
 }
 
-export async function updateUserPoints(user_id, points) {
+export async function updateUserPoints(user_id: number, points: number) {
    const query = `
      UPDATE users SET points = points + $1 WHERE id = $2;
    `;
@@ -203,7 +203,7 @@ export async function updateUserPoints(user_id, points) {
    }
 }
 
-export async function getUserAchievements(user_id) {
+export async function getUserAchievements(user_id: number) {
    const query = `
      SELECT * FROM achievements WHERE user_id = $1;
    `;
@@ -217,7 +217,7 @@ export async function getUserAchievements(user_id) {
    }
 }
 
-export async function addAchievement(user_id, achievement) {
+export async function addAchievement(user_id: number, achievement: number) { // @TODO: Change to ACHIEVEMENT DATA TYPE
    const query = `
      INSERT INTO achievements (user_id, achievement)
      VALUES ($1, $2);
@@ -232,7 +232,7 @@ export async function addAchievement(user_id, achievement) {
    }
 }
 
-export async function removeAchievement(user_id, achievement) {
+export async function removeAchievement(user_id: number, achievement: number) { // @TODO: Change to ACHIEVEMENT DATA TYPE
    const query = `
      DELETE FROM achievements WHERE user_id = $1 AND achievement = $2;
    `;
@@ -246,18 +246,26 @@ export async function removeAchievement(user_id, achievement) {
    }
 }
 
+interface Goal {
+   name: string;
+   target_amount: number;
+   current_amount: number;
+   start_date: Date;
+   end_date: Date;
+   status : string;
+}
 
-export async function createFriendGoal(user_id, goal ) {
-   const { name, target_amount, current_amount, start_date, end_date } = goal;
+export async function createFriendGoal(user_id: number, goal: Goal ) {
+   const { name, target_amount, current_amount, start_date, end_date, status } = goal;
    
    const query = `
-     INSERT INTO goal_friends (user_id, name, target_amount, current_amount, start_date, end_date)
-     VALUES ($1, $2, $3, $4, $5, $6)
+     INSERT INTO goal_friends (user_id, name, target_amount, current_amount, start_date, end_date, status)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
      RETURNING id;
    `;
 
    try {
-      const result = await pool.query(query, [ user_id, name, target_amount, current_amount, start_date, end_date ]);
+      const result = await pool.query(query, [ user_id, name, target_amount, current_amount, start_date, end_date, status ]);
       logger.info(`[CommunityService] Created friend goal for user ${user_id}: ${goal.name}`);
       return result.rows[ 0 ].id;
    } catch (error) {
@@ -266,7 +274,13 @@ export async function createFriendGoal(user_id, goal ) {
    }
 }
 
-export async function addFriendsToGoal(user_id, goal_id, friend_ids) {
+
+export async function addFriendsToGoal(user_id: number, goal_id: number) {
+
+   // @Todo: call getUserFriends(user_id) to get the list of friends
+   const friend_ids = [ 1, 2, 3 ]; // Replace with actual friend IDs
+
+
    const query = `
      INSERT INTO goal_friends (user_id, goal_id, friend_id)
      VALUES ($1, $2, $3)
@@ -283,7 +297,11 @@ export async function addFriendsToGoal(user_id, goal_id, friend_ids) {
       throw error;
    }
 }
-export async function removeFriendsFromGoal(user_id, goal_id, friend_ids) {
+
+export async function removeFriendsFromGoal(user_id: number, goal_id: number) {
+   // @Todo: call getUserFriends(user_id) to get the list of friends
+   const friend_ids = [ 1, 2, 3 ]; // Replace with actual friend IDs
+
    const query = `
      DELETE FROM goal_friends WHERE user_id = $1 AND goal_id = $2 AND friend_id = $3;
    `;
@@ -295,6 +313,39 @@ export async function removeFriendsFromGoal(user_id, goal_id, friend_ids) {
       logger.info(`[CommunityService] Removed friends from goal ${goal_id} for user ${user_id}`);
    } catch (error) {
       logger.error(`[CommunityService] Error removing friends from goal ${goal_id} for user ${user_id}:`, error);
+      throw error;
+   }
+}
+
+export async function notifyFriends(user_id: number, goal_id: number) {
+   const query = `
+     SELECT friend_id FROM goal_friends WHERE user_id = $1 AND goal_id = $2;
+   `;
+
+   try {
+      const result = await pool.query(query, [ user_id, goal_id ]);
+      const friend_ids = result.rows.map(row => row.friend_id);
+
+      for (const friend_id of friend_ids) {
+         // Send notification to friend
+         logger.info(`[CommunityService] Notified friend ${friend_id} about goal ${goal_id} for user ${user_id}`);
+      }
+   } catch (error) {
+      logger.error(`[CommunityService] Error notifying friends about goal ${goal_id} for user ${user_id}:`, error);
+      throw error;
+   }
+}
+
+export async function getCommunityGoals() {
+   const query = `
+     SELECT * FROM community_goals;
+   `;
+
+   try {
+      const result = await pool.query(query);
+      return result.rows;
+   } catch (error) {
+      logger.error(`[CommunityService] Error fetching community goals `, error);
       throw error;
    }
 }
