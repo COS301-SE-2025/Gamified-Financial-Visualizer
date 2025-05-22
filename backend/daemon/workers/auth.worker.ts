@@ -1,11 +1,12 @@
 // authWorker.ts
 // Listens for Firebase user creation events and initializes user profiles in the database
 
-import { getAuth } from "firebase-admin/auth";
+// import { getAuth } from "firebase-admin/auth";
 import { logger } from "../../config/logger";
-import { createUserProfile } from "../../services/auth.service";
+import { register } from "../../services/auth.service";
 
-export function initializeAuthUserListener() {
+export async function initializeAuthUserListener() {
+  /*
   const auth = getAuth();
 
   auth.listUsers()
@@ -13,7 +14,7 @@ export function initializeAuthUserListener() {
       listUsersResult.users.forEach(async userRecord => {
         try {
           logger.info(`[AuthWorker] Syncing user: ${userRecord.uid}`);
-          await createUserProfile(userRecord);
+          await register(userRecord);
         } catch (err) {
           logger.error(`[AuthWorker] Failed to sync user ${userRecord.uid}:`, err);
         }
@@ -24,4 +25,5 @@ export function initializeAuthUserListener() {
     });
 
   // TODO: Replace with real-time Firebase auth event handling (Cloud Functions or webhook)
+  */
 }
