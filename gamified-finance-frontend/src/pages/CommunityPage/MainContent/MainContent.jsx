@@ -2,8 +2,6 @@ import React from 'react';
 import SearchBar from './SearchBar';
 import ActionButtons from './ActionButtons';
 import CommunityPost from './CommunityPost';
-
-
 import banner1 from '../../../assets/Images/pixelShop.gif';
 import banner2 from '../../../assets/Images/pixelPorch.gif';
 import avatar1 from '../../../assets/Images/pixelDesk.jpeg';
@@ -11,12 +9,12 @@ import avatar2 from '../../../assets/Images/pixelBar.jpeg';
 
 const MainContent = () => {
   return (
-    <div className="space-y-6">
+    <div className="gap-4 space-y-6">
       <SearchBar />
       <ActionButtons />
 
       <CommunityPost
-        title="Bali Trip"
+        title="New Business"
         year="2027"
         avatar={avatar1} // icon on post banner 
         bannerImage={banner1}
