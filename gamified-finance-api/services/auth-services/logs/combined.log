@@ -44,3 +44,4 @@
 [2025-05-22 13:41:53] info: Auth endpoints available at: http://localhost:5000/api/auth/*
 [2025-05-22 13:41:56] info: GET / - ::1
 [2025-05-22 13:41:56] warn: 404 - Route not found: GET /
+[2025-05-22 16:51:26] info: Server is running on port 5000
