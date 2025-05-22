@@ -2,18 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ✅ Add this below everything */
-.animate-slideInUp {
-  animation: slideInUp 0.3s ease-out forwards;
+@layer components {
+  .input {
+    @apply w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-lime-500;
+  }
+
+  .btn-green {
+    @apply w-full bg-lime-600 hover:bg-lime-600 text-white py-2 rounded-full font-semibold transition-all duration-300;
+  }
 }
 
-@keyframes slideInUp {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 1s ease-in-out both;
   }
-  to {
-    transform: translateY(0%);
-    opacity: 1;
+
+  .animate-slide-in {
+    animation: slideIn 0.8s ease-in-out both;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  @keyframes slideIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
   }
 }
