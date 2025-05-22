@@ -17,7 +17,7 @@ interface Transaction {
 
 
 export async function createTransaction(transaction: Transaction) {
-   const { id, user_id, amount, type, description , account_id, date,category_id } = transaction;
+   const { id, user_id, amount, type, description, account_id, date, category_id } = transaction;
 
    // create 
 
@@ -40,7 +40,7 @@ export async function createTransaction(transaction: Transaction) {
    }
 }
 
-export async function createAccount(userid:number, bankName: string, accountName:string, balance: number, type:string ) {
+export async function createAccount(userid: number, bankName: string, accountName: string, balance: number, type: string) {
    const query = `
     INSERT INTO accounts (user_id, bank_name, account_name, balance, type)
     VALUES ($1, $2, $3, $4, $5, $6)
@@ -78,7 +78,7 @@ export async function getTransactionByAccount(account_id: number) {
   `;
 
    try {
-      const result  = await pool.query(query, [ account_id ]);
+      const result = await pool.query(query, [ account_id ]);
       return result.rows;
    }
    catch (error) {
@@ -95,7 +95,7 @@ export async function getTransactionByCategory(category_id: number) {
    try {
       const result = await pool.query(query, [ category_id ]);
       return result.rows;
-   } 
+   }
    catch (error) {
       logger.error(`[TransactionService] Error fetching transactions for category ${category_id}:`, error);
       throw error;
@@ -225,4 +225,81 @@ export async function getExpenseTotalByRange(user_id: number, startDate: number,
    }
 }
 
+export async function createBudget(user_id: number, amount: number, category_id: number, startDate: string, endDate: string, frequency: string) {
+   const query = `
+    INSERT INTO budgets (user_id, amount, category_id, start_date, end_date, frequency)
+    VALUES ($1, $2, $3, $4, $5, $6)
+    ON CONFLICT (user_id) DO NOTHING;
+  `;
+
+   try {
+      await pool.query(query, [ user_id, amount, category_id, startDate, endDate, frequency ]);
+      logger.info(`[TransactionService] Created budget for user ${user_id}`);
+   } catch (error) {
+      logger.error(`[TransactionService] Error creating budget for user ${user_id}:`, error);
+      throw error;
+   }
+
+}
+
+export async function getBudget(user_id: number) {
+   const query = `
+    SELECT * FROM budgets WHERE user_id = $1;
+  `;
+
+   try {
+      const result = await pool.query(query, [ user_id ]);
+      return result.rows;
+   } catch (error) {
+      logger.error(`[TransactionService] Error fetching budget for user ${user_id}:`, error);
+      throw error;
+   }
+}
+
+export async function resetBudget(user_id: number) { // must be reset based on the frequency
+   // if budget is expired, reset it to 0
+   const query = `
+    UPDATE budgets
+    SET amount = 0
+    WHERE user_id = $1 AND end_date < NOW();
+  `;
+
+   try {
+      await pool.query(query, [ user_id ]);
+      logger.info(`[TransactionService] Reset budget for user ${user_id}`);
+   } catch (error) {
+      logger.error(`[TransactionService] Error resetting budget for user ${user_id}:`, error);
+      throw error;
+   }
+}
+
+export async function deleteBudget(user_id: number) {
+   const query = `
+    DELETE FROM budgets WHERE user_id = $1;
+  `;
+
+   try {
+      await pool.query(query, [ user_id ]);
+      logger.info(`[TransactionService] Deleted budget for user ${user_id}`);
+   } catch (error) {
+      logger.error(`[TransactionService] Error deleting budget for user ${user_id}:`, error);
+      throw error;
+   }
+}
+
+export async function updateBudget(user_id: number, amount: number) {
+   const query = `
+    UPDATE budgets
+    SET amount = $1
+    WHERE user_id = $2;
+  `;
+
+   try {
+      await pool.query(query, [ amount, user_id ]);
+      logger.info(`[TransactionService] Updated budget for user ${user_id}`);
+   } catch (error) {
+      logger.error(`[TransactionService] Error updating budget for user ${user_id}:`, error);
+      throw error;
+   }
+}
 
