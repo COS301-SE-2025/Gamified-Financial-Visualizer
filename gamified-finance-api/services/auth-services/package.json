@@ -14,6 +14,8 @@
     "express": "^4.18.2",
     "express-validator": "^7.0.1",
     "helmet": "^7.0.0",
+    "paseto": "^3.1.4",
+    "pg": "^8.16.0",
     "winston": "^3.11.0"
   },
   "devDependencies": {
@@ -22,6 +24,7 @@
     "@types/express-validator": "^3.0.0",
     "@types/helmet": "^4.0.0",
     "@types/node": "^20.17.50",
+    "@types/pg": "^8.15.2",
     "@types/winston": "^2.4.4",
     "nodemon": "^3.0.1",
     "ts-node": "^10.9.2",
