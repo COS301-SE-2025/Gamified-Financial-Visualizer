@@ -213,6 +213,26 @@ CREATE TABLE ar_scene_state (
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- COMMUNITIES
+CREATE TABLE communities (
+    community_id SERIAL PRIMARY KEY,
+    owner_id INT NOT NULL REFERENCES users(user_id),
+    community_name VARCHAR(100) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- COMMUNITY MEMBERS
+CREATE TABLE community_members (
+    community_id INT REFERENCES communities(community_id),
+    user_id INT REFERENCES users(user_id),
+    membership_status VARCHAR(20) NOT NULL CHECK (
+        membership_status IN ('invited', 'requested', 'accepted', 'declined')
+    ),
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (community_id, user_id)
+);
+
 -- GOALS
 CREATE TABLE goals (
     goal_id SERIAL PRIMARY KEY,
@@ -245,7 +265,6 @@ CREATE TABLE goal_progress (
     amount_added NUMERIC(12, 2) NOT NULL CHECK (amount_added > 0)
 );
 
-
 -- FRIENDSHIPS
 CREATE TABLE friendships (
     user_id INT NOT NULL REFERENCES users(user_id),
@@ -256,41 +275,6 @@ CREATE TABLE friendships (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, friend_id),
     CHECK (user_id <> friend_id)
-);
-
--- COMMUNITIES
-CREATE TABLE communities (
-    community_id SERIAL PRIMARY KEY,
-    owner_id INT NOT NULL REFERENCES users(user_id),
-    community_name VARCHAR(100) NOT NULL,
-    description TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- COMMUNITY MEMBERS
-CREATE TABLE community_members (
-    community_id INT REFERENCES communities(community_id),
-    user_id INT REFERENCES users(user_id),
-    membership_status VARCHAR(20) NOT NULL CHECK (
-        membership_status IN ('invited', 'requested', 'accepted', 'declined')
-    ),
-    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (community_id, user_id)
-);
-
--- LEADERBOARD
-CREATE TABLE leaderboard_entries (
-    entry_id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(user_id),
-    community_id INT REFERENCES communities(community_id),
-    challenge_id INT REFERENCES challenges(challenge_id),
-    leaderboard_score INT NOT NULL,
-    ranking INT,
-    CHECK (
-        (user_id IS NOT NULL AND community_id IS NULL)
-        OR
-        (user_id IS NULL AND community_id IS NOT NULL)
-    )
 );
 
 -- CHALLENGES
@@ -323,6 +307,21 @@ CREATE TABLE challenge_progress (
         challenge_status IN ('joined', 'in-progress', 'completed', 'disqualified')
     ),
     PRIMARY KEY (community_id, challenge_id)
+);
+
+-- LEADERBOARD
+CREATE TABLE leaderboard_entries (
+    entry_id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(user_id),
+    community_id INT REFERENCES communities(community_id),
+    challenge_id INT REFERENCES challenges(challenge_id),
+    leaderboard_score INT NOT NULL,
+    ranking INT,
+    CHECK (
+        (user_id IS NOT NULL AND community_id IS NULL)
+        OR
+        (user_id IS NULL AND community_id IS NOT NULL)
+    )
 );
 
 -- LEARNING MODULES
@@ -361,7 +360,7 @@ CREATE TABLE quiz_attempts (
     user_id INT NOT NULL REFERENCES users(user_id),
     quiz_id INT NOT NULL REFERENCES quizzes(quiz_id),
     attempt_score INT NOT NULL,
-    passed BOOLEAN GENERATED ALWAYS AS (attempt_score >= (SELECT pass_score FROM quizzes WHERE quiz_id = quiz_attempts.quiz_id)) STORED,
+    passed BOOLEAN,
     attempt_number INT NOT NULL,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

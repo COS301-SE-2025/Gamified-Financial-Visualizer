@@ -274,7 +274,7 @@ export async function createFriendGoal(user_id: number, goal: Goal ) {
    }
 }
 
-
+// invite to community goal
 export async function addFriendsToGoal(user_id: number, goal_id: number) {
 
    // @Todo: call getUserFriends(user_id) to get the list of friends
@@ -317,35 +317,36 @@ export async function removeFriendsFromGoal(user_id: number, goal_id: number) {
    }
 }
 
-export async function notifyFriends(user_id: number, goal_id: number) {
-   const query = `
-     SELECT friend_id FROM goal_friends WHERE user_id = $1 AND goal_id = $2;
-   `;
+// export async function notifyFriends(user_id: number, goal_id: number) {
+//    const query = `
+//      SELECT friend_id FROM goal_friends WHERE user_id = $1 AND goal_id = $2;
+//    `;
 
-   try {
-      const result = await pool.query(query, [ user_id, goal_id ]);
-      const friend_ids = result.rows.map(row => row.friend_id);
+//    try {
+//       const result = await pool.query(query, [ user_id, goal_id ]);
+//       const friend_ids = result.rows.map(row => row.friend_id);
 
-      for (const friend_id of friend_ids) {
-         // Send notification to friend
-         logger.info(`[CommunityService] Notified friend ${friend_id} about goal ${goal_id} for user ${user_id}`);
-      }
-   } catch (error) {
-      logger.error(`[CommunityService] Error notifying friends about goal ${goal_id} for user ${user_id}:`, error);
-      throw error;
-   }
-}
+//       for (const friend_id of friend_ids) {
+//          // Send notification to friend
+//          logger.info(`[CommunityService] Notified friend ${friend_id} about goal ${goal_id} for user ${user_id}`);
+//       }
+//    } catch (error) {
+//       logger.error(`[CommunityService] Error notifying friends about goal ${goal_id} for user ${user_id}:`, error);
+//       throw error;
+//    }
+// }
 
-export async function getCommunityGoals() {
-   const query = `
-     SELECT * FROM community_goals;
-   `;
+// export async function getCommunityGoals() {
+//    const query = `
+//      SELECT * FROM community_goals;
+//    `;
 
-   try {
-      const result = await pool.query(query);
-      return result.rows;
-   } catch (error) {
-      logger.error(`[CommunityService] Error fetching community goals `, error);
-      throw error;
-   }
-}
+//    try {
+//       const result = await pool.query(query);
+//       return result.rows;
+//    } catch (error) {
+//       logger.error(`[CommunityService] Error fetching community goals `, error);
+//       throw error;
+//    }
+// }
+
