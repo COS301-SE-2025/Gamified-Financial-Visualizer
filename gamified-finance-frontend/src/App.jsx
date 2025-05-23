@@ -9,10 +9,9 @@ import CommunityListPage from './pages/CommunityPage/MyCommunities/CommunityList
 import FriendProfilePage from './pages/CommunityPage/FriendProfile/FriendProfilePage';
 import ManageCommunityPage from './pages/CommunityPage/CommyunityManage/ManageCommunityPage';
 import CreateCommunityPage from './pages/CommunityPage/CreateCommunity/CreateCommunityPage';
-import GoalsDetail from './pages/Goals/GoalsDetail';
+import GoalsPage from './pages/GoalsPage/GoalPage';
+import GoalsDetailPage from './pages/GoalsPage/GoalsDetailPage/GoalsDetailPage';
 
-// Goal pages 
-import GoalsPage from './pages/Goals/GoalsPage';
 
 function App() {
   return (
@@ -24,8 +23,9 @@ function App() {
         <Route path="manage-community/:id" element={<ManageCommunityPage />} />
         <Route path="friend-profile" element={<FriendProfilePage />} />
         <Route path="create-community" element={<CreateCommunityPage />} />
-        <Route path="goals" element={<GoalsPage />} />
-        <Route path="/goals/:id" element={<GoalsDetail />} />
+        <Route path="goals" element={<GoalsPage />}>
+          <Route path="/goals/:id" element={<GoalsDetailPage />} />
+        </Route>
       </Route>
     </Routes>
   );

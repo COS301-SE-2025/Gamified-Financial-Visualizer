@@ -1,3 +1,4 @@
+// ✅ GoalsStatsPanel.jsx
 import React from 'react';
 import { FiTarget, FiCheckCircle, FiStar, FiTrendingUp } from 'react-icons/fi';
 
@@ -30,16 +31,19 @@ const GoalsStatsPanel = () => {
   ];
 
   return (
-    <div className="bg-white p-4 rounded-xl shadow-md">
-      <h3 className="text-md font-semibold mb-3">Goal Stats</h3>
-      <div className="space-y-4">
+    <div className="bg-white p-4 rounded-xl shadow-md border">
+      <h3 className="text-md font-semibold text-orange-500 mb-4">📊 Goal Stats</h3>
+      <div className="space-y-3">
         {stats.map((stat) => (
-          <div key={stat.id} className="flex items-center justify-between">
+          <div
+            key={stat.id}
+            className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-lg hover:bg-gray-100 transition"
+          >
             <div className="flex items-center gap-3">
-              <div className="bg-gray-100 p-2 rounded-full">
+              <div className="bg-white p-2 rounded-full shadow">
                 {stat.icon}
               </div>
-              <span className="text-sm text-gray-700">{stat.title}</span>
+              <span className="text-sm font-medium text-gray-700">{stat.title}</span>
             </div>
             <span className="text-sm font-bold text-gray-800">{stat.value}</span>
           </div>
