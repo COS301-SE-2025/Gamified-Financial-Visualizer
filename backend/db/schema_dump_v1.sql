@@ -65,7 +65,6 @@ EXECUTE FUNCTION update_updated_at_column();
 
 
 -- ACCOUNTS
-
 CREATE TABLE accounts (
     account_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(user_id),
@@ -375,4 +374,74 @@ CREATE TABLE module_rewards (
     reward_points INT NOT NULL,
     awarded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (user_id, module_id)
+);
+
+-- BUDGETS
+CREATE TABLE budgets (
+    budget_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(user_id),
+    budget_name VARCHAR(100) NOT NULL,
+    period_start DATE NOT NULL,
+    period_end DATE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- BUDGET ALLOCATIONS PER CATEGORY
+CREATE TABLE budget_categories (
+    budget_category_id SERIAL PRIMARY KEY,
+    budget_id INT NOT NULL REFERENCES budgets(budget_id) ON DELETE CASCADE,
+    category_id INT REFERENCES categories(category_id),
+    custom_category_id INT REFERENCES custom_categories(custom_category_id),
+    target_amount NUMERIC(12, 2) NOT NULL CHECK (target_amount >= 0),
+    CHECK (
+        (category_id IS NOT NULL AND custom_category_id IS NULL)
+        OR (category_id IS NULL AND custom_category_id IS NOT NULL)
+    )
+);
+
+-- UI BANNER ADS (IMAGES)
+CREATE TABLE banner_images (
+    banner_id SERIAL PRIMARY KEY,
+    image_url TEXT NOT NULL,
+    alt_text TEXT,
+    display_start TIMESTAMP,
+    display_end TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ACHIEVEMENTS
+CREATE TABLE achievements (
+    achievement_id SERIAL PRIMARY KEY,
+    achievement_title VARCHAR(100) NOT NULL,
+    achievement_description TEXT NOT NULL,
+    points_awarded INT NOT NULL CHECK (points_awarded >= 0),
+    badge_icon_url TEXT,
+    trigger_condition_json JSONB NOT NULL  -- e.g., {"goal_completed": true, "amount": 1000}
+);
+
+-- USER ACHIEVEMENTS
+CREATE TABLE user_achievements (
+    user_id INT NOT NULL REFERENCES users(user_id),
+    achievement_id INT NOT NULL REFERENCES achievements(achievement_id),
+    awarded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, achievement_id)
+);
+
+-- USER POINTS
+CREATE TABLE user_points (
+    user_id INT PRIMARY KEY REFERENCES users(user_id),
+    total_points INT NOT NULL DEFAULT 0,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- USER POINTS HISTORY
+CREATE TABLE points_log (
+    log_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(user_id),
+    source VARCHAR(50) NOT NULL CHECK (
+        source IN ('achievement', 'quiz', 'goal', 'challenge', 'transaction')
+    ),
+    source_id INT,
+    points INT NOT NULL CHECK (points > 0),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
