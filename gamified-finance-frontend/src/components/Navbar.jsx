@@ -20,7 +20,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Center: Nav Links */}
+      {/* Center: Nav Links */} 
       <div className="flex items-center space-x-8 text-sm font-medium text-gray-700">
         <NavLink to="/" className={navClasses}>Home</NavLink>
         <NavLink to="/transactions" className={navClasses}>Transactions</NavLink>
