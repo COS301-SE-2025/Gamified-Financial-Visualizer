@@ -9,7 +9,7 @@ import avatar2 from '../../../assets/Images/pixelBar.jpeg';
 
 const MainContent = () => {
   return (
-    <div className="gap-4 space-y-6">
+    <div className="gap-8 space-y-6">
       <SearchBar />
       <ActionButtons />
 
