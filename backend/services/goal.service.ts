@@ -33,6 +33,7 @@ export async function createGoal(goal: Goal) {
    }
 }
 
+// returns a goal by id
 export async function getGoal(id: number) {
    const query = `
      SELECT * FROM goals WHERE id = $1;
@@ -47,6 +48,7 @@ export async function getGoal(id: number) {
    }
 }
 
+// returns all goals for a user
 export async function getUserGoals(user_id: number) {
    const query = `
      SELECT * FROM goals WHERE user_id = $1;
@@ -61,6 +63,9 @@ export async function getUserGoals(user_id: number) {
    }
 }
 
+
+
+// need to think on how to update the goal better
 interface UpdateGoal {
    name?: string;
    target_amount?: number;
@@ -70,6 +75,9 @@ interface UpdateGoal {
    status?: string;
 }
 
+
+// need to see 
+// UI speak to them to add amount to the goal to update current amount
 export async function updateGoal(id: number, updates: UpdateGoal) {
    const { name, target_amount, current_amount, start_date, end_date , status} = updates;
 
@@ -102,32 +110,34 @@ export async function deleteGoal(id: number) {
    }
 }
 
-interface GoalTransaction {
-   id: number;
-   user_id: number;
-   amount: number;
-   date: string;
-}
+// interface GoalTransaction {
+//    id: number;
+//    user_id: number;
+//    amount: number;
+//    date: string;
+// }
 
-export async function addTransactionToGoal(goal_id: number, transaction: GoalTransaction) {
-   const { id, user_id, amount, date } = transaction;
+// export async function addTransactionToGoal(goal_id: number, transaction: GoalTransaction) {
+//    const { id, user_id, amount, date } = transaction;
 
-   const query = `
-     INSERT INTO goal_transactions (goal_id, id, user_id, amount, date)
-     VALUES ($1, $2, $3, $4, $5)
-     ON CONFLICT (id) DO NOTHING;
-   `;
+//    const query = `
+//      INSERT INTO goal_transactions (goal_id, id, user_id, amount, date)
+//      VALUES ($1, $2, $3, $4, $5)
+//      ON CONFLICT (id) DO NOTHING;
+//    `;
 
-   try {
-      await pool.query(query, [ goal_id, id, user_id, amount, date ]);
-      logger.info(`[GoalService] Added transaction ${id} to goal ${goal_id}`);
-   } catch (error) {
-      logger.error(`[GoalService] Error adding transaction ${id} to goal ${goal_id}:`, error);
-      throw error;
-   }
-}
+//    try {
+//       await pool.query(query, [ goal_id, id, user_id, amount, date ]);
+//       logger.info(`[GoalService] Added transaction ${id} to goal ${goal_id}`);
+//    } catch (error) {
+//       logger.error(`[GoalService] Error adding transaction ${id} to goal ${goal_id}:`, error);
+//       throw error;
+//    }
+// }
 
 // if goal is completed, update the goal status and add points to the user
+// add points attribute to users table
+// add user_id to goals table just to make sure we know who created the goal
 export async function completeGoal(goal_id: number) {
    const query = `
      UPDATE goals
@@ -150,6 +160,7 @@ export async function completeGoal(goal_id: number) {
    }
 }
 
+// also looses points
 export async function reduceProgress(goal_id: number, amount: number) {
    const query = `
      UPDATE goals
@@ -186,4 +197,21 @@ export async function getAllGoals() {
       throw error;
    }
 }
+
+// get latest goal for a user
+// get user points
+// get goal statistics - progress, status, etc
+
+// get total status for goals - stats
+// need to get badges
+
+
+// needs to add take for achievements
+// mock level stats
+
+// edit + delete goal
+
+// create banner table to store pictures
+
+
 
