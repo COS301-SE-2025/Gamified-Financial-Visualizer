@@ -17,3 +17,8 @@
     opacity: 1;
   }
 }
+
+/* index.css or globals.css */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

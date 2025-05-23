@@ -11,7 +11,7 @@ import defaultAvatar4 from '../../../assets/Images/pixelAllyway.jpeg';
 import badge1 from '../../../assets/Images/awardIcon.png';
 import badge2 from '../../../assets/Images/highFiveIcon.png';
 import badge3 from '../../../assets/Images/moneyBagIcon.png';
-import badge4 from '../../../assets/Images/notesIcon.png';
+//import badge4 from '../../../assets/Images/notesIcon.png';
 
 // Sample community list data
 const communities = [
