@@ -19,7 +19,7 @@ CREATE TABLE users (
 
 -- USER PREFERENCES
 CREATE TABLE user_preferences (
-    user_id INT NOT NULL PRIMARY KEY REFERENCES users(user_id),
+    user_id INT NOT NULL PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
     theme VARCHAR(50) CHECK (theme IN ('light', 'dark')),
     in_app_notifications_enabled BOOLEAN DEFAULT TRUE,
     avatar_id VARCHAR(50) NOT NULL DEFAULT 'default_01',
@@ -31,7 +31,7 @@ CREATE TABLE user_preferences (
 -- USER PUSH SUBSCRIPTIONS (for PWA push support - out of app notifications)
 CREATE TABLE user_push_subscriptions (
     push_id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(user_id),
+    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
     endpoint TEXT NOT NULL,
     p256dh TEXT NOT NULL,
     auth TEXT NOT NULL,
@@ -67,7 +67,7 @@ EXECUTE FUNCTION update_updated_at_column();
 -- ACCOUNTS
 CREATE TABLE accounts (
     account_id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(user_id),
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     bank_name VARCHAR(100) NOT NULL DEFAULT 'GFV Bank',
     account_name VARCHAR(100) NOT NULL DEFAULT 'My Account',
     account_type VARCHAR(50) NOT NULL CHECK (
@@ -111,7 +111,7 @@ CREATE TABLE categories (
 -- USER CUSTOM CATEGORIES
 CREATE TABLE custom_categories (
     custom_category_id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(user_id),
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     custom_category_name VARCHAR(100) NOT NULL,
     UNIQUE (user_id, custom_category_name)
 );
@@ -178,7 +178,7 @@ CREATE TABLE recurring_transactions (
 -- AI SCORE
 CREATE TABLE ai_scores (
     score_id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(user_id),
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     generated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     score_value INTEGER NOT NULL,
     financial_health_level VARCHAR(50) NOT NULL CHECK (
@@ -190,7 +190,7 @@ CREATE TABLE ai_scores (
 -- VISUAL ASSET
 CREATE TABLE visual_assets (
     asset_id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(user_id),
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     asset_type VARCHAR(50) NOT NULL CHECK (
         asset_type IN (
             'house', 'flat', 'shop', 'shop_cafe', 'shop_bakery', 'bank', 'school',
@@ -208,7 +208,7 @@ CREATE TABLE visual_assets (
 -- AR SCENE STATE
 CREATE TABLE ar_scene_state (
     scene_id SERIAL PRIMARY KEY,
-    user_id INT UNIQUE REFERENCES users(user_id),
+    user_id INT UNIQUE REFERENCES users(user_id) ON DELETE CASCADE,
     snapshot_jsonb JSONB,
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -216,7 +216,7 @@ CREATE TABLE ar_scene_state (
 -- COMMUNITIES
 CREATE TABLE communities (
     community_id SERIAL PRIMARY KEY,
-    owner_id INT NOT NULL REFERENCES users(user_id),
+    owner_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     community_name VARCHAR(100) NOT NULL,
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -224,8 +224,8 @@ CREATE TABLE communities (
 
 -- COMMUNITY MEMBERS
 CREATE TABLE community_members (
-    community_id INT REFERENCES communities(community_id),
-    user_id INT REFERENCES users(user_id),
+    community_id INT REFERENCES communities(community_id) ON DELETE CASCADE,
+    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
     membership_status VARCHAR(20) NOT NULL CHECK (
         membership_status IN ('invited', 'requested', 'accepted', 'declined')
     ),
@@ -236,8 +236,8 @@ CREATE TABLE community_members (
 -- GOALS
 CREATE TABLE goals (
     goal_id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(user_id),
-    community_id INT REFERENCES communities(community_id),
+    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+    community_id INT REFERENCES communities(community_id) ON DELETE CASCADE,
     goal_name VARCHAR(100) NOT NULL,
     goal_type VARCHAR(50) NOT NULL CHECK (
         goal_type IN ('savings', 'debt', 'investment', 'spending limit', 'donation')
@@ -259,16 +259,16 @@ CREATE TABLE goals (
 -- GOAL PROGRESS
 CREATE TABLE goal_progress (
     progress_id SERIAL PRIMARY KEY,
-    goal_id INT NOT NULL REFERENCES goals(goal_id),
-    contributor_id INT NOT NULL REFERENCES users(user_id),
+    goal_id INT NOT NULL REFERENCES goals(goal_id) ON DELETE CASCADE,
+    contributor_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     progress_date DATE NOT NULL DEFAULT CURRENT_DATE,
     amount_added NUMERIC(12, 2) NOT NULL CHECK (amount_added > 0)
 );
 
 -- FRIENDSHIPS
 CREATE TABLE friendships (
-    user_id INT NOT NULL REFERENCES users(user_id),
-    friend_id INT NOT NULL REFERENCES users(user_id),
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    friend_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     relationship_status VARCHAR(20) NOT NULL CHECK (
         relationship_status IN ('pending', 'accepted', 'declined')
     ),
@@ -296,9 +296,9 @@ CREATE TABLE challenges (
 
 -- CHALLENGE PROGRESS
 CREATE TABLE challenge_progress (
-    community_id INT REFERENCES communities(community_id),
+    community_id INT REFERENCES communities(community_id) ON DELETE CASCADE,
     challenge_id INT REFERENCES challenges(challenge_id),
-    owner_id INT NOT NULL REFERENCES users(user_id),
+    owner_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     actual_start TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     actual_end TIMESTAMP NOT NULL,
     score NUMERIC DEFAULT 0,
@@ -312,8 +312,8 @@ CREATE TABLE challenge_progress (
 -- LEADERBOARD
 CREATE TABLE leaderboard_entries (
     entry_id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(user_id),
-    community_id INT REFERENCES communities(community_id),
+    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+    community_id INT REFERENCES communities(community_id) ON DELETE CASCADE,
     challenge_id INT REFERENCES challenges(challenge_id),
     leaderboard_score INT NOT NULL,
     ranking INT,
@@ -357,7 +357,7 @@ CREATE TABLE quizzes (
 -- QUIZ ATTEMPTS
 CREATE TABLE quiz_attempts (
     attempt_id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(user_id),
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     quiz_id INT NOT NULL REFERENCES quizzes(quiz_id),
     attempt_score INT NOT NULL,
     passed BOOLEAN,
@@ -368,7 +368,7 @@ CREATE TABLE quiz_attempts (
 -- MODULE REWARDS
 CREATE TABLE module_rewards (
     reward_id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(user_id),
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     module_id INT NOT NULL REFERENCES learning_modules(module_id),
     reward_points INT NOT NULL,
     awarded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -378,7 +378,7 @@ CREATE TABLE module_rewards (
 -- BUDGETS
 CREATE TABLE budgets (
     budget_id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(user_id),
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     budget_name VARCHAR(100) NOT NULL,
     period_start DATE NOT NULL,
     period_end DATE NOT NULL,
@@ -420,7 +420,7 @@ CREATE TABLE achievements (
 
 -- USER ACHIEVEMENTS
 CREATE TABLE user_achievements (
-    user_id INT NOT NULL REFERENCES users(user_id),
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     achievement_id INT NOT NULL REFERENCES achievements(achievement_id),
     awarded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, achievement_id)
@@ -428,7 +428,7 @@ CREATE TABLE user_achievements (
 
 -- USER POINTS
 CREATE TABLE user_points (
-    user_id INT PRIMARY KEY REFERENCES users(user_id),
+    user_id INT PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
     total_points INT NOT NULL DEFAULT 0,
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -436,7 +436,7 @@ CREATE TABLE user_points (
 -- USER POINTS HISTORY
 CREATE TABLE points_log (
     log_id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(user_id),
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     source VARCHAR(50) NOT NULL CHECK (
         source IN ('achievement', 'quiz', 'goal', 'challenge', 'transaction')
     ),
