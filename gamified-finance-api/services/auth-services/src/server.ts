@@ -2,9 +2,9 @@ import express, { Application, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
-import authRoutes from './routes/authRoutes.js';
-import { logger } from './config/logger.js';
-import pool from './config/db.js';
+import authRoutes from './routes/authRoutes';
+import { logger } from './config/logger';
+import pool from './config/db';
 
 dotenv.config();
 

@@ -1,8 +1,8 @@
 // src/controllers/authController.ts
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import { logger } from '../config/logger.js';
-import * as userService from '../services/userService.js';
+import { logger } from '../config/logger';
+import * as userService from '../services/userService';
 import { V4 } from 'paseto';
 import * as crypto from 'crypto';
 import argon2 from 'argon2';
