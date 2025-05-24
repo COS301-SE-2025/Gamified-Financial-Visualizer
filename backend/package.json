@@ -1,5 +1,6 @@
 {
   "devDependencies": {
+    "@types/jest": "^29.5.14",
     "@types/node": "^22.15.21",
     "@types/redis": "^4.0.11",
     "ts-node": "^10.9.2",
@@ -16,5 +17,6 @@
     "test-daemon": "jest --config jest.daemon.config.js",
     "daemon": "npx ts-node daemon/daemon.ts",
     "test": "jest"
-  }
+  },
+  "type": "module"
 }

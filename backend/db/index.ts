@@ -1,8 +1,10 @@
 // db.ts
-import { Pool } from 'pg';
 import dotenv from 'dotenv';
 
 dotenv.config();
+console.log('🔐 DB_PASSWORD:', typeof process.env.DB_PASSWORD, process.env.DB_PASSWORD?.length);
+
+import { Pool } from 'pg';
 
 const pool = new Pool({
   host: process.env.DB_HOST,

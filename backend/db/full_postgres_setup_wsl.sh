@@ -20,15 +20,14 @@ echo "▶️ Starting PostgreSQL service..."
 sudo service postgresql start
 
 echo "👤 Creating default PostgreSQL user and database..."
-sudo -u postgres psql <<-EOF
-DO
-\$do\$
-BEGIN
-   IF NOT EXISTS (SELECT FROM pg_database WHERE datname = '${DB_NAME}') THEN
-      CREATE DATABASE "${DB_NAME}";
-   END IF;
-END
-\$do\$;
+DB_EXISTS=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname='${DB_NAME}'")
+if [ "$DB_EXISTS" != "1" ]; then
+  echo "📦 Creating database ${DB_NAME}..."
+  sudo -u postgres createdb "${DB_NAME}"
+else
+  echo "Database ${DB_NAME} already exists."
+fi
+sudo -u postgres psql <<EOF
 
 DO
 \$do\$
