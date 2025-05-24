@@ -1,8 +1,8 @@
 
-import { Pool } from 'pg';
+//import { Pool } from 'pg';
 import { logger } from '../config/logger';
 
-const pool = new Pool();
+import pool from '../db/index'; 
 
 export async function inviteFriend(user_id: number, friend_id: number) {
    const query = `
