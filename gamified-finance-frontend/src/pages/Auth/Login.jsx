@@ -8,7 +8,7 @@ const Login = () => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    navigate('/dashboard');
+    navigate('/home');
   };
 
   return (
