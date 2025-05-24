@@ -20,7 +20,7 @@ const badges = [
 
 const GoalsBadgesPanel = () => {
   return (
-    <div className="bg-white p-4 rounded-xl shadow-md">
+    <div className="bg-white p-4 rounded-full shadow-md">
       <h3 className="text-md font-semibold mb-3 text-orange-400">Badges</h3>
       <div className="grid grid-cols-4 gap-4 justify-items-center">
         {badges.map((badge) => (
@@ -28,10 +28,10 @@ const GoalsBadgesPanel = () => {
             key={badge.id}
             className="w-[120px] h-[120px] rounded-full bg-white border border-grey-600 shadow-sm flex items-center justify-center"
           >
-            <img src={badge.icon} alt={badge.label} className="w-22 h-22 rounded-full" />
+            <img src={badge.icon} alt={badge.label} className="w-12 h-12 rounded-full" />
           </div>
         ))}
-        <button className="text-sm text-green-600 hover:underline">View More</button>
+        <button className="text-sm text-cyan-600 hover:underline">View More</button>
       </div>
     </div>
   );

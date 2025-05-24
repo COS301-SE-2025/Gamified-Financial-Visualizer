@@ -4,7 +4,9 @@ module.exports = {
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {colors: {
+        'lime-brand': '#8BC34A', // or your exact green
+      },},
   },
   plugins: [],
 };
