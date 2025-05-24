@@ -8,12 +8,7 @@ const Navbar = () => {
     isActive
       ? "text-green-600 border-b-2 border-green-600 pb-1"
       : "hover:text-green-600";
-
-  const navClasses = ({ isActive }) =>
-    isActive
-      ? "text-green-600 border-b-2 border-green-600 pb-1"
-      : "hover:text-green-600";
-
+      
   return (
     <nav className="bg-white h-16 px-6 py-2 flex items-center justify-between border-b shadow-sm">
       {/* Left: Logo + User Info */}
