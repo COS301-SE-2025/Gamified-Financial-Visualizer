@@ -1,8 +1,7 @@
 
-import { Pool } from 'pg';
 import { logger } from '../config/logger';
 
-const pool = new Pool();
+import pool from '../db/index'; 
 
 interface Transaction {
    id: number;

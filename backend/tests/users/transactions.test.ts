@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config({ path: '../.env' });
+
 import {
   createTransaction,
   getTransaction,
@@ -11,6 +14,7 @@ import {
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import pool from '../../db/index';
 
 describe('Transaction Service', () => {
   const testId = Math.floor(Math.random() * 100000);
@@ -67,4 +71,5 @@ describe('Transaction Service', () => {
     const result = await getTransaction(transaction.id);
     assert.strictEqual(result, undefined);
   });
+})
 });
