@@ -10,17 +10,21 @@ const SidebarRight = () => {
       <FriendsList />
 
       {/* Notification Toggle */}
-      <button
-        onClick={() => setShowNotifications((prev) => !prev)}
-        className="w-full text-left p-3 rounded-xl bg-purple-100 text-white-800 font-medium shadow-sm hover:bg-purple-200 transition"
+      <div
+        className="fixed bottom-4 right-6 bg-white px-4 py-2 rounded-full shadow-md border flex items-center justify-between w-72 cursor-pointer"
+        onClick={() => setShowNotifications(!showNotifications)}
       >
-        {showNotifications ? 'Hide Notifications' : 'Show Notifications'}
-      </button>
+        <div className="flex items-center space-x-2">
+          <span className="text-sm font-medium text-gray-700">🔔 Notifications</span>
+          <span className="text-xs bg-red-500 text-white rounded-full px-2">6</span>
+        </div>
+        <span className="text-sm text-gray-500">{showNotifications ? '▾' : '▸'}</span>
+      </div>
 
       {/* Slide-in Notification Panel */}
       {showNotifications && (
         <div className="absolute top-0 right-0 mt-20 w-full z-10">
-          <NotificationsPanel />
+          <NotificationsPanel onClose={() => setShowNotifications(false)} />
         </div>
       )}
     </div>
