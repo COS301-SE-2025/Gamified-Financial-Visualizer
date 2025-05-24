@@ -9,6 +9,11 @@ const Navbar = () => {
       ? "text-green-600 border-b-2 border-green-600 pb-1"
       : "hover:text-green-600";
 
+  const navClasses = ({ isActive }) =>
+    isActive
+      ? "text-green-600 border-b-2 border-green-600 pb-1"
+      : "hover:text-green-600";
+
   return (
     <nav className="bg-white h-16 px-6 py-2 flex items-center justify-between border-b shadow-sm">
       {/* Left: Logo + User Info */}
@@ -20,9 +25,9 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Center: Nav Links */} 
+      {/* Center: Nav Links */}
       <div className="flex items-center space-x-8 text-sm font-medium text-gray-700">
-        <NavLink to="/" className={navClasses}>Home</NavLink>
+        <NavLink to="/home" className={navClasses}>Home</NavLink>
         <NavLink to="/transactions" className={navClasses}>Transactions</NavLink>
         <NavLink to="/goals" className={navClasses}>Goals</NavLink>
         <NavLink to="/community" className={navClasses}>Community</NavLink>
