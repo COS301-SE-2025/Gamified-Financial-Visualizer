@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import backgroundImg from '../assets/Images/pixelPorch.gif';
+import backgroundImg from '../assets/Images/pixelWoodShop.gif';
 
 const AuthLayout = ({ children, reverse = false }) => {
   const greenPanelStyle = {
