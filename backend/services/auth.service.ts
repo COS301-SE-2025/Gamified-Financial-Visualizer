@@ -1,10 +1,10 @@
 // auth.service.ts
 // Handles database operations for user accounts, authentication, preferences, and push subscriptions.
-
-import { Pool } from 'pg';
+import dotenv from 'dotenv';
+dotenv.config();
+import pool from "../db/index";
 import { logger } from '../config/logger';
 
-const pool = new Pool();
 
 export interface UserRecord {
   email: string;
