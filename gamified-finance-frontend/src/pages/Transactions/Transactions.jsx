@@ -8,7 +8,6 @@ import badge3 from '../../assets/Images/highFiveIcon.png';
 import badge4 from '../../assets/Images/notesIcon.png';
 
 import {FaUtensils,FaBus,FaBolt,FaFilm,FaHeartbeat,FaPlane,FaBook,FaLaptop,FaUser,FaHandsHelping,FaTshirt,FaDumbbell,FaMobileAlt,FaWifi,FaTv,FaHome,FaCar,FaShieldAlt,FaCalendarAlt} from 'react-icons/fa';
-
 const DashboardPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState('All Transactions');
