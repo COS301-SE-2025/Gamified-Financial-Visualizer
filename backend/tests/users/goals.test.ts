@@ -47,7 +47,7 @@ describe('Goal Service (Jest)', () => {
     await updateGoal(goalId, { current_amount: 500 });
     const updated = await getGoal(goalId);
     expect(updated).not.toBeNull();
-    expect(updated!.current_amount).toBe(500);
+    expect(Number(updated!.current_amount)).toBe(500);
   });
 
   it('lists user goals', async () => {
@@ -74,7 +74,7 @@ describe('Goal Service (Jest)', () => {
     await reduceGoalProgress(goalId, 100);
     const after = await getGoal(goalId);
     expect(after).not.toBeNull();
-    expect(after!.current_amount).toBeLessThan(goalData.target_amount);
+    expect(Number(after!.current_amount)).toBeLessThan(goalData.target_amount);
   });
 
   it('deletes the goal', async () => {

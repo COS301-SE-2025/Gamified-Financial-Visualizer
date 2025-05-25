@@ -1,5 +1,5 @@
 // services/transaction.service.ts
-import { Pool } from 'pg';
+//import { Pool } from 'pg';
 import { logger } from '../config/logger';
 import pool from '../db/index';
 

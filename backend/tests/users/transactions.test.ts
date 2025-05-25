@@ -46,7 +46,7 @@ describe('Transaction Service', () => {
   it('should fetch transaction by account', async () => {
     const results = await getTransactionByAccount(transaction.account_id);
 
-    const match = results.find(t => t.transaction_id === transaction.transaction_id);
+    const match = results.find((t: any) => t.transaction_id === transaction.transaction_id);
     assert.ok(results.length > 0, 'Account should have transactions');
    // assert.ok(match, 'Transaction should be found by account ID');
   });
@@ -59,7 +59,7 @@ describe('Transaction Service', () => {
 
   it('should fetch transaction by type', async () => {
     const results = await getTransactionByType(transaction.transaction_type);
-    const match = results.find(t => t.transaction_id === transaction.transaction_id);
+    const match = results.find((t: any) => t.transaction_id === transaction.transaction_id);
      assert.ok(results.length > 0, 'User should have transactions');
   });
 
