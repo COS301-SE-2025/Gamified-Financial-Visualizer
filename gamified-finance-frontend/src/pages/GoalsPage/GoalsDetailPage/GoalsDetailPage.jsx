@@ -38,12 +38,7 @@ const GoalsDetailPage = () => {
   const remaining = goal.target - goal.current;
 
   return (
-    <GoalPage>
-      <GoalsHeader />
-      <div className="mt-4">
-        <GoalsLevelCard />
-      </div>
-
+    <>
       <div className="bg-white rounded-xl shadow-md p-6 mt-6">
         {/* Banner */}
         <div className="relative w-full rounded-lg overflow-hidden shadow-sm mb-6">
@@ -131,7 +126,7 @@ const GoalsDetailPage = () => {
           </button>
         </div>
       </div>
-    </GoalPage>
+    </>
   );
 };
 
