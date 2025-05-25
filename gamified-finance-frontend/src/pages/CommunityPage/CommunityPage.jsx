@@ -5,14 +5,19 @@ import SidebarRight from './SidebarRight/SidebarRight';
 
 const CommunityPage = () => {
   return (
-    <div className="flex min-h-screen bg-gray-100 text-gray-800">
-      <aside className="w-1/4 p-4">
+    <div className="flex min-h-screen px-6 gap-4 text-gray-800 pt-6">
+      {/* Left Sidebar */}
+      <aside className="w-[350px] shrink-0">
         <SidebarLeft />
       </aside>
-      <main className="flex-1 p-4">
+
+      {/* Main Content */}
+      <main className="flex-1 space-y-4">
         <MainContent />
       </main>
-      <aside className="w-1/4 p-4">
+
+      {/* Right Sidebar */}
+      <aside className="w-[350px] shrink-0">
         <SidebarRight />
       </aside>
     </div>

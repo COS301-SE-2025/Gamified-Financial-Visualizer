@@ -70,7 +70,7 @@ const FriendProfilePage = () => {
             <p className="text-sm font-semibold mb-1">Lv {profile.level}</p>
             <div className="bg-gray-300 rounded-full h-3">
               <div
-                className="bg-orange-400 h-3 rounded-full"
+                className="h-3 rounded-full bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-500"
                 style={{ width: `${(profile.currentXP / profile.nextXP) * 100}%` }}
               ></div>
             </div>
