@@ -47,7 +47,7 @@ const CommunityPost = ({ title, year, avatar, bannerImage, themeColors, headerCo
 
         {/* View Button */}
         <Link to={`/community/${title.toLowerCase().replace(/\s+/g, '-')}`}>
-          <button className="...">
+          <button className="text-sm px-4 py-1 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-md hover:from-green-500 hover:to-emerald-600 transition duration-200">
             View
           </button>
         </Link>
