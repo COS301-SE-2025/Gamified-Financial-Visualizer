@@ -1,15 +1,15 @@
-// /tsconfig.json
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module":  "CommonJS",
+    "module": "commonjs",
+    "outDir": "dist",
+    "rootDir": "src",
     "strict": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "baseUrl": ".", 
-    "paths": {
-      "@shared-services/*": ["backend/services/*"]
-    }
-  }
+    "forceConsistentCasingInFileNames": true,
+  },
+  "include": [
+    "src/**/*.ts"
+  ]
 }
