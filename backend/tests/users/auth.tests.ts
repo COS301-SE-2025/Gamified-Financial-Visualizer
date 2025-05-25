@@ -6,10 +6,10 @@ import { Pool } from 'pg';
 
 // Sample user data
 const testUser = {
-  email: 'testuser@example.com',
-  username: 'testuser',
-  full_name: 'Test User',
-  hashed_password: 'hashedpass123',
+  email: 'yohali@example.com',
+  username: 'testyohali',
+  full_name: 'Test Yohali',
+  hashed_password: 'String123',
   password_salt: 'salt123'
 };
 
