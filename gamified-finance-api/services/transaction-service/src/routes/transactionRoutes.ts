@@ -5,7 +5,8 @@ import {
   getUserTransactions,
   getTotalSpentPerCategory
 }
-  from '../../../../../backend/services/transactions.service';
+  // from '../../../../../backend/services/transactions.service';
+  from '../services/transaction.service'
 import { logger } from '../config/logger';
 console.log("Alias working:", createTransaction)
 const router = Router();
