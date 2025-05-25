@@ -1,19 +1,19 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "CommonJS",
-    "outDir": "./dist",
-    "rootDir": "./",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "strict": true,
+    "skipLibCheck": true,
+    "rootDir": "./",
+    "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
       "*": ["*"]
-    },
-    "esModuleInterop": true,
-    "moduleResolution": "node",
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true
+    }
   },
-  "include": ["**/*.ts", "daemon/**/*", "services/**/*", "tests/users/jest.config.js"],
+  "include": ["**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }
