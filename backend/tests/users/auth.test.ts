@@ -1,6 +1,8 @@
 import dotenv from 'dotenv';
 dotenv.config({ path: '../.env' });
 
+import pool from '../../db/index';
+
 import * as auth from '../../services/auth.service';
 import { Pool } from 'pg';
 
@@ -75,5 +77,9 @@ describe('Auth Service Tests', () => {
     await auth.deleteUser(createdUserId);
     const deleted = await auth.getUserById(createdUserId);
     expect(deleted).toBeUndefined();
+  });
+
+  afterAll(async () => {
+    await pool.end(); // Important for Jest to exit cleanly
   });
 });
