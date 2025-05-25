@@ -41,7 +41,7 @@ const GoalsCreateForm = () => {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Goal Name</label>
+          <label htmlFor="goalName" className="block text-sm font-medium text-gray-700">Goal Name</label>
           <input
             type="text"
             name="name"
@@ -52,7 +52,7 @@ const GoalsCreateForm = () => {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Category</label>
+          <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
           <input
             type="text"
             name="category"
@@ -63,7 +63,7 @@ const GoalsCreateForm = () => {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Target Amount (R)</label>
+          <label htmlFor="targetAmount" className="block text-sm font-medium text-gray-700">Target Amount (R)</label>
           <input
             type="number"
             name="targetAmount"
@@ -74,8 +74,9 @@ const GoalsCreateForm = () => {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Start Date</label>
+          <label htmlFor="startDate" className="block text-sm font-medium text-gray-700">Start Date</label>
           <input
+            id="startDate"
             type="date"
             name="startDate"
             value={goal.startDate}
@@ -86,8 +87,9 @@ const GoalsCreateForm = () => {
       </div>
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <label className="flex items-center gap-2 text-sm text-gray-700">
+        <label htmlFor="recurring" className="flex items-center gap-2 text-sm text-gray-700">
           <input
+            id="recurring"
             type="checkbox"
             name="recurring"
             checked={goal.recurring}
@@ -110,9 +112,8 @@ const GoalsCreateForm = () => {
             <div
               key={img.id}
               onClick={() => handleImageSelect(img.src)}
-              className={`rounded-xl border-2 cursor-pointer transition hover:scale-105 ${
-                goal.image === img.src ? 'border-blue-500' : 'border-transparent'
-              }`}
+              className={`rounded-xl border-2 cursor-pointer transition hover:scale-105 ${goal.image === img.src ? 'border-blue-500' : 'border-transparent'
+                }`}
             >
               <img
                 src={img.src}
