@@ -36,7 +36,7 @@ function App() {
           <Route path="friend-profile" element={<FriendProfilePage />} />
           <Route path="create-community" element={<CreateCommunityPage />} />
           <Route path="goals" element={<GoalsPage />}>
-            <Route path="/goals/:id" element={<GoalsDetailPage />} />
+            <Route path=":id" element={<GoalsDetailPage />} />
         </Route>
 
         </Route>
