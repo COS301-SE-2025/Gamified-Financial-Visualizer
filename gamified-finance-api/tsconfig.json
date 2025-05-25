@@ -8,16 +8,11 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "rootDir": "src",
     "baseUrl": ".", 
-    "paths": {
-      "@shared-services/*": ["backend/services/*"]
-    }
    },
    "include": [
+       "src/**/*.ts",
       "./services/transaction-service/src",
-      "./services/auth-services/src",
-      "./services/goal-service/src",
-      "./services/community-service/src",
-      "../backend/services"
-   ]
+   ],
 }

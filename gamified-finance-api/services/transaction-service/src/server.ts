@@ -1,25 +1,40 @@
-import express, { Request, Response } from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
 import * as dotenv from 'dotenv';
-import transactionRoutes from './routes/transactionRoutes';
-import { logger } from './config/logger';
-
 dotenv.config();
 
-const app = express();
-const PORT = process.env.PORT || 5003;
+import express, { NextFunction, Request, Response } from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import transactionRoutes from './routes/transactionRoutes';
+import budgetRoutes from './routes/budgetRoutes';
+import { logger } from './config/logger';
 
-app.use(cors());
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// Middlewares
+app.use(cors({
+  origin: ['http://localhost:3000'],
+  credentials: true
+}));
 app.use(helmet());
 app.use(express.json());
 
-app.use('/api/transaction', transactionRoutes);
+// Routes
+app.use('/api/transactions', transactionRoutes);
+app.use('/api/budget', budgetRoutes);
 
-app.get('/health', (req: Request, res: Response) => {
+// Health check
+app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'OK' });
 });
 
+// Error handler
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  logger.error('Unhandled error:', err);
+  res.status(500).json({ status: 'error', message: 'Internal server error' });
+});
+
+// Start
 app.listen(PORT, () => {
   logger.info(`Transaction service running on port ${PORT}`);
 });
