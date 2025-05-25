@@ -9,14 +9,15 @@ import {
   getTransactionByCategory,
   getTransactionByAccount,
   deleteTransaction,
-  getBalance
+  getBalance,
+  createBudget
 } from '../../services/transactions.service';
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
 const testId = Math.floor(Math.random() * 1000000);
-const testUserId = 6;
+const testUserId = 1;
 const testAccountId = 1;
 const testCategoryId = Math.floor(Math.random() * 50) + 1;
 
@@ -73,4 +74,19 @@ describe('Transaction Service', () => {
     const result = await getTransaction(transaction.transaction_id);
     assert.strictEqual(result, undefined);
   });
+
+  it('should create a budget with category allocations', async () => {
+  const budgetName = `TestBudget_${Math.floor(Math.random() * 10000)}`;
+  const periodStart = new Date().toISOString().split('T')[0];
+  const periodEnd = new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]; // +30 days
+  const allocations = [
+    { category_id: 1, target_amount: 1000 },
+    { category_id: 2, target_amount: 500 }
+  ];
+
+  const budgetId = await createBudget(testUserId, budgetName, periodStart, periodEnd, allocations);
+  assert.ok(budgetId, 'Budget ID should be returned');
+  assert.strictEqual(typeof budgetId, 'number');
 });
+});
+

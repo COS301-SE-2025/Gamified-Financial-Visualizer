@@ -21,7 +21,7 @@ import {
 
 describe('Goal Service (Jest)', () => {
   let goalId: number;
-  const testUserId = 6;
+  const testUserId = 1;
 
   // Only include fields your service expects; community_id will default to NULL
   const goalData = {
