@@ -15,9 +15,9 @@ const CommunityCard = ({ title, image, badgeIcon }) => {
       <div className="flex items-center space-x-3">
         {/* Group Avatar / Members Indicator */}
         <div className="flex -space-x-2">
-          <div className="w-6 h-6 rounded-full bg-blue-300 border-2 border-white"></div>
+          <div className="w-6 h-6 rounded-full bg-blue-200 border-2 border-white"></div>
           <div className="w-6 h-6 rounded-full bg-blue-400 border-2 border-white"></div>
-          <div className="w-6 h-6 rounded-full bg-blue-500 border-2 border-white"></div>
+          <div className="w-6 h-6 rounded-full bg-blue-600 border-2 border-white"></div>
         </div>
 
         <Link to={`/manage-community/${title.toLowerCase().replace(/\s+/g, '-')}`}>
