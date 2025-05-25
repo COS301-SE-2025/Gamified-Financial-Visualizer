@@ -1,0 +1,23 @@
+// /gamified-finance-api/tsconfig.json
+{
+   "extends": "../tsconfig.json",
+   "compilerOptions": {
+       "target": "es2020",
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".", 
+    "paths": {
+      "@shared-services/*": ["backend/services/*"]
+    }
+   },
+   "include": [
+      "./services/transaction-service/src",
+      "./services/auth-services/src",
+      "./services/goal-service/src",
+      "./services/community-service/src",
+      "../backend/services"
+   ]
+}
