@@ -6,8 +6,8 @@ import badge1 from '../../assets/Images/awardIcon.png';
 import badge2 from '../../assets/Images/CoinStack.png';
 import badge3 from '../../assets/Images/highFiveIcon.png';
 import badge4 from '../../assets/Images/notesIcon.png';
- import {FaAppleAlt, FaBus, FaHeartbeat, FaBook, FaFilm, FaBolt, FaLaptopCode,FaPlane, FaDumbbell, FaShieldAlt, FaHandsHelping, FaCreditCard, FaWifi,FaTv, FaCar, FaUser, FaTshirt, FaCalendarAlt, FaHome, FaMobileAlt}from 'react-icons/fa';
-import {FaUtensils,FaBolt,FaFilm,FaHeartbeat,FaPlane,FaBook,FaLaptop,FaUser,FaHandsHelping,FaTshirt,FaDumbbell,FaMobileAlt,FaWifi,FaTv,FaHome,FaCar,FaShieldAlt,FaCalendarAlt} from 'react-icons/fa';
+
+import {FaUtensils,FaBus,FaBolt,FaFilm,FaHeartbeat,FaPlane,FaBook,FaLaptop,FaUser,FaHandsHelping,FaTshirt,FaDumbbell,FaMobileAlt,FaWifi,FaTv,FaHome,FaCar,FaShieldAlt,FaCalendarAlt} from 'react-icons/fa';
 
 const DashboardPage = () => {
   const [showModal, setShowModal] = useState(false);
@@ -45,28 +45,7 @@ const DashboardPage = () => {
   const categoryIcons = {Food: <FaUtensils />,Transport: <FaBus />,Utilities: <FaBolt />,Entertainment: <FaFilm />,Health: <FaHeartbeat />,Travel: <FaPlane />,Education: <FaBook />,Tech: <FaLaptop />,Personal: <FaUser />,Giving: <FaHandsHelping />,Fashion: <FaTshirt />,
   Fitness: <FaDumbbell />,Gadgets: <FaMobileAlt />,Internet: <FaWifi />,Streaming: <FaTv />,Subscriptions: <FaTv />,Housing: <FaHome />,Car: <FaCar />,Insurance: <FaShieldAlt />,Events: <FaCalendarAlt />};
   
- const categoryIcons2 = {
-  groceries: FaAppleAlt,
-  transport: FaBus,
-  health: FaHeartbeat,
-  education: FaBook,
-  entertainment: FaFilm,
-  utilities: FaBolt,
-  tech: FaLaptopCode,
-  travel: FaPlane,
-  fitness: FaDumbbell,
-  insurance: FaShieldAlt,
-  giving: FaHandsHelping,
-  subscriptions: FaCreditCard,
-  internet: FaWifi,
-  streaming: FaTv,
-  car: FaCar,
-  personal: FaUser,
-  fashion: FaTshirt,
-  events: FaCalendarAlt,
-  housing: FaHome,
-  gadgets: FaMobileAlt,
-};
+  
   const categories = [
     'Food', 'Transport', 'Utilities', 'Entertainment', 'Health', 'Travel',
     'Education', 'Tech', 'Personal', 'Giving', 'Fashion', 'Fitness', 'Gadgets',
