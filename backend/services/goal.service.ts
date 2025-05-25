@@ -1,217 +1,222 @@
 import { Pool } from 'pg';
 import { logger } from '../config/logger';
-import { stat } from 'fs';
 
 const pool = new Pool();
 
-interface Goal {
-   id: number;
-   user_id: number;
-   name: string;
-   target_amount: number;
-   current_amount: number;
-   start_date: string;
-   end_date: string;
-   status: string;
+/**
+ * Represents a financial goal, either personal (user_id) or community (community_id).
+ */
+export interface Goal {
+  goal_id?: number;
+  user_id?: number;
+  community_id?: number;
+  goal_name: string;
+  goal_type: 'savings' | 'debt' | 'investment' | 'spending limit' | 'donation';
+  target_amount: number;
+  current_amount?: number;
+  target_date: string; // YYYY-MM-DD
+  goal_status?: 'in-progress' | 'completed' | 'paused' | 'cancelled' | 'failed';
 }
 
-export async function createGoal(goal: Goal) {
-   const { id, user_id, name, target_amount, current_amount, start_date, end_date, status } = goal;
+/**
+ * Create a new financial goal.
+ * If `user_id` is provided, creates a personal goal; otherwise, community_id must be set.
+ * Returns the newly created goal_id.
+ */
+export async function createGoal(goal: Goal): Promise<number> {
+  const {
+    user_id = null,
+    community_id = null,
+    goal_name,
+    goal_type,
+    target_amount,
+    current_amount = 0,
+    target_date,
+    goal_status = 'in-progress'
+  } = goal;
 
-   const query = `
-     INSERT INTO goals (id, user_id, name, target_amount, current_amount, start_date, end_date, status)
-     VALUES ($1, $2, $3, $4, $5, $6, $7 , $8)
-     ON CONFLICT (id) DO NOTHING;
-   `;
-
-   try {
-      await pool.query(query, [ id, user_id, name, target_amount, current_amount, start_date, end_date, stat ]);
-      logger.info(`[GoalService] Created goal: ${id}`);
-   } catch (error) {
-      logger.error(`[GoalService] Error creating goal ${id}:`, error);
-      throw error;
-   }
+  const sql = `
+    INSERT INTO goals (
+      user_id, community_id, goal_name, goal_type,
+      target_amount, current_amount, target_date, goal_status
+    )
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    RETURNING goal_id;
+  `;
+  try {
+    const res = await pool.query(sql, [
+      user_id,
+      community_id,
+      goal_name,
+      goal_type,
+      target_amount,
+      current_amount,
+      target_date,
+      goal_status
+    ]);
+    const newId = res.rows[0].goal_id;
+    logger.info(`[GoalService] Created goal ID=${newId}`);
+    return newId;
+  } catch (error) {
+    logger.error(`[GoalService] Error creating goal:`, error);
+    throw error;
+  }
 }
 
-// returns a goal by id
-export async function getGoal(id: number) {
-   const query = `
-     SELECT * FROM goals WHERE id = $1;
-   `;
-
-   try {
-      const result = await pool.query(query, [ id ]);
-      return result.rows[ 0 ];
-   } catch (error) {
-      logger.error(`[GoalService] Error fetching goal ${id}:`, error);
-      throw error;
-   }
+/**
+ * Fetch a single goal by its ID.
+ */
+export async function getGoal(goal_id: number): Promise<Goal | null> {
+  const sql = `SELECT * FROM goals WHERE goal_id = $1;`;
+  try {
+    const res = await pool.query(sql, [goal_id]);
+    return res.rows[0] ?? null;
+  } catch (error) {
+    logger.error(`[GoalService] Error fetching goal ${goal_id}:`, error);
+    throw error;
+  }
 }
 
-// returns all goals for a user
-export async function getUserGoals(user_id: number) {
-   const query = `
-     SELECT * FROM goals WHERE user_id = $1;
-   `;
-
-   try {
-      const result = await pool.query(query, [ user_id ]);
-      return result.rows;    
-   } catch (error) {
-      logger.error(`[GoalService] Error fetching goals for user ${user_id}:`, error);
-      throw error;
-   }
+/**
+ * Fetch all personal goals for a user.
+ */
+export async function getUserGoals(user_id: number): Promise<Goal[]> {
+  const sql = `SELECT * FROM goals WHERE user_id = $1 ORDER BY created_at DESC;`;
+  try {
+    const res = await pool.query(sql, [user_id]);
+    return res.rows;
+  } catch (error) {
+    logger.error(`[GoalService] Error fetching goals for user ${user_id}:`, error);
+    throw error;
+  }
 }
 
+/**
+ * Update fields of an existing goal.
+ */
+export async function updateGoal(
+  goal_id: number,
+  updates: Partial<Omit<Goal, 'goal_id' | 'user_id' | 'community_id'>>
+): Promise<void> {
+  const fields: string[] = [];
+  const values: any[] = [];
+  let idx = 1;
 
+  for (const [key, val] of Object.entries(updates)) {
+    fields.push(`${key} = $${idx}`);
+    values.push(val);
+    idx++;
+  }
+  if (!fields.length) return;
 
-// need to think on how to update the goal better
-interface UpdateGoal {
-   name?: string;
-   target_amount?: number;
-   current_amount?: number;
-   start_date?: string;
-   end_date?: string;
-   status?: string;
+  const sql = `
+    UPDATE goals
+    SET ${fields.join(', ')}
+    WHERE goal_id = $${idx};
+  `;
+  values.push(goal_id);
+  try {
+    await pool.query(sql, values);
+    logger.info(`[GoalService] Updated goal ID=${goal_id}`);
+  } catch (error) {
+    logger.error(`[GoalService] Error updating goal ${goal_id}:`, error);
+    throw error;
+  }
 }
 
-
-// need to see 
-// UI speak to them to add amount to the goal to update current amount
-export async function updateGoal(id: number, updates: UpdateGoal) {
-   const { name, target_amount, current_amount, start_date, end_date , status} = updates;
-
-   const query = `
-     UPDATE goals
-     SET name = $1, target_amount = $2, current_amount = $3, start_date = $4, end_date = $5, status = $6
-     WHERE id = $7;
-   `;
-
-   try {
-      await pool.query(query, [ name, target_amount, current_amount, start_date, end_date, status ]);
-      logger.info(`[GoalService] Updated goal: ${id}`);
-   } catch (error) {
-      logger.error(`[GoalService] Error updating goal ${id}:`, error);
-      throw error;
-   }
+/**
+ * Delete a goal (and cascades to goal_progress).
+ */
+export async function deleteGoal(goal_id: number): Promise<void> {
+  const sql = `DELETE FROM goals WHERE goal_id = $1;`;
+  try {
+    await pool.query(sql, [goal_id]);
+    logger.info(`[GoalService] Deleted goal ID=${goal_id}`);
+  } catch (error) {
+    logger.error(`[GoalService] Error deleting goal ${goal_id}:`, error);
+    throw error;
+  }
 }
 
-export async function deleteGoal(id: number) {
-   const query = `
-     DELETE FROM goals WHERE id = $1;
-   `;
-
-   try {
-      await pool.query(query, [ id ]);
-      logger.info(`[GoalService] Deleted goal: ${id}`);
-   } catch (error) {
-      logger.error(`[GoalService] Error deleting goal ${id}:`, error);
-      throw error;
-   }
+/**
+ * Add progress (contribution) to a goal.
+ * Returns the new progress_id.
+ */
+export async function addGoalProgress(
+  goal_id: number,
+  contributor_id: number,
+  amount_added: number
+): Promise<number> {
+  const sql = `
+    INSERT INTO goal_progress (goal_id, contributor_id, amount_added)
+    VALUES ($1, $2, $3)
+    RETURNING progress_id;
+  `;
+  try {
+    const res = await pool.query(sql, [goal_id, contributor_id, amount_added]);
+    const pid = res.rows[0].progress_id;
+    logger.info(`[GoalService] Added progress ID=${pid} to goal ID=${goal_id}`);
+    return pid;
+  } catch (error) {
+    logger.error(`[GoalService] Error adding progress to goal ${goal_id}:`, error);
+    throw error;
+  }
 }
 
-// interface GoalTransaction {
-//    id: number;
-//    user_id: number;
-//    amount: number;
-//    date: string;
-// }
-
-// export async function addTransactionToGoal(goal_id: number, transaction: GoalTransaction) {
-//    const { id, user_id, amount, date } = transaction;
-
-//    const query = `
-//      INSERT INTO goal_transactions (goal_id, id, user_id, amount, date)
-//      VALUES ($1, $2, $3, $4, $5)
-//      ON CONFLICT (id) DO NOTHING;
-//    `;
-
-//    try {
-//       await pool.query(query, [ goal_id, id, user_id, amount, date ]);
-//       logger.info(`[GoalService] Added transaction ${id} to goal ${goal_id}`);
-//    } catch (error) {
-//       logger.error(`[GoalService] Error adding transaction ${id} to goal ${goal_id}:`, error);
-//       throw error;
-//    }
-// }
-
-// if goal is completed, update the goal status and add points to the user
-// add points attribute to users table
-// add user_id to goals table just to make sure we know who created the goal
-export async function completeGoal(goal_id: number) {
-   const query = `
-     UPDATE goals
-     SET status = 'Completed'
-     WHERE id = $1;
-   `;
-
-   const pointsQuery = `
-     UPDATE users
-     SET points = points + 10
-     WHERE id = (SELECT user_id FROM goals WHERE id = $1);`
-
-   try {
-      await pool.query(query, [ goal_id ]);
-      await pool.query(pointsQuery, [ goal_id ]);
-      logger.info(`[GoalService] Completed goal: ${goal_id}`);
-   } catch (error) {
-      logger.error(`[GoalService] Error completing goal ${goal_id}:`, error);
-      throw error;
-   }
+/**
+ * Mark a goal as completed and award points.
+ */
+export async function completeGoal(goal_id: number, points = 10): Promise<void> {
+  const updateGoalSql = `UPDATE goals SET goal_status = 'completed' WHERE goal_id = $1;`;
+  const updatePointsSql = `
+    UPDATE user_points
+    SET total_points = total_points + $2, last_updated = CURRENT_TIMESTAMP
+    WHERE user_id = (SELECT user_id FROM goals WHERE goal_id = $1);
+  `;
+  try {
+    await pool.query(updateGoalSql, [goal_id]);
+    await pool.query(updatePointsSql, [goal_id, points]);
+    logger.info(`[GoalService] Completed goal ID=${goal_id}, awarded ${points} points`);
+  } catch (error) {
+    logger.error(`[GoalService] Error completing goal ${goal_id}:`, error);
+    throw error;
+  }
 }
 
-// also looses points
-export async function reduceProgress(goal_id: number, amount: number) {
-   const query = `
-     UPDATE goals
-     SET current_amount = current_amount - $1
-     WHERE id = $2;
-   `;
-
-   const pointsQuery = `
-     UPDATE users
-     SET points = points - 5
-     WHERE id = (SELECT user_id FROM goals WHERE id = $1);
-   `;
-
-   try {
-      await pool.query(query, [ amount, goal_id ]);
-      await pool.query(pointsQuery, [ goal_id ]);
-      logger.info(`[GoalService] Reduced progress of goal ${goal_id} by ${amount}`);
-   } catch (error) {
-      logger.error(`[GoalService] Error reducing progress of goal ${goal_id}:`, error);
-      throw error;
-   }
+/**
+ * Reduce goal progress and deduct points.
+ */
+export async function reduceGoalProgress(goal_id: number, amount: number, points = 5): Promise<void> {
+  const updateGoalSql = `
+    UPDATE goals
+    SET current_amount = current_amount - $1
+    WHERE goal_id = $2;
+  `;
+  const updatePointsSql = `
+    UPDATE user_points
+    SET total_points = total_points - $2, last_updated = CURRENT_TIMESTAMP
+    WHERE user_id = (SELECT user_id FROM goals WHERE goal_id = $1);
+  `;
+  try {
+    await pool.query(updateGoalSql, [amount, goal_id]);
+    await pool.query(updatePointsSql, [goal_id, points]);
+    logger.info(`[GoalService] Reduced goal ID=${goal_id} by ${amount}, deducted ${points} points`);
+  } catch (error) {
+    logger.error(`[GoalService] Error reducing progress for goal ${goal_id}:`, error);
+    throw error;
+  }
 }
 
-export async function getAllGoals() {
-   const query = `
-     SELECT * FROM goals;
-   `;
-
-   try {
-      const result = await pool.query(query);
-      return result.rows;
-   } catch (error) {
-      logger.error(`[GoalService] Error fetching all goals:`, error);
-      throw error;
-   }
+/**
+ * Fetch all goals (personal and community).
+ */
+export async function getAllGoals(): Promise<Goal[]> {
+  const sql = `SELECT * FROM goals ORDER BY created_at DESC;`;
+  try {
+    const res = await pool.query(sql);
+    return res.rows;
+  } catch (error) {
+    logger.error(`[GoalService] Error fetching all goals:`, error);
+    throw error;
+  }
 }
-
-// get latest goal for a user
-// get user points
-// get goal statistics - progress, status, etc
-
-// get total status for goals - stats
-// need to get badges
-
-
-// needs to add take for achievements
-// mock level stats
-
-// edit + delete goal
-
-// create banner table to store pictures
-
-
-
