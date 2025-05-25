@@ -1,8 +1,7 @@
 {
-  "extends": "../../../../tsconfig.json",
   "compilerOptions": {
     "target": "ES2022",
-    "module": "ESNext",
+    "module": "CommonJS",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
@@ -10,7 +9,7 @@
     "isolatedModules": true,
     "noEmitOnError": false,
     "declaration": true,
-    "rootDir": "./src",
+    "rootDir": "/home/COS301_CAPSTONE/Gamified-Financial-Visualizer",
     "outDir": "./dist",
     "removeComments": true,
     "strict": true,
@@ -21,14 +20,22 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@backend/*": ["../../../../backend/*"]
+    },
+    "types": []
   },
   "include": [
-    "src/**/*.ts",
-    "../../../../backend/services/**/*"
+    "src/**/*.ts"
   ],
   "exclude": [
     "node_modules",
     "dist"
-  ]
+  ],
+  "ts-node": {
+    "esm": false
+  }
 }
