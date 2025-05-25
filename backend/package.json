@@ -1,4 +1,18 @@
 {
+  "type": "module",
+  "scripts": {
+    "test": "jest --config ./jest.config.mjs --detectOpenHandles --runInBand",
+    "test:watch": "jest --config ./jest.config.mjs --watch",
+    "test-daemon": "jest --config jest.daemon.config.js",
+    "daemon": "npx ts-node daemon/daemon.ts"
+  },
+  "dependencies": {
+    "@types/pg": "^8.15.2",
+    "bullmq": "^5.52.3",
+    "pg": "^8.16.0",
+    "redis": "^5.1.0",
+    "winston": "^3.17.0"
+  },
   "devDependencies": {
     "@types/dotenv": "^6.1.1",
     "@types/jest": "^29.5.14",
@@ -10,18 +24,5 @@
     "ts-jest": "^29.3.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
-  },
-  "dependencies": {
-    "@types/pg": "^8.15.2",
-    "bullmq": "^5.52.3",
-    "pg": "^8.16.0",
-    "redis": "^5.1.0",
-    "winston": "^3.17.0"
-  },
-  "scripts": {
-    "test-daemon": "jest --config jest.daemon.config.js",
-    "daemon": "npx ts-node daemon/daemon.ts",
-    "test": "jest"
-  },
-  "type": "module"
+  }
 }
