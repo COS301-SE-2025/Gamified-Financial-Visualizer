@@ -1,13 +1,13 @@
 import { Router, Request, Response } from 'express';
 import {
   createTransaction,
-  createBudgetWithCategory,
-  getTransactionsByUserId,
-  getTransactionSummaryByUserId
+  createBudget,
+  getUserTransactions,
+  getTotalSpentPerCategory
 }
-  from '../services/transactionService';
+  from '../../../../../backend/services/transactions.service';
 import { logger } from '../config/logger';
-
+console.log("Alias working:", createTransaction)
 const router = Router();
 
 /**
@@ -19,12 +19,10 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
     const {
       account_id,
       category_id,
-      custom_category_id,
       transaction_amount,
       transaction_type,
       transaction_date,
       description,
-      note,
       is_recurring
     } = req.body;
 
@@ -38,12 +36,10 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
     const transaction = await createTransaction({
       account_id,
       category_id,
-      custom_category_id,
       transaction_amount,
       transaction_type,
       transaction_date,
       description,
-      note,
       is_recurring
     });
 
@@ -65,14 +61,13 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 router.post('/', async (req: Request, res: Response): Promise<void> => {
   const {
     user_id,
+    budget_name,
     period_start,
     period_end,
-    category_id,
-    custom_category_id,
-    target_amount
+    allocations
   } = req.body;
 
-  if (!user_id || !period_start || !period_end || !target_amount) {
+  if (!user_id || !period_start || !period_end || !Array.isArray(allocations)) { // must be an array
     res.status(400).json({
       status: 'error',
       message: 'user_id, period_start, period_end, and target_amount are required.'
@@ -80,19 +75,18 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    const result = await createBudgetWithCategory({
+    const result = await createBudget(
       user_id,
+      budget_name,
       period_start,
       period_end,
-      category_id,
-      custom_category_id,
-      target_amount
-    });
+      allocations
+    );
 
     res.status(201).json({
       status: 'success',
       message: 'Budget and category allocation created successfully.',
-      data: result
+      data: { budget_id: result }
     });
   } catch (error: any) {
     logger.error('[Routes] Failed to create budget', error);
@@ -108,7 +102,7 @@ router.get('/user/:userId', async (req: Request, res: Response): Promise<void> =
   const { userId } = req.params;
 
   try {
-    const transactions = await getTransactionsByUserId(userId);
+    const transactions = await getUserTransactions(Number(userId));
     res.status(200).json({ status: 'success', data: transactions });
   } catch (error) {
     logger.error('[Routes] Failed to fetch user transactions', error);
@@ -124,7 +118,7 @@ router.get('/user/:userId/summary', async (req: Request, res: Response): Promise
   const { userId } = req.params;
 
   try {
-    const summary = await getTransactionSummaryByUserId(userId);
+    const summary = await getTotalSpentPerCategory(Number(userId));
     res.status(200).json({
       status: 'success',
       data: summary
