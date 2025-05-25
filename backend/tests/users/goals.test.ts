@@ -1,4 +1,8 @@
-// goalService.test.ts
+import { describe, it, after } from 'node:test';
+import assert from 'node:assert/strict';
+import dotenv from 'dotenv';
+dotenv.config({ path: '../.env' });
+import pool from '../../db/index';
 
 import {
    createGoal,
@@ -6,79 +10,86 @@ import {
    getUserGoals,
    updateGoal,
    deleteGoal,
-   addTransactionToGoal,
+   addGoalProgress,
    completeGoal,
-   reduceProgress,
-   getAllGoals,
-} from '../../services//goal.service';
+   reduceGoalProgress,
+   getAllGoals
+} from '../../services/goal.service';
+// tests/goalService.test.ts
 
-import { describe, it } from 'node:test';
-import expect from 'node:test';
 
-describe('Goal Service', () => {
-   const testGoalId = Math.floor(Math.random() * 1000000);
-   const testUserId = testGoalId + 1;
-   const goal = {
-      id: testGoalId,
-      user_id: testUserId,
-      name: 'Test Goal',
-      target_amount: 1000,
-      current_amount: 200,
-      start_date: new Date().toISOString(),
-      end_date: new Date(Date.now() + 86400000).toISOString(),
-      status: 'Active'
-   };
 
-   it('should create a goal', async () => {
-      await createGoal(goal);
-      const result = await getGoal(goal.id);
-      expect(result).toBeDefined();
-      expect(result.name).toBe(goal.name);
-   });
+describe('Goal Service (Jest)', () => {
+  let goalId: number;
+  const testUserId = 6;
 
-   it('should update a goal', async () => {
-      await updateGoal(goal.id, { current_amount: 500 });
-      const updated = await getGoal(goal.id);
-      expect(updated.current_amount).toBe(500);
-   });
+  // Only include fields your service expects; community_id will default to NULL
+  const goalData = {
+    user_id: testUserId,
+    goal_name: 'Test Goal 2',
+    goal_type: 'savings' as const,
+    target_amount: 1000,
+    current_amount: 200,
+    target_date: new Date(Date.now() + 24 * 3600 * 1000)
+                   .toISOString().split('T')[0],
+    goal_status: 'in-progress' as const
+  };
 
-   it('should fetch user goals', async () => {
-      const goals = await getUserGoals(goal.user_id);
-      expect(goals).toEqual(expect.arrayContaining([ expect.objectContaining({ id: goal.id }) ]));
-   });
+  it('creates a goal', async () => {
+    goalId = await createGoal(goalData);
+    expect(typeof goalId).toBe('number');
+    const g = await getGoal(goalId);
+    expect(g).not.toBeNull();
+    expect(g!.goal_name).toBe(goalData.goal_name);
+  });
 
-   it('should add a transaction to goal', async () => {
-      const transaction = {
-         id: testGoalId + 999,
-         user_id: goal.user_id,
-         amount: 150,
-         date: new Date().toISOString()
-      };
-      await addTransactionToGoal(goal.id, transaction);
-      // Optionally validate manually in DB
-   });
+  it('updates the goal', async () => {
+    await updateGoal(goalId, { current_amount: 500 });
+    const updated = await getGoal(goalId);
+    expect(updated).not.toBeNull();
+    expect(updated!.current_amount).toBe(500);
+  });
 
-   it('should complete the goal and update user points', async () => {
-      await updateGoal(goal.id, { current_amount: 1000 });
-      await completeGoal(goal.id);
-      const completed = await getGoal(goal.id);
-      expect(completed.status).toBe('Completed');
-   });
+  it('lists user goals', async () => {
+    const goals = await getUserGoals(testUserId);
+    expect(Array.isArray(goals)).toBe(true);
+    expect(goals.some(g => g.goal_id === goalId)).toBe(true);
+  });
 
-   it('should reduce progress and deduct points', async () => {
-      await reduceProgress(goal.id, 200);
-      const updated = await getGoal(goal.id);
-      expect(updated.current_amount).toBeLessThan(1000);
-   });
+  it('adds progress to the goal', async () => {
+    const progressId = await addGoalProgress(goalId, testUserId, 150);
+    expect(typeof progressId).toBe('number');
+  });
 
-   it('should delete the goal', async () => {
-      await deleteGoal(goal.id);
-      const deleted = await getGoal(goal.id);
-      expect(deleted).toBeUndefined();
-   });
+  it('completes the goal and awards points', async () => {
+    // top up to target
+    await updateGoal(goalId, { current_amount: goalData.target_amount });
+    await completeGoal(goalId);
+    const completed = await getGoal(goalId);
+    expect(completed).not.toBeNull();
+    expect(completed!.goal_status).toBe('completed');
+  });
 
-   it('should return all goals', async () => {
-      const all = await getAllGoals();
-      expect(Array.isArray(all)).toBe(true);
-   });
+  it('reduces progress and deducts points', async () => {
+    await reduceGoalProgress(goalId, 100);
+    const after = await getGoal(goalId);
+    expect(after).not.toBeNull();
+    expect(after!.current_amount).toBeLessThan(goalData.target_amount);
+  });
+
+  it('deletes the goal', async () => {
+    await deleteGoal(goalId);
+    const deleted = await getGoal(goalId);
+    expect(deleted).toBeNull();
+  });
+
+  it('gets all goals', async () => {
+    const all = await getAllGoals();
+    expect(Array.isArray(all)).toBe(true);
+  });
+});
+
+// Clean up the Postgres pool so Jest can exit cleanly
+afterAll(async () => {
+  await pool.end();
 });
