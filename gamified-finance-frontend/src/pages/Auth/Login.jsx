@@ -23,6 +23,7 @@ const Login = () => {
       const result = await res.json();
       if (res.ok) {
         console.log('Login successful:', result);
+        localStorage.setItem('user', JSON.stringify(result.data.user));
         navigate('/home');
       } else {
         setError(result.message || 'Login failed');
