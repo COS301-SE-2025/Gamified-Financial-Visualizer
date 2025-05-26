@@ -1,7 +1,7 @@
 // services/transaction.service.ts
 //import { Pool } from 'pg';
 import { logger } from '../config/logger';
-import pool from '../db/index';
+import pool from '../config/db';
 
 export interface Transaction {
   transaction_id?: number;  // optional, DB will AUTO_INCREMENT
