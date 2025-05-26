@@ -149,3 +149,5 @@
     at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
 [2025-05-27 00:51:02] info: Transaction service running on port 5000
 [2025-05-27 00:51:08] info: [GoalService] Created goal ID=18
+[2025-05-27 01:37:13] info: Transaction service running on port 5000
+[2025-05-27 01:37:40] info: [GoalService] Created goal ID=19
