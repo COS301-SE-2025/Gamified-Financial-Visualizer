@@ -77,160 +77,162 @@ const investments = [
 ];
 
 const Dashboard = () => {
+  const user = JSON.parse(localStorage.getItem('user'));
   return (
     <div className="p-6 space-y-6">
       {/* Welcome Banner */}
+      
       <div className="rounded-lg p-6 text-white bg-gradient-to-r from-sky-300 via-yellow-300 to-red-400 flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Welcome back Lebo</h1>
+        <h1 className="text-2xl font-bold">Welcome back {user ? user.username : "Guest"}</h1>
       </div>
-
+      
       {/* Top Row Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Expense vs Income */}
         <div className="bg-white p-4 rounded-lg shadow border">
-        <h2 className="text-xl font-semibold mb-2">Expense vs Income</h2>
-        <div className="border-t-4 border-green-600 mb-4" />
-        <ExpenseIncomeChart />
+          <h2 className="text-xl font-semibold mb-2">Expense vs Income</h2>
+          <div className="border-t-4 border-green-600 mb-4" />
+          <ExpenseIncomeChart />
         </div>
 
         {/* Investments */}
-            <div className="bg-white rounded-lg shadow border relative overflow-hidden">
-             <h2 className="text-xl font-semibold p-4 pb-2">Investments</h2>
-               <div className="border-t-4 border-orange-400 mx-4 mb-4" />
-                {/* Investment Entries */}
-                <div className="space-y-4 px-4 pb-6">
-                    {investments.map((inv, idx) => (
-                    <div key={idx} className="flex justify-between items-start border-b last:border-b-0 pb-4">
-                        <div className="flex items-start gap-3">
-                        {/* Icon */}
-                        <div className="w-10 h-10 rounded-full bg-white border shadow-inner flex items-center justify-center text-xl">
-                            {inv.icon}
-                        </div>
+        <div className="bg-white rounded-lg shadow border relative overflow-hidden">
+          <h2 className="text-xl font-semibold p-4 pb-2">Investments</h2>
+          <div className="border-t-4 border-orange-400 mx-4 mb-4" />
+          {/* Investment Entries */}
+          <div className="space-y-4 px-4 pb-6">
+            {investments.map((inv, idx) => (
+              <div key={idx} className="flex justify-between items-start border-b last:border-b-0 pb-4">
+                <div className="flex items-start gap-3">
+                  {/* Icon */}
+                  <div className="w-10 h-10 rounded-full bg-white border shadow-inner flex items-center justify-center text-xl">
+                    {inv.icon}
+                  </div>
 
-                        {/* Labels */}
-                        <div>
-                            <p className="font-bold text-sm">{inv.account}</p>
-                            <p className="text-xs text-gray-500">{inv.bank}</p>
-                        </div>
-                        </div>
+                  {/* Labels */}
+                  <div>
+                    <p className="font-bold text-sm">{inv.account}</p>
+                    <p className="text-xs text-gray-500">{inv.bank}</p>
+                  </div>
+                </div>
 
-                        {/* Amount */}
-                        <div className="text-sm font-bold pt-1">{inv.amount}</div>
+                {/* Amount */}
+                <div className="text-sm font-bold pt-1">{inv.amount}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+
+        {/* Expense Categories */}
+        <div className="bg-white p-4 rounded-lg shadow border">
+          <h2 className="text-xl font-semibold mb-4 border-b-4 border-blue-400 pb-2">Expense Categories</h2>
+          <div className="space-y-6">
+            {expenseCategories.map((cat, idx) => {
+              const percent = (cat.used / cat.limit) * 100;
+              const colorMap = {
+                Groceries: 'bg-blue-300',
+                Transport: 'bg-pink-300',
+                Dining: 'bg-orange-300',
+                Internet: 'bg-green-300',
+                Health: 'bg-red-300',
+              };
+              const progressColor = colorMap[cat.name] || 'bg-gray-400';
+
+              return (
+                <div key={idx} className="flex items-start gap-4">
+                  {/* Icon */}
+                  <div className="text-3xl w-10">{cat.icon}</div>
+
+                  {/* Label + Progress */}
+                  <div className="flex-1">
+                    <p className="text-md font-semibold">{cat.name}</p>
+                    <div className="w-full bg-gray-200 h-4 rounded-full overflow-hidden mt-1">
+                      <div
+                        className={`${progressColor} h-4 rounded-full`}
+                        style={{ width: `${percent}%` }}
+                      />
                     </div>
-                    ))}
+                    <p className="text-sm text-gray-500 mt-1">{cat.used}/{cat.limit}</p>
+                  </div>
                 </div>
-                </div>
-
-
-                {/* Expense Categories */}
-                <div className="bg-white p-4 rounded-lg shadow border">
-                    <h2 className="text-xl font-semibold mb-4 border-b-4 border-blue-400 pb-2">Expense Categories</h2>
-                    <div className="space-y-6">
-                        {expenseCategories.map((cat, idx) => {
-                        const percent = (cat.used / cat.limit) * 100;
-                        const colorMap = {
-                            Groceries: 'bg-blue-300',
-                            Transport: 'bg-pink-300',
-                            Dining: 'bg-orange-300',
-                            Internet: 'bg-green-300',
-                            Health: 'bg-red-300',
-                        };
-                        const progressColor = colorMap[cat.name] || 'bg-gray-400';
-
-                        return (
-                            <div key={idx} className="flex items-start gap-4">
-                            {/* Icon */}
-                            <div className="text-3xl w-10">{cat.icon}</div>
-
-                            {/* Label + Progress */}
-                            <div className="flex-1">
-                                <p className="text-md font-semibold">{cat.name}</p>
-                                <div className="w-full bg-gray-200 h-4 rounded-full overflow-hidden mt-1">
-                                <div
-                                    className={`${progressColor} h-4 rounded-full`}
-                                    style={{ width: `${percent}%` }}
-                                />
-                                </div>
-                                <p className="text-sm text-gray-500 mt-1">{cat.used}/{cat.limit}</p>
-                            </div>
-                            </div>
-                        );
-                        })}
-                 </div>
-            </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Bottom Row Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Upcoming Expenses */}
-       <div className="bg-white rounded-lg shadow border overflow-hidden">
-            <div className="bg-yellow-400 p-4 text-lg font-semibold text-white">Upcoming Expenses</div>
-            <div className="divide-y">
-                {upcomingExpenses.map((expense, idx) => {
-                  const logo = logoMap[expense.name.toLowerCase()];
-                  return (
-                    <div key={idx} className="flex justify-between items-center px-4 py-4">
-                      {/* Left Section */}
-                      <div className="flex items-center gap-4">
-                        {/* Icon or logo */}
-                        {logo ? (
-                          <img 
-                            src={logo}
-                            alt={expense.name}
-                            className="w-10 h-10 object-contain"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full border shadow-inner bg-white" />
-                        )}
-                        {/* Name + Date */}
-                        <div>
-                          <p className="text-sm font-bold uppercase tracking-wide">{expense.name}</p>
-                          <p className="text-xs text-gray-500">{expense.date}</p>
-                        </div>
-                      </div>
-                      {/* Amount */}
-                      <div className="text-sm font-bold">{expense.amount}</div>
+        <div className="bg-white rounded-lg shadow border overflow-hidden">
+          <div className="bg-yellow-400 p-4 text-lg font-semibold text-white">Upcoming Expenses</div>
+          <div className="divide-y">
+            {upcomingExpenses.map((expense, idx) => {
+              const logo = logoMap[expense.name.toLowerCase()];
+              return (
+                <div key={idx} className="flex justify-between items-center px-4 py-4">
+                  {/* Left Section */}
+                  <div className="flex items-center gap-4">
+                    {/* Icon or logo */}
+                    {logo ? (
+                      <img
+                        src={logo}
+                        alt={expense.name}
+                        className="w-10 h-10 object-contain"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full border shadow-inner bg-white" />
+                    )}
+                    {/* Name + Date */}
+                    <div>
+                      <p className="text-sm font-bold uppercase tracking-wide">{expense.name}</p>
+                      <p className="text-xs text-gray-500">{expense.date}</p>
                     </div>
-                  );
-                })}
+                  </div>
+                  {/* Amount */}
+                  <div className="text-sm font-bold">{expense.amount}</div>
+                </div>
+              );
+            })}
 
-            </div>
-       </div>
+          </div>
+        </div>
 
         {/* Goal Tracker */}
         <div className="bg-white rounded-lg shadow border overflow-hidden">
-        <div className="bg-green-400 p-4 text-lg font-semibold text-white">Goal Tracker</div>
-        <div className="divide-y">
+          <div className="bg-green-400 p-4 text-lg font-semibold text-white">Goal Tracker</div>
+          <div className="divide-y">
             {goalTracker.map((goal, idx) => {
-            const colorMap = {
+              const colorMap = {
                 "New House": "bg-red-300",
                 "New Car": "bg-orange-300",
                 "Emergency Fund": "bg-green-300",
                 "Vacation": "bg-sky-300",
                 "Home Office Setup": "bg-purple-300",
-            };
-            const progressColor = colorMap[goal.name] || 'bg-lime-400';
+              };
+              const progressColor = colorMap[goal.name] || 'bg-lime-400';
 
-            return (
+              return (
                 <div key={idx} className="flex items-start gap-4 px-4 py-4">
-                {/* Icon */}
-                <div className="text-3xl">{goal.icon}</div>
+                  {/* Icon */}
+                  <div className="text-3xl">{goal.icon}</div>
 
-                {/* Text + Progress */}
-                <div className="flex-1 space-y-1">
+                  {/* Text + Progress */}
+                  <div className="flex-1 space-y-1">
                     <div className="flex justify-between items-center">
-                    <p className="font-bold uppercase text-sm">{goal.name}</p>
-                    <span className="text-sm">{goal.progress}% saved</span>
+                      <p className="font-bold uppercase text-sm">{goal.name}</p>
+                      <span className="text-sm">{goal.progress}% saved</span>
                     </div>
                     <div className="w-full bg-gray-200 h-4 rounded-full overflow-hidden">
-                    <div
+                      <div
                         className={`${progressColor} h-4 rounded-full`}
                         style={{ width: `${goal.progress}%` }}
-                    />
+                      />
                     </div>
+                  </div>
                 </div>
-                </div>
-            );
+              );
             })}
 
             {/* View Button */}
@@ -239,7 +241,7 @@ const Dashboard = () => {
                 View
             </button>
             </div> */}
-        </div>
+          </div>
         </div>
       </div>
     </div>
