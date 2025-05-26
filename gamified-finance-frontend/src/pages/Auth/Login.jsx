@@ -20,11 +20,11 @@ const Login = () => {
         </div>
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium">Username</label>
+            <label className="block text-md font-medium">Username</label>
             <input type="text" className="input" />
           </div>
           <div>
-            <label className="block text-sm font-medium">Password</label>
+            <label className="block text-md font-medium">Password</label>
             <input type="password" className="input" />
           </div>
           <div className="flex items-center space-x-2">
