@@ -60,8 +60,10 @@ const GoalCard = () => {
             <defs>
               <linearGradient id="progressGradient" x1="1" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#facc15" />
-                <stop offset="100%" stopColor="#fb923c" />
+                <stop offset="50%" stopColor="#fb923c" />
+                <stop offset="100%" stopColor="#f97316" />
               </linearGradient>
+
             </defs>
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
