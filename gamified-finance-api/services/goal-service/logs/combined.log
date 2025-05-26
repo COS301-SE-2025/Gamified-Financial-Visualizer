@@ -1,0 +1,153 @@
+[2025-05-26 23:54:21] info: Transaction service running on port 5000
+[2025-05-26 23:54:31] info: Transaction service running on port 5000
+[2025-05-26 23:55:31] info: Transaction service running on port 5000
+[2025-05-26 23:55:41] info: Transaction service running on port 5000
+[2025-05-26 23:58:47] info: Transaction service running on port 5000
+[2025-05-26 23:58:48] info: Transaction service running on port 5000
+[2025-05-26 23:58:56] info: Transaction service running on port 5000
+[2025-05-26 23:58:58] info: Transaction service running on port 5000
+[2025-05-26 23:59:01] info: Transaction service running on port 5000
+[2025-05-26 23:59:04] info: Transaction service running on port 5000
+[2025-05-26 23:59:09] info: Transaction service running on port 5000
+[2025-05-26 23:59:12] info: Transaction service running on port 5000
+[2025-05-26 23:59:14] info: Transaction service running on port 5000
+[2025-05-26 23:59:17] info: Transaction service running on port 5000
+[2025-05-26 23:59:23] info: Transaction service running on port 5000
+[2025-05-26 23:59:30] info: Transaction service running on port 5000
+[2025-05-26 23:59:34] info: Transaction service running on port 5000
+[2025-05-26 23:59:38] info: Transaction service running on port 5000
+[2025-05-26 23:59:43] info: Transaction service running on port 5000
+[2025-05-26 23:59:47] info: Transaction service running on port 5000
+[2025-05-26 23:59:49] info: Transaction service running on port 5000
+[2025-05-26 23:59:57] info: Transaction service running on port 5000
+[2025-05-26 23:59:59] info: Transaction service running on port 5000
+[2025-05-27 00:00:02] info: Transaction service running on port 5000
+[2025-05-27 00:00:06] info: Transaction service running on port 5000
+[2025-05-27 00:00:08] info: Transaction service running on port 5000
+[2025-05-27 00:00:09] info: Transaction service running on port 5000
+[2025-05-27 00:00:31] info: Transaction service running on port 5000
+[2025-05-27 00:05:41] info: Transaction service running on port 5000
+[2025-05-27 00:05:57] info: Transaction service running on port 5000
+[2025-05-27 00:05:59] info: Transaction service running on port 5000
+[2025-05-27 00:06:01] info: Transaction service running on port 5000
+[2025-05-27 00:06:04] info: Transaction service running on port 5000
+[2025-05-27 00:06:07] info: Transaction service running on port 5000
+[2025-05-27 00:06:10] info: Transaction service running on port 5000
+[2025-05-27 00:06:12] info: Transaction service running on port 5000
+[2025-05-27 00:10:18] info: Transaction service running on port 5000
+[2025-05-27 00:10:36] info: Transaction service running on port 5000
+[2025-05-27 00:11:38] info: Transaction service running on port 5000
+[2025-05-27 00:22:15] info: Transaction service running on port 5000
+[2025-05-27 00:37:41] info: Transaction service running on port 5000
+[2025-05-27 00:42:09] info: Transaction service running on port 5000
+[2025-05-27 00:42:18] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:42:18] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:43:03] info: Transaction service running on port 5000
+[2025-05-27 00:43:21] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:43:21] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:44:35] info: Transaction service running on port 5000
+[2025-05-27 00:44:38] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:44:38] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:44:58] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:44:58] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:46:57] info: Transaction service running on port 5000
+[2025-05-27 00:46:58] info: Transaction service running on port 5000
+[2025-05-27 00:47:08] info: Transaction service running on port 5000
+[2025-05-27 00:47:11] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:47:11] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:48:05] info: Transaction service running on port 5000
+[2025-05-27 00:48:10] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:48:10] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:48:53] info: Transaction service running on port 5000
+[2025-05-27 00:48:56] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:48:56] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:49:00] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:49:00] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:49:17] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:49:17] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:49:32] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:49:32] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:51:02] info: Transaction service running on port 5000
+[2025-05-27 00:51:08] info: [GoalService] Created goal ID=18
+[2025-05-27 01:37:13] info: Transaction service running on port 5000
+[2025-05-27 01:37:40] info: [GoalService] Created goal ID=19

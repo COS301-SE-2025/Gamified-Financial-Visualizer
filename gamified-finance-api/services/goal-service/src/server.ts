@@ -1,25 +1,40 @@
-import express, { Request, Response } from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import dotenv from 'dotenv';
-import goalRoutes from './routes/goalRoutes.js'; // ✅ Correct name + extension
-import { logger } from './config/logger.js';
-
+import * as dotenv from 'dotenv';
 dotenv.config();
 
-const app = express();
-const PORT = process.env.PORT || 5002;
+import express, { NextFunction, Request, Response } from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import goalRoutes from './routes/goalRoutes';
+//import budgetRoutes from './routes/budgetRoutes';
+import { logger } from './config/logger';
 
-app.use(cors());
+const app = express();
+const PORT =  5000;
+
+// Middlewares
+app.use(cors({
+  origin: ['http://localhost:3000'],
+  credentials: true
+}));
 app.use(helmet());
 app.use(express.json());
 
-app.use('/api/goal', goalRoutes); // ✅ Proper path and variable
+// Routes
+app.use('/api/goal', goalRoutes);
+//app.use('/api/budget', budgetRoutes);
 
-app.get('/health', (req: Request, res: Response) => {
+// Health check
+app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'OK' });
 });
 
-app.listen(PORT, () => {
-  logger.info(`Goal service running on port ${PORT}`);
+// Error handler
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  logger.error('Unhandled error:', err);
+  res.status(500).json({ status: 'error', message: 'Internal server error' });
+});
+
+// Start
+app.listen(PORT,'0.0.0.0', () => {
+  logger.info(`Transaction service running on port ${PORT}`);
 });

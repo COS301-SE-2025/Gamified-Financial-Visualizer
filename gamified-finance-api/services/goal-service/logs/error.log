@@ -1,0 +1,100 @@
+[2025-05-27 00:42:18] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:42:18] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:43:21] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:43:21] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:44:38] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:44:38] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:44:58] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:44:58] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:47:11] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:47:11] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:48:10] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:48:10] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:48:56] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:48:56] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:49:00] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:49:00] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:49:17] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:49:17] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:49:32] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 00:49:32] error: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createGoal (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/mkamangu/COS301/Capstone/GitHub/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
