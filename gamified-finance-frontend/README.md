@@ -1,46 +1,130 @@
-# Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# 📘 Gamified Finance Frontend (React + TailwindCSS)
 
-## Available Scripts
+Welcome to the frontend of the **Gamified Financial Visualizer**. This is a modern React application styled with Tailwind CSS, focused on visualizing financial goals, transactions, learnign financial management and community engagement through a gamified experience.
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## 🚀 Tech Stack
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+* **React** (v18+)
+* **Tailwind CSS** (v3+)
+* **JavaScript (ES6+)**
+* **React Router DOM** for routing
+* **Jest + React Testing Library** for testing
+* **Babel** for converting javascript extention to typescript
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+---
 
-### `npm test`
+## 📁 Project Structure
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```
+src/
+├── assets/             # Static images and icons
+├── components/         # Reusable UI components
+├── pages/              # Top-level routes and views
+│   └── Auth/
+│   └── CommunityPage/
+│   └── Dahsboard/
+│   └── GoalsPage/
+│   └── Transactions/
+├── layouts/            # Common page layouts e.g NavBar for all pages
+├── utils/              # Utility functions and API calls
+├── App.jsx             # App root with router setup
+└── index.js            # Entry point
+```
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🧪 Running the Project
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 1. Install dependencies
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+npm install
+```
 
-### `npm run eject`
+### 2. Start development server
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+```bash
+npm start
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+This will run the app on [http://localhost:3000](http://localhost:3000).
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### 3. Build for production
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+```bash
+npm run build
+npm install framer-motion recharts
+npm install framer-motion
+```
 
-## Learn More
+### 4. Test dependencies
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```bash
+npm install --save-dev jest @types/jest ts-jest babel-jest   @testing-library/react @testing-library/jest-dom @testing-library/user-event
+npm install --save-dev jest-environment-jsdom
+npm install --save-dev babel-jest @babel/preset-env @babel/preset-react
+```
+### 5. Run tests
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```bash
+npm test
+```
+---
+
+## 🌈 Tailwind Setup
+
+Tailwind is configured using `tailwind.config.js`. Classes are applied directly within JSX using `className`.
+
+To modify Tailwind config:
+
+```bash
+tailwind.config.js
+```
+
+---
+
+## 🔌 API Integration
+
+All API calls should be made through a helper in `src/utils/api.js`. Example:
+
+```js
+import { get } from '../utils/api';
+
+useEffect(() => {
+  get('/api/goals/my').then(setGoals);
+}, []);
+```
+
+---
+
+## 👥 Contributions
+
+Feel free to open issues or submit PRs. Make sure to lint and test before submitting:
+
+```bash
+npm run lint
+npm test
+```
+
+---
+## Github commands
+
+Use these commands to create new branches:
+
+```bash
+git fetch
+git checkout frontend
+git pull origin frontend
+git checkout -b new-branch-name
+```
+
+---
+
+## 🧠 Maintainers
+
+Built and maintained by the **Gamified Finance Team**.
+
+---
