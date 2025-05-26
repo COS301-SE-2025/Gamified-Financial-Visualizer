@@ -2,40 +2,49 @@ import React, { useState } from 'react';
 import AddTransactionModal from '../../components/AddTransactionModal';
 import SetBudgetModal from '../../components/SetBudgetModal';
 import EditTransactionModal from '../../components/EditTransactionModal';
+import badge1 from '../../assets/Images/awardIcon.png';
+import badge2 from '../../assets/Images/CoinStack.png';
+import badge3 from '../../assets/Images/highFiveIcon.png';
+import badge4 from '../../assets/Images/notesIcon.png';
 
-
+import {FaUtensils,FaBus,FaBolt,FaFilm,FaHeartbeat,FaPlane,FaBook,FaLaptop,FaUser,FaHandsHelping,FaTshirt,FaDumbbell,FaMobileAlt,FaWifi,FaTv,FaHome,FaCar,FaShieldAlt,FaCalendarAlt} from 'react-icons/fa';
 const DashboardPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState('All Transactions');
   const [showSetBudget, setShowSetBudget] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
-
+  
+ const badgeImages = [badge1, badge2, badge3, badge4];
 
  const [transactions, setTransactions] = useState([
-    { name: 'Groceries - Checkers', category: 'Food', amount: 'R320', date: '2025-05-20', status: 'pending' },
-    { name: 'Uber Ride', category: 'Transport', amount: 'R120', date: '2025-05-21', status: 'pending' },
-    { name: 'Electricity Bill', category: 'Utilities', amount: 'R450', date: '2025-05-18', status: 'pending' },
-    { name: 'Netflix', category: 'Entertainment', amount: 'R199', date: '2025-05-15', status: 'pending' },
-    { name: 'Doctor Visit', category: 'Health', amount: 'R600', date: '2025-05-22', status: 'pending' },
-    { name: 'Flight Ticket', category: 'Travel', amount: 'R2400', date: '2025-05-10', status: 'pending' },
-    { name: 'KFC Dinner', category: 'Food', amount: 'R270', date: '2025-05-17', status: 'pending' },
-    { name: 'Gym Membership', category: 'Health', amount: 'R300', date: '2025-05-01', status: 'pending' },
-    { name: 'Petrol', category: 'Transport', amount: 'R800', date: '2025-05-19', status: 'pending' },
-    { name: 'Internet Bill', category: 'Utilities', amount: 'R699', date: '2025-05-16', status: 'pending' },
-    { name: 'School Books', category: 'Education', amount: 'R1500', date: '2025-05-12', status: 'pending' },
-    { name: 'Laptop Repair', category: 'Tech', amount: 'R950', date: '2025-05-08', status: 'pending' },
-    { name: 'Concert Tickets', category: 'Entertainment', amount: 'R1100', date: '2025-05-09', status: 'pending' },
-    { name: 'Taxi', category: 'Transport', amount: 'R60', date: '2025-05-22', status: 'pending' },
-    { name: 'Toiletries', category: 'Personal', amount: 'R180', date: '2025-05-18', status: 'pending' },
-    { name: 'MTN Data', category: 'Utilities', amount: 'R99', date: '2025-05-13', status: 'pending' },
-    { name: 'Pizza Night', category: 'Food', amount: 'R290', date: '2025-05-14', status: 'pending' },
-    { name: 'Birthday Gift', category: 'Personal', amount: 'R500', date: '2025-05-11', status: 'pending' },
-    { name: 'Train Pass', category: 'Transport', amount: 'R350', date: '2025-05-04', status: 'pending' },
-    { name: 'Donation', category: 'Giving', amount: 'R1000', date: '2025-05-03', status: 'pending' },
-    { name: 'Takealot Order', category: 'Tech', amount: 'R2200', date: '2025-05-07', status: 'pending' },
-  ]);
+  { name: 'Groceries - Checkers', category: 'Food', amount: 'R320', date: '2025-05-20', account: 'Capitec Main' },
+  { name: 'Uber Ride', category: 'Transport', amount: 'R120', date: '2025-05-21', account: 'FNB Everyday' },
+  { name: 'Electricity Bill', category: 'Utilities', amount: 'R450', date: '2025-05-18', account: 'TymeBank GoalSave' },
+  { name: 'Netflix', category: 'Entertainment', amount: 'R199', date: '2025-05-15', account: 'Capitec Main' },
+  { name: 'Doctor Visit', category: 'Health', amount: 'R600', date: '2025-05-22', account: 'Discovery Card' },
+  { name: 'Flight Ticket', category: 'Travel', amount: 'R2400', date: '2025-05-10', account: 'FNB Platinum' },
+  { name: 'KFC Dinner', category: 'Food', amount: 'R270', date: '2025-05-17', account: 'Nedbank JustInvest' },
+  { name: 'Gym Membership', category: 'Health', amount: 'R300', date: '2025-05-01', account: 'Capitec Main' },
+  { name: 'Petrol', category: 'Transport', amount: 'R800', date: '2025-05-19', account: 'Absa Transact' },
+  { name: 'Internet Bill', category: 'Utilities', amount: 'R699', date: '2025-05-16', account: 'MTN Wallet' },
+  { name: 'School Books', category: 'Education', amount: 'R1500', date: '2025-05-12', account: 'TymeBank GoalSave' },
+  { name: 'Laptop Repair', category: 'Tech', amount: 'R950', date: '2025-05-08', account: 'Capitec Main' },
+  { name: 'Concert Tickets', category: 'Entertainment', amount: 'R1100', date: '2025-05-09', account: 'Standard Bank Elite' },
+  { name: 'Taxi', category: 'Transport', amount: 'R60', date: '2025-05-22', account: 'FNB Everyday' },
+  { name: 'Toiletries', category: 'Personal', amount: 'R180', date: '2025-05-18', account: 'Capitec Main' },
+  { name: 'MTN Data', category: 'Utilities', amount: 'R99', date: '2025-05-13', account: 'MTN Wallet' },
+  { name: 'Pizza Night', category: 'Food', amount: 'R290', date: '2025-05-14', account: 'Nedbank JustInvest' },
+  { name: 'Birthday Gift', category: 'Personal', amount: 'R500', date: '2025-05-11', account: 'TymeBank GoalSave' },
+  { name: 'Train Pass', category: 'Transport', amount: 'R350', date: '2025-05-04', account: 'Absa Transact' },
+  { name: 'Donation', category: 'Giving', amount: 'R1000', date: '2025-05-03', account: 'Capitec Main' },
+  { name: 'Takealot Order', category: 'Tech', amount: 'R2200', date: '2025-05-07', account: 'Standard Bank Elite' },
+]);
 
+  const categoryIcons = {Food: <FaUtensils />,Transport: <FaBus />,Utilities: <FaBolt />,Entertainment: <FaFilm />,Health: <FaHeartbeat />,Travel: <FaPlane />,Education: <FaBook />,Tech: <FaLaptop />,Personal: <FaUser />,Giving: <FaHandsHelping />,Fashion: <FaTshirt />,
+  Fitness: <FaDumbbell />,Gadgets: <FaMobileAlt />,Internet: <FaWifi />,Streaming: <FaTv />,Subscriptions: <FaTv />,Housing: <FaHome />,Car: <FaCar />,Insurance: <FaShieldAlt />,Events: <FaCalendarAlt />};
+  
+  
   const categories = [
     'Food', 'Transport', 'Utilities', 'Entertainment', 'Health', 'Travel',
     'Education', 'Tech', 'Personal', 'Giving', 'Fashion', 'Fitness', 'Gadgets',
@@ -75,7 +84,7 @@ const DashboardPage = () => {
               <th className="p-2">Category</th>
               <th className="p-2">Amount</th>
               <th className="p-2">Date</th>
-              <th className="p-2">Status</th>
+              <th className="p-2">Account</th>
               <th className="p-2">Actions</th>
             </tr>
           </thead>
@@ -86,7 +95,7 @@ const DashboardPage = () => {
                 <td className="p-2">{txn.category}</td>
                 <td className="p-2">{txn.amount}</td>
                 <td className="p-2">{txn.date}</td>
-                <td className="p-2 text-green-500">{txn.status}</td>
+                <td className="p-2 ">{txn.account}</td>
                <td className="p-2 space-x-2">
                 <span
                   className="inline-block border border-red-300 text-red-500 text-xs px-2 py-1 rounded-md cursor-pointer hover:bg-red-50"
@@ -177,7 +186,6 @@ const DashboardPage = () => {
         </div>
       );
     }
-
     return null;
   };
 
@@ -222,34 +230,28 @@ const DashboardPage = () => {
                 </div>
               </div>
 
-
             {/* Badges */}
             <div className="bg-cyan-50 rounded-xl p-4 shadow border">
-              <h2 className="text-md font-semibold text-red-400 mb-2 border-b border-red-200">Badges</h2>
+              <h2 className="text-md font-semibold text-red-400 mb-2 border-b-4 border-red-200">Badges</h2>
               <div className="flex justify-around my-2">
-                {[1, 2, 3, 4].map((num) => (
+                {badgeImages.map((src, index) => (
                   <img
-                    key={num}
-                    src={`/badges/badge${num}.png`}
-                    alt={`Badge ${num}`}
-                    className="w-10 h-10 rounded-full"
+                    key={index}
+                    src={src}
+                    alt={`Badge ${index + 1}`}
+                    className="w-20 h-20 rounded-full"
                   />
                 ))}
               </div>
-              <img
-                src="/assets/pixel-soil.png"
-                alt="pixel soil"
-                className="w-full h-5 object-cover mt-2 rounded-b-xl"
-              />
             </div>
 
             
             {/* Category Summary */}
             <div className="bg-white rounded-xl p-4 shadow border">
-              <h2 className="text-md font-semibold text-gray-700 mb-2 border-b-2 border-orange-400 pb-1">
+              <h2 className="text-md font-semibold text-gray-700 mb-2 border-b-4 border-orange-400 pb-1">
                 Category Summary
               </h2>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-4 mt-2">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-4 mt-3">
                 {Object.entries(
                   transactions.reduce((acc, curr) => {
                     const amount = parseFloat(curr.amount.replace('R', ''));
@@ -259,13 +261,9 @@ const DashboardPage = () => {
                   }, {})
                 ).map(([cat, total], i) => (
                   <div key={i} className="flex flex-col items-start space-y-1">
-                    <div className="flex items-center gap-2">
-                      <img
-                        src={`/icons/${cat.toLowerCase()}.png`}
-                        alt={cat}
-                        className="w-6 h-6"
-                      />
-                      <span className="text-sm font-medium text-gray-700">{cat}</span>
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <span className="text-lg">{categoryIcons[cat] || <FaUser />}</span>
+                      <span className="text-sm font-medium">{cat}</span>
                     </div>
                     <span className="text-sm text-orange-600 font-semibold ml-8">
                       R{total.toFixed(2)}
@@ -275,7 +273,6 @@ const DashboardPage = () => {
               </div>
             </div>
           </aside>
-
 
         {/* Main Content */}
         <main className="w-3/4">
@@ -309,7 +306,6 @@ const DashboardPage = () => {
               </button>
             ))}
           </div>
-
           {renderMainContent()}
         </main>
       </div>
@@ -328,7 +324,7 @@ const DashboardPage = () => {
             category: updated.category,
             amount: updated.amount,
             date: updated.date,
-            status: updated.status,
+            account: updated.account,
           };
           setTransactions(updatedList);
         }}

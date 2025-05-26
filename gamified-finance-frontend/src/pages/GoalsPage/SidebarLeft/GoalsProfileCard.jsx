@@ -3,8 +3,9 @@ import React from 'react';
 import Avatar from '../../../assets/Images/pixelWindow.gif';
 
 const GoalsProfileCard = () => {
+  const user1 = JSON.parse(localStorage.getItem('user'));
   const user = {
-    name: 'Lebo',
+    name: user1 ? user1.username : "Guest",
     avatar: Avatar,
     level: 3,
     xp: 5200,

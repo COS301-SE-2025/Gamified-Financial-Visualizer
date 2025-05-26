@@ -95,7 +95,7 @@ const register = async (req: Request, res: Response): Promise<void> => {
 };
 
 const loginValidation = [
-  body('email').isEmail().withMessage('Valid email is required'),
+  body('username').notEmpty().withMessage('Username is required'),
   body('password').notEmpty().withMessage('Password is required'),
 ];
 
@@ -107,22 +107,21 @@ const login = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const { email, password } = req.body;
+  const { username, password } = req.body;
 
   try {
-    const user = await userService.getUserByEmail(email);
+    const user = await userService.getUserByUsername(username);
     if (!user) {
-      res.status(401).json({ status: 'error', message: 'Invalid email or password' });
+      res.status(401).json({ status: 'error', message: 'Invalid username' });
       return;
     }
-    const valid = true;
-    /*
-    const valid = await argon2.verify(user.password_hash, password);
+
+    const valid = await argon2.verify(user.hashed_password, password);
     if (!valid) {
-      res.status(401).json({ status: 'error', message: 'Invalid email or password' });
+      res.status(401).json({ status: 'error', message: 'Invalid password' });
       return;
     }
-*/
+
     logger.info(`[Auth] User logged in: ${user.username}`);
 
     res.status(200).json({
@@ -141,7 +140,6 @@ const login = async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ status: 'error', message: 'Internal server error' });
   }
 };
-
 
 router.post('/register', registerValidation, register);
 router.post('/login', loginValidation, login);
