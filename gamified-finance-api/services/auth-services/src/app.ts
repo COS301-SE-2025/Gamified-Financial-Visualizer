@@ -9,7 +9,6 @@ import authRoutes from './routes/authRoutes';
 import { logger } from './config/logger';
 
 const app = express();
-
 app.use(cors({ origin: ['http://localhost:3000'], credentials: true }));
 app.use(helmet());
 app.use(express.json());
