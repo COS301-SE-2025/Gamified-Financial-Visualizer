@@ -55,7 +55,7 @@ const ManageCommunityPage = () => {
               <p className="text-xs text-gray-500 mb-1">Community Progress</p>
               <div className="bg-gray-200 h-3 rounded-full w-full">
                 <div
-                  className="bg-green-400 h-3 rounded-full"
+                  className="bg-lime-400 h-3 rounded-full"
                   style={{ width: `${community.progress}%` }}
                 ></div>
               </div>

@@ -3,7 +3,12 @@ import { MdAccountBalance } from 'react-icons/md';
 import { FaShoppingCart, FaCar, FaHome } from 'react-icons/fa';
 import coinsImg from '../../assets/Images/pixelPond.jpeg';
 import ExpenseIncomeChart from '../../components/charts/ExpenseIncomeChart';
-// import netflixLogo from '../../assets/images/netflix.png';
+import netflixLogo from '../../assets/Images/netflix.png';
+import spotifyLogo from '../../assets/Images/spotify.png';
+import dstvLogo from '../../assets/Images/dstv.png';
+import gdriveLogo from '../../assets/Images/gdrive.png';
+import adobeLogo from '../../assets/Images/adobe.jpg';
+
 
 const upcomingExpenses = [
   { name: "Netflix", date: "10 JUNE 2025", amount: "R 260" },
@@ -12,6 +17,15 @@ const upcomingExpenses = [
   { name: "Google Drive", date: "13 JUNE 2025", amount: "R 100" },
   { name: "Adobe Creative Cloud", date: "14 JUNE 2025", amount: "R 850" },
 ];
+
+const logoMap = {
+  netflix: netflixLogo,
+  spotify: spotifyLogo,
+  dstv: dstvLogo,
+  'google drive': gdriveLogo,
+  'adobe creative cloud': adobeLogo,
+};
+
 
 const expenseCategories = [
   { name: "Groceries", icon: "🛒", used: 600, limit: 1000 },
@@ -115,11 +129,11 @@ const Dashboard = () => {
                         {expenseCategories.map((cat, idx) => {
                         const percent = (cat.used / cat.limit) * 100;
                         const colorMap = {
-                            Groceries: 'bg-blue-400',
-                            Transport: 'bg-pink-500',
-                            Dining: 'bg-orange-400',
-                            Internet: 'bg-green-400',
-                            Health: 'bg-red-400',
+                            Groceries: 'bg-blue-300',
+                            Transport: 'bg-pink-300',
+                            Dining: 'bg-orange-300',
+                            Internet: 'bg-green-300',
+                            Health: 'bg-red-300',
                         };
                         const progressColor = colorMap[cat.name] || 'bg-gray-400';
 
@@ -152,44 +166,48 @@ const Dashboard = () => {
        <div className="bg-white rounded-lg shadow border overflow-hidden">
             <div className="bg-yellow-400 p-4 text-lg font-semibold text-white">Upcoming Expenses</div>
             <div className="divide-y">
-                {upcomingExpenses.map((expense, idx) => (
-                <div key={idx} className="flex justify-between items-center px-4 py-4">
-                    {/* Left Section */}
-                    <div className="flex items-center gap-4">
-                    {/* Icon or logo */}
-                    {expense.name.toLowerCase() === 'netflix' ? (
-                        <img 
-                        src={"#"}
-                        alt="Netflix"
-                        className="w-10 h-10 object-contain"
-                        />
-                    ) : (
-                        <div className="w-10 h-10 rounded-full border shadow-inner bg-white" />
-                    )}
-                    {/* Name + Date */}
-                    <div>
-                        <p className="text-sm font-bold uppercase tracking-wide">{expense.name}</p>
-                        <p className="text-xs text-gray-500">{expense.date}</p>
+                {upcomingExpenses.map((expense, idx) => {
+                  const logo = logoMap[expense.name.toLowerCase()];
+                  return (
+                    <div key={idx} className="flex justify-between items-center px-4 py-4">
+                      {/* Left Section */}
+                      <div className="flex items-center gap-4">
+                        {/* Icon or logo */}
+                        {logo ? (
+                          <img 
+                            src={logo}
+                            alt={expense.name}
+                            className="w-10 h-10 object-contain"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full border shadow-inner bg-white" />
+                        )}
+                        {/* Name + Date */}
+                        <div>
+                          <p className="text-sm font-bold uppercase tracking-wide">{expense.name}</p>
+                          <p className="text-xs text-gray-500">{expense.date}</p>
+                        </div>
+                      </div>
+                      {/* Amount */}
+                      <div className="text-sm font-bold">{expense.amount}</div>
                     </div>
-                    </div>
-                    {/* Amount */}
-                    <div className="text-sm font-bold">{expense.amount}</div>
-                </div>
-                ))}
+                  );
+                })}
+
             </div>
        </div>
 
         {/* Goal Tracker */}
         <div className="bg-white rounded-lg shadow border overflow-hidden">
-        <div className="bg-green-500 p-4 text-lg font-semibold text-white">Goal Tracker</div>
+        <div className="bg-green-400 p-4 text-lg font-semibold text-white">Goal Tracker</div>
         <div className="divide-y">
             {goalTracker.map((goal, idx) => {
             const colorMap = {
-                "New House": "bg-red-400",
+                "New House": "bg-red-300",
                 "New Car": "bg-orange-300",
-                "Emergency Fund": "bg-green-400",
-                "Vacation": "bg-sky-400",
-                "Home Office Setup": "bg-purple-400",
+                "Emergency Fund": "bg-green-300",
+                "Vacation": "bg-sky-300",
+                "Home Office Setup": "bg-purple-300",
             };
             const progressColor = colorMap[goal.name] || 'bg-lime-400';
 
@@ -216,11 +234,11 @@ const Dashboard = () => {
             })}
 
             {/* View Button */}
-            <div className="flex justify-end px-4 py-4">
+            {/* <div className="flex justify-end px-4 py-4">
             <button className="px-6 py-1 text-sm text-white bg-gradient-to-r from-lime-400 to-green-600 rounded-full shadow-md hover:brightness-110">
                 View
             </button>
-            </div>
+            </div> */}
         </div>
         </div>
       </div>

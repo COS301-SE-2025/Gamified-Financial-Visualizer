@@ -27,7 +27,7 @@ const AuthLayout = ({ children, reverse = false }) => {
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
               <h1 className="text-3xl font-bold drop-shadow-lg">Welcome to Gamified Finance!</h1>
               <p className="text-lg mt-2 max-w-md drop-shadow-md">
-                Level up your wallet. Beat the budgeting boss.
+                Where Saving is a Quest, Spending is Strategy, and Every Goal Levels You Up
               </p>
             </div>
           </motion.div>
@@ -45,7 +45,7 @@ const AuthLayout = ({ children, reverse = false }) => {
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
               <h1 className="text-3xl font-bold drop-shadow-lg">Welcome to Gamified Finance!</h1>
               <p className="text-lg mt-2 max-w-md drop-shadow-md">
-                Coins, challenges, and financial glory await.
+                Where Saving is a Quest, Spending is Strategy, and Every Goal Levels You Up
               </p>
             </div>
           </motion.div>
