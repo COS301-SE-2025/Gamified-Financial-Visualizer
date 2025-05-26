@@ -34,3 +34,6 @@
 [2025-05-26 20:39:37] info: [Auth] User logged in: testmicky
 [2025-05-26 20:44:39] info: [AuthService] User registered: testyohali
 [2025-05-26 20:44:39] info: [Auth] Successfully registered user: testyohali
+[2025-05-27 00:59:12] info: Server is running on port 5000
+[2025-05-27 01:22:33] info: Server is running on port 5000
+[2025-05-27 01:29:28] info: Server is running on port 5000
