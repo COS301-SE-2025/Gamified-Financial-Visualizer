@@ -38,5 +38,3 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 app.listen(PORT,'0.0.0.0', () => {
   logger.info(`Transaction service running on port ${PORT}`);
 });
-
-export default app;
