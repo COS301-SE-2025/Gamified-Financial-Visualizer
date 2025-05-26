@@ -7,6 +7,10 @@
     "pg": "^8.16.0",
     "winston": "^3.17.0"
   },
+  "scripts": {
+  "format": "prettier . --write"
+},
+
   "devDependencies": {
     "@types/express": "^5.0.2",
     "@types/jest": "^29.5.14",
