@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "nodemon",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "test:integration": "jest"
   },
   "dependencies": {
     "argon2": "^0.31.1",

@@ -50,3 +50,5 @@
 [2025-05-26 12:41:41] info: [TransactionService] Created transaction ID=18
 [2025-05-26 12:43:29] info: [TransactionService] Created transaction ID=19
 [2025-05-26 12:43:57] info: [TransactionService] Created transaction ID=20
+[2025-05-26 18:52:43] info: Transaction service running on port 5000
+[2025-05-26 18:54:09] info: [TransactionService] Created transaction ID=21
