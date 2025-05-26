@@ -1,0 +1,35 @@
+# .github/workflows/frontend-tests.yml
+name: Frontend Unit Tests
+
+on:
+  push:
+    branches: [main, frontend]
+    paths:
+      - 'gamified-finanace-frontend/**'
+      - '.github/workflows/frontend-tests.yml'
+  pull_request:
+    branches: [main, frontend]
+    paths:
+      - 'gamified-finance-frontend/**'
+
+jobs:
+  test-frontend:
+    name: Run Frontend Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: ./gamified-finance-frontend
+        run: npm ci
+
+      - name: Run unit tests
+        working-directory: ./gamified-finance-frontend
+        run: npm test -- UnitTesting

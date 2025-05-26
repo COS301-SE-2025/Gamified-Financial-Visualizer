@@ -10,6 +10,9 @@
     "tsconfig-paths": "^4.2.0",
     "winston": "^3.17.0"
   },
+  "scripts": {
+    "format": "prettier . --write"
+  },
   "devDependencies": {
     "@types/cors": "^2.8.18",
     "@types/express": "^5.0.2",
@@ -26,6 +29,7 @@
     "tailwindcss": "^4.1.7",
     "ts-jest": "^29.3.4",
     "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
     "typescript": "^5.8.3"
   },
   "type": "module"

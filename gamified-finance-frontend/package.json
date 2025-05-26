@@ -23,6 +23,7 @@
     "build": "react-scripts build",
     "test": "jest",
     "test:watch": "jest --watch",
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
