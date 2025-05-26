@@ -69,6 +69,16 @@ export async function getUserByEmail(email: string) {
   }
 }
 
+export async function getUserByUsername(username: string) {
+  const query = 'SELECT * FROM users WHERE username = $1';
+  try {
+    const result = await pool.query(query, [username]);
+    return result.rows[0];
+  } catch (err) {
+    logger.error(`[AuthService] Failed to fetch user by username ${username}:`, err);
+    throw err;
+  }
+}
 export async function updateUserProfile(user_id: number, updates: Partial<UserRecord>) {
   const query = `
     UPDATE users
