@@ -1,4 +1,15 @@
 {
+  "name": "transaction-service",
+  "version": "1.0.0",
+  "description": "Transaction microservice",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx --watch src/server.ts",
+    "start": "node dist/server.js",
+    "build": "tsc",
+    "start:prod": "tsx src/server.ts",
+    "test:integration": "jest"
+  },
   "devDependencies": {
     "@types/cors": "^2.8.18",
     "@types/dotenv": "^6.1.1",
@@ -15,6 +26,7 @@
     "express": "^5.1.0",
     "helmet": "^8.1.0",
     "pg": "^8.16.0",
+    "tsconfig-paths": "^4.2.0",
     "winston": "^3.17.0"
   }
 }

@@ -1,47 +1,36 @@
-[2025-05-22 00:06:24] info: Server is running on port 5000
-[2025-05-22 00:33:56] info: Server is running on port 5000
-[2025-05-22 00:34:32] info: Server is running on port 5000
-[2025-05-22 00:34:41] info: Server is running on port 5000
-[2025-05-22 01:18:24] info: Server is running on port 5000
-[2025-05-22 01:21:17] info: Server is running on port 5000
-[2025-05-22 01:30:26] info: Server is running on port 5000
-[2025-05-22 03:00:28] info: Server is running on port 5000
-[2025-05-22 03:00:41] info: Server is running on port 5000
-[2025-05-22 03:04:00] info: Server is running on port 5000
-[2025-05-22 03:07:16] info: Server is running on port 5000
-[2025-05-22 13:26:47] info: Server is running on port 5000
-[2025-05-22 13:27:24] info: Server is running on port 5000
-[2025-05-22 13:29:19] info: Server is running on port 5000
-[2025-05-22 13:29:19] info: Health check available at: http://localhost:5000/health
-[2025-05-22 13:29:19] info: Auth endpoints available at: http://localhost:5000/api/auth/*
-[2025-05-22 13:29:21] info: GET / - ::1
-[2025-05-22 13:29:21] warn: 404 - Route not found: GET /
-[2025-05-22 13:29:21] info: GET /favicon.ico - ::1
-[2025-05-22 13:29:21] warn: 404 - Route not found: GET /favicon.ico
-[2025-05-22 13:29:38] info: Server is running on port 5000
-[2025-05-22 13:29:38] info: Health check available at: http://localhost:5000/health
-[2025-05-22 13:29:38] info: Auth endpoints available at: http://localhost:5000/api/auth/*
-[2025-05-22 13:29:37] info: GET / - ::1
-[2025-05-22 13:29:37] warn: 404 - Route not found: GET /
-[2025-05-22 13:30:19] info: GET /health - ::1
-[2025-05-22 13:30:19] info: Health check requested
-[2025-05-22 13:30:39] info: GET /api/auth/test - ::1
-[2025-05-22 13:30:39] info: [AuthRoutes] GET /test - Body:
-[2025-05-22 13:30:39] info: [Auth] Test endpoint hit
-[2025-05-22 13:30:53] info: GET /api/auth/register - ::1
-[2025-05-22 13:30:53] info: [AuthRoutes] GET /register - Body:
-[2025-05-22 13:30:53] warn: 404 - Route not found: GET /api/auth/register
-[2025-05-22 13:31:19] info: GET /.well-known/appspecific/com.chrome.devtools.json - ::1
-[2025-05-22 13:31:19] warn: 404 - Route not found: GET /.well-known/appspecific/com.chrome.devtools.json
-[2025-05-22 13:33:26] info: Server is running on port 5000
-[2025-05-22 13:33:26] info: Health check available at: http://localhost:5000/health
-[2025-05-22 13:33:26] info: Auth endpoints available at: http://localhost:5000/api/auth/*
-[2025-05-22 13:34:40] info: GET /api/auth/register - ::1
-[2025-05-22 13:34:40] info: [AuthRoutes] GET /register - Body:
-[2025-05-22 13:34:40] info: [Auth] GET register endpoint hit (info only)
-[2025-05-22 13:41:53] info: Server is running on port 5000
-[2025-05-22 13:41:53] info: Health check available at: http://localhost:5000/health
-[2025-05-22 13:41:53] info: Auth endpoints available at: http://localhost:5000/api/auth/*
-[2025-05-22 13:41:56] info: GET / - ::1
-[2025-05-22 13:41:56] warn: 404 - Route not found: GET /
-[2025-05-22 16:51:26] info: Server is running on port 5000
+[2025-05-26 20:10:24] warn: [Auth] Registration validation failed
+[2025-05-26 20:11:38] warn: [Auth] Registration validation failed
+[2025-05-26 20:17:00] warn: [Auth] Registration validation failed
+[2025-05-26 20:17:34] warn: [Auth] Registration validation failed
+[2025-05-26 20:22:21] warn: [Auth] Registration validation failed
+[2025-05-26 20:25:54] info: Server is running on port 5000
+[2025-05-26 20:26:01] warn: [Auth] Registration validation failed
+[2025-05-26 20:26:03] warn: [Auth] Registration validation failed
+[2025-05-26 20:26:28] info: Server is running on port 5000
+[2025-05-26 20:27:17] info: Server is running on port 5000
+[2025-05-26 20:27:49] warn: [Auth] Registration validation failed
+[2025-05-26 20:27:51] warn: [Auth] Registration validation failed
+[2025-05-26 20:28:11] warn: [Auth] Registration validation failed
+[2025-05-26 20:28:13] warn: [Auth] Registration validation failed
+[2025-05-26 20:28:35] warn: [Auth] Registration validation failed
+[2025-05-26 20:33:14] error: TypeError: pchstr must be a non-empty string
+    at deserialize (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/node_modules/@phc/format/index.js:143:11)
+    at Object.verify (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/node_modules/argon2/argon2.js:91:15)
+    at login (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/routes/authRoutes.ts:119:32)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+[2025-05-26 20:33:47] info: Server is running on port 5000
+[2025-05-26 20:33:55] error: TypeError: pchstr must be a non-empty string
+    at deserialize (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/node_modules/@phc/format/index.js:143:11)
+    at Object.verify (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/node_modules/argon2/argon2.js:91:15)
+    at login (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/routes/authRoutes.ts:119:32)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+[2025-05-26 20:36:00] warn: [Auth] Login validation failed
+[2025-05-26 20:38:47] error: TypeError: pchstr must be a non-empty string
+    at deserialize (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/node_modules/@phc/format/index.js:143:11)
+    at Object.verify (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/node_modules/argon2/argon2.js:91:15)
+    at login (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/routes/authRoutes.ts:119:32)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+[2025-05-26 20:39:30] info: Server is running on port 5000
+[2025-05-26 20:39:37] info: [Auth] User logged in: testmicky
+[2025-05-26 20:44:39] info: [AuthService] User registered: testyohali
+[2025-05-26 20:44:39] info: [Auth] Successfully registered user: testyohali

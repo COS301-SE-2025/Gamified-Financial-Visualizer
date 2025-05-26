@@ -1,17 +1,16 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "ESNext",
+    "module": "CommonJS",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "allowImportingTsExtensions": false,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmitOnError": false,
     "declaration": true,
-    "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": "./src",
+    "outDir": "./dist",
     "removeComments": true,
     "strict": true,
     "noImplicitAny": true,
@@ -21,7 +20,13 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@backend/*": ["../../../../backend/*"]
+    },
+    "types": []
   },
   "include": [
     "src/**/*.ts"
@@ -31,6 +36,6 @@
     "dist"
   ],
   "ts-node": {
-    "esm": true
+    "esm": false
   }
 }
