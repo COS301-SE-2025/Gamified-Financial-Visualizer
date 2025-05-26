@@ -9,7 +9,7 @@
     "isolatedModules": true,
     "noEmitOnError": false,
     "declaration": true,
-    "rootDir": "/home/COS301_CAPSTONE/Gamified-Financial-Visualizer",
+    "rootDir": "./src",
     "outDir": "./dist",
     "removeComments": true,
     "strict": true,
