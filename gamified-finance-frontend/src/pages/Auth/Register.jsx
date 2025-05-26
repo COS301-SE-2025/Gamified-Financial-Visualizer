@@ -13,26 +13,26 @@ const Register = () => {
         </div>
         <form className="space-y-4">
           <div>
-            <label className="block text-sm font-medium">Full Name</label>
+            <label className="block text-md font-medium">Full Name</label>
             <input type="text" className="input" />
           </div>
           <div>
-            <label className="block text-sm font-medium">Email</label>
+            <label className="block text-md font-medium">Email</label>
             <input type="email" className="input" />
           </div>
           <div>
-            <label className="block text-sm font-medium">Password</label>
+            <label className="block text-md font-medium">Password</label>
             <input type="password" className="input" />
           </div>
           <div>
-            <label className="block text-sm font-medium">Username</label>
+            <label className="block text-md font-medium">Username</label>
             <input type="text" className="input" />
           </div>
           <button type="submit" className="btn-green">Register</button>
         </form>
         <p className="text-sm mt-4 text-center">
           Already a memeber of Gamified Finance?{' '}
-          <Link to="/" className="font-semibold underline">Login</Link>
+          <Link to="/" className="font-semibold underline ">Login</Link>
         </p>
       </div>
     </AuthLayout>
