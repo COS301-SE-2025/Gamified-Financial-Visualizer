@@ -8,11 +8,14 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "rootDir": "src",
+    // "rootDir": "src",
+    // Removed "rootDir" to allow sources from multiple service folders
     "baseUrl": ".", 
    },
    "include": [
        "src/**/*.ts",
       "./services/transaction-service/src",
+      "./services/auth-services/src",
+      "./services/goal-service/src",
    ],
 }
