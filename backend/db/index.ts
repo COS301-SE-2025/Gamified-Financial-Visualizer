@@ -2,7 +2,7 @@
 import dotenv from 'dotenv';
 
 dotenv.config();
-console.log('🔐 DB_PASSWORD:', typeof process.env.DB_PASSWORD, process.env.DB_PASSWORD?.length);
+console.log('🔐 DB_USER:', typeof process.env.DB_USER, process.env.DB_PASSWORD);
 
 import { Pool } from 'pg';
 
