@@ -15,7 +15,7 @@ import HomePage from './pages/Dashboard/Home';
 import Transaction from './pages/Transactions/Transactions';
 import GoalsPage from './pages/GoalsPage/GoalPage';
 import GoalsDetailPage from './pages/GoalsPage/GoalsDetailPage/GoalsDetailPage';
-
+import { Navigate } from 'react-router-dom';
 
 function App() {
   return (
@@ -25,10 +25,13 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
+        {/* Redirect root path to login */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+
         {/* Protected Routes */}
-        <Route path="/" element={<Layout />}>
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/transactions" element={<Transaction />} />
+        <Route path="/app" element={<Layout />}>
+          <Route path="home" element={<HomePage />} />
+          <Route path="transactions" element={<Transaction />} />
           <Route path="community" element={<CommunityPage />} />
           <Route path="communities" element={<CommunityListPage />} />
           <Route path="community/:id" element={<CommunityDetailPage />} />
@@ -37,7 +40,7 @@ function App() {
           <Route path="create-community" element={<CreateCommunityPage />} />
           <Route path="goals" element={<GoalsPage />}>
             <Route path=":id" element={<GoalsDetailPage />} />
-        </Route>
+          </Route>
 
         </Route>
       </Routes>

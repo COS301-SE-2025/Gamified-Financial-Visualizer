@@ -28,7 +28,7 @@ const Register = () => {
       const result = await res.json();
       if (res.ok) {
         console.log('Registration successful:', result);
-        navigate('/home');
+        navigate('/login');
       } else {
         setError(result.message || 'Registration failed');
       }
