@@ -33,16 +33,16 @@ const Navbar = () => {
           <p className="text-sm font-semibold text-gray-900">{user ? user.username : "Guest"}</p>
           <p className="text-xs text-gray-400">Silver</p>
         </div>
-      </div>
+      </div> 
 
       {/* Center: Nav Links */}
       <div className="flex items-center space-x-8 text-sm font-medium text-gray-700">
-        <NavLink to="/home" className={navClasses}>Home</NavLink>
-        <NavLink to="/transactions" className={navClasses}>Transactions</NavLink>
-        <NavLink to="/goals" className={navClasses}>Goals</NavLink>
-        <NavLink to="/community" className={navClasses}>Community</NavLink>
-        <NavLink to="/learn" className={navClasses}>Learn</NavLink>
-        <NavLink to="/support" className={navClasses}>Support</NavLink>
+        <NavLink to="/app/home" className={navClasses}>Home</NavLink>
+        <NavLink to="/app/transactions" className={navClasses}>Transactions</NavLink>
+        <NavLink to="/app/goals" className={navClasses}>Goals</NavLink>
+        <NavLink to="/app/community" className={navClasses}>Community</NavLink>
+        <NavLink to="/app/learn" className={navClasses}>Learn</NavLink>
+        <NavLink to="/app/support" className={navClasses}>Support</NavLink>
       </div>
 
       {/* Right: Logout + Logo */}
