@@ -167,7 +167,17 @@ export async function getTotalSpentPerCategory(user_id: number) {
   }
 }
 
-
+export async function getCategoryNameByID(categoryID: number) {
+  const sql = `SELECT category_name FROM categories WHERE category_id = $1;`;
+  try {
+    const res = await pool.query(sql, [ categoryID ]);
+    return res.rows[ 0 ]?.category_name || null;
+  } catch (error) {
+    logger.error(`[TransactionService] Error fetching category name for ID ${categoryID}:`, error);
+    throw error;
+  }
+  
+}
 export async function deleteAccount(account_id: number, user_id: number) {
   const sql = `DELETE FROM accounts WHERE account_id = $1 AND user_id = $2;`;
   try {
@@ -270,6 +280,17 @@ export async function getExpenseTotalByRange(
     return Number(res.rows[ 0 ].total_expense);
   } catch (error) {
     logger.error(`[TransactionService] Error fetching total expenses for user ${user_id} between ${startDate} and ${endDate}:`, error);
+    throw error;
+  }
+}
+
+export async function getCategories() {
+  const sql = `SELECT category_id, category_name FROM categories;`
+  try {
+    const res = await pool.query(sql);
+    return res.rows;
+  } catch (error) {
+    logger.error(`[TransactionService] Error fetching categories:`, error);
     throw error;
   }
 }
@@ -378,3 +399,22 @@ export async function updateBudget(
     throw error;
   }
 }
+
+export async function getBudgetsSummary(user_id: number) {
+  const sql = `
+    SELECT b.budget_id, b.budget_name, b.current_amount,  b.period_start, b.period_end,
+           COALESCE(SUM(bc.target_amount), 0) AS total_target
+    FROM budgets b
+    LEFT JOIN budget_categories bc ON b.budget_id = bc.budget_id
+    WHERE b.user_id = $1
+    GROUP BY b.budget_id;
+  `;
+  try {
+    const res = await pool.query(sql, [ user_id ]);
+    return res.rows;
+  } catch (error) {
+    logger.error(`[TransactionService] Error fetching budgets for user ${user_id}:`, error);
+    throw error;
+  }
+}
+

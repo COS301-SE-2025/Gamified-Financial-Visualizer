@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { createBudget } from '../services/transaction.service';
+import { createBudget, getBudgetsSummary, getBudget } from '../services/transaction.service';
 import { logger } from '../config/logger';
 
 const router = Router();
@@ -34,6 +34,29 @@ router.post('/', async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     logger.error('[Budget] Create failed', error);
+    res.status(500).json({ status: 'error', message: error.message || 'Internal server error' });
+  }
+});
+
+
+
+
+/**
+ * @route GET /api/budget?user_id=123
+ * @desc  List all budgets for a user, with current_amount and total target_amount
+ */
+router.get('/', async (req: Request, res: Response) => {
+  const userId = parseInt(req.query.user_id as string, 10);
+  if (isNaN(userId)) {
+    res.status(400).json({ status: 'error', message: 'Missing or invalid user_id' });
+    return;
+  }
+
+  try {
+    const budgets = await getBudgetsSummary(userId);
+    res.json({ status: 'success', data: budgets });
+  } catch (error: any) {
+    logger.error('[Budget] Fetch failed', error);
     res.status(500).json({ status: 'error', message: error.message || 'Internal server error' });
   }
 });
