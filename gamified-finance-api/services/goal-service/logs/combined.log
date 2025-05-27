@@ -474,3 +474,4 @@
     at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
 [2025-05-27 03:36:23] info: Goals service running on port 5002
 [2025-05-27 03:37:16] info: [GoalService] Created goal ID=8
+[2025-05-27 20:58:14] info: Goals service running on port 5002

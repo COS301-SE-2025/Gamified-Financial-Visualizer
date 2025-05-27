@@ -11,42 +11,6 @@ import budgetDefault from '../../assets/Images/notesIcon.png';
 
 import { FaUtensils, FaBus, FaBolt, FaFilm, FaHeartbeat, FaPlane, FaBook, FaLaptop, FaUser, FaHandsHelping, FaTshirt, FaDumbbell, FaMobileAlt, FaWifi, FaTv, FaHome, FaCar, FaShieldAlt, FaCalendarAlt } from 'react-icons/fa'
 
-// const getLimitForCategory = (categoryId) => {
-//   const limits = {
-//     1: 9000,
-//     2: 8000,
-//     3: 6000,
-//     4: 7000,
-//     5: 5000,
-//     6: 4000,
-//     7: 10000,
-//     8: 11000,
-//     9: 2500,
-//     10: 3000,
-//     11: 2000,
-//     12: 1200,
-//     13: 800,
-//     14: 600,
-//     15: 9000,
-//     16: 5000,
-//     17: 4500,
-//     18: 3500,
-//     19: 12000,
-//     20: 8000,
-//   };
-//   return limits[categoryId] || 0;
-// };
-
-// const fetchUserId = async (username) => {
-//   try {
-//     const res = await fetch(`http://localhost:5000/api/auth/user-id/${username}`);
-//     const data = await res.json();
-//     return data.data.user_id;
-//   } catch (err) {
-//     console.error('Failed to fetch user ID:', err);
-//     return null;
-//   }
-// };
 
 const DashboardPage = () => {
   const [showModal, setShowModal] = useState(false);
@@ -59,35 +23,14 @@ const DashboardPage = () => {
   const badgeImages = [badge1, badge2, badge3, badge4];
   const [categories, setCategories] = useState([]);
   const location = useLocation();
-  const [transactions, setTransactions] = useState([
-    { name: 'Groceries - Checkers', category: 'Food', amount: 'R320', date: '2025-05-20', account: 'Capitec Main' },
-    { name: 'Uber Ride', category: 'Transport', amount: 'R120', date: '2025-05-21', account: 'FNB Everyday' },
-    { name: 'Electricity Bill', category: 'Utilities', amount: 'R450', date: '2025-05-18', account: 'TymeBank GoalSave' },
-    { name: 'Netflix', category: 'Entertainment', amount: 'R199', date: '2025-05-15', account: 'Capitec Main' },
-    { name: 'Doctor Visit', category: 'Health', amount: 'R600', date: '2025-05-22', account: 'Discovery Card' },
-    { name: 'Flight Ticket', category: 'Travel', amount: 'R2400', date: '2025-05-10', account: 'FNB Platinum' },
-    { name: 'KFC Dinner', category: 'Food', amount: 'R270', date: '2025-05-17', account: 'Nedbank JustInvest' },
-    { name: 'Gym Membership', category: 'Health', amount: 'R300', date: '2025-05-01', account: 'Capitec Main' },
-    { name: 'Petrol', category: 'Transport', amount: 'R800', date: '2025-05-19', account: 'Absa Transact' },
-    { name: 'Internet Bill', category: 'Utilities', amount: 'R699', date: '2025-05-16', account: 'MTN Wallet' },
-    { name: 'School Books', category: 'Education', amount: 'R1500', date: '2025-05-12', account: 'TymeBank GoalSave' },
-    { name: 'Laptop Repair', category: 'Tech', amount: 'R950', date: '2025-05-08', account: 'Capitec Main' },
-    { name: 'Concert Tickets', category: 'Entertainment', amount: 'R1100', date: '2025-05-09', account: 'Standard Bank Elite' },
-    { name: 'Taxi', category: 'Transport', amount: 'R60', date: '2025-05-22', account: 'FNB Everyday' },
-    { name: 'Toiletries', category: 'Personal', amount: 'R180', date: '2025-05-18', account: 'Capitec Main' },
-    { name: 'MTN Data', category: 'Utilities', amount: 'R99', date: '2025-05-13', account: 'MTN Wallet' },
-    { name: 'Pizza Night', category: 'Food', amount: 'R290', date: '2025-05-14', account: 'Nedbank JustInvest' },
-    { name: 'Birthday Gift', category: 'Personal', amount: 'R500', date: '2025-05-11', account: 'TymeBank GoalSave' },
-    { name: 'Train Pass', category: 'Transport', amount: 'R350', date: '2025-05-04', account: 'Absa Transact' },
-    { name: 'Donation', category: 'Giving', amount: 'R1000', date: '2025-05-03', account: 'Capitec Main' },
-    { name: 'Takealot Order', category: 'Tech', amount: 'R2200', date: '2025-05-07', account: 'Standard Bank Elite' },
-  ]);
+  const [transactions, setTransactions] = useState([]);
 
   const categoryIcons = {
     Food: <FaUtensils />, Transport: <FaBus />, Utilities: <FaBolt />, Entertainment: <FaFilm />, Health: <FaHeartbeat />, Travel: <FaPlane />, Education: <FaBook />, Tech: <FaLaptop />, Personal: <FaUser />, Giving: <FaHandsHelping />, Fashion: <FaTshirt />,
     Fitness: <FaDumbbell />, Gadgets: <FaMobileAlt />, Internet: <FaWifi />, Streaming: <FaTv />, Subscriptions: <FaTv />, Housing: <FaHome />, Car: <FaCar />, Insurance: <FaShieldAlt />, Events: <FaCalendarAlt />
   };
 
+  // Function for fetching the catergories
   const fetchCategories = async () => {
     try {
       const res = await fetch('http://localhost:5001/api/transactions/categories');
@@ -100,7 +43,7 @@ const DashboardPage = () => {
     }
   };
 
-
+  // Function for fetching the budget summary
   const fetchBudgetSummary = async () => {
     if (!userId) return;
     try {
@@ -118,6 +61,31 @@ const DashboardPage = () => {
       console.error('Failed to fetch budget summary', error);
     }
   };
+
+  // Function for fetching the transactions
+  const fetchTransactions = async () => {
+  if (!userId) return;
+
+  try {
+    const res = await fetch(`http://localhost:5001/api/transactions/user/${userId}`);
+    const data = await res.json();
+
+    if (data.status === 'success') {
+      console.log("Fetched transactions:", data.data); // ✅ Log here
+
+      const formatted = data.data.map(txn => ({
+        name: txn.description,
+        category: txn.category_name,
+        amount: `R${txn.transaction_amount}`,
+        date: txn.transaction_date.split('T')[0],
+        account: txn.account_name
+      }));
+      setTransactions(formatted);
+    }
+  } catch (error) {
+    console.error('Failed to fetch transactions:', error);
+  }
+};
 
 
   useEffect(() => {
@@ -141,6 +109,13 @@ const DashboardPage = () => {
     }
   }, [userId, categories]);
 
+  useEffect(() => {
+    if (userId) {
+      fetchTransactions();
+    }
+  }, [userId]);
+
+  
 
   const renderMainContent = () => {
     if (activeTab === 'All Transactions') {
@@ -234,7 +209,7 @@ const DashboardPage = () => {
             >
               <div className="flex items-center gap-4">
                 <img
-                
+
                   src={budgetDefault[budget.name?.toLowerCase()] || budgetDefault}
                   alt={budget.name}
                   className="w-12 h-12 rounded-full border"
@@ -389,7 +364,13 @@ const DashboardPage = () => {
       </div>
 
       {/* Modals */}
-      {showModal && <AddTransactionModal onClose={() => setShowModal(false)} />}
+      {showModal && (
+        <AddTransactionModal
+          onClose={() => setShowModal(false)}
+          onTransactionAdded={fetchTransactions}
+          userId={userId}
+        />
+      )}
       {showSetBudget && (
         <SetBudgetModal
           onClose={() => setShowSetBudget(false)}
@@ -415,7 +396,6 @@ const DashboardPage = () => {
           }}
         />
       )}
-
     </div>
   );
 };
