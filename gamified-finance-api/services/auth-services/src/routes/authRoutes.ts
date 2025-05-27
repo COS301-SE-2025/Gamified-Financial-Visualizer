@@ -143,5 +143,23 @@ const login = async (req: Request, res: Response): Promise<void> => {
 
 router.post('/register', registerValidation, register);
 router.post('/login', loginValidation, login);
+router.get('/user-id/:username', async (req: Request, res: Response) => {
+  const { username } = req.params;
+
+  try {
+    const user_id = await userService.getUserID(username);
+    res.status(200).json({
+      status: 'success',
+      message: `User ID retrieved for ${username}`,
+      data: { user_id }
+    });
+  } catch (error) {
+    logger.error(`[Auth] Failed to get user ID for ${username}:`, error);
+    res.status(404).json({
+      status: 'error',
+      message: `User ${username} not found`,
+    });
+  }
+});
 
 export default router;
