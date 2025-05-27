@@ -13,25 +13,44 @@ const Login = () => {
   };
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await fetch('http://localhost:5000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json'},
-        body: JSON.stringify(formData),
-      });
-      const result = await res.json();
-      if (res.ok) {
-        console.log('Login successful:', result);
-        localStorage.setItem('user', JSON.stringify(result.data.user));
-        navigate('/app/home');
+  e.preventDefault();
+  try {
+    const res = await fetch('http://localhost:5000/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    });
+
+    const result = await res.json();
+    if (res.ok) {
+      const username = result.data.user.username;
+
+      // 🔁 Fetch user ID using the separate endpoint
+      const idRes = await fetch(`http://localhost:5000/api/auth/user-id/${username}`);
+      const idResult = await idRes.json();
+
+      if (idRes.ok && idResult.data?.user_id) {
+        const userId = idResult.data.user_id;
+
+        // ✅ Save both username and ID
+        localStorage.setItem('user', JSON.stringify({
+          username,
+          id: userId
+        }));
+
+        // ✅ Navigate with state if needed
+        navigate('/app/home', { state: { userId } });
       } else {
-        setError(result.message || 'Login failed');
+        setError('Could not retrieve user ID after login.');
       }
-    } catch (err) {
-      setError('Network error'+ err);
+    } else {
+      setError(result.message || 'Login failed');
     }
-  };
+  } catch (err) {
+    setError('Network error: ' + err.message);
+  }
+};
+
 
   return (
     <AuthLayout reverse={false}>
