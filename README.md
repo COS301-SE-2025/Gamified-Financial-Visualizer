@@ -12,8 +12,8 @@
 
 🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
 
-<h2 align="center">Project Overview </h2> 
-Gamified Financial Visualizer transforms financial literacy into a game-like experience using AI, AR/VR, and real-time data. Users track spending, set goals, and explore 3D financial environments while receiving personalized insights from AI coaches. The platform promotes social accountability through challenges and milestones, with secure, read-only integrations to South African banks and crypto wallets. Built for web and mobile, with future support for VR/AR devices.
+<h2 align="center"> Project Overview </h2> 
+The Gamified Financial Visualizer is a cross-platform solution that leverages AR and AI to reimagine financial literacy as an engaging, game-like experience. Designed for digitally native users— particularly those interested in financial management —the platform makes budgeting, saving, investing, and spending management interactive and accessible. Aligned with EPI-USE’s strategic goals, the solution integrates advanced AI and Machine learning to analyse transactions data and provide real-time, personalized financial advice contextualized to local realities. Users can explore financial goals through immersive AR environments, engage with AI financial coaches,and navigate 3D “financial worlds.” A built-in community layer promotes social accountability through group challenges, shared milestones, and peer encouragement. The platform supports mobile and web access, with future expansion planned for AR-enabled devices.
 
 🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
 
@@ -59,7 +59,7 @@ Gamified Financial Visualizer transforms financial literacy into a game-like exp
 
 🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
 
-<h2 align="center">Project Documentation Index </h2>
+<h2 align="center">📘 Project Documentation Index </h2>
 
 This table provides quick access to the key documents and planning resources for the Gamified Financial Visualizer project.
 
@@ -86,7 +86,7 @@ This table provides quick access to the key documents and planning resources for
 
 🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
 
-<h2 align="center">Meet the Team </h2>
+<h2 align="center">👥 Meet the Team </h2>
 
 | Photo | Name | About | Role | Links |
 |-------|------|-------|------|-------|
@@ -97,3 +97,17 @@ This table provides quick access to the key documents and planning resources for
 | <img src="./assests/Team Profiles/Aundrea.png" width="150" style="border-radius: 50%"/> | **Aundrea Ncube** |  Equipped with solid experience in JavaScript, PHP, and Java, alongside a deep understanding of database management systems and API design. Skilled in integrating frontend and backend systems seamlessly, ensuring smooth and efficient user experiences. Proficient in Vanilla JavaScript for lightweight and efficient client-side development. Proficient in NodeJS and it's development environment. | Integration & Testing Engineer | [<img src="https://cdn.simpleicons.org/github/000" width="30"/>](https://github.com/AundreaNcube) <br> [<img src="https://img.shields.io/badge/LinkedIn-0A66C2?logo=linkedin&logoColor=white" height="30"/>](http://www.linkedin.com/in/aundrea-ncube-1484a9356) |
 
 🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
+
+<h2 align="center">📬 Contact Us</h2>
+
+<p align="center">
+  Got feedback, questions, or collaboration ideas?<br/>
+  Reach out to the <strong>Codeblooded</strong> team:
+</p>
+
+<p align="center">
+  📧 <a href="mailto:codeblooded.team@gmail.com">codeblooded.capstone@gmail.com</a> <br/>
+  🐙 <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer">GitHub Repository</a> <br/>
+</p>
+
+
