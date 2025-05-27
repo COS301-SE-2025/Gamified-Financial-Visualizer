@@ -439,7 +439,7 @@ import {
   completeGoal,
   reduceGoalProgress,
   getAllGoals
-} from '../services/goals.service.js';
+} from '../services/goals.service';
 import { logger } from '../config/logger';
 
 const router = Router();
