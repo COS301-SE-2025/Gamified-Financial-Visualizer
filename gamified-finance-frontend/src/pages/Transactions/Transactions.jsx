@@ -122,7 +122,7 @@ const DashboardPage = () => {
       return (
         <table className="w-full text-sm text-left">
           <thead>
-            <tr className="bg-green-400">
+            <tr className="bg-green-400 text-white">
               <th className="p-2">Name</th>
               <th className="p-2">Category</th>
               <th className="p-2">Amount</th>
