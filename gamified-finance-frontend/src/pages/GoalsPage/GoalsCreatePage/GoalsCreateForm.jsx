@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { FaCheckCircle } from 'react-icons/fa';
 import { BsRepeat } from 'react-icons/bs';
 
 const goalImages = [
@@ -19,6 +18,8 @@ const GoalsCreateForm = () => {
   });
 
   const [xpReward, setXpReward] = useState(200);
+
+console.log(setXpReward);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;

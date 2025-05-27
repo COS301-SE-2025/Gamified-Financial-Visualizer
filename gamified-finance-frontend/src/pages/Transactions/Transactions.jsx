@@ -35,7 +35,7 @@ const getLimitForCategory = (categoryId) => {
   };
   return limits[categoryId] || 0;
 };
-
+console.log(getLimitForCategory(1)); // Example usage, should return 9000
 const fetchUserId = async (username) => {
   try {
     const res = await fetch(`http://localhost:5000/api/auth/user-id/${username}`);
@@ -46,7 +46,7 @@ const fetchUserId = async (username) => {
     return null;
   }
 };
-
+console.log(fetchUserId('testuser')); // Example usage, should return user ID or null
 const DashboardPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState('All Transactions');

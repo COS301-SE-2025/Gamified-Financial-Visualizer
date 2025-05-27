@@ -22,7 +22,7 @@ jobs:
         image: postgres:14
         env:
           POSTGRES_USER: devuser
-          POSTGRES_PASSWORD: devpass
+          POSTGRES_PASSWORD: devpassword
           POSTGRES_DB: GamifiedFinanceDB
         ports:
           - 5432:5432
