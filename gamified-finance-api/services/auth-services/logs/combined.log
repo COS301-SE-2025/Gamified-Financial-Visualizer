@@ -60,3 +60,5 @@
     at Object.verify (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/node_modules/argon2/argon2.js:91:15)
     at login (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/routes/authRoutes.ts:119:32)
     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+[2025-05-27 20:58:14] info: Auth is running on port 5000
+[2025-05-27 20:58:48] info: [Auth] User logged in: just_billy

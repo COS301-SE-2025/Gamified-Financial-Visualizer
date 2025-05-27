@@ -206,6 +206,7 @@ export async function getUserTransactions(user_id: number) {
       t.transaction_id,
       t.transaction_amount,
       t.transaction_type,
+      a.account_name,
       t.description,
       t.transaction_date,
       c.category_name
