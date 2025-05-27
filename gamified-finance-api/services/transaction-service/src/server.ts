@@ -9,7 +9,7 @@ import budgetRoutes from './routes/budgetRoutes';
 import { logger } from './config/logger';
 
 const app = express();
-const PORT =  5000;
+const PORT =  5001;
 
 // Middlewares
 app.use(cors({
