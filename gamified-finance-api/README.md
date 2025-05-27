@@ -19,7 +19,7 @@
 ```json
 {
   "full_name": "Jane Doe",
-  "username": "janedoe_123",
+  "username": "jane.doe",
   "email": "jane@example.com",
   "password": "SecretPass@123"
 }
@@ -33,7 +33,7 @@
 **Properties:**
 ```json
 {
-  "username": "janedoe_123",
+  "username": "jane.doe",
   "password": "SecretPass@123"
 }
 ```
@@ -49,7 +49,7 @@
     "user": {
       "id": "1",
       "full_name": "Jane Doe",
-      "username": "janedoe_123",
+      "username": "jane.doe",
       "email": "jane@example.com"
     }
   }
@@ -66,7 +66,7 @@
   "data": {
     "user": {
       "id": "1",
-      "username": "janedoe_123"
+      "username": "jane.doe"
     }
   }
 }
@@ -81,7 +81,7 @@
 ```json
 {
   "full_name": "Jane Doe",
-  "username": "janedoe_123",
+  "username": "jane.doe",
   "email": "jane@example.com",
   "password": "SecretPass@123"
 }
@@ -99,7 +99,7 @@
 **Request Body** (`application/json`):
 ```json
 {
-  "username": "janedoe_123",
+  "username": "jane.doe",
   "password": "SecretPass@123"
 }
 ```
@@ -131,7 +131,7 @@
       "members": [
         {
           "user_id": 1,
-          "username": "janedoe_123",
+          "username": "jane.doe",
           "email": "jane@example.com"
         }
       ]
@@ -232,15 +232,6 @@
   "message": "Goal created successfully.",
   "data": {
     "goal_id": 42,
-    "user_id": 1,
-    "community_id": null,
-    "goal_name": "Save for Trip to Zanzibar",
-    "goal_type": "savings",
-    "target_amount": 10000,
-    "current_amount": 0,
-    "goal_status": "in-progress",
-    "target_date": "2025-12-31",
-    "created_at": "2024-05-21T10:15:00.000Z"
   }
 }
 ```
