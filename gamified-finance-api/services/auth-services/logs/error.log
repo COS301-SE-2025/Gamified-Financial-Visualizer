@@ -23,3 +23,8 @@
     at Object.verify (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/node_modules/argon2/argon2.js:91:15)
     at login (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/routes/authRoutes.ts:119:32)
     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+[2025-05-27 03:41:45] error: TypeError: pchstr must contain a $ as first char
+    at deserialize (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/node_modules/@phc/format/index.js:147:11)
+    at Object.verify (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/node_modules/argon2/argon2.js:91:15)
+    at login (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/routes/authRoutes.ts:119:32)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)

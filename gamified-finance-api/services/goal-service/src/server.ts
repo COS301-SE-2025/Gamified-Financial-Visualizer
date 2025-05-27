@@ -31,10 +31,10 @@ app.get('/health', (_req: Request, res: Response) => {
 // Error handler
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   logger.error('Unhandled error:', err);
-  res.status(500).json({ status: 'error', message: 'Internal server error' });
+  res.status(500).json({ status: 'error', message: 'Internal server error' + ' ' + err.message });
 });
 
 // Start
 app.listen(PORT,'0.0.0.0', () => {
-  logger.info(`Transaction service running on port ${PORT}`);
+  logger.info(`Goals service running on port ${PORT}`);
 });

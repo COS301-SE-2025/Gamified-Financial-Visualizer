@@ -62,7 +62,7 @@ router.get('/user/:userId', async (req: Request, res: Response) => {
     res.status(200).json({ status: 'success', data: list });
   } catch (error) {
     logger.error('[Transaction] Fetch failed', error);
-    res.status(500).json({ status: 'error', message: 'Internal server error' });
+    res.status(500).json({ status: 'error', message: 'Internal server error' + ' ' + error.message });
   }
 });
 

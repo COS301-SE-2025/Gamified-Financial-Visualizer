@@ -38,3 +38,25 @@
 [2025-05-27 00:59:12] info: Server is running on port 5000
 [2025-05-27 01:22:33] info: Server is running on port 5000
 [2025-05-27 01:29:28] info: Server is running on port 5000
+[2025-05-27 02:36:30] info: Server is running on port 5000
+[2025-05-27 02:38:16] info: Auth is running on port 5000
+[2025-05-27 02:38:44] info: Auth is running on port 5000
+[2025-05-27 02:40:01] info: Auth is running on port 5000
+[2025-05-27 02:49:48] info: Auth is running on port 5000
+[2025-05-27 02:51:06] info: Auth is running on port 5000
+[2025-05-27 02:51:37] info: Auth is running on port 5000
+[2025-05-27 02:57:43] info: Auth is running on port 5000
+[2025-05-27 02:59:37] info: Auth is running on port 5000
+[2025-05-27 03:08:42] info: Auth is running on port 5000
+[2025-05-27 03:09:29] info: Auth is running on port 5000
+[2025-05-27 03:11:44] info: Auth is running on port 5000
+[2025-05-27 03:15:58] info: Auth is running on port 5000
+[2025-05-27 03:20:31] info: Auth is running on port 5000
+[2025-05-27 03:24:34] info: Auth is running on port 5000
+[2025-05-27 03:28:59] info: Auth is running on port 5000
+[2025-05-27 03:36:23] info: Auth is running on port 5000
+[2025-05-27 03:41:45] error: TypeError: pchstr must contain a $ as first char
+    at deserialize (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/node_modules/@phc/format/index.js:147:11)
+    at Object.verify (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/node_modules/argon2/argon2.js:91:15)
+    at login (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/routes/authRoutes.ts:119:32)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
