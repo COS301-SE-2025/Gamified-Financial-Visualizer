@@ -438,7 +438,8 @@ import {
   addGoalProgress,
   completeGoal,
   reduceGoalProgress,
-  getAllGoals
+  getAllGoals,
+  getUserGoalStats
 } from '../services/goals.service';
 import { logger } from '../config/logger';
 
@@ -636,5 +637,21 @@ router.get('/', async (_req: Request, res: Response) => {
     res.status(500).json({ status: 'error', message: 'Internal server error' });
   }
 });
+
+router.get('/user/:user_id/stats', async (req: Request, res: Response) => {
+  const userId = parseInt(req.params.user_id, 10);
+  if (isNaN(userId)) {
+    return res.status(400).json({ status: 'error', message: 'Invalid user_id' });
+  }
+
+  try {
+    const stats = await getUserGoalStats(userId);
+    res.json({ status: 'success', data: stats });
+  } catch (error: any) {
+    logger.error('[Goals] Stats fetch failed', error);
+    res.status(500).json({ status: 'error', message: 'Internal server error' });
+  }
+});
+
 
 export default router;
