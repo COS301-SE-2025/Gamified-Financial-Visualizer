@@ -20,10 +20,14 @@ const AuthLayout = ({ children, reverse = false }) => {
             className="w-[60%] relative text-white flex items-center justify-center"
             style={greenPanelStyle}
           >
-           <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+
+            {/* Dark overlay */}
+            <div className="absolute inset-0 bg-black bg-opacity-50 z-0"></div>
+
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
               <h1 className="text-3xl font-bold drop-shadow-lg">Welcome to Gamified Finance!</h1>
               <p className="text-lg mt-2 max-w-md drop-shadow-md">
-                Level up your wallet. Beat the budgeting boss.
+                Where Saving is a Quest, Spending is Strategy, and Every Goal Levels You Up
               </p>
             </div>
           </motion.div>
@@ -34,10 +38,14 @@ const AuthLayout = ({ children, reverse = false }) => {
             className="w-[60%] relative text-white flex items-center justify-center"
             style={greenPanelStyle}
           >
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4"> 
+
+            {/* Dark overlay */}
+            <div className="absolute inset-0 bg-black bg-opacity-50 z-0"></div>
+
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
               <h1 className="text-3xl font-bold drop-shadow-lg">Welcome to Gamified Finance!</h1>
               <p className="text-lg mt-2 max-w-md drop-shadow-md">
-                Coins, challenges, and financial glory await.
+                Where Saving is a Quest, Spending is Strategy, and Every Goal Levels You Up
               </p>
             </div>
           </motion.div>

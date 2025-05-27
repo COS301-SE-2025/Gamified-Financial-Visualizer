@@ -2,11 +2,12 @@ import { Router, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import argon2 from 'argon2';
 import { logger } from '../config/logger';
-import * as userService from '../services/userService';
+import * as userService from '../services/auth.service';
 import { V4 } from 'paseto';
 import crypto from 'crypto';
 
 const router = Router();
+
 
 const registerValidation = [
   body('full_name')
@@ -56,17 +57,17 @@ const register = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const { id, full_name, username, email, password } = req.body;
+  const {full_name, username, email, password } = req.body;
 
   try {
-    const password_hash = await argon2.hash(password, { type: argon2.argon2id });
+    const hashed_password = await argon2.hash(password, { type: argon2.argon2id });
 
     const user = await userService.createUser({
-      id,
       full_name,
       username,
       email,
-      password_hash,
+      hashed_password,
+      password_salt: crypto.randomBytes(16).toString('hex'), // Generate a random salt
     });
 
     logger.info(`[Auth] Successfully registered user: ${username}`);
@@ -94,7 +95,7 @@ const register = async (req: Request, res: Response): Promise<void> => {
 };
 
 const loginValidation = [
-  body('email').isEmail().withMessage('Valid email is required'),
+  body('username').notEmpty().withMessage('Username is required'),
   body('password').notEmpty().withMessage('Password is required'),
 ];
 
@@ -106,18 +107,18 @@ const login = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const { email, password } = req.body;
+  const { username, password } = req.body;
 
   try {
-    const user = await userService.getUserByEmail(email);
+    const user = await userService.getUserByUsername(username);
     if (!user) {
-      res.status(401).json({ status: 'error', message: 'Invalid email or password' });
+      res.status(401).json({ status: 'error', message: 'Invalid username' });
       return;
     }
 
-    const valid = await argon2.verify(user.password_hash, password);
+    const valid = await argon2.verify(user.hashed_password, password);
     if (!valid) {
-      res.status(401).json({ status: 'error', message: 'Invalid email or password' });
+      res.status(401).json({ status: 'error', message: 'Invalid password' });
       return;
     }
 
@@ -139,7 +140,6 @@ const login = async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ status: 'error', message: 'Internal server error' });
   }
 };
-
 
 router.post('/register', registerValidation, register);
 router.post('/login', loginValidation, login);

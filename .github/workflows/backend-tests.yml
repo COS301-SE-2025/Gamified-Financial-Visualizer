@@ -1,0 +1,86 @@
+name: Backend Unit Tests
+
+on:
+  push:
+    branches: [main, testing]
+    paths:
+      - 'services/auth.service.ts'
+      - 'services/transactions.service.ts'
+      - 'services/goals.service.ts'
+      - 'tests/users/auth.test.ts'
+      - 'tests/users/transactions.test.ts'
+      - 'tests/users/goals.test.ts'
+      - '.github/workflows/backend-tests.yml'
+  pull_request:
+    branches: [main, testing]
+    paths:
+      - 'services/auth.service.ts'
+      - 'services/transactions.service.ts'
+      - 'services/goals.service.ts'
+      - 'tests/users/auth.test.ts'
+      - 'tests/users/transactions.test.ts'
+      - 'tests/users/goals.test.ts'
+
+jobs:
+  auth-tests:
+    name: Auth Service Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup test environment
+        run: cp tests/.env.test .env
+
+      - name: Run auth unit tests
+        run: npm run test -- tests/users/auth.test.ts
+
+  transaction-tests:
+    name: Transaction Service Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup test environment
+        run: cp tests/.env.test .env
+
+      - name: Run transaction unit tests
+        run: npm run test -- tests/users/transactions.test.ts
+
+  goal-tests:
+    name: Goals Service Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup test environment
+        run: cp tests/.env.test .env
+
+      - name: Run goal unit tests
+        run: npm run test -- tests/users/goals.test.ts
