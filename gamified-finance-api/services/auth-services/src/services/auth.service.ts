@@ -58,6 +58,20 @@ export async function getUserById(user_id: number) {
   }
 }
 
+export async function getUserID(username: string) {
+  const query = 'SELECT user_id FROM users WHERE username = $1';
+  try {
+    const result = await pool.query(query, [username]);
+    if (result.rows.length === 0) {
+      throw new Error(`User with username '${username}' not found`);
+    }
+    return result.rows[0].user_id;
+  } catch (err) {
+    logger.error(`[AuthService] Failed to fetch user ID for username ${username}:`, err);
+    throw err;
+  }
+}
+
 export async function getUserByEmail(email: string) {
   const query = 'SELECT * FROM users WHERE email = $1';
   try {
