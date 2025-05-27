@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AddTransactionModal from '../../components/AddTransactionModal';
 import SetBudgetModal from '../../components/SetBudgetModal';
 import EditTransactionModal from '../../components/EditTransactionModal';
@@ -8,6 +8,86 @@ import badge3 from '../../assets/Images/highFiveIcon.png';
 import badge4 from '../../assets/Images/notesIcon.png';
 
 import {FaUtensils,FaBus,FaBolt,FaFilm,FaHeartbeat,FaPlane,FaBook,FaLaptop,FaUser,FaHandsHelping,FaTshirt,FaDumbbell,FaMobileAlt,FaWifi,FaTv,FaHome,FaCar,FaShieldAlt,FaCalendarAlt} from 'react-icons/fa';
+
+// 🔁 Inline helper functions 
+const mapCategoryToId = (name) => {
+  const mapping = {
+    Groceries: 1,
+    Transport: 2,
+    Health: 3,
+    Education: 4,
+    Entertainment: 5,
+    Utilities: 6,
+    Tech: 7,
+    Travel: 8,
+    Fitness: 9,
+    Insurance: 10,
+    Giving: 11,
+    Subscriptions: 12,
+    Internet: 13,
+    Streaming: 14,
+    Car: 15,
+    Personal: 16,
+    Fashion: 17,
+    Events: 18,
+    Housing: 19,
+    Gadgets: 20,
+  };
+  return mapping[name] || null;
+};
+
+const mapIdToCategory = (id) => {
+  const mapping = {
+    1: 'Groceries',
+    2: 'Transport',
+    3: 'Health',
+    4: 'Education',
+    5: 'Entertainment',
+    6: 'Utilities',
+    7: 'Tech',
+    8: 'Travel',
+    9: 'Fitness',
+    10: 'Insurance',
+    11: 'Giving',
+    12: 'Subscriptions',
+    13: 'Internet',
+    14: 'Streaming',
+    15: 'Car',
+    16: 'Personal',
+    17: 'Fashion',
+    18: 'Events',
+    19: 'Housing',
+    20: 'Gadgets',
+  };
+  return mapping[id] || 'Other';
+};
+
+const getLimitForCategory = (categoryId) => {
+  const limits = {
+    1: 9000,
+    2: 8000,
+    3: 6000,
+    4: 7000,
+    5: 5000,
+    6: 4000,
+    7: 10000,
+    8: 11000,
+    9: 2500,
+    10: 3000,
+    11: 2000,
+    12: 1200,
+    13: 800,
+    14: 600,
+    15: 9000,
+    16: 5000,
+    17: 4500,
+    18: 3500,
+    19: 12000,
+    20: 8000,
+  };
+  return limits[categoryId] || 0;
+};
+
 const DashboardPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState('All Transactions');
@@ -51,28 +131,30 @@ const DashboardPage = () => {
     'Internet', 'Streaming', 'Subscriptions', 'Housing', 'Car', 'Insurance', 'Events'
   ];
 
-  const budgetData = [
-    { category: 'Groceries', limit: 9000, used: 5200 },
-    { category: 'Transport', limit: 8000, used: 4600 },
-    { category: 'Health', limit: 6000, used: 3500 },
-    { category: 'Education', limit: 7000, used: 2900 },
-    { category: 'Entertainment', limit: 5000, used: 2800 },
-    { category: 'Utilities', limit: 4000, used: 3900 },
-    { category: 'Tech', limit: 10000, used: 8800 },
-    { category: 'Travel', limit: 11000, used: 7300 },
-    { category: 'Fitness', limit: 2500, used: 1800 },
-    { category: 'Insurance', limit: 3000, used: 1000 },
-    { category: 'Giving', limit: 2000, used: 1500 },
-    { category: 'Subscriptions', limit: 1200, used: 700 },
-    { category: 'Internet', limit: 800, used: 600 },
-    { category: 'Streaming', limit: 600, used: 400 },
-    { category: 'Car', limit: 9000, used: 3000 },
-    { category: 'Personal', limit: 5000, used: 3400 },
-    { category: 'Fashion', limit: 4500, used: 2300 },
-    { category: 'Events', limit: 3500, used: 1400 },
-    { category: 'Housing', limit: 12000, used: 8700 },
-    { category: 'Gadgets', limit: 8000, used: 5000 },
-  ];
+  const [budgetData, setBudgetData] = useState([]);
+const userId = 1; // Replace with dynamic user if needed
+
+const fetchBudgetSummary = async () => {
+  try {
+    const res = await fetch(`/api/transaction/user/${userId}/summary`);
+    const data = await res.json();
+    if (data.status === 'success') {
+      const formatted = data.data.map(item => ({
+        category: mapIdToCategory(item.category_id), // implement this
+        limit: getLimitForCategory(item.category_id), // implement storage
+        used: item.total_amount
+      }));
+      setBudgetData(formatted);
+    }
+  } catch (error) {
+    console.error('Failed to fetch budget summary', error);
+  }
+};
+
+useEffect(() => {
+  fetchBudgetSummary();
+}, []);
+
 
   const renderMainContent = () => {
     if (activeTab === 'All Transactions') {
@@ -312,7 +394,14 @@ const DashboardPage = () => {
 
       {/* Modals */}
       {showModal && <AddTransactionModal onClose={() => setShowModal(false)} />}
-      {showSetBudget && <SetBudgetModal onClose={() => setShowSetBudget(false)} />}
+      {showSetBudget && (
+  <SetBudgetModal
+    onClose={() => setShowSetBudget(false)}
+    onBudgetSet={fetchBudgetSummary}
+    userId={userId}
+  />
+)}
+
       {showEditModal && selectedTransaction && (
       <EditTransactionModal
         transaction={selectedTransaction}
@@ -326,7 +415,7 @@ const DashboardPage = () => {
             date: updated.date,
             account: updated.account,
           };
-          setTransactions(updatedList);
+          setTransactions(updatedList); 
         }}
       />
     )}
