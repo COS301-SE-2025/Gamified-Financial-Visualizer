@@ -16,12 +16,27 @@
 Gamified Financial Visualizer transforms financial literacy into a game-like experience using AI, AR/VR, and real-time data. Users track spending, set goals, and explore 3D financial environments while receiving personalized insights from AI coaches. The platform promotes social accountability through challenges and milestones, with secure, read-only integrations to South African banks and crypto wallets. Built for web and mobile, with future support for VR/AR devices.
 
 🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
-
 <h2 align="center">📛 GitHub Badges</h2>
 
 <p align="center">
   <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/issues">
     <img src="https://img.shields.io/github/issues/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Open Issues" />
+  </a>
+  &nbsp;
+  <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/pulls">
+    <img src="https://img.shields.io/github/issues-pr/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Open Pull Requests" />
+  </a>
+  &nbsp;
+  <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer">
+    <img src="https://img.shields.io/github/languages/count/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Languages Count" />
+  </a>
+  &nbsp;
+  <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/commits/main">
+    <img src="https://img.shields.io/github/last-commit/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Last Commit" />
+  </a>
+  &nbsp;
+  <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer">
+    <img src="https://img.shields.io/github/repo-size/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Repo Size" />
   </a>
   &nbsp;
   <a href="https://libraries.io/github/COS301-SE-2025/Gamified-Financial-Visualizer">
@@ -31,6 +46,11 @@ Gamified Financial Visualizer transforms financial literacy into a game-like exp
   <a href="#">
     <img src="https://img.shields.io/badge/build-passing-green" alt="Build Status" />
   </a>
+  &nbsp;
+  <a href="https://codecov.io/gh/COS301-SE-2025/Gamified-Financial-Visualizer">
+    <img src="https://codecov.io/gh/COS301-SE-2025/Gamified-Financial-Visualizer/branch/main/graph/badge.svg" alt="Codecov Coverage" />
+  </a>
+</p>
 </p>
 
 
