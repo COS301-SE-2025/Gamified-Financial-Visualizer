@@ -1,7 +1,4 @@
-import React from 'react';
-import { MdAccountBalance } from 'react-icons/md';
-import { FaShoppingCart, FaCar, FaHome } from 'react-icons/fa';
-import coinsImg from '../../assets/Images/pixelPond.jpeg';
+
 import ExpenseIncomeChart from '../../components/charts/ExpenseIncomeChart';
 import netflixLogo from '../../assets/Images/netflix.png';
 import spotifyLogo from '../../assets/Images/spotify.png';
