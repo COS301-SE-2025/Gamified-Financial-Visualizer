@@ -1,12 +1,13 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
+console.log('🧪 DB_PASSWORD typeof:', typeof process.env.DB_PASSWORD, process.env.DB_PASSWORD);
 
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { logger } from './config/logger';
 import goalRoutes from './routes/goalRoutes';
-import progressRoutes from './routes/progressRoutes';
+//import progressRoutes from './routes/progressRoutes';
 import { Request, Response, NextFunction } from 'express';
 
 const app = express();
@@ -15,7 +16,7 @@ app.use(helmet());
 app.use(express.json());
 
 app.use('/api/goals', goalRoutes); // POST /personal, /community, etc.
-app.use('/api/goals', progressRoutes); // e.g. /:goalId/progress
+//app.use('/api/goals', progressRoutes); // e.g. /:goalId/progress
 
 app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'OK' });

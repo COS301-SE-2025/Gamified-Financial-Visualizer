@@ -61,5 +61,5 @@ app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
 
 // Start server
 app.listen(PORT, () => {
-  logger.info(`Server is running on port ${PORT}`);
+  logger.info(`Auth is running on port ${PORT}`);
 });

@@ -151,3 +151,278 @@
 [2025-05-27 00:51:08] info: [GoalService] Created goal ID=18
 [2025-05-27 01:37:13] info: Transaction service running on port 5000
 [2025-05-27 01:37:40] info: [GoalService] Created goal ID=19
+[2025-05-27 01:44:23] info: Transaction service running on port 5000
+[2025-05-27 01:46:02] info: [GoalService] Created goal ID=20
+[2025-05-27 02:36:30] info: Transaction service running on port 5002
+[2025-05-27 02:37:58] info: Goal service running on port 5002
+[2025-05-27 02:38:01] info: Goals service running on port 5002
+[2025-05-27 02:38:44] info: Goals service running on port 5002
+[2025-05-27 02:40:01] info: Goals service running on port 5002
+[2025-05-27 02:42:23] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:42:23] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:43:57] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:43:57] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:44:22] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:44:22] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:45:26] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:45:26] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:46:15] info: Goals service running on port 5002
+[2025-05-27 02:46:24] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:46:24] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:46:26] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:46:26] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:46:28] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:46:28] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:49:16] info: Goals service running on port 5002
+[2025-05-27 02:49:26] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:49:26] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:49:28] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:49:28] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:49:48] info: Goals service running on port 5002
+[2025-05-27 02:50:00] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:50:00] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:51:37] info: Goals service running on port 5002
+[2025-05-27 02:51:49] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:51:49] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:57:43] info: Goals service running on port 5002
+[2025-05-27 02:57:54] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:57:54] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:57:56] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:57:56] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 02:59:37] info: Goals service running on port 5002
+[2025-05-27 03:00:19] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 03:00:19] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 03:00:39] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 03:00:39] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 03:04:01] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 03:04:01] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 03:07:13] info: Goals service running on port 5002
+[2025-05-27 03:08:42] info: Goals service running on port 5002
+[2025-05-27 03:09:29] info: Goals service running on port 5002
+[2025-05-27 03:09:37] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 03:09:37] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 03:09:40] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 03:09:40] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 03:11:44] info: Goals service running on port 5002
+[2025-05-27 03:12:12] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 03:12:12] error: Error: connect ECONNREFUSED 127.0.0.1:5433
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 03:15:57] info: Goals service running on port 5002
+[2025-05-27 03:20:31] info: Goals service running on port 5002
+[2025-05-27 03:20:42] error: error: insert or update on table "goals" violates foreign key constraint "goals_user_id_fkey"
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:52:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 03:20:42] error: error: insert or update on table "goals" violates foreign key constraint "goals_user_id_fkey"
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:52:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 03:22:33] info: Goals service running on port 5002
+[2025-05-27 03:22:53] error: error: insert or update on table "goals" violates foreign key constraint "goals_user_id_fkey"
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 03:22:53] error: error: insert or update on table "goals" violates foreign key constraint "goals_user_id_fkey"
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 03:23:51] info: [GoalService] Created goal ID=7
+[2025-05-27 03:24:34] info: Goals service running on port 5002
+[2025-05-27 03:28:58] info: Goals service running on port 5002
+[2025-05-27 03:29:36] error: Error: SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 03:29:36] error: Error: SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 03:31:14] error: Error: SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 03:31:14] error: Error: SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 03:32:00] error: Error: SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 03:32:00] error: Error: SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 03:35:00] error: Error: SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 03:35:00] error: Error: SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async createGoal (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/services/goals.service.ts:51:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/goal-service/src/routes/goalRoutes.ts:474:20)
+[2025-05-27 03:36:23] info: Goals service running on port 5002
+[2025-05-27 03:37:16] info: [GoalService] Created goal ID=8
