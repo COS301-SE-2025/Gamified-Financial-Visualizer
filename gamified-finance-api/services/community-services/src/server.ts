@@ -8,7 +8,7 @@ import { logger } from './config/logger.js';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5002;
+const PORT = process.env.PORT || 5003;
 
 app.use(cors());
 app.use(helmet());

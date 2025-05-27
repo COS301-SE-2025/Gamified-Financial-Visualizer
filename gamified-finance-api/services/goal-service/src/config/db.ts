@@ -3,6 +3,12 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
+
+console.log('🌍 Loaded DB config:', {
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+});
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || undefined,
   user: process.env.DB_USER,

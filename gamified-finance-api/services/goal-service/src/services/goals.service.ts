@@ -224,3 +224,16 @@ export async function getAllGoals(): Promise<Goal[]> {
     throw error;
   }
 }
+
+export async function getUserGoalStats(user_id: number) {
+  const sql = `
+    SELECT
+      COUNT(*) FILTER (WHERE user_id = $1) AS total_goals,
+      COUNT(*) FILTER (WHERE user_id = $1 AND goal_status = 'completed') AS completed_goals,
+      COALESCE(SUM(current_amount), 0) AS total_saved
+    FROM goals
+    WHERE user_id = $1;
+  `;
+  const result = await pool.query(sql, [user_id]);
+  return result.rows[0];
+}
