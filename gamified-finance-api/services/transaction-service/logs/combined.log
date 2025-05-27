@@ -74,3 +74,6 @@
 [2025-05-27 03:28:58] info: Transaction service running on port 5001
 [2025-05-27 03:36:23] info: Transaction service running on port 5001
 [2025-05-27 03:44:44] info: Transaction service running on port 5001
+[2025-05-27 17:07:08] info: Transaction service running on port 5001
+[2025-05-27 17:07:52] info: [TransactionService] Created budget ID=8 for user 15
+[2025-05-27 17:27:12] info: [TransactionService] Created transaction ID=27

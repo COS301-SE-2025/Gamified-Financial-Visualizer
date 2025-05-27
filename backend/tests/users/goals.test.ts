@@ -17,7 +17,7 @@ import {
 
 describe('Goal Service (Jest)', () => {
   let goalId: number;
-  const testUserId = 1;
+  const testUserId = 6;
 
   const goalData = {
     user_id: testUserId,
