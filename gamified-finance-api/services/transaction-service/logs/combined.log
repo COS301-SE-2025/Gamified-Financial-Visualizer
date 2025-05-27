@@ -77,3 +77,45 @@
 [2025-05-27 17:07:08] info: Transaction service running on port 5001
 [2025-05-27 17:07:52] info: [TransactionService] Created budget ID=8 for user 15
 [2025-05-27 17:27:12] info: [TransactionService] Created transaction ID=27
+[2025-05-27 20:03:01] info: Transaction service running on port 5001
+[2025-05-27 20:12:48] error: error: invalid input syntax for type integer: "NaN"
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/transaction-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async getUserTransactions (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/transaction-service/src/services/transaction.service.ts:219:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/transaction-service/src/routes/transactionRoutes.ts:63:18)
+[2025-05-27 20:12:48] error: error: invalid input syntax for type integer: "NaN"
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/transaction-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async getUserTransactions (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/transaction-service/src/services/transaction.service.ts:219:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/transaction-service/src/routes/transactionRoutes.ts:63:18)
+[2025-05-27 20:12:55] error: error: invalid input syntax for type integer: "NaN"
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/transaction-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async getUserTransactions (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/transaction-service/src/services/transaction.service.ts:219:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/transaction-service/src/routes/transactionRoutes.ts:63:18)
+[2025-05-27 20:12:55] error: error: invalid input syntax for type integer: "NaN"
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/transaction-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async getUserTransactions (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/transaction-service/src/services/transaction.service.ts:219:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/transaction-service/src/routes/transactionRoutes.ts:63:18)
+[2025-05-27 20:13:21] info: Transaction service running on port 5001
+[2025-05-27 20:13:39] error: error: invalid input syntax for type integer: "NaN"
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/transaction-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async getUserTransactions (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/transaction-service/src/services/transaction.service.ts:219:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/transaction-service/src/routes/transactionRoutes.ts:63:18)
+[2025-05-27 20:13:39] error: error: invalid input syntax for type integer: "NaN"
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/transaction-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async getUserTransactions (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/transaction-service/src/services/transaction.service.ts:219:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/transaction-service/src/routes/transactionRoutes.ts:63:18)
+[2025-05-27 20:14:08] error: error: invalid input syntax for type integer: "NaN"
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/transaction-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async getUserTransactions (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/transaction-service/src/services/transaction.service.ts:219:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/transaction-service/src/routes/transactionRoutes.ts:63:18)
+[2025-05-27 20:14:08] error: error: invalid input syntax for type integer: "NaN"
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/transaction-service/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async getUserTransactions (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/transaction-service/src/services/transaction.service.ts:219:17)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/transaction-service/src/routes/transactionRoutes.ts:63:18)

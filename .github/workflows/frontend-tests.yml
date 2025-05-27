@@ -21,10 +21,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '20.19.2'
 
       - name: Install dependencies
         working-directory: ./gamified-finance-frontend
@@ -32,4 +31,4 @@ jobs:
 
       - name: Run unit tests
         working-directory: ./gamified-finance-frontend
-        run: npm test -- UnitTesting
+        run: npm run test
