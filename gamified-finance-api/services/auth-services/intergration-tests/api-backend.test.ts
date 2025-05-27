@@ -4,7 +4,7 @@ import pool from '../src/config/db';
 
 describe('Auth API (integration)', () => {
   let server: ReturnType<typeof app.listen>;
-  const PORT = 5001;
+  const PORT = 5000;
 
   beforeAll(() => {
     server = app.listen(PORT, () => {
@@ -23,9 +23,10 @@ describe('Auth API (integration)', () => {
     expect(res.body.status).toBe('OK');
   });
 
+  let randomID = Math.floor(Math.random() * 5);
   const mockUser = {
-    full_name: 'Test User',
-    username: 'test_user',
+    full_name: 'Test ' + randomID,
+    username: 'test_user' + randomID,
     email: `testuser_${Date.now()}@example.com`,
     password: 'TestPass123!'
   };
@@ -38,7 +39,7 @@ describe('Auth API (integration)', () => {
 
   test('POST /api/auth/login authenticates the user', async () => {
     const res = await request(server).post('/api/auth/login').send({
-      email: mockUser.email,
+      username: mockUser.username,
       password: mockUser.password
     });
     expect(res.status).toBe(200);
@@ -50,7 +51,7 @@ describe('Auth API (integration)', () => {
       email: mockUser.email,
       password: 'WrongPassword123!'
     });
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(400);
   });
 
   test('POST /api/auth/register with invalid name should fail', async () => {

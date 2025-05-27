@@ -4,7 +4,7 @@ module.exports = {
   testEnvironment: 'node',
 
   // only run files under tests/integration
-  testMatch: ['<rootDir>/intergration-tests/**/*.test.ts'],
+  testMatch: ['<rootDir>/integration-tests/**/*.test.ts'],
 
   // load your .env
   setupFiles: ['dotenv/config'],

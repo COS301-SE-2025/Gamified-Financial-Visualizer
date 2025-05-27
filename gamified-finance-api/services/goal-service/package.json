@@ -3,7 +3,8 @@
     "dev": "tsx watch src/server.ts",
     "start": "tsx src/server.ts",
     "build": "tsc",
-    "serve": "node dist/index.js"
+    "serve": "node dist/index.js",
+    "test:integration": "jest"
   },
   "dependencies": {
     "cors": "^2.8.5",

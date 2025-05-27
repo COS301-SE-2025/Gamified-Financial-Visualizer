@@ -1,0 +1,66 @@
+[2025-05-27 21:30:39] info: [AuthService] User registered: test_user
+[2025-05-27 21:30:39] info: [Auth] Successfully registered user: test_user
+[2025-05-27 21:30:39] warn: [Auth] Login validation failed
+[2025-05-27 21:30:39] warn: [Auth] Login validation failed
+[2025-05-27 21:30:39] warn: [Auth] Registration validation failed
+[2025-05-27 21:31:42] error: error: duplicate key value violates unique constraint "users_username_key"
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/node_modules/pg-pool/index.js:45:11
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.createUser (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/services/auth.service.ts:24:20)
+    at register (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/routes/authRoutes.ts:65:18)
+[2025-05-27 21:31:42] error: error: duplicate key value violates unique constraint "users_username_key"
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/node_modules/pg-pool/index.js:45:11
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.createUser (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/services/auth.service.ts:24:20)
+    at register (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/routes/authRoutes.ts:65:18)
+[2025-05-27 21:31:42] warn: [Auth] Login validation failed
+[2025-05-27 21:31:42] warn: [Auth] Login validation failed
+[2025-05-27 21:31:42] warn: [Auth] Registration validation failed
+[2025-05-27 21:32:53] error: error: duplicate key value violates unique constraint "users_username_key"
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/node_modules/pg-pool/index.js:45:11
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.createUser (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/services/auth.service.ts:24:20)
+    at register (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/routes/authRoutes.ts:65:18)
+[2025-05-27 21:32:53] error: error: duplicate key value violates unique constraint "users_username_key"
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/node_modules/pg-pool/index.js:45:11
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.createUser (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/services/auth.service.ts:24:20)
+    at register (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/routes/authRoutes.ts:65:18)
+[2025-05-27 21:32:53] warn: [Auth] Login validation failed
+[2025-05-27 21:32:53] warn: [Auth] Login validation failed
+[2025-05-27 21:32:54] warn: [Auth] Registration validation failed
+[2025-05-27 21:33:44] error: error: duplicate key value violates unique constraint "users_username_key"
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/node_modules/pg-pool/index.js:45:11
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.createUser (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/services/auth.service.ts:24:20)
+    at register (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/routes/authRoutes.ts:65:18)
+[2025-05-27 21:33:44] error: error: duplicate key value violates unique constraint "users_username_key"
+    at /home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/node_modules/pg-pool/index.js:45:11
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.createUser (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/services/auth.service.ts:24:20)
+    at register (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/routes/authRoutes.ts:65:18)
+[2025-05-27 21:33:44] info: [Auth] User logged in: test_user
+[2025-05-27 21:33:44] warn: [Auth] Login validation failed
+[2025-05-27 21:33:44] warn: [Auth] Registration validation failed
+[2025-05-27 21:34:44] warn: [Auth] Registration validation failed
+[2025-05-27 21:34:44] warn: [Auth] Login validation failed
+[2025-05-27 21:34:44] warn: [Auth] Registration validation failed
+[2025-05-27 21:35:22] warn: [Auth] Registration validation failed
+[2025-05-27 21:35:22] warn: [Auth] Login validation failed
+[2025-05-27 21:35:22] warn: [Auth] Registration validation failed
+[2025-05-27 21:38:22] warn: [Auth] Registration validation failed
+[2025-05-27 21:38:22] warn: [Auth] Login validation failed
+[2025-05-27 21:38:22] warn: [Auth] Registration validation failed
+[2025-05-27 21:38:32] info: Auth is running on port 5000
+[2025-05-27 21:39:02] warn: [Auth] Registration validation failed
+[2025-05-27 21:39:02] warn: [Auth] Login validation failed
+[2025-05-27 21:39:02] warn: [Auth] Registration validation failed
+[2025-05-27 21:39:07] warn: [Auth] Registration validation failed
+[2025-05-27 21:39:07] warn: [Auth] Login validation failed
+[2025-05-27 21:39:07] warn: [Auth] Registration validation failed
+[2025-05-27 21:39:45] warn: [Auth] Registration validation failed
+[2025-05-27 21:39:45] warn: [Auth] Login validation failed
+[2025-05-27 21:39:45] warn: [Auth] Registration validation failed
+[2025-05-27 21:50:25] info: Auth is running on port 5000
+[2025-05-27 21:51:05] info: Auth is running on port 5000
+[2025-05-27 21:51:23] info: [Auth] User logged in: masimbamaf

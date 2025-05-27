@@ -18,7 +18,7 @@ describe('Goals API (integration)', () => {
 
   it('POST /api/goals/personal should create a personal goal', async () => {
     const res = await request(server).post('/api/goals/personal').send({
-      user_id: 1,
+      user_id: 6,
       goal_name: 'Integration Goal',
       goal_type: 'savings',
       target_amount: 1000,
@@ -40,7 +40,7 @@ describe('Goals API (integration)', () => {
     const goalId = 1;
     const res = await request(server)
       .post(`/api/goals/${goalId}/progress`)
-      .send({ user_id: 1, amount: 50 });
+      .send({ user_id: 6, amount: 50 });
 
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('data');
