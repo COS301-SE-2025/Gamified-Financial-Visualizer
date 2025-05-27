@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { FaCheckCircle } from 'react-icons/fa';
 import { BsRepeat } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 
@@ -23,6 +22,8 @@ const GoalsCreateForm = () => {
   const [xpReward, setXpReward] = useState(200);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');
+
+console.log(setXpReward);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;

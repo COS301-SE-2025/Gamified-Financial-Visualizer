@@ -28,3 +28,11 @@
     at Object.verify (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/node_modules/argon2/argon2.js:91:15)
     at login (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/routes/authRoutes.ts:119:32)
     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+[2025-05-27 20:13:38] error: Error: User with username 'testuser' not found
+    at Module.getUserID (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/services/auth.service.ts:66:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/routes/authRoutes.ts:150:21)
+[2025-05-27 20:13:38] error: Error: User with username 'testuser' not found
+    at Module.getUserID (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/services/auth.service.ts:66:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async <anonymous> (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/routes/authRoutes.ts:150:21)
