@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FaCheckCircle } from 'react-icons/fa';
 import { BsRepeat } from 'react-icons/bs';
+import { useNavigate } from 'react-router-dom';
 
 const goalImages = [
   { id: 1, name: 'Pixel Path', src: require('../../../assets/Images/pixelPath.jpeg') },
@@ -9,6 +10,7 @@ const goalImages = [
 ];
 
 const GoalsCreateForm = () => {
+  const navigate = useNavigate();
   const [goal, setGoal] = useState({
     name: '',
     category: '',
@@ -39,6 +41,28 @@ const GoalsCreateForm = () => {
     setIsSubmitting(true);
     setSubmitMessage('');
 
+    // Get user from localStorage
+    const storedUser = localStorage.getItem('user');
+    if (!storedUser) {
+      setSubmitMessage('❌ Please log in to create a goal.');
+      setIsSubmitting(false);
+      return;
+    }
+
+    let userId;
+    try {
+      const user = JSON.parse(storedUser);
+      userId = user.id;
+      if (!userId) {
+        throw new Error('User ID not found');
+      }
+    } catch (error) {
+      console.error('Error parsing user from localStorage:', error);
+      setSubmitMessage('❌ Invalid user data. Please log in again.');
+      setIsSubmitting(false);
+      return;
+    }
+
     // Basic validation
     if (!goal.name || !goal.targetAmount || !goal.startDate) {
       setSubmitMessage('Please fill in all required fields.');
@@ -47,18 +71,17 @@ const GoalsCreateForm = () => {
     }
 
     try {
-      // Prepare the request body according to your API specification
+      // Prepare the request body
       const requestBody = {
-        user_id: 1, // You should get this from your auth context/state
-        community_id: null, // Set to null as per your example
-        goal_name: goal.name.trim(), // Trim whitespace
-        goal_type: goal.category || 'savings', // Default to 'savings' if no category
-        target_amount: Number(goal.targetAmount), // Use Number() instead of parseInt()
+        user_id: userId, // Dynamic user ID from localStorage
+        community_id: null,
+        goal_name: goal.name.trim(),
+        goal_type: goal.category || 'savings',
+        target_amount: Number(goal.targetAmount),
         target_date: goal.startDate,
-        goal_status: 'in-progress' // Changed from 'active' to 'in-progress'
+        goal_status: 'in-progress',
       };
 
-      // Debug logging
       console.log('Sending request body:', requestBody);
 
       const response = await fetch('http://localhost:5002/api/goal', {
@@ -67,6 +90,7 @@ const GoalsCreateForm = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
+        credentials: 'include', // Support session-based auth
       });
 
       console.log('Response status:', response.status);
@@ -85,7 +109,6 @@ const GoalsCreateForm = () => {
 
       if (response.ok && data && data.status === 'success') {
         setSubmitMessage('✅ Goal created successfully!');
-        // Reset form
         setGoal({
           name: '',
           category: '',
@@ -94,27 +117,21 @@ const GoalsCreateForm = () => {
           recurring: false,
           image: null,
         });
-        
-        // Optional: Redirect to goals list after successful creation
         setTimeout(() => {
-          window.location.href = '/goals'; // or use navigate if you have react-router setup
-        }, 10000); //TODO: Use navigate from react-router if available
+          navigate('/goals');
+        }, 5000);
       } else {
-        // Handle different types of errors
         let errorMessage = 'Failed to create goal';
-        
         if (data && data.message) {
           errorMessage = data.message;
         } else if (!response.ok) {
           errorMessage = `Server error (${response.status}): ${response.statusText}`;
         }
-        
         console.error('API Error:', {
           status: response.status,
           statusText: response.statusText,
-          data: data
+          data,
         });
-        
         setSubmitMessage(`❌ Error: ${errorMessage}`);
       }
     } catch (error) {
@@ -217,9 +234,8 @@ const GoalsCreateForm = () => {
             <div
               key={img.id}
               onClick={() => handleImageSelect(img.src)}
-              className={`rounded-xl border-2 cursor-pointer transition hover:scale-105 ${
-                goal.image === img.src ? 'border-blue-500' : 'border-transparent'
-              }`}
+              className={`rounded-xl border-2 cursor-pointer transition hover:scale-105 ${goal.image === img.src ? 'border-blue-500' : 'border-transparent'
+                }`}
             >
               <img
                 src={img.src}
@@ -232,11 +248,11 @@ const GoalsCreateForm = () => {
         </div>
       </div>
 
-      {/* Submit Message */}
       {submitMessage && (
-        <div className={`p-3 rounded-md text-sm ${
-          submitMessage.includes('✅') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-        }`}>
+        <div
+          className={`p-3 rounded-md text-sm ${submitMessage.includes('✅') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+            }`}
+        >
           {submitMessage}
         </div>
       )}
@@ -245,11 +261,10 @@ const GoalsCreateForm = () => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className={`px-5 py-2 rounded-full shadow transition ${
-            isSubmitting 
-              ? 'bg-gray-400 cursor-not-allowed' 
+          className={`px-5 py-2 rounded-full shadow transition ${isSubmitting
+              ? 'bg-gray-400 cursor-not-allowed'
               : 'bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700'
-          } text-white`}
+            } text-white`}
         >
           {isSubmitting ? 'Creating Goal...' : 'Create Goal'}
         </button>

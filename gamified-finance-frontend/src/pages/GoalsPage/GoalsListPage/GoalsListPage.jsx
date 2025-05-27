@@ -15,7 +15,6 @@ const GoalsList = ({ filter = 'ongoing' }) => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // TODO: Replace with actual user ID from your auth context
   const userId = 1;
 
   useEffect(() => {
