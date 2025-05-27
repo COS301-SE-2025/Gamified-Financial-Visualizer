@@ -2,7 +2,9 @@ import { Router, Request, Response } from 'express';
 import {
   createTransaction,
   getUserTransactions,
-  getTotalSpentPerCategory
+  getTotalSpentPerCategory,
+  getCategoryNameByID,
+  getCategories
 } from '../services/transaction.service';
 import { logger } from '../config/logger';
 
@@ -77,6 +79,53 @@ router.get('/user/:userId/summary', async (req: Request, res: Response) => {
   } catch (error) {
     logger.error('[Transaction] Summary failed', error);
     res.status(500).json({ status: 'error', message: 'Internal server error' });
+  }
+});
+
+/**
+ * @route   GET /api/transaction/categories
+ * @desc    Return all global categories
+ */
+router.get('/categories', async (req: Request, res: Response) => {
+  try {
+    const categories = await getCategories();
+    return res.json({ status: 'success', data: categories });
+  } catch (error: any) {
+    logger.error('[Transaction] getCategories failed', error);
+    return res
+      .status(500)
+      .json({ status: 'error', message: error.message || 'Internal server error' });
+  }
+});
+
+/**
+ * @route   GET /api/transactions/categories/:category_id
+ * @desc    Return the name of a single category by its ID
+ */
+router.get('/categories/:category_id', async (req: Request, res: Response) => {
+  const categoryID = parseInt(req.params.category_id, 10);
+  if (isNaN(categoryID)) {
+    return res
+      .status(400)
+      .json({ status: 'error', message: 'Invalid category_id parameter' });
+  }
+
+  try {
+    const categoryName = await getCategoryNameByID(categoryID);
+    if (!categoryName) {
+      return res
+        .status(404)
+        .json({ status: 'error', message: 'Category not found' });
+    }
+    return res.json({
+      status: 'success',
+      data: { category_id: categoryID, category_name: categoryName }
+    });
+  } catch (error: any) {
+    logger.error('[Transaction] getCategoryNameByID failed', error);
+    return res
+      .status(500)
+      .json({ status: 'error', message: error.message || 'Internal server error' });
   }
 });
 
