@@ -6,14 +6,14 @@
 <h1 align="center">Gamified Financial Visualizer </h1>
 <!-- Our logo needs to go here to the right of the following sentence -->
 <h2 align="center">
-  Presented by <strong>Codeblooded</strong><br/>
+  Presented by <strong>CodeBlooded</strong><br/>
   <img src="./assests/CodeBloodedLogo-2.png" alt="Codeblooded Logo" width="50" />
 </h2>
 
 🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
 
 <h2 align="center"> Project Overview </h2> 
-The Gamified Financial Visualizer is a cross-platform solution that leverages AR and AI to reimagine financial literacy as an engaging, game-like experience. Designed for digitally native users— particularly those interested in financial management —the platform makes budgeting, saving, investing, and spending management interactive and accessible. Aligned with EPI-USE’s strategic goals, the solution integrates advanced AI and Machine learning to analyse transactions data and provide real-time, personalized financial advice contextualized to local realities. Users can explore financial goals through immersive AR environments, engage with AI financial coaches,and navigate 3D “financial worlds.” A built-in community layer promotes social accountability through group challenges, shared milestones, and peer encouragement. The platform supports mobile and web access, with future expansion planned for AR-enabled devices.
+The Gamified Financial Visualizer is a cross-platform solution that leverages AR and AI to reimagine financial literacy as an engaging, game-like experience. Designed for digitally native users— particularly those interested in financial management —the platform makes budgeting, saving investing, and spending management interactive and accessible. Aligned with EPI-USE’s strategic goals, the solution integrates advanced AI and Machine learning to analyse transactions data and provide real-time, personalized financial advice contextualized to local realities. Users can explore financial goals through immersive AR environments, engage with AI financial coaches,and navigate 3D “financial worlds.” A built-in community layer promotes social accountability through group challenges, shared milestones, and peer encouragement. The platform supports mobile and web access, with future expansion planned for AR-enabled devices.
 
 🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
 
@@ -102,7 +102,7 @@ This table provides quick access to the key documents and planning resources for
 
 <p align="center">
   Got feedback, questions, or collaboration ideas?<br/>
-  Reach out to the <strong>Codeblooded</strong> team:
+  Reach out to the <strong>CodeBlooded</strong> team:
 </p>
 
 <p align="center">
