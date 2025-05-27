@@ -16,7 +16,7 @@ import {
 } from '../../services/transactions.service';
 
 const testId = Math.floor(Math.random() * 1000000);
-const testUserId = 1;
+const testUserId = 6;
 const testAccountId = 1;
 const testCategoryId = Math.floor(Math.random() * 50) + 1;
 

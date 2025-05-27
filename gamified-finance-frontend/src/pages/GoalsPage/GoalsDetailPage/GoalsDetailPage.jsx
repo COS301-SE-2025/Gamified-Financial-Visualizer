@@ -1,8 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import GoalPage from '../GoalPage';
-import GoalsHeader from '../MainContent/GoalsHeader';
-import GoalsLevelCard from '../MainContent/GoalsLevelCard';
+
 
 import goal1 from '../../../assets/Images/pixelAllyway.jpeg';
 import goal2 from '../../../assets/Images/pixelMoonLight.jpeg';
