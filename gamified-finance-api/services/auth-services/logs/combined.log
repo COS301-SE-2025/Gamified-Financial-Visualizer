@@ -60,3 +60,8 @@
     at Object.verify (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/node_modules/argon2/argon2.js:91:15)
     at login (/home/theplugza/Gamified-Financial-Visualizer/gamified-finance-api/services/auth-services/src/routes/authRoutes.ts:119:32)
     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+[2025-05-27 17:07:08] info: Auth is running on port 5000
+[2025-05-27 17:07:24] info: [Auth] User logged in: masimbamaf
+[2025-05-27 17:11:10] info: [Auth] User logged in: masimbamaf
+[2025-05-27 17:12:22] info: [Auth] User logged in: masimbamaf
+[2025-05-27 17:12:26] info: [Auth] User logged in: masimbamaf
