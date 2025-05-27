@@ -6,46 +6,47 @@ import { useLocation } from 'react-router-dom';
 import badge1 from '../../assets/Images/awardIcon.png';
 import badge2 from '../../assets/Images/CoinStack.png';
 import badge3 from '../../assets/Images/highFiveIcon.png';
-import badge4 from '../../assets/Images/notesIcon.png';
+import badge4 from '../../assets/Images/moneyBagIcon.png';
+import budgetDefault from '../../assets/Images/notesIcon.png';
 
 import { FaUtensils, FaBus, FaBolt, FaFilm, FaHeartbeat, FaPlane, FaBook, FaLaptop, FaUser, FaHandsHelping, FaTshirt, FaDumbbell, FaMobileAlt, FaWifi, FaTv, FaHome, FaCar, FaShieldAlt, FaCalendarAlt } from 'react-icons/fa'
 
-const getLimitForCategory = (categoryId) => {
-  const limits = {
-    1: 9000,
-    2: 8000,
-    3: 6000,
-    4: 7000,
-    5: 5000,
-    6: 4000,
-    7: 10000,
-    8: 11000,
-    9: 2500,
-    10: 3000,
-    11: 2000,
-    12: 1200,
-    13: 800,
-    14: 600,
-    15: 9000,
-    16: 5000,
-    17: 4500,
-    18: 3500,
-    19: 12000,
-    20: 8000,
-  };
-  return limits[categoryId] || 0;
-};
+// const getLimitForCategory = (categoryId) => {
+//   const limits = {
+//     1: 9000,
+//     2: 8000,
+//     3: 6000,
+//     4: 7000,
+//     5: 5000,
+//     6: 4000,
+//     7: 10000,
+//     8: 11000,
+//     9: 2500,
+//     10: 3000,
+//     11: 2000,
+//     12: 1200,
+//     13: 800,
+//     14: 600,
+//     15: 9000,
+//     16: 5000,
+//     17: 4500,
+//     18: 3500,
+//     19: 12000,
+//     20: 8000,
+//   };
+//   return limits[categoryId] || 0;
+// };
 
-const fetchUserId = async (username) => {
-  try {
-    const res = await fetch(`http://localhost:5000/api/auth/user-id/${username}`);
-    const data = await res.json();
-    return data.data.user_id;
-  } catch (err) {
-    console.error('Failed to fetch user ID:', err);
-    return null;
-  }
-};
+// const fetchUserId = async (username) => {
+//   try {
+//     const res = await fetch(`http://localhost:5000/api/auth/user-id/${username}`);
+//     const data = await res.json();
+//     return data.data.user_id;
+//   } catch (err) {
+//     console.error('Failed to fetch user ID:', err);
+//     return null;
+//   }
+// };
 
 const DashboardPage = () => {
   const [showModal, setShowModal] = useState(false);
@@ -233,7 +234,8 @@ const DashboardPage = () => {
             >
               <div className="flex items-center gap-4">
                 <img
-                  src={`/categories/${(budget.name || 'default').toLowerCase()}.png`}
+                
+                  src={budgetDefault[budget.name?.toLowerCase()] || budgetDefault}
                   alt={budget.name}
                   className="w-12 h-12 rounded-full border"
                 />
