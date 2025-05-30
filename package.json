@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@types/winston": "^2.4.4",
+    "bullmq": "^5.53.1",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
@@ -12,8 +13,7 @@
   },
   "scripts": {
     "format": "prettier . --write",
-    "dev": "concurrently \"npm run dev --prefix gamified-finance-api/services/auth-services\" \"npm run dev --prefix gamified-finance-api/services/transaction-service\"  \"npm run dev --prefix gamified-finance-api/services/goal-service\" \"npm start --prefix gamified-finance-frontend\" "
-
+    "dev": "concurrently \"npm run dev --prefix api-backend/services/auth-services\" \"npm run dev --prefix api-backend/services/transaction-service\"  \"npm run dev --prefix api-backend/services/goal-service\" \"npm start --prefix gamified-finance-frontend\" "
   },
   "devDependencies": {
     "@types/cors": "^2.8.18",
@@ -33,12 +33,16 @@
     "tailwindcss": "^4.1.7",
     "ts-jest": "^29.3.4",
     "ts-node": "^10.9.2",
-    "tsx": "^4.19.4",
     "ts-node-dev": "^2.0.0",
+    "tsx": "^4.19.4",
     "typescript": "^5.8.3"
   },
   "type": "module",
   "name": "gfv-dev",
   "version": "1.0.0",
-  "private": true
+  "private": true,
+  "workspaces": [
+    "gamified-finance-frontend",
+    "api-backend/services/*"
+  ]
 }
