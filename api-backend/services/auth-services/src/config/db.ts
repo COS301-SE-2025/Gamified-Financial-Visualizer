@@ -1,8 +1,10 @@
-import { Pool } from 'pg';
+
 import dotenv from 'dotenv';
 
 dotenv.config();
+import { Pool } from 'pg';
 
+console.log('🔐 Auth DB_USER:', typeof process.env.DB_PASSWORD, process.env.DB_USER);
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || undefined,
   user: process.env.DB_USER,
