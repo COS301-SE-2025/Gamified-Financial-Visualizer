@@ -13,15 +13,33 @@
 🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
 
 <h2 align="center">Project Overview </h2> 
-Gamified Financial Visualizer transforms financial literacy into a game-like experience using AI, AR/VR, and real-time data. Users track spending, set goals, and explore 3D financial environments while receiving personalized insights from AI coaches. The platform promotes social accountability through challenges and milestones, with secure, read-only integrations to South African banks and crypto wallets. Built for web and mobile, with future support for VR/AR devices.
+The Gamified Financial Visualizer is a cross-platform solution that leverages AR and AI to reimagine financial literacy as an engaging, game-like experience. Designed for digitally native users— particularly those interested in financial management —the platform makes budgeting, saving, investing, and spending management interactive and accessible.  <br>
+Aligned with EPI-USE's strategic goals, the solution integrates advanced AI and
+Machine learning to analyse transactions data and provide real-time, personalized financial advice contextualized to local realities.
+Users can explore financial goals through immersive AR environments, engage with AI financial coaches, and navigate 3D “financial worlds.” A built-in community layer promotes social accountability through group challenges, shared milestones, and peer encouragement. The platform supports mobile and web access, with future expansion planned for AR-enabled devices. 
 
 🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
-
 <h2 align="center">📛 GitHub Badges</h2>
 
 <p align="center">
   <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/issues">
     <img src="https://img.shields.io/github/issues/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Open Issues" />
+  </a>
+  &nbsp;
+  <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/pulls">
+    <img src="https://img.shields.io/github/issues-pr/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Open Pull Requests" />
+  </a>
+  &nbsp;
+  <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer">
+    <img src="https://img.shields.io/github/languages/count/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Languages Count" />
+  </a>
+  &nbsp;
+  <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/commits/main">
+    <img src="https://img.shields.io/github/last-commit/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Last Commit" />
+  </a>
+  &nbsp;
+  <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer">
+    <img src="https://img.shields.io/github/repo-size/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Repo Size" />
   </a>
   &nbsp;
   <a href="https://libraries.io/github/COS301-SE-2025/Gamified-Financial-Visualizer">
@@ -31,6 +49,11 @@ Gamified Financial Visualizer transforms financial literacy into a game-like exp
   <a href="#">
     <img src="https://img.shields.io/badge/build-passing-green" alt="Build Status" />
   </a>
+  &nbsp;
+  <a href="https://codecov.io/gh/COS301-SE-2025/Gamified-Financial-Visualizer">
+    <img src="https://codecov.io/gh/COS301-SE-2025/Gamified-Financial-Visualizer/branch/main/graph/badge.svg" alt="Codecov Coverage" />
+  </a>
+</p>
 </p>
 
 
