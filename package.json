@@ -40,5 +40,9 @@
   "type": "module",
   "name": "gfv-dev",
   "version": "1.0.0",
-  "private": true
+  "private": true,
+  "workspaces": [
+    "gamified-finance-frontend",
+    "api-backend/services/*"
+  ]
 }
