@@ -530,7 +530,7 @@ Stores metadata for banner images that are shown in the UI, such as promotional 
 | Column Name     | Data Type  | Description                                                               |
 |------------------|-----------|---------------------------------------------------------------------------|
 | `banner_id`      | SERIAL    | Primary key. Unique ID for the banner.                                    |
-| `image_url`      | TEXT      | URL to the banner image asset.                                            |
+| `image_url`      | BYTEA      | URL to the banner image asset.                                            |
 | `alt_text`       | TEXT      | Alternative text description for accessibility and SEO.                   |
 | `display_start`  | TIMESTAMP | Optional. When the banner should begin displaying in the UI.              |
 | `display_end`    | TIMESTAMP | Optional. When the banner should stop being displayed.                    |
@@ -549,7 +549,7 @@ Defines achievement milestones users can earn by completing specific actions suc
 | `achievement_title`       | VARCHAR(100) | The name of the achievement.                                                 |
 | `achievement_description` | TEXT         | A detailed explanation of what the achievement represents.                   |
 | `points_awarded`          | INT          | The number of gamified points awarded to the user when earned. Must be ≥ 0.  |
-| `badge_icon_url`          | TEXT         | Optional. URL to the icon representing this achievement.                     |
+| `badge_icon_url`          | BYTEA         | Optional. URL to the icon representing this achievement.                     |
 | `trigger_condition_json`  | JSONB        | A JSON object defining the rule that triggers the achievement (e.g., `{ "goal_completed": true, "amount": 1000 }`). |
 
 > Achievements are triggered based on various metrics (goals, habits, scores, etc.) evaluated through backend logic or AI events.
