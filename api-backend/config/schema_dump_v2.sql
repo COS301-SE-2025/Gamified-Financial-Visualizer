@@ -399,12 +399,13 @@ CREATE TABLE budget_categories (
 -- UI BANNER ADS (IMAGES)
 CREATE TABLE banner_images (
     banner_id SERIAL PRIMARY KEY,
-    image_url TEXT NOT NULL,
+    image_data BYTEA NOT NULL,         -- actual image binary data
     alt_text TEXT,
     display_start TIMESTAMP,
     display_end TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 
 -- ACHIEVEMENTS
 CREATE TABLE achievements (
@@ -412,7 +413,7 @@ CREATE TABLE achievements (
     achievement_title VARCHAR(100) NOT NULL,
     achievement_description TEXT NOT NULL,
     points_awarded INT NOT NULL CHECK (points_awarded >= 0),
-    badge_icon_url TEXT,
+    badge_icon BYTEA,                 -- actual binary image data for badge icon
     trigger_condition_json JSONB NOT NULL  -- e.g., {"goal_completed": true, "amount": 1000}
 );
 
