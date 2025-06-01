@@ -1,3 +1,5 @@
+# Need to be updated (subjected to change for demo 2)
+
 # 📊 Database Schema Documentation: Gamified Financial Visualizer
 
 This document outlines the schema of the main tables in the PostgreSQL database. Each table includes its attributes and the purpose of each field.
@@ -14,7 +16,6 @@ Stores user account and authentication metadata.
 | `username`           | VARCHAR(50)  | Unique display name.                             |
 | `full_name`          | VARCHAR(100) | **Required** full name, used at registration.    |
 | `hashed_password`    | TEXT         | Secure hashed password.                          |
-| `password_salt`      | TEXT         | Salt used in password hashing.                   |
 | `email_verified`     | BOOLEAN      | True if email has been verified.                 |
 | `two_factor_enabled` | BOOLEAN      | Enables two-factor authentication.               |
 | `created_at`         | TIMESTAMP    | Timestamp when the user was created.             |
@@ -66,7 +67,6 @@ Stores user-linked financial accounts across various financial institutions or p
 | `account_name`   | VARCHAR(100) | Custom name for the account. Defaults to `'My Account'`.                   |
 | `account_type`   | VARCHAR(50)  | Type of account. Must be one of the predefined values (see below).         |
 | `currency`       | VARCHAR(20)  | Currency code. Must be one of the supported values (see below).            |
-| `account_number` | TEXT         | Virtual or masked account number. Defaults to `'GFV-XXXX-XXXX'`.           |
 | `is_active`      | BOOLEAN      | Indicates whether the account is currently active. Defaults to `TRUE`.     |
 | `created_at`     | TIMESTAMP    | Timestamp when the account was added.                                      |
 
@@ -106,7 +106,6 @@ Tracks all user transactions, including income, expenses, transfers, and system 
 | `transaction_type`     | VARCHAR(20)  | Required. Must be one of: `expense`, `income`, `transfer`, `fee`, `withdrawal`, `deposit`. |
 | `transaction_date`     | TIMESTAMP    | The date and time when the transaction occurred. Defaults to now.           |
 | `description`          | TEXT         | Required text description of the transaction. Useful for classification.    |
-| `note`                 | TEXT         | Optional additional notes about the transaction.                            |
 | `is_recurring`         | BOOLEAN      | Marks the transaction as recurring or not. Defaults to `FALSE`.             |
 | `created_at`           | TIMESTAMP    | Timestamp when the transaction was created in the system.                   |
 
@@ -287,7 +286,6 @@ Defines financial goals set by a user or a community. Tracks both individual and
 |--------------------|--------------|-----------------------------------------------------------------------------|
 | `goal_id`          | SERIAL       | Primary key. Unique identifier for each goal.                              |
 | `user_id`          | INT          | Foreign key to `users`. Set for personal goals (nullable for community goals). |
-| `community_id`     | INT          | Foreign key to `communities`. Set for shared goals (nullable for personal goals). |
 | `goal_name`        | VARCHAR(100) | Name/title of the goal.                                                     |
 | `goal_type`        | VARCHAR(50)  | Type of goal. Must be one of: `savings`, `debt`, `investment`, `spending limit`, `donation`. |
 | `target_amount`    | NUMERIC(12,2)| Required. The total amount the user aims to reach. Must be greater than 0. |
@@ -357,18 +355,6 @@ Tracks membership of users within communities, including invitation/request stat
 > The primary key `(community_id, user_id)` ensures a user has only one status per community.
 
 ---
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

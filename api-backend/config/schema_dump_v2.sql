@@ -1,3 +1,5 @@
+-- Need to be updated (subjected to change for demo 2)
+
 
 -- ========================================
 -- Gamified Financial Visualizer Schema (PostgreSQL)
@@ -10,7 +12,6 @@ CREATE TABLE users (
     username VARCHAR(50) UNIQUE NOT NULL,
     full_name VARCHAR(100) NOT NULL,
     hashed_password TEXT NOT NULL,
-    password_salt TEXT NOT NULL,
     email_verified BOOLEAN DEFAULT FALSE,
     two_factor_enabled BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -83,7 +84,6 @@ CREATE TABLE accounts (
             'BTC', 'ETH', 'USDT', 'BUSD', 'LTC', 'XRP', 'SOL', 'BNB', 'DOGE', 'USDC'
         )
     ) DEFAULT 'ZAR',
-    account_number TEXT DEFAULT 'GFV-XXXX-XXXX',
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -152,7 +152,6 @@ CREATE TABLE transactions (
     ),
     transaction_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     description TEXT NOT NULL DEFAULT '',
-    note TEXT,
     is_recurring BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CHECK (
@@ -237,7 +236,6 @@ CREATE TABLE community_members (
 CREATE TABLE goals (
     goal_id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
-    community_id INT REFERENCES communities(community_id) ON DELETE CASCADE,
     goal_name VARCHAR(100) NOT NULL,
     goal_type VARCHAR(50) NOT NULL CHECK (
         goal_type IN ('savings', 'debt', 'investment', 'spending limit', 'donation')
@@ -246,7 +244,7 @@ CREATE TABLE goals (
     current_amount NUMERIC(12, 2) NOT NULL DEFAULT 0,
     target_date DATE NOT NULL,
     goal_status VARCHAR(50) NOT NULL CHECK (
-        goal_status IN ('in-progress', 'completed', 'paused', 'cancelled', 'failed')
+        goal_status IN ('in-progress', 'completed', 'cancelled', 'failed')
     ),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CHECK (
