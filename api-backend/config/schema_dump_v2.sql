@@ -1,6 +1,3 @@
--- Need to be updated (subjected to change for demo 2)
-
-
 -- ========================================
 -- Gamified Financial Visualizer Schema (PostgreSQL)
 -- ========================================
@@ -12,10 +9,10 @@ CREATE TABLE users (
     username VARCHAR(50) UNIQUE NOT NULL,
     full_name VARCHAR(100) NOT NULL,
     hashed_password TEXT NOT NULL,
-    email_verified BOOLEAN DEFAULT FALSE,
     two_factor_enabled BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    two_factor_mandatory BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- USER PREFERENCES
@@ -23,10 +20,10 @@ CREATE TABLE user_preferences (
     user_id INT NOT NULL PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
     theme VARCHAR(50) CHECK (theme IN ('light', 'dark')),
     in_app_notifications_enabled BOOLEAN DEFAULT TRUE,
-    avatar_id VARCHAR(50) NOT NULL DEFAULT 'default_01',
+    avatar_filename VARCHAR(100) NOT NULL DEFAULT 'default_01.png',
     ar_customizations_jsonb JSONB,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- USER PUSH SUBSCRIPTIONS (for PWA push support - out of app notifications)
@@ -63,19 +60,17 @@ EXECUTE FUNCTION update_updated_at_column();
 
 
 
-
-
 -- ACCOUNTS
 CREATE TABLE accounts (
     account_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     bank_name VARCHAR(100) NOT NULL DEFAULT 'GFV Bank',
-    account_name VARCHAR(100) NOT NULL DEFAULT 'My Account', -- SHOULD THIS BE UNIQUE???
+    account_name VARCHAR(100) NOT NULL DEFAULT 'My Account',
     account_type VARCHAR(50) NOT NULL CHECK (
         account_type IN (
             'current', 'cheque', 'savings', 'credit', 'fixed deposit',
             'business', 'transmission', 'tax-free savings', 'trust', 
-            'corporate trading', 'crypto', 'forex' --- INVESTMENT ACC
+            'corporate trading', 'crypto', 'forex'
         )
     ),
     currency VARCHAR(20) NOT NULL CHECK (
@@ -84,12 +79,36 @@ CREATE TABLE accounts (
             'BTC', 'ETH', 'USDT', 'BUSD', 'LTC', 'XRP', 'SOL', 'BNB', 'DOGE', 'USDC'
         )
     ) DEFAULT 'ZAR',
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, account_name)
+);
+
+-- TRANSACTIONS
+CREATE TABLE transactions (
+    transaction_id SERIAL PRIMARY KEY,
+    account_id INT NOT NULL REFERENCES accounts(account_id) ON DELETE CASCADE,
+    category_id INT REFERENCES categories(category_id),
+    custom_category_id INT REFERENCES custom_categories(custom_category_id),
+    transaction_amount NUMERIC(12, 2) NOT NULL CHECK (transaction_amount != 0),
+    transaction_type VARCHAR(20) NOT NULL CHECK (
+        transaction_type IN ('expense', 'income', 'transfer', 'fee', 'withdrawal', 'deposit')
+    ),
+    transaction_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    transaction_name TEXT NOT NULL DEFAULT '',
+    is_recurring BOOLEAN NOT NULL DEFAULT FALSE,
+    linked_goal_id INT REFERENCES goals(goal_id) ON DELETE SET NULL,
+    linked_challenge_id INT REFERENCES challenges(challenge_id) ON DELETE SET NULL,
+    points_awarded INT DEFAULT 0 CHECK (points_awarded >= 0),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CHECK (
+        (category_id IS NULL AND custom_category_id IS NOT NULL)
+        OR
+        (category_id IS NOT NULL AND custom_category_id IS NULL)
+    )
 );
 
 -- GLOBAL CATEGORIES
-CREATE TABLE categories ( -- SORT by NAME
+CREATE TABLE categories (
     category_id SERIAL PRIMARY KEY,
     category_name VARCHAR(100) NOT NULL UNIQUE CHECK (
         category_name IN (
@@ -120,6 +139,7 @@ CREATE TABLE custom_categories (
 CREATE OR REPLACE FUNCTION prevent_duplicate_category()
 RETURNS TRIGGER AS $$
 BEGIN
+    NEW.custom_category_name := LOWER(NEW.custom_category_name);
     IF EXISTS (
         SELECT 1 FROM categories WHERE LOWER(category_name) = LOWER(NEW.custom_category_name)
     ) THEN
@@ -138,29 +158,6 @@ EXECUTE FUNCTION prevent_duplicate_category();
 
 
 
-
-
--- TRANSACTIONS
-CREATE TABLE transactions (
-    transaction_id SERIAL PRIMARY KEY,
-    account_id INT NOT NULL REFERENCES accounts(account_id),
-    category_id INT REFERENCES categories(category_id),
-    custom_category_id INT REFERENCES custom_categories(custom_category_id),
-    transaction_amount NUMERIC(12, 2) NOT NULL CHECK (transaction_amount != 0),
-    transaction_type VARCHAR(20) NOT NULL CHECK (
-        transaction_type IN ('expense', 'income', 'transfer', 'fee', 'withdrawal', 'deposit')
-    ),
-    transaction_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    description TEXT NOT NULL DEFAULT '',
-    is_recurring BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CHECK (
-        (category_id IS NULL AND custom_category_id IS NOT NULL)
-        OR
-        (category_id IS NOT NULL AND custom_category_id IS NULL)
-    )
-);
-
 -- RECURRING TRANSACTIONS
 CREATE TABLE recurring_transactions (
     recurring_id SERIAL PRIMARY KEY,
@@ -170,9 +167,11 @@ CREATE TABLE recurring_transactions (
     ),
     next_occurrence DATE NOT NULL,
     end_date DATE, -- Optional end to the recurrence
-    last_run DATE DEFAULT NULL, -- Helps log last time the recurrence executed
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    last_run DATE DEFAULT NULL, -- Logs the last time it was run
+    is_active BOOLEAN NOT NULL DEFAULT TRUE, -- Marks whether the recurrence is currently running
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
 
 -- AI SCORE
 CREATE TABLE ai_scores (
@@ -185,7 +184,6 @@ CREATE TABLE ai_scores (
     )
 );
 
-
 -- VISUAL ASSET
 CREATE TABLE visual_assets (
     asset_id SERIAL PRIMARY KEY,
@@ -197,12 +195,8 @@ CREATE TABLE visual_assets (
             'grass', 'floor', 'bushes', 'parking_lot', 'lamp_post'
         )
     ),
-    tier_status VARCHAR(20) NOT NULL CHECK (
-        tier_status IN ('wood', 'bronze', 'silver', 'gold', 'platinum', 'diamond')
-    ),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
 
 -- AR SCENE STATE
 CREATE TABLE ar_scene_state (
@@ -218,6 +212,7 @@ CREATE TABLE communities (
     owner_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     community_name VARCHAR(100) NOT NULL,
     description TEXT,
+    banner_filename VARCHAR(100) NOT NULL DEFAULT 'default_banner_01.png',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -232,10 +227,22 @@ CREATE TABLE community_members (
     PRIMARY KEY (community_id, user_id)
 );
 
+-- FRIENDSHIPS
+CREATE TABLE friendships (
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    friend_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    relationship_status VARCHAR(20) NOT NULL CHECK (
+        relationship_status IN ('pending', 'accepted', 'declined')
+    ),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, friend_id),
+    CHECK (user_id < friend_id) -- enforces ordering and prevents (B,A) if (A,B) exists
+);
+
 -- GOALS
 CREATE TABLE goals (
     goal_id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     goal_name VARCHAR(100) NOT NULL,
     goal_type VARCHAR(50) NOT NULL CHECK (
         goal_type IN ('savings', 'debt', 'investment', 'spending limit', 'donation')
@@ -247,12 +254,24 @@ CREATE TABLE goals (
         goal_status IN ('in-progress', 'completed', 'cancelled', 'failed')
     ),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CHECK (
-        (user_id IS NOT NULL AND community_id IS NULL)
-        OR
-        (user_id IS NULL AND community_id IS NOT NULL)
-    )
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, goal_name)  -- Enforces uniqueness per user
 );
+
+-- Trigger function to auto-update `updated_at` column on goal updates
+CREATE OR REPLACE FUNCTION update_goal_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = CURRENT_TIMESTAMP;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger binding to `goals`
+CREATE TRIGGER trg_set_goal_updated_at
+BEFORE UPDATE ON goals
+FOR EACH ROW
+EXECUTE FUNCTION update_goal_updated_at_column();
 
 -- GOAL PROGRESS
 CREATE TABLE goal_progress (
@@ -263,22 +282,67 @@ CREATE TABLE goal_progress (
     amount_added NUMERIC(12, 2) NOT NULL CHECK (amount_added > 0)
 );
 
--- FRIENDSHIPS
-CREATE TABLE friendships (
-    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    friend_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    relationship_status VARCHAR(20) NOT NULL CHECK (
-        relationship_status IN ('pending', 'accepted', 'declined')
-    ),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (user_id, friend_id),
-    CHECK (user_id <> friend_id)
-);
+-- TRIGGERS to update goal current amount on progress insert/update
+CREATE OR REPLACE FUNCTION update_goal_current_amount()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE goals
+  SET current_amount = current_amount + NEW.amount_added
+  WHERE goal_id = NEW.goal_id;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
--- CHALLENGES
+CREATE TRIGGER trg_update_goal_amount
+AFTER INSERT ON goal_progress
+FOR EACH ROW
+EXECUTE FUNCTION update_goal_current_amount();
+
+-- On update, adjust the goal's current amount based on the change in amount_added
+CREATE OR REPLACE FUNCTION adjust_goal_on_progress_update()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE goals
+  SET current_amount = current_amount - OLD.amount_added + NEW.amount_added
+  WHERE goal_id = NEW.goal_id;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_adjust_goal_amount
+AFTER UPDATE ON goal_progress
+FOR EACH ROW
+EXECUTE FUNCTION adjust_goal_on_progress_update();
+
+-- On delete, subtract the amount added from the goal's current amount
+CREATE OR REPLACE FUNCTION subtract_goal_on_progress_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE goals
+  SET current_amount = current_amount - OLD.amount_added
+  WHERE goal_id = OLD.goal_id;
+  RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_subtract_goal_amount
+AFTER DELETE ON goal_progress
+FOR EACH ROW
+EXECUTE FUNCTION subtract_goal_on_progress_delete();
+
+
+
+
+
+
+
+
+
+
+-- CHALLENGES (Fronted Needed)
 CREATE TABLE challenges (
     challenge_id SERIAL PRIMARY KEY,
-    challenge_title VARCHAR(100) NOT NULL,
+    challenge_title VARCHAR(100) NOT NULL UNIQUE,
     description TEXT,
     challenge_type VARCHAR(50) NOT NULL CHECK (
         challenge_type IN ('competition', 'cooperative')
@@ -292,7 +356,7 @@ CREATE TABLE challenges (
     duration INTERVAL NOT NULL
 );
 
--- CHALLENGE PROGRESS
+-- CHALLENGE PROGRESS (Frontend Needed)
 CREATE TABLE challenge_progress (
     community_id INT REFERENCES communities(community_id) ON DELETE CASCADE,
     challenge_id INT REFERENCES challenges(challenge_id),
@@ -307,7 +371,7 @@ CREATE TABLE challenge_progress (
     PRIMARY KEY (community_id, challenge_id)
 );
 
--- LEADERBOARD
+-- LEADERBOARD (Frontend Needed)
 CREATE TABLE leaderboard_entries (
     entry_id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
@@ -430,6 +494,8 @@ CREATE TABLE user_points (
     user_id INT PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
     total_points INT NOT NULL DEFAULT 0,
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    tier_status VARCHAR(20) NOT NULL DEFAULT 'wood' CHECK (
+    tier_status IN ('wood', 'bronze', 'silver', 'gold', 'platinum', 'diamond'))
 );
 
 -- USER POINTS HISTORY
@@ -442,4 +508,13 @@ CREATE TABLE points_log (
     source_id INT,
     points INT NOT NULL CHECK (points > 0),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- POINTS RULES
+CREATE TABLE point_rules (
+    rule_id SERIAL PRIMARY KEY,
+    action_type VARCHAR(50) UNIQUE NOT NULL CHECK (
+        action_type IN ('transaction', 'goal_created', 'goal_completed', 'quiz_completed', 'achievement_unlocked', 'challenge_completed')
+    ),
+    base_points INT NOT NULL CHECK (base_points >= 0)
 );

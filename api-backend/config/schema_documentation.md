@@ -9,33 +9,36 @@ This document outlines the schema of the main tables in the PostgreSQL database.
 ## 🧑‍💼 Table: `users`
 Stores user account and authentication metadata.
 
-| Column Name          | Data Type    | Description                                      |
-|----------------------|--------------|--------------------------------------------------|
-| `user_id`            | SERIAL       | Primary key for the user.                        |
-| `email`              | VARCHAR(255) | Unique login and verification email.             |
-| `username`           | VARCHAR(50)  | Unique display name.                             |
-| `full_name`          | VARCHAR(100) | **Required** full name, used at registration.    |
-| `hashed_password`    | TEXT         | Secure hashed password.                          |
-| `email_verified`     | BOOLEAN      | True if email has been verified.                 |
-| `two_factor_enabled` | BOOLEAN      | Enables two-factor authentication.               |
-| `created_at`         | TIMESTAMP    | Timestamp when the user was created.             |
-| `updated_at`         | TIMESTAMP    | Last modification timestamp (auto-updated).      |
+| Column Name            | Data Type    | Description                                                                 |
+|------------------------|--------------|-----------------------------------------------------------------------------|
+| `user_id`              | SERIAL       | Primary key for the user.                                                   |
+| `email`                | VARCHAR(255) | Unique login email address.                                                 |
+| `username`             | VARCHAR(50)  | Unique display name for the user.                                           |
+| `full_name`            | VARCHAR(100) | **Required** full name, provided during registration.                       |
+| `hashed_password`      | TEXT         | Securely hashed password.                                                   |
+| `two_factor_enabled`   | BOOLEAN      | Indicates whether 2FA is currently active for the user.                     |
+| `two_factor_mandatory` | BOOLEAN      | **True** if 2FA must be completed to access the system after registration.  |
+| `created_at`           | TIMESTAMP    | Timestamp when the user account was created. **Never null.**               |
+| `updated_at`           | TIMESTAMP    | Timestamp of the last update to the user’s record. **Never null.**         |
+
+> ⚙️ `two_factor_mandatory` ensures OTP is enforced on first login, while allowing users to later opt out of continuous 2FA logins if `two_factor_enabled = false`.
 
 ---
-
 
 ## ⚙️ Table: `user_preferences`
 Holds user customization and in-app notification settings.
 
-| Column Name                    | Data Type    | Description                                                 |
-|--------------------------------|--------------|-------------------------------------------------------------|
-| `user_id`                      | INT NOT NULL | Primary key and FK to `users`. One-to-one relationship.     |
-| `theme`                        | VARCHAR(50)  | Selected UI theme. Must be `'light'` or `'dark'`.           |
-| `in_app_notifications_enabled` | BOOLEAN      | Toggles in-app notifications on or off. Defaults to `TRUE`. |
-| `avatar_id`                    | VARCHAR(50)  | ID of selected avatar icon. Defaults to `'default_01'`.     |
-| `ar_customizations_jsonb`      | JSONB        | JSON data for user’s AR environment customizations.         |
-| `created_at`                   | TIMESTAMP    | Timestamp when preferences were created.                    |
-| `updated_at`                   | TIMESTAMP    | Timestamp for last update. Auto-updated by trigger.         |
+| Column Name                    | Data Type     | Description                                                                 |
+|--------------------------------|---------------|-----------------------------------------------------------------------------|
+| `user_id`                      | INT NOT NULL  | Primary key and FK to `users`. One-to-one relationship.                     |
+| `theme`                        | VARCHAR(50)   | Selected UI theme. Must be `'light'` or `'dark'`.                           |
+| `in_app_notifications_enabled` | BOOLEAN       | Toggles in-app notifications on or off. Defaults to `TRUE`.                |
+| `avatar_filename`             | VARCHAR(100)  | Name of the system-provided avatar image file (e.g., `robot_face.png`).    |
+| `ar_customizations_jsonb`      | JSONB         | JSON data for user’s AR environment customizations.                         |
+| `created_at`                   | TIMESTAMP     | Timestamp when preferences were created. **Never null.**                   |
+| `updated_at`                   | TIMESTAMP     | Timestamp for last update. Auto-updated by trigger. **Never null.**       |
+
+> 🔒 Avatar selection is limited to pre-defined options stored in `/public/avatars/` and served via `/avatars/{filename}` endpoint.
 
 ---
 
@@ -64,11 +67,12 @@ Stores user-linked financial accounts across various financial institutions or p
 | `account_id`     | SERIAL       | Primary key. Unique identifier for each account.                            |
 | `user_id`        | INT          | Foreign key to `users`. Associates the account with a specific user.       |
 | `bank_name`      | VARCHAR(100) | Name of the financial institution. Defaults to `'GFV Bank'`.               |
-| `account_name`   | VARCHAR(100) | Custom name for the account. Defaults to `'My Account'`.                   |
+| `account_name`   | VARCHAR(100) | Custom name for the account. Must be unique per user. Defaults to `'My Account'`. |
 | `account_type`   | VARCHAR(50)  | Type of account. Must be one of the predefined values (see below).         |
 | `currency`       | VARCHAR(20)  | Currency code. Must be one of the supported values (see below).            |
-| `is_active`      | BOOLEAN      | Indicates whether the account is currently active. Defaults to `TRUE`.     |
-| `created_at`     | TIMESTAMP    | Timestamp when the account was added.                                      |
+| `created_at`     | TIMESTAMP    | Timestamp when the account was added. **Never null.**                      |
+
+> 🔒 A user may not reuse the same `account_name` for multiple accounts. Uniqueness is enforced per user.
 
 ### 🏦 Allowed `account_type` values:
 - `current`
@@ -94,7 +98,7 @@ Stores user-linked financial accounts across various financial institutions or p
 
 
 ## 💳 Table: `transactions`
-Tracks all user transactions, including income, expenses, transfers, and system fees. Supports both global and custom categories, and identifies recurring entries.
+Tracks all user transactions, including income, expenses, transfers, and system fees. Supports both global and custom categories, and identifies recurring entries. Transactions may also contribute to financial goals or challenges, and reward gamified points.
 
 | Column Name           | Data Type     | Description                                                                 |
 |------------------------|--------------|-----------------------------------------------------------------------------|
@@ -105,22 +109,29 @@ Tracks all user transactions, including income, expenses, transfers, and system 
 | `transaction_amount`   | NUMERIC(12,2)| Amount of the transaction. Cannot be 0.                                     |
 | `transaction_type`     | VARCHAR(20)  | Required. Must be one of: `expense`, `income`, `transfer`, `fee`, `withdrawal`, `deposit`. |
 | `transaction_date`     | TIMESTAMP    | The date and time when the transaction occurred. Defaults to now.           |
-| `description`          | TEXT         | Required text description of the transaction. Useful for classification.    |
+| `transaction_name`     | TEXT         | Short name or label for the transaction (e.g., "Netflix", "Salary").        |
 | `is_recurring`         | BOOLEAN      | Marks the transaction as recurring or not. Defaults to `FALSE`.             |
-| `created_at`           | TIMESTAMP    | Timestamp when the transaction was created in the system.                   |
+| `linked_goal_id`       | INT          | Foreign key to `goals`. Automatically updates progress if linked.           |
+| `linked_challenge_id`  | INT          | Foreign key to `challenges`. Automatically updates progress if linked.      |
+| `points_awarded`       | INT          | XP points awarded for this transaction. Defaults to `0`.                    |
+| `created_at`           | TIMESTAMP    | Timestamp when the transaction was created in the system. **Never null.**   |
 
-> Only one of `category_id` or `custom_category_id` must be present per transaction. This is enforced via a `CHECK` constraint.
+> ✅ Only one of `category_id` or `custom_category_id` must be present per transaction (enforced by `CHECK` constraint).  
+> 🔁 When `is_recurring` is true, additional metadata is stored in the `recurring_transactions` table.  
+> 🎯 If linked to a goal or challenge, their progress is automatically updated when the transaction is created.  
+> 🏆 Points may be awarded for gamification and used toward achievements.
 
 ---
+
 
 
 ## 🏷️ Table: `categories`
 Shared global categories for classifying user transactions, such as expenses, income, and transfers.
 
-| Column Name     | Data Type    | Description                                                                 |
-|------------------|-------------|-----------------------------------------------------------------------------|
-| `category_id`     | SERIAL      | Primary key. Unique identifier for each category.                          |
-| `category_name`   | VARCHAR(100)| Name of the category. Must be unique and chosen from a predefined list.    |
+| Column Name     | Data Type     | Description                                                                 |
+|------------------|--------------|-----------------------------------------------------------------------------|
+| `category_id`     | SERIAL       | Primary key. Unique identifier for each category.                           |
+| `category_name`   | VARCHAR(100) | Name of the category. Must be unique and selected from a predefined list.   |
 
 ### ✅ Allowed `category_name` values:
 
@@ -176,21 +187,21 @@ Shared global categories for classifying user transactions, such as expenses, in
 - `wallet top-up`
 - `wallet withdrawal`
 
-> These categories are fixed at the schema level via a `CHECK` constraint and are available to all users for consistency in classification.
+> ✅ These categories are system-defined and enforced using a `CHECK` constraint. This ensures consistent classification across all users and prevents duplicate or invalid entries.
 
 ---
-
 
 ## 🛠️ Table: `custom_categories`
 Stores user-defined personal categories for transaction classification, allowing customization beyond global system categories.
 
-| Column Name             | Data Type     | Description                                                   |
-|--------------------------|---------------|---------------------------------------------------------------|
-| `custom_category_id`     | SERIAL        | Primary key. Unique identifier for each custom category.      |
-| `user_id`                | INT           | Foreign key to `users`. Specifies the owner of the category.  |
-| `custom_category_name`   | VARCHAR(100)  | Name of the custom category. Must be unique per user.         |
+| Column Name             | Data Type     | Description                                                               |
+|--------------------------|---------------|---------------------------------------------------------------------------|
+| `custom_category_id`     | SERIAL        | Primary key. Unique identifier for each custom category.                  |
+| `user_id`                | INT           | Foreign key to `users`. Specifies the owner of the category.              |
+| `custom_category_name`   | VARCHAR(100)  | Name of the custom category. Must be unique per user (case-insensitive).  |
 
-> This table includes a uniqueness constraint on (`user_id`, `custom_category_name`) to prevent duplicate names for the same user. A trigger also prevents custom names from matching global categories.
+> 🔒 This table enforces uniqueness on (`user_id`, `custom_category_name`) to prevent duplicate names per user.  
+> ⚠️ A trigger prevents users from creating custom category names that conflict with global category names, even with different casing.
 
 ---
 
@@ -206,37 +217,39 @@ Tracks repeating transactions such as subscriptions, monthly bills, or salary de
 | `next_occurrence`  | DATE         | The next expected date this transaction should occur.                       |
 | `end_date`         | DATE         | Optional end date for the recurrence. If null, it's considered indefinite.  |
 | `last_run`         | DATE         | Timestamp of the last time this recurrence was processed.                   |
-| `created_at`       | TIMESTAMP    | Timestamp when the recurrence was created. Defaults to current timestamp.  |
+| `is_active`        | BOOLEAN      | Indicates whether the recurrence is currently running. Defaults to `TRUE`.  |
+| `created_at`       | TIMESTAMP    | Timestamp when the recurrence was created. Defaults to current timestamp.   |
 
-> Each recurring transaction is linked to a single transaction template via `transaction_id`.
+> 🔁 Each recurring transaction is linked to a single transaction template via `transaction_id`.  
+> ⛔ Set `is_active = FALSE` to stop a recurring transaction without deleting it.
 
 ---
+
 
 
 ## 🧠 Table: `ai_scores`
 Stores AI-generated financial health evaluations for users, based on their transaction history, budgeting behavior, and other financial activities.
 
 | Column Name              | Data Type     | Description                                                                 |
-|---------------------------|--------------|-----------------------------------------------------------------------------|
-| `score_id`                | SERIAL       | Primary key. Unique identifier for each AI evaluation.                      |
-| `user_id`                 | INT          | Foreign key to `users`. The user this score belongs to.                     |
-| `generated_at`            | TIMESTAMP    | Timestamp when the score was generated. Defaults to current timestamp.      |
-| `score_value`             | INTEGER      | Numeric representation of the user's financial health.                      |
-| `financial_health_level` | VARCHAR(50)  | Textual rating of financial status. Allowed values: `poor`, `fair`, `average`, `good`, `excellent`. |
+|--------------------------|---------------|------------------------------------------------------------------------------|
+| `score_id`               | SERIAL        | Primary key. Unique identifier for each AI evaluation.                       |
+| `user_id`                | INT           | Foreign key to `users`. The user this score belongs to.                      |
+| `generated_at`           | TIMESTAMP     | Timestamp when the score was generated. Defaults to current timestamp.       |
+| `score_value`            | INTEGER       | Numeric representation of the user's financial health.                       |
+| `financial_health_level` | VARCHAR(50)   | Textual rating of financial status. Allowed values: `poor`, `fair`, `average`, `good`, `excellent`. |
 
-> These scores are generated by the system’s AI engine and may be used for analytics, progress tracking, or personalized recommendations.
+> 🧠 These scores are generated by the system’s AI engine and may be used for analytics, progress tracking, or personalized recommendations.
 
 ---
 
 ## 🏠 Table: `visual_assets`
-Stores visual representations of financial progress in a user's AR environment. These assets evolve or unlock based on financial activity like goal completion or budgeting performance.
+Stores visual representations of financial progress in a user's AR environment. These assets evolve or unlock based on financial activity like goal completion, XP growth, or budget consistency.
 
 | Column Name     | Data Type     | Description                                                                 |
 |------------------|--------------|-----------------------------------------------------------------------------|
 | `asset_id`       | SERIAL       | Primary key. Unique identifier for each visual asset.                       |
 | `user_id`        | INT          | Foreign key to `users`. Specifies who owns the asset.                       |
 | `asset_type`     | VARCHAR(50)  | Type of asset. Must be one of the predefined types (see list below).        |
-| `tier_status`    | VARCHAR(20)  | Visual tier level. Allowed values: `wood`, `bronze`, `silver`, `gold`, `platinum`, `diamond`. |
 | `created_at`     | TIMESTAMP    | Timestamp when the asset was added.                                         |
 
 ### 🎨 Allowed `asset_type` values:
@@ -260,121 +273,120 @@ Stores visual representations of financial progress in a user's AR environment. 
 - `parking_lot`
 - `lamp_post`
 
-> These assets are used to visually gamify user progress in an AR environment, like a growing city or virtual map.
+> 🎮 These assets are used to visually gamify progress in the user’s AR environment.  
+> 🏆 Access to certain asset types can be restricted or enhanced based on the user’s `tier_status` (stored in `user_points`).
 
 ---
-
 
 ## 🧱 Table: `ar_scene_state`
-Stores the current state of a user’s AR (augmented reality) financial environment, which can reflect their progress, assets, and visual layout in a gamified 3D space.
+Stores the current state of a user’s AR (augmented reality) financial environment, which reflects their visual layout, progress, and virtual city.
 
-| Column Name     | Data Type  | Description                                                                 |
-|------------------|-----------|-----------------------------------------------------------------------------|
-| `scene_id`       | SERIAL    | Primary key. Unique ID for the scene record.                                |
-| `user_id`        | INT       | Foreign key to `users`. Each user has one AR scene (enforced by `UNIQUE`).  |
-| `snapshot_jsonb` | JSONB     | A serialized snapshot of the user's AR environment (positions, objects, etc.). |
-| `last_updated`   | TIMESTAMP | Timestamp when the AR state was last updated.                               |
+| Column Name       | Data Type  | Description                                                                 |
+|--------------------|-----------|-----------------------------------------------------------------------------|
+| `scene_id`         | SERIAL    | Primary key. Unique ID for the scene record.                                |
+| `user_id`          | INT       | Foreign key to `users`. Each user has one AR scene (enforced by `UNIQUE`).  |
+| `snapshot_jsonb`   | JSONB     | Serialized snapshot of the user's AR layout (positions, objects, styles).   |
+| `last_updated`     | TIMESTAMP | Timestamp when the AR scene was last saved or rendered.                     |
 
-> This table supports real-time visual updates and persistent rendering across sessions.
-
----
-
-## 🎯 Table: `goals`
-Defines financial goals set by a user or a community. Tracks both individual and group goals with progress and status information.
-
-| Column Name       | Data Type     | Description                                                                 |
-|--------------------|--------------|-----------------------------------------------------------------------------|
-| `goal_id`          | SERIAL       | Primary key. Unique identifier for each goal.                              |
-| `user_id`          | INT          | Foreign key to `users`. Set for personal goals (nullable for community goals). |
-| `goal_name`        | VARCHAR(100) | Name/title of the goal.                                                     |
-| `goal_type`        | VARCHAR(50)  | Type of goal. Must be one of: `savings`, `debt`, `investment`, `spending limit`, `donation`. |
-| `target_amount`    | NUMERIC(12,2)| Required. The total amount the user aims to reach. Must be greater than 0. |
-| `current_amount`   | NUMERIC(12,2)| Tracks the current amount contributed toward the goal. Defaults to `0`.     |
-| `target_date`      | DATE         | The deadline by which the user aims to achieve the goal.                   |
-| `goal_status`      | VARCHAR(50)  | Status of the goal. Must be one of: `in-progress`, `completed`, `paused`, `cancelled`, `failed`. |
-| `created_at`       | TIMESTAMP    | Timestamp when the goal was created.                                       |
-
-> Either `user_id` or `community_id` must be set, but not both. This is enforced via a `CHECK` constraint to distinguish between personal and community goals.
-
----
-
-
-## 📈 Table: `goal_progress`
-Tracks incremental contributions made toward achieving a specific financial goal. This table supports both individual and collaborative efforts on personal or community goals.
-
-| Column Name       | Data Type     | Description                                                                 |
-|--------------------|--------------|-----------------------------------------------------------------------------|
-| `progress_id`      | SERIAL       | Primary key. Unique identifier for each progress entry.                    |
-| `goal_id`          | INT          | Foreign key to `goals`. Identifies the goal being contributed to.          |
-| `contributor_id`   | INT          | Foreign key to `users`. Identifies who made the contribution.              |
-| `progress_date`    | DATE         | Date of the contribution. Defaults to the current date.                     |
-| `amount_added`     | NUMERIC(12,2)| Amount of money added toward the goal. Must be greater than 0.             |
-
-> Useful for visualizing progress over time and attributing collaborative goal effort.
-
----
-
-
-## 👥 Table: `friendships`
-Represents mutual or pending social connections between users. Supports basic friend request and approval workflows.
-
-| Column Name           | Data Type     | Description                                                              |
-|------------------------|--------------|--------------------------------------------------------------------------|
-| `user_id`              | INT          | Foreign key to `users`. The user initiating the friendship.              |
-| `friend_id`            | INT          | Foreign key to `users`. The target user of the friendship request.       |
-| `relationship_status` | VARCHAR(20)  | Status of the relationship. Must be one of: `pending`, `accepted`, `declined`. |
-| `created_at`           | TIMESTAMP    | Timestamp when the relationship was initiated or recorded.              |
-
-> A friendship is only stored once per pair. The primary key constraint `(user_id, friend_id)` ensures uniqueness, and a `CHECK` constraint ensures that a user cannot friend themselves.
+> 🧩 This table supports real-time layout saving and persistent state rendering for AR-based financial progress environments.
 
 ---
 
 ## 🏘️ Table: `communities`
-Stores information about user-created financial communities where members can collaborate on goals, compete in challenges, and share insights.
+Stores information about user-created financial communities where members can collaborate on challenges, share insights, and compete socially.
 
-| Column Name      | Data Type     | Description                                                           |
-|-------------------|--------------|-----------------------------------------------------------------------|
-| `community_id`    | SERIAL       | Primary key. Unique identifier for each community.                   |
-| `owner_id`        | INT          | Foreign key to `users`. The creator/owner of the community.          |
-| `community_name`  | VARCHAR(100) | Name of the community.                                               |
-| `description`     | TEXT         | Optional description of the community's purpose or goals.            |
-| `created_at`      | TIMESTAMP    | Timestamp when the community was created.                            |
+| Column Name        | Data Type     | Description                                                                 |
+|--------------------|--------------|-----------------------------------------------------------------------------|
+| `community_id`     | SERIAL       | Primary key. Unique identifier for each community.                          |
+| `owner_id`         | INT          | Foreign key to `users`. The creator/owner of the community.                 |
+| `community_name`   | VARCHAR(100) | Name of the community.                                                      |
+| `description`      | TEXT         | Optional description of the community's purpose or culture.                 |
+| `banner_filename`  | VARCHAR(100) | File name of the community banner image (e.g., `beach_theme.png`). Defaults to `default_banner_01.png`. |
+| `created_at`       | TIMESTAMP    | Timestamp when the community was created.                                   |
+
+> 📛 Community banners are chosen from predefined options stored in `/public/banners/` and served via `/banners/{filename}`.
 
 ---
 
 ## 👥 Table: `community_members`
-Tracks membership of users within communities, including invitation/request status and join timestamp.
+Tracks membership of users within communities, including their invitation/request status and when they joined.
 
-| Column Name         | Data Type  | Description                                                                  |
-|----------------------|-----------|------------------------------------------------------------------------------|
-| `community_id`       | INT       | Foreign key to `communities`. Identifies the community.                     |
-| `user_id`            | INT       | Foreign key to `users`. Identifies the user who is a member or invitee.     |
-| `membership_status`  | VARCHAR(20) | Status of membership. Must be one of: `invited`, `requested`, `accepted`, `declined`. |
-| `joined_at`          | TIMESTAMP | Timestamp when the user joined or was invited. Defaults to current timestamp. |
+| Column Name        | Data Type   | Description                                                                 |
+|--------------------|------------|-----------------------------------------------------------------------------|
+| `community_id`     | INT        | Foreign key to `communities`. Identifies the community.                    |
+| `user_id`          | INT        | Foreign key to `users`. Identifies the user who is a member or invitee.    |
+| `membership_status`| VARCHAR(20)| Membership state: one of `invited`, `requested`, `accepted`, `declined`.   |
+| `joined_at`        | TIMESTAMP  | Timestamp when the membership record was created. Defaults to now.         |
 
-> The primary key `(community_id, user_id)` ensures a user has only one status per community.
+> ✅ Primary key `(community_id, user_id)` prevents duplicate membership records.  
+> 🧑‍🤝‍🧑 Membership status determines whether the user has been accepted into the community.
 
 ---
 
+## 👥 Table: `friendships`
+Represents mutual social connections between users. Each friendship is symmetric — stored only once per user pair — and includes the relationship status and timestamp.
 
+| Column Name           | Data Type     | Description                                                                  |
+|------------------------|--------------|------------------------------------------------------------------------------|
+| `user_id`              | INT          | Foreign key to `users`. Must be less than `friend_id` (enforces uniqueness). |
+| `friend_id`            | INT          | Foreign key to `users`. Must be greater than `user_id`.                      |
+| `relationship_status` | VARCHAR(20)   | Status of the relationship: `pending`, `accepted`, or `declined`.           |
+| `created_at`           | TIMESTAMP    | Timestamp when the friendship record was created.                            |
 
+> 🔄 Friendships are symmetric: only one record exists per user pair.  
+> ✅ The `CHECK (user_id < friend_id)` ensures consistency and prevents duplication.  
+> 🔐 The primary key `(user_id, friend_id)` ensures each friendship is unique.
 
+---
 
+## 🎯 Table: `goals`
+Defines personal financial goals set by users. Each goal tracks a financial target, deadline, and current progress.
 
+| Column Name       | Data Type     | Description                                                                 |
+|--------------------|--------------|-----------------------------------------------------------------------------|
+| `goal_id`          | SERIAL       | Primary key. Unique identifier for each goal.                               |
+| `user_id`          | INT          | Foreign key to `users`. The owner of the goal.                              |
+| `goal_name`        | VARCHAR(100) | Name/title of the goal. Must be unique per user.                            |
+| `goal_type`        | VARCHAR(50)  | Type of goal. Must be one of: `savings`, `debt`, `investment`, `spending limit`, `donation`. |
+| `target_amount`    | NUMERIC(12,2)| Required. The total amount the user aims to reach. Must be greater than 0. |
+| `current_amount`   | NUMERIC(12,2)| Tracks the current amount contributed toward the goal. Defaults to `0`.    |
+| `target_date`      | DATE         | The deadline by which the user aims to achieve the goal.                    |
+| `goal_status`      | VARCHAR(50)  | Status of the goal. Must be one of: `in-progress`, `completed`, `cancelled`, `failed`. |
+| `created_at`       | TIMESTAMP    | Timestamp when the goal was created.                                        |
+| `updated_at`       | TIMESTAMP    | Timestamp when the goal was last updated (auto-updated by trigger).        |
 
-## 🏆 Table: `leaderboard_entries`
-Tracks leaderboard scores for individual users or communities in the context of challenges. Used for gamification and competition ranking.
+> 🧍 All goals are personal. No community linkage is allowed or stored in this table.  
+> 🔄 The `updated_at` field is automatically refreshed whenever the goal is updated (e.g., contribution, status change).  
+> 🔐 Each user may only have one goal with a given name (`UNIQUE(user_id, goal_name)` constraint).
 
-| Column Name       | Data Type | Description                                                                 |
-|--------------------|----------|-----------------------------------------------------------------------------|
-| `entry_id`         | SERIAL   | Primary key. Unique identifier for each leaderboard entry.                 |
-| `user_id`          | INT      | Foreign key to `users`. Set if the entry is for an individual.             |
-| `community_id`     | INT      | Foreign key to `communities`. Set if the entry is for a community.         |
-| `challenge_id`     | INT      | Foreign key to `challenges`. Identifies the challenge this score relates to. |
-| `leaderboard_score`| INT      | The score earned in the challenge.                                          |
-| `ranking`          | INT      | The ranking position on the leaderboard.                                    |
+---
 
-> Exactly one of `user_id` or `community_id` must be set, enforced via a `CHECK` constraint. This allows flexible support for both individual and community-based leaderboards.
+## 📈 Table: `goal_progress`
+Tracks incremental contributions made toward a user's personal financial goal. Each row represents a single contribution entry made by the goal owner.
+
+| Column Name       | Data Type     | Description                                                                 |
+|--------------------|--------------|-----------------------------------------------------------------------------|
+| `progress_id`      | SERIAL       | Primary key. Unique identifier for each progress entry.                     |
+| `goal_id`          | INT          | Foreign key to `goals`. Identifies the goal being contributed to.           |
+| `contributor_id`   | INT          | Foreign key to `users`. Must match the goal's `user_id`.                    |
+| `progress_date`    | DATE         | Date of the contribution. Defaults to the current date.                     |
+| `amount_added`     | NUMERIC(12,2)| Amount of money added toward the goal. Must be greater than 0.              |
+
+> 🔒 Only the owner of the goal may contribute progress. This is enforced in the backend service layer.  
+> 🔄 The associated goal's `current_amount` is automatically updated via a backend trigger when a new progress entry is inserted.  
+> 🔁 Edits and deletions to `goal_progress` also update `current_amount` accordingly via trigger functions.
+
+---
+
+### ⚙️ Goal Progress Trigger Behavior
+
+| Operation     | Behavior                                                                          |
+|----------------|-----------------------------------------------------------------------------------|
+| `INSERT`       | Adds `amount_added` to the goal’s `current_amount`.                              |
+| `UPDATE`       | Adjusts `current_amount` by subtracting the old value and adding the new one.     |
+| `DELETE`       | Subtracts `amount_added` from the goal’s `current_amount`.                        |
+
+> These database triggers ensure accurate real-time synchronization between goal contributions and total saved progress.
 
 ---
 
@@ -413,6 +425,25 @@ Tracks the real-time progress and status of communities participating in challen
 | `challenge_status`  | VARCHAR(50)| Current state. Must be one of: `joined`, `in-progress`, `completed`, `disqualified`. |
 
 > This table uses `(community_id, challenge_id)` as a composite primary key to ensure uniqueness per community-challenge pair.
+
+---
+
+
+
+
+## 🏆 Table: `leaderboard_entries`
+Tracks leaderboard scores for individual users or communities in the context of challenges. Used for gamification and competition ranking.
+
+| Column Name       | Data Type | Description                                                                 |
+|--------------------|----------|-----------------------------------------------------------------------------|
+| `entry_id`         | SERIAL   | Primary key. Unique identifier for each leaderboard entry.                 |
+| `user_id`          | INT      | Foreign key to `users`. Set if the entry is for an individual.             |
+| `community_id`     | INT      | Foreign key to `communities`. Set if the entry is for a community.         |
+| `challenge_id`     | INT      | Foreign key to `challenges`. Identifies the challenge this score relates to. |
+| `leaderboard_score`| INT      | The score earned in the challenge.                                          |
+| `ranking`          | INT      | The ranking position on the leaderboard.                                    |
+
+> Exactly one of `user_id` or `community_id` must be set, enforced via a `CHECK` constraint. This allows flexible support for both individual and community-based leaderboards.
 
 ---
 
