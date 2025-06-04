@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { createBudget, getBudgetsSummary, getBudget } from '../services/transaction.service';
 import { logger } from '../../../config/logger';
-
+import { eventBus } from "../../../events/event-bus";
 const router = Router();
 
 /**

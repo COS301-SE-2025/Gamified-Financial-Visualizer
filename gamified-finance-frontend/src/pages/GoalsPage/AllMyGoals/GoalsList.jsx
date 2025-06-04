@@ -31,7 +31,7 @@ const GoalsList = ({ filter = 'ongoing' }) => {
         const user = JSON.parse(storedUser);
         const userId = user.id;
 
-        const response = await fetch(`http://localhost:5002/api/goal/user/${userId}`, {
+        const response = await fetch(`http://localhost:5000/api/goal/user/${userId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

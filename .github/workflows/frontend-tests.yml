@@ -3,12 +3,12 @@ name: Frontend Unit Tests
 
 on:
   push:
-    branches: [main, testing]
+    branches: [main, development]
     paths:
       - 'gamified-finance-frontend/**'
       - '.github/workflows/frontend-tests.yml'
   pull_request:
-    branches: [main, testing]
+    branches: [main, development]
     paths:
       - 'gamified-finance-frontend/**'
 

@@ -638,11 +638,11 @@ router.get('/', async (_req: Request, res: Response) => {
   }
 });
 
-/*
+
 router.get('/user/:user_id/stats', async (req: Request, res: Response) => {
   const userId = parseInt(req.params.user_id, 10);
   if (isNaN(userId)) {
-    return res.status(400).json({ status: 'error', message: 'Invalid user_id' });
+    res.status(400).json({ status: 'error', message: 'Invalid user_id' });
   }
 
   try {
@@ -653,6 +653,6 @@ router.get('/user/:user_id/stats', async (req: Request, res: Response) => {
     res.status(500).json({ status: 'error', message: 'Internal server error' });
   }
 });
-*/
+
 
 export default router;
