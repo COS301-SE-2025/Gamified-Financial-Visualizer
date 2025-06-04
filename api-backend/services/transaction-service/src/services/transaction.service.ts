@@ -236,7 +236,7 @@ export async function deleteTransaction(id: number) {
   }
 }
 
-export async function getBalance(user_id: number) {
+export async function getBalance(user_id: number) { // adapt to account_balance
   const sql = `
     SELECT COALESCE(SUM(t.transaction_amount),0) AS balance
     FROM transactions t

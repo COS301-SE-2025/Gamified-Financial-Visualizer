@@ -30,7 +30,7 @@ export interface Goal {
 export async function createGoal(goal: Goal): Promise<number> {
   const {
     user_id = null,
-    community_id = null,
+    community_id = null,// 
     goal_name,
     goal_type,
     target_amount,
@@ -98,7 +98,7 @@ export async function getUserGoals(user_id: number): Promise<Goal[]> {
 /**
  * Update fields of an existing goal.
  */
-export async function updateGoal(
+export async function updateGoal( // delete
   goal_id: number,
   updates: Partial<Omit<Goal, 'goal_id' | 'user_id' | 'community_id'>>
 ): Promise<void> {
@@ -214,7 +214,7 @@ export async function reduceGoalProgress(goal_id: number, amount: number, points
 /**
  * Fetch all goals (personal and community).
  */
-export async function getAllGoals(): Promise<Goal[]> {
+export async function getAllGoals(): Promise<Goal[]> { // delete
   const sql = `SELECT * FROM goals ORDER BY created_at DESC;`;
   try {
     const res = await pool.query(sql);
