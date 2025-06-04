@@ -218,7 +218,7 @@ export async function deletePushSubscription(push_id: number) {
   }
 }
 
-export async function verifyUserEmail(user_id: number) {
+export async function verifyUserEmail(user_id: number) { // delete old - otp
   const query = 'UPDATE users SET email_verified = TRUE, updated_at = CURRENT_TIMESTAMP WHERE user_id = $1';
   try {
     await pool.query(query, [user_id]);
