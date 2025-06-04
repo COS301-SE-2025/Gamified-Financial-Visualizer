@@ -85,7 +85,7 @@ console.log(setXpReward);
 
       console.log('Sending request body:', requestBody);
 
-      const response = await fetch('http://localhost:5002/api/goal', {
+      const response = await fetch('http://localhost:5000/api/goal', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

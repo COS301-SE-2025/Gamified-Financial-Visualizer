@@ -33,7 +33,7 @@ const DashboardPage = () => {
   // Function for fetching the catergories
   const fetchCategories = async () => {
     try {
-      const res = await fetch('http://localhost:5001/api/transactions/categories');
+      const res = await fetch('http://localhost:5000/api/transaction/categories');
       const data = await res.json();
       if (data.status === 'success') {
         setCategories(data.data);
@@ -47,7 +47,7 @@ const DashboardPage = () => {
   const fetchBudgetSummary = async () => {
     if (!userId) return;
     try {
-      const res = await fetch(`http://localhost:5001/api/budget?user_id=${userId}`);
+      const res = await fetch(`http://localhost:5000/api/budget?user_id=${userId}`);
       const data = await res.json();
       if (data.status === 'success') {
         const formatted = data.data.map(item => ({
@@ -67,7 +67,7 @@ const DashboardPage = () => {
   if (!userId) return;
 
   try {
-    const res = await fetch(`http://localhost:5001/api/transactions/user/${userId}`);
+    const res = await fetch(`http://localhost:5000/api/transaction/user/${userId}`);
     const data = await res.json();
 
     if (data.status === 'success') {

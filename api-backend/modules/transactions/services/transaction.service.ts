@@ -2,6 +2,7 @@
 //import { Pool } from 'pg';
 import { logger } from '../../../config/logger';
 import pool from '../../../config/db';
+import { eventBus } from "../../../events/event-bus"
 
 export interface Transaction {
   transaction_id?: number;  // optional, DB will AUTO_INCREMENT
@@ -50,6 +51,15 @@ export async function createTransaction(txn: Transaction) {
     const newId = res.rows[ 0 ].transaction_id;
     logger.info(`[TransactionService] Created transaction ID=${newId}`);
 
+    eventBus.emit('transaction.created', {
+      transaction_id: txn.transaction_id,
+      account_id: txn.account_id,
+      amount: txn.transaction_amount,
+      category_id: txn.category_id,
+      type: txn.transaction_type,
+      timestamp: txn.transaction_date
+    });
+    
     if (is_recurring) {
       const insertRecSql = `
         INSERT INTO recurring_transactions
@@ -159,7 +169,7 @@ export async function getTotalSpentPerCategory(user_id: number) {
     ORDER BY total_spent DESC;
   `;
   try {
-    const res = await pool.query(sql, [user_id]);
+    const res = await pool.query(sql, [ user_id ]);
     return res.rows;
   } catch (error) {
     logger.error(`[TransactionService] Error fetching last month's spending by category for user ${user_id}:`, error);
@@ -176,7 +186,7 @@ export async function getCategoryNameByID(categoryID: number) {
     logger.error(`[TransactionService] Error fetching category name for ID ${categoryID}:`, error);
     throw error;
   }
-  
+
 }
 export async function deleteAccount(account_id: number, user_id: number) {
   const sql = `DELETE FROM accounts WHERE account_id = $1 AND user_id = $2;`;
@@ -375,6 +385,22 @@ export async function deleteBudget(budget_id: number, user_id: number) {
   }
 }
 
+export async function makeBudgetProgress(budget_id: number, amount: number) {
+  const sql = `
+    UPDATE budgets
+    SET current_amount = COALESCE(current_amount, 0) + $1
+    WHERE budget_id = $2;
+  `;
+  try {
+    await pool.query(sql, [ amount, budget_id ]);
+    logger.info(`[TransactionService] Updated budget ID=${budget_id} with progress of ${amount}`);
+  } catch (error) {
+    logger.error(`[TransactionService] Error updating budget progress for ID=${budget_id}:`, error);
+    throw error;
+  }
+}
+
+
 export async function updateBudget(
   budget_id: number,
   fields: Partial<{ budget_name: string; period_start: string; period_end: string }>
@@ -395,6 +421,8 @@ export async function updateBudget(
   try {
     await pool.query(sql, [ ...vals, budget_id ]);
     logger.info(`[TransactionService] Updated budget ID=${budget_id}`);
+
+
   } catch (error) {
     logger.error(`[TransactionService] Error updating budget ${budget_id}:`, error);
     throw error;

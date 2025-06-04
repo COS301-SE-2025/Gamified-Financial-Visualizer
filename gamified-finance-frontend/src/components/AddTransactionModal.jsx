@@ -14,7 +14,7 @@ const AddTransactionModal = ({ onClose, onTransactionAdded, userId }) => {
   useEffect(() => {
   const fetchCategories = async () => {
     try {
-      const res = await fetch('http://localhost:5001/api/transactions/categories');
+      const res = await fetch('http://localhost:5000/api/transaction/categories');
       const data = await res.json();
       if (data.status === 'success') {
         console.log("Categories fetched:", data.data); 
@@ -44,7 +44,7 @@ const AddTransactionModal = ({ onClose, onTransactionAdded, userId }) => {
     };
 
     try {
-      const res = await fetch('http://localhost:5001/api/transactions', {
+      const res = await fetch('http://localhost:5000/api/transaction', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
