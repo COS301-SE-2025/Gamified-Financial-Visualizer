@@ -27,7 +27,7 @@ const GoalsList = ({ filter = 'ongoing' }) => {
       setError('');
       
       // Fetch goals for the user
-      const response = await fetch(`http://localhost:5002/api/goal/user/${userId}`, {
+      const response = await fetch(`http://localhost:5000/api/goal/user/${userId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

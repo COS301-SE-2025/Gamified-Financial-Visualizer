@@ -31,7 +31,7 @@ const GoalsDetailPage = () => {
       setLoading(true);
       setError('');
       
-      const response = await fetch(`http://localhost:5002/api/goal/${id}`, {
+      const response = await fetch(`http://localhost:5000/api/goal/${id}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

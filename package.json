@@ -13,7 +13,7 @@
   },
   "scripts": {
     "format": "prettier . --write",
-    "dev": "concurrently \"npm run dev --prefix api-backend/services/auth-services\" \"npm run dev --prefix api-backend/services/transaction-service\"  \"npm run dev --prefix api-backend/services/goal-service\" \"npm start --prefix gamified-finance-frontend\" "
+    "dev": "concurrently \"npx ts-node api-backend/server.ts\" \"npm start --prefix gamified-finance-frontend\""
   },
   "devDependencies": {
     "@types/cors": "^2.8.18",
@@ -37,12 +37,12 @@
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
   },
-  "type": "module",
+"type": "commonjs",
   "name": "gfv-dev",
   "version": "1.0.0",
   "private": true,
   "workspaces": [
     "gamified-finance-frontend",
-    "api-backend/services/*"
+    "api-backend/modules/*"
   ]
 }
