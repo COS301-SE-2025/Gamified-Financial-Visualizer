@@ -162,4 +162,29 @@ router.get('/user-id/:username', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * @route DELETE /api/auth/:userId
+ * @desc Delete a user account
+ */
+router.delete('/:userId', async (req: Request, res: Response) => {
+  const { userId } = req.params;
+
+  try {
+    await userService.deleteUser(Number(userId));
+
+    logger.info(`[Auth] User with ID ${userId} deleted successfully.`);
+    res.status(200).json({
+      status: 'success',
+      message: `User account with ID ${userId} deleted successfully.`,
+    });
+  } catch (error) {
+    logger.error(`[Auth] Failed to delete user with ID ${userId}:`, error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Internal server error while deleting user account.',
+    });
+  }
+});
+
+
 export default router;
