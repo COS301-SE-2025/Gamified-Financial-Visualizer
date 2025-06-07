@@ -205,6 +205,47 @@ router.delete('/:userId', async (req: Request, res: Response) => {
 });
 
 /**
+ * @route PUT /api/auth/:userId/update-profile
+ * @brief Allows a user to update their full name and username
+ */
+router.put('/:userId/update-profile', async (req: Request, res: Response): Promise<void> => {
+  const { userId } = req.params;
+  const { username, full_name } = req.body;
+
+  if (!username && !full_name) {
+    res.status(400).json({
+      status: 'error',
+      message: 'At least one of username or full_name must be provided.',
+    });
+  }
+
+  try {
+    const updatedUser = await userService.updateUserProfile(Number(userId), {
+      username,
+      full_name
+    });
+
+    logger.info(`[Auth] Updated profile for user ID ${userId}`);
+    res.status(200).json({
+      status: 'success',
+      message: 'User profile updated successfully.',
+      data: {
+        id: updatedUser.user_id,
+        username: updatedUser.username,
+        full_name: updatedUser.full_name,
+      },
+    });
+  } catch (error) {
+    logger.error(`[Auth] Failed to update profile for user ID ${userId}:`, error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Internal server error while updating user profile.',
+    });
+  }
+});
+
+
+/**
  * - POST /api/auth/register
  * - POST /api/auth/login
  * - GET /api/auth/user-id/:username
