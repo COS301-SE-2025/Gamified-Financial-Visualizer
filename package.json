@@ -16,7 +16,7 @@
   },
   "scripts": {
     "format": "prettier . --write",
-    "dev": "concurrently \"npx ts-node api-backend/server.ts\" \"npm start --prefix gamified-finance-frontend\""
+    "dev": "concurrently \"npx ts-node api-backend/server.ts\" \"npm start --prefix frontend\""
   },
   "devDependencies": {
     "@types/cors": "^2.8.18",
@@ -47,7 +47,7 @@
   "version": "1.0.0",
   "private": true,
   "workspaces": [
-    "gamified-finance-frontend",
+    "frontend",
     "api-backend/modules/*"
   ]
 }
