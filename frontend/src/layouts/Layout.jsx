@@ -1,0 +1,1 @@
+// Master layout (slots: sidebar, header, main)
