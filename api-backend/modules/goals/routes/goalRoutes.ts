@@ -3,7 +3,6 @@ import {
   createGoal,
   getGoal,
   getUserGoals,
-  updateGoal,
   deleteGoal,
   addGoalProgress,
   completeGoal,
