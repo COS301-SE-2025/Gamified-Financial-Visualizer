@@ -4,7 +4,8 @@ import pytesseract                                # needs tesseract-ocr installe
 import re, json
 from datetime import datetime
 from pathlib import Path
-
+# import logging
+import { logger }     from '../../config/logger';  
 
 # ---------- 1. OCR ----------
 def ocr_pdf_to_text(pdf_path: str, dpi: int = 300) -> str:
@@ -135,7 +136,8 @@ def pdf_to_json(pdf_path: str, out: str | Path = "transactions.json") -> None:
    with open(out, "w") as f:
       json.dump(txs, f, indent=2)
    print(f"✅ Saved {len(txs)} transactions → {out}")
+   logger.info(f"✅ Saved {len(txs)} transactions → {out}")
 
 
 if __name__ == "__main__":
-   pdf_to_json("./data/BS.pdf")
+   pdf_to_json("./data/nedbank.pdf")
