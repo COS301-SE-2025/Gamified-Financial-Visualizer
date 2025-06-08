@@ -20,3 +20,16 @@ router.get('/modules', getAllModules);
  */
 router.get('/modules/:moduleId', getModuleById);
 
+/**
+ * @route GET /api/modules/:moduleId/lessons
+ * @desc Fetch all lessons for a specific module
+ */
+router.get('/modules/:moduleId/lessons', getLessonsByModule);
+
+/**
+ * @route GET /api/lessons/:lessonId
+ * @desc Fetch a specific lesson by ID
+ */
+router.get('/lessons/:lessonId', getLessonById);
+
+export default router;
