@@ -39,7 +39,7 @@ const Login = () => {
         }));
 
         // ✅ Navigate with state if needed
-        navigate('/app/Dashboard', { state: { userId } });
+        navigate('/dashboard', { state: { userId } });
       } else {
         setError('Could not retrieve user ID after login.');
       }
