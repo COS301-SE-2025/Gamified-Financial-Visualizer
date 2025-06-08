@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FaSearch, FaPlus, FaMinus } from 'react-icons/fa';
 
 const SupportPage = () => {
-  // ⬇️ Component: SearchBar
+  
   const SearchBar = () => (
     <div className="flex items-center bg-white shadow-inner rounded-full px-4 py-2 w-full max-w-md">
       <FaSearch className="text-red-400 mr-2" />
@@ -14,7 +14,7 @@ const SupportPage = () => {
     </div>
   );
 
-  // ⬇️ Component: FAQAccordion
+
   const FAQAccordion = ({ title }) => {
     const [openIndex, setOpenIndex] = useState(null);
     const faqs = [
@@ -50,7 +50,7 @@ const SupportPage = () => {
     );
   };
 
-  // ⬇️ Component: TableOfContents
+  
   const TableOfContents = () => {
     const items = [
       'Goals',
@@ -76,7 +76,7 @@ const SupportPage = () => {
     );
   };
 
-  // ⬇️ Main Return
+  
   return (
     <div className="flex flex-col min-h-screen bg-[#f8f9fa]">
       <div className="flex flex-row flex-grow p-6 gap-6">
