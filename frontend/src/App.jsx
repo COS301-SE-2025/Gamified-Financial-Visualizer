@@ -10,6 +10,7 @@ import ProfilePage from './pages/Profile/ProfilePage';
 import Dashboard from './pages/Dashboard/DashboardPage';
 import GoalsPage from './pages/Goals/GoalsPage';
 import GoalsDetailPage from './pages/Goals/GoalDetailPage';
+import TransactionPage from './pages/Accounts/TransactionsPage';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         {/* Protected Routes inside shared Layout */}
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path= "/transactions" element={<TransactionPage/>}/>
           <Route path="/goals" element={<GoalsPage />} />
           <Route path="/goals/:id" element={<GoalsDetailPage />} />
           <Route path="/profile" element={<ProfilePage />} />
