@@ -12,6 +12,7 @@ import GoalsPage from './pages/Goals/GoalsPage';
 import GoalsDetailPage from './pages/Goals/GoalDetailPage';
 import TransactionPage from './pages/Accounts/TransactionsPage';
 import LearningPage from './pages/Learn/LearnModulesPage';
+import SupportPage from './pages/Support/SupportPage';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path= "/transactions" element={<TransactionPage/>}/>
           <Route path="/learn" element={<LearningPage/>}/>
+          <Route path="/support" element={<SupportPage/>}/>
           <Route path="/goals" element={<GoalsPage />} />
           <Route path="/goals/:id" element={<GoalsDetailPage />} />
           <Route path="/profile" element={<ProfilePage />} />
