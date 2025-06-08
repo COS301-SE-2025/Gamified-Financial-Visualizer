@@ -662,5 +662,86 @@ Defines the system’s point-awarding rules for various gamified actions. Used t
 
 ---
 
+## 🧠 Indexing Strategy
+
+To ensure efficient data retrieval and maintain optimal performance, strategic indexes have been added to frequently queried columns across the schema. These indexes reduce lookup time for large datasets, especially in user-centric and transactional operations.
+
+### 🔍 Why Indexing Matters
+
+Indexes improve the speed of:
+- Searching and filtering (`WHERE`, `JOIN`, `ORDER BY`)
+- Enforcing uniqueness (`UNIQUE`, `PRIMARY KEY`)
+- Sorting and aggregations (`GROUP BY`, `DISTINCT`)
+
+However, indexes also slightly increase storage usage and insert/update costs — so they are applied selectively where performance gains justify the tradeoff.
+
+---
+
+### ✅ Key Indexes
+
+#### Users
+```sql
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_username ON users(username);
+```
+
+> Speeds up login lookups, username/email validation, and authentication.
+
+#### Accounts
+```sql
+CREATE INDEX idx_accounts_user_id ON accounts(user_id);
+```
+
+> Efficient retrieval of user accounts.
+
+#### Transactions
+```sql
+CREATE INDEX idx_transactions_account_id ON transactions(account_id);
+CREATE INDEX idx_transactions_user_type_date ON transactions(transaction_type, transaction_date);
+CREATE INDEX idx_transactions_category_id ON transactions(category_id);
+CREATE INDEX idx_transactions_custom_category_id ON transactions(custom_category_id);
+CREATE INDEX idx_transactions_budget_id ON transactions(budget_id);
+```
+
+> Optimizes filtering by account, category, type, and date for dashboards, budgets, and reports.
+
+#### Goals & Progress
+```sql
+CREATE INDEX idx_goals_user_id ON goals(user_id);
+CREATE INDEX idx_goals_goal_status ON goals(goal_status);
+CREATE INDEX idx_goal_progress_goal_id ON goal_progress(goal_id);
+CREATE INDEX idx_goal_progress_contributor_id ON goal_progress(contributor_id);
+```
+
+> Enhances performance on user goals overview and progress calculations.
+
+#### Quizzes & Attempts
+```sql
+CREATE INDEX idx_quiz_attempts_user_id ON quiz_attempts(user_id);
+CREATE INDEX idx_quiz_attempts_quiz_id ON quiz_attempts(quiz_id);
+```
+
+> Useful for retrieving quiz history and statistics per user/module.
+
+#### Budgets
+```sql
+CREATE INDEX idx_budgets_user_id ON budgets(user_id);
+CREATE INDEX idx_budget_categories_budget_id ON budget_categories(budget_id);
+```
+
+> Speeds up fetching budgets and category allocations tied to users.
+
+#### Achievements
+```sql
+CREATE INDEX idx_user_achievements_user_id ON user_achievements(user_id);
+CREATE INDEX idx_user_achievements_achievement_id ON user_achievements(achievement_id);
+```
+
+> Fast access to user achievement records and badge assignment.
+
+
+ℹ️ Best Practice: All indexes are non-unique unless needed for constraints. They are designed to support core application features like dashboard rendering, financial calculations, leaderboards, and gamification logic.
+
+---
 
 > ✅ End of database schema documentation.

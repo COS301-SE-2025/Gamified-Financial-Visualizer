@@ -534,3 +534,46 @@ CREATE TABLE point_rules (
     ),
     base_points INT NOT NULL CHECK (base_points >= 0)
 );
+
+
+
+-- ========================================
+-- INDEXES
+-- ========================================
+
+-- Indexes for users
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_username ON users(username);
+
+-- Indexes for accounts
+CREATE INDEX idx_accounts_user_id ON accounts(user_id);
+
+-- Indexes for transactions
+CREATE INDEX idx_transactions_account_id ON transactions(account_id);
+CREATE INDEX idx_transactions_user_type_date ON transactions(transaction_type, transaction_date);
+CREATE INDEX idx_transactions_category_id ON transactions(category_id);
+CREATE INDEX idx_transactions_custom_category_id ON transactions(custom_category_id);
+CREATE INDEX idx_transactions_budget_id ON transactions(budget_id);
+
+-- Indexes for goals
+CREATE INDEX idx_goals_user_id ON goals(user_id);
+CREATE INDEX idx_goals_goal_status ON goals(goal_status);
+
+-- Indexes for goal_progress
+CREATE INDEX idx_goal_progress_goal_id ON goal_progress(goal_id);
+CREATE INDEX idx_goal_progress_contributor_id ON goal_progress(contributor_id);
+
+-- Indexes for user_achievements
+CREATE INDEX idx_user_achievements_user_id ON user_achievements(user_id);
+CREATE INDEX idx_user_achievements_achievement_id ON user_achievements(achievement_id);
+
+-- Indexes for quiz_attempts
+CREATE INDEX idx_quiz_attempts_user_id ON quiz_attempts(user_id);
+CREATE INDEX idx_quiz_attempts_quiz_id ON quiz_attempts(quiz_id);
+
+-- Indexes for budgets
+CREATE INDEX idx_budgets_user_id ON budgets(user_id);
+
+-- Indexes for budget_categories
+CREATE INDEX idx_budget_categories_budget_id ON budget_categories(budget_id);
+
