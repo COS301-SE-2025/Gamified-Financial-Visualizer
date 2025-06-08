@@ -662,6 +662,94 @@ Defines the system’s point-awarding rules for various gamified actions. Used t
 
 ---
 
+## 🗑️ Delete Rules Strategy (`ON DELETE` Behavior)
+
+To preserve data integrity and avoid orphaned records, the schema uses carefully selected `ON DELETE` rules on foreign key relationships. These rules dictate what happens to dependent records when a parent record is deleted.
+
+### 🔧 Purpose of Delete Rules
+
+- **`ON DELETE CASCADE`**: Automatically deletes child records when the parent is deleted.
+- **`ON DELETE SET NULL`**: Retains the child record but nullifies the reference if the parent is removed.
+- **No Rule (Default)**: Prevents deletion of parent if child rows exist (`RESTRICT` behavior).
+
+---
+
+### ✅ Key Applications
+
+#### `users`  
+- **CASCADE** on:
+  - `accounts`
+  - `user_tokens`
+  - `user_preferences`
+  - `user_push_subscriptions`
+  - `custom_categories`
+  - `goals`
+  - `goal_progress`
+  - `quiz_attempts`
+  - `user_achievements`
+  - `user_points`
+  - `points_log`
+  - `community_members`
+  - `friendships`
+  - `ai_scores`
+  - `visual_assets`
+  - `ar_scene_state`
+  
+  > Ensures that deleting a user removes all their associated records cleanly.
+
+#### `accounts`
+- **CASCADE** on `transactions`  
+  > Deleting an account also removes all its transactions.
+
+#### `budgets`
+- **CASCADE** on `budget_categories`  
+  > Removes budget allocations when the parent budget is deleted.
+
+#### `transactions`
+- **SET NULL** on:
+  - `budget_id`
+  - `linked_goal_id`
+  - `linked_challenge_id`
+  
+  > Keeps transaction history even if associated goal/challenge is removed.
+
+#### `transactions`
+- **CASCADE** on `recurring_transactions`  
+  > Automatically removes recurring metadata if the base transaction is deleted.
+
+#### `goals`
+- **CASCADE** on `goal_progress`  
+  > Removes all contributions if the goal is deleted.
+
+#### `communities`
+- **CASCADE** on:
+  - `community_members`
+  - `challenge_progress`
+  - `leaderboard_entries`
+  
+  > Prevents orphaned records in community-related tables.
+
+#### `learning_modules`
+- **CASCADE** on:
+  - `lessons`
+  - `quizzes`
+  
+  > Ensures module deletion removes all linked content.
+
+#### `quizzes`
+- **CASCADE** on `quiz_attempts`  
+  > Removes attempts if the quiz is deleted.
+
+---
+
+### 🔒 Summary of Best Practices
+
+- Use **CASCADE** when child records lose meaning without the parent (e.g., goal progress, transactions).
+- Use **SET NULL** when historical data must remain but without reference (e.g., transactions linked to removed goals).
+- Avoid ambiguous defaults; always define an explicit rule when creating foreign keys.
+
+---
+
 ## 🧠 Indexing Strategy
 
 To ensure efficient data retrieval and maintain optimal performance, strategic indexes have been added to frequently queried columns across the schema. These indexes reduce lookup time for large datasets, especially in user-centric and transactional operations.
