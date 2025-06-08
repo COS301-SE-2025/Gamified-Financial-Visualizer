@@ -1,5 +1,3 @@
-# Need to be updated (subjected to change for demo 2)
-
 # 📊 Database Schema Documentation: Gamified Financial Visualizer
 
 This document outlines the schema of the main tables in the PostgreSQL database. Each table includes its attributes and the purpose of each field.
@@ -22,6 +20,21 @@ Stores user account and authentication metadata.
 | `updated_at`           | TIMESTAMP    | Timestamp of the last update to the user’s record. **Never null.**         |
 
 > ⚙️ `two_factor_mandatory` ensures OTP is enforced on first login, while allowing users to later opt out of continuous 2FA logins if `two_factor_enabled = false`.
+
+---
+
+## 🔐 Table: `user_tokens`
+Stores authentication tokens for active user sessions. Used to manage login states, token expiration, and secure user access.
+
+| Column Name     | Data Type  | Description                                                              |
+|------------------|-----------|--------------------------------------------------------------------------|
+| `token_id`       | SERIAL    | Primary key. Unique ID for the token record.                             |
+| `user_id`        | INT       | Foreign key to `users`. Identifies the user that owns the token.         |
+| `token`          | TEXT      | The session token (e.g., JWT, Paseto, or opaque value).                  |
+| `created_at`     | TIMESTAMP | Timestamp when the token was issued. Defaults to current time.           |
+| `expires_at`     | TIMESTAMP | When the token becomes invalid and should be rejected.                   |
+
+> Tokens are typically created on login and removed on logout. Backend services should validate token expiration on every request.
 
 ---
 
@@ -62,17 +75,19 @@ Stores device-specific push subscription details for PWA notifications.
 ## 💼 Table: `accounts`
 Stores user-linked financial accounts across various financial institutions or platforms.
 
-| Column Name     | Data Type     | Description                                                                 |
-|------------------|--------------|-----------------------------------------------------------------------------|
-| `account_id`     | SERIAL       | Primary key. Unique identifier for each account.                            |
-| `user_id`        | INT          | Foreign key to `users`. Associates the account with a specific user.       |
-| `bank_name`      | VARCHAR(100) | Name of the financial institution. Defaults to `'GFV Bank'`.               |
-| `account_name`   | VARCHAR(100) | Custom name for the account. Must be unique per user. Defaults to `'My Account'`. |
-| `account_type`   | VARCHAR(50)  | Type of account. Must be one of the predefined values (see below).         |
-| `currency`       | VARCHAR(20)  | Currency code. Must be one of the supported values (see below).            |
-| `created_at`     | TIMESTAMP    | Timestamp when the account was added. **Never null.**                      |
+| Column Name      | Data Type     | Description                                                                 |
+|-------------------|--------------|-----------------------------------------------------------------------------|
+| `account_id`      | SERIAL       | Primary key. Unique identifier for each account.                            |
+| `user_id`         | INT          | Foreign key to `users`. Associates the account with a specific user.        |
+| `bank_name`       | VARCHAR(100) | Name of the financial institution. Defaults to `'GFV Bank'`.                |
+| `account_name`    | VARCHAR(100) | Custom name for the account. Must be unique per user. Defaults to `'My Account'`. |
+| `account_type`    | VARCHAR(50)  | Type of account. Must be one of the predefined values (see below).          |
+| `currency`        | VARCHAR(20)  | Currency code. Must be one of the supported values (see below).             |
+| `account_balance` | NUMERIC(14,2)| Current total balance of the account. Calculated from associated transactions. |
+| `created_at`      | TIMESTAMP    | Timestamp when the account was added. **Never null.**                       |
 
-> 🔒 A user may not reuse the same `account_name` for multiple accounts. Uniqueness is enforced per user.
+> 🔒 A user may not reuse the same `account_name` for multiple accounts. Uniqueness is enforced per user.  
+> 💰 `account_balance` should be dynamically updated by the backend whenever a transaction is created, updated, or deleted.
 
 ### 🏦 Allowed `account_type` values:
 - `current`
@@ -94,9 +109,6 @@ Stores user-linked financial accounts across various financial institutions or p
 
 ---
 
-
-
-
 ## 💳 Table: `transactions`
 Tracks all user transactions, including income, expenses, transfers, and system fees. Supports both global and custom categories, and identifies recurring entries. Transactions may also contribute to financial goals or challenges, and reward gamified points.
 
@@ -106,6 +118,7 @@ Tracks all user transactions, including income, expenses, transfers, and system 
 | `account_id`           | INT          | Foreign key to `accounts`. Specifies which account this transaction affects. |
 | `category_id`          | INT          | Foreign key to `categories`. Used if the transaction is assigned a global category. |
 | `custom_category_id`   | INT          | Foreign key to `custom_categories`. Used if assigned a personal category.   |
+| `budget_id` | INT | Foreign key to budgets. Updates budget progress dynamically if linked. |
 | `transaction_amount`   | NUMERIC(12,2)| Amount of the transaction. Cannot be 0.                                     |
 | `transaction_type`     | VARCHAR(20)  | Required. Must be one of: `expense`, `income`, `transfer`, `fee`, `withdrawal`, `deposit`. |
 | `transaction_date`     | TIMESTAMP    | The date and time when the transaction occurred. Defaults to now.           |
@@ -119,6 +132,7 @@ Tracks all user transactions, including income, expenses, transfers, and system 
 > ✅ Only one of `category_id` or `custom_category_id` must be present per transaction (enforced by `CHECK` constraint).  
 > 🔁 When `is_recurring` is true, additional metadata is stored in the `recurring_transactions` table.  
 > 🎯 If linked to a goal or challenge, their progress is automatically updated when the transaction is created.  
+> 💰 If `budget_id` is provided, the transaction contributes toward that budget’s progress and remaining balance.
 > 🏆 Points may be awarded for gamification and used toward achievements.
 
 ---
@@ -342,22 +356,27 @@ Represents mutual social connections between users. Each friendship is symmetric
 ## 🎯 Table: `goals`
 Defines personal financial goals set by users. Each goal tracks a financial target, deadline, and current progress.
 
-| Column Name       | Data Type     | Description                                                                 |
-|--------------------|--------------|-----------------------------------------------------------------------------|
-| `goal_id`          | SERIAL       | Primary key. Unique identifier for each goal.                               |
-| `user_id`          | INT          | Foreign key to `users`. The owner of the goal.                              |
-| `goal_name`        | VARCHAR(100) | Name/title of the goal. Must be unique per user.                            |
-| `goal_type`        | VARCHAR(50)  | Type of goal. Must be one of: `savings`, `debt`, `investment`, `spending limit`, `donation`. |
-| `target_amount`    | NUMERIC(12,2)| Required. The total amount the user aims to reach. Must be greater than 0. |
-| `current_amount`   | NUMERIC(12,2)| Tracks the current amount contributed toward the goal. Defaults to `0`.    |
-| `target_date`      | DATE         | The deadline by which the user aims to achieve the goal.                    |
-| `goal_status`      | VARCHAR(50)  | Status of the goal. Must be one of: `in-progress`, `completed`, `cancelled`, `failed`. |
-| `created_at`       | TIMESTAMP    | Timestamp when the goal was created.                                        |
-| `updated_at`       | TIMESTAMP    | Timestamp when the goal was last updated (auto-updated by trigger).        |
+| Column Name         | Data Type     | Description                                                                 |
+|----------------------|--------------|-----------------------------------------------------------------------------|
+| `goal_id`            | SERIAL       | Primary key. Unique identifier for each goal.                               |
+| `user_id`            | INT          | Foreign key to `users`. The owner of the goal.                              |
+| `goal_name`          | VARCHAR(100) | Name/title of the goal. Must be unique per user.                            |
+| `goal_type`          | VARCHAR(50)  | One of: `savings`, `debt`, `investment`, `spending limit`, `donation`.     |
+| `target_amount`      | NUMERIC(12,2)| Total amount the user aims to reach. Must be greater than 0.                |
+| `current_amount`     | NUMERIC(12,2)| Running total of progress made toward the goal. Defaults to `0`.            |
+| `target_date`        | DATE         | Intended completion date for the goal.                                      |
+| `end_date`           | DATE         | Actual end/cutoff date. Used to assess on-time completion.                  |
+| `category_id`        | INT          | FK to `categories` (global). Used to classify the goal. Nullable.           |
+| `custom_category_id` | INT          | FK to `custom_categories`. Used for personal classification. Nullable.      |
+| `goal_status`        | VARCHAR(50)  | One of: `in-progress`, `completed`, `cancelled`, `failed`.                  |
+| `created_at`         | TIMESTAMP    | When the goal was created.                                                  |
+| `updated_at`         | TIMESTAMP    | Auto-updated on any change to the goal.                                     |
 
-> 🧍 All goals are personal. No community linkage is allowed or stored in this table.  
-> 🔄 The `updated_at` field is automatically refreshed whenever the goal is updated (e.g., contribution, status change).  
-> 🔐 Each user may only have one goal with a given name (`UNIQUE(user_id, goal_name)` constraint).
+> 🧍 Goals are strictly personal — no community linkage.  
+> 🧠 Either `category_id` or `custom_category_id` may be set (not both).  
+> 📅 Use `end_date` to track overdue or late completions.  
+> 🔄 `updated_at` is auto-managed by a backend or trigger.  
+> 🔐 Enforces unique `goal_name` per user.
 
 ---
 
@@ -447,16 +466,18 @@ Tracks leaderboard scores for individual users or communities in the context of 
 
 ---
 
-
 ## 📚 Table: `learning_modules`
 Stores financial literacy modules that group together related lessons and quizzes. Each module focuses on a specific topic and difficulty level.
 
-| Column Name     | Data Type     | Description                                                              |
-|------------------|--------------|--------------------------------------------------------------------------|
-| `module_id`      | SERIAL       | Primary key. Unique identifier for the module.                          |
-| `module_title`   | VARCHAR(100) | Title of the module. E.g., "Budgeting Basics".                          |
-| `topic`          | VARCHAR(100) | The main topic covered in the module (e.g., "Investing", "Debt").       |
-| `difficulty`     | VARCHAR(50)  | Indicates the complexity: `beginner`, `intermediate`, or `advanced`.    |
+| Column Name       | Data Type     | Description                                                              |
+|--------------------|--------------|--------------------------------------------------------------------------|
+| `module_id`        | SERIAL       | Primary key. Unique identifier for the module.                           |
+| `module_title`     | VARCHAR(100) | Title of the module. E.g., "Budgeting Basics".                           |
+| `topic`            | VARCHAR(100) | The main topic covered in the module (e.g., "Investing", "Debt").        |
+| `difficulty`       | VARCHAR(50)  | Indicates the complexity: `beginner`, `intermediate`, or `advanced`.     |
+| `banner_image`     | BYTEA        | Raw binary content of the module's banner image.                         |
+
+> 🖼️ The `banner_image` column stores image files (e.g., PNG, JPEG) directly in binary form. It is loaded by the backend and served as media content.
 
 ---
 
@@ -507,36 +528,20 @@ Logs individual user quiz attempts, scores, and timestamps. Also tracks pass/fai
 
 ---
 
-
-
-## 🎁 Table: `module_rewards`
-Rewards issued to users upon completion of learning modules. Helps gamify the learning experience by awarding points.
-
-| Column Name     | Data Type | Description                                                                 |
-|------------------|----------|-----------------------------------------------------------------------------|
-| `reward_id`      | SERIAL   | Primary key. Unique identifier for the reward record.                       |
-| `user_id`        | INT      | Foreign key to `users`. The user receiving the reward.                      |
-| `module_id`      | INT      | Foreign key to `learning_modules`. Specifies which module was completed.    |
-| `reward_points`  | INT      | Number of points earned for completing the module.                          |
-| `awarded_at`     | TIMESTAMP| Timestamp when the reward was granted. Defaults to current timestamp.       |
-
-> A user can earn points for each module only once. This is enforced with a unique constraint on `(user_id, module_id)`.
-
----
-
 ## 💰 Table: `budgets`
 Defines financial budgets for users within a specific time range. Used to track and control spending behavior.
 
 | Column Name     | Data Type     | Description                                                                 |
 |------------------|--------------|-----------------------------------------------------------------------------|
-| `budget_id`      | SERIAL       | Primary key. Unique identifier for the budget.                             |
-| `user_id`        | INT          | Foreign key to `users`. The owner of the budget.                           |
-| `budget_name`    | VARCHAR(100) | User-defined name for the budget (e.g., "March 2025 Budget").              |
-| `period_start`   | DATE         | The starting date of the budget period.                                    |
-| `period_end`     | DATE         | The ending date of the budget period.                                      |
-| `created_at`     | TIMESTAMP    | Timestamp when the budget was created. Defaults to current timestamp.      |
+| `budget_id`      | SERIAL       | Primary key. Unique identifier for the budget.                              |
+| `user_id`        | INT          | Foreign key to `users`. The owner of the budget.                            |
+| `budget_name`    | VARCHAR(100) | User-defined name for the budget (e.g., "March 2025 Budget"). **Must be unique per user.** |
+| `period_start`   | DATE         | The starting date of the budget period.                                     |
+| `period_end`     | DATE         | The ending date of the budget period.                                       |
+| `created_at`     | TIMESTAMP    | Timestamp when the budget was created. Defaults to current timestamp.       |
 
-> Each budget can be linked to one or more category allocations in the `budget_categories` table.
+> 🔐 A user cannot have two budgets with the same name. Enforced via `UNIQUE(user_id, budget_name)` constraint.  
+> 📊 Each budget can be linked to one or more category allocations in the `budget_categories` table.
 
 ---
 
@@ -549,84 +554,113 @@ Defines budget allocations per category under a specific user-defined budget. Su
 | `budget_id`           | INT          | Foreign key to `budgets`. Identifies which budget this allocation belongs to. |
 | `category_id`         | INT          | Foreign key to `categories`. Used for global categories (nullable).         |
 | `custom_category_id`  | INT          | Foreign key to `custom_categories`. Used for personal categories (nullable).|
-| `target_amount`       | NUMERIC(12,2)| The maximum amount a user plans to spend on this category during the budget period. Must be ≥ 0. |
+| `target_amount`       | NUMERIC(12,2)| The max amount a user plans to spend in this category during the period. Must be ≥ 0. |
 
-> Either `category_id` or `custom_category_id` must be provided, but not both. This is enforced via a `CHECK` constraint.
+> ✅ Either `category_id` or `custom_category_id` must be provided—**not both**. Enforced via a `CHECK` constraint.
 
 ---
 
 ## 🖼️ Table: `banner_images`
-Stores metadata for banner images that are shown in the UI, such as promotional messages, challenge announcements, or educational highlights.
 
-| Column Name     | Data Type  | Description                                                               |
-|------------------|-----------|---------------------------------------------------------------------------|
-| `banner_id`      | SERIAL    | Primary key. Unique ID for the banner.                                    |
-| `image_url`      | BYTEA      | URL to the banner image asset.                                            |
-| `alt_text`       | TEXT      | Alternative text description for accessibility and SEO.                   |
-| `display_start`  | TIMESTAMP | Optional. When the banner should begin displaying in the UI.              |
-| `display_end`    | TIMESTAMP | Optional. When the banner should stop being displayed.                    |
-| `created_at`     | TIMESTAMP | Timestamp when the banner was added. Defaults to current timestamp.       |
+Stores decorative UI image assets like icons, event banners, and feature tabs.
 
-> Used by frontend components to manage rotating messages, seasonal events, or learning tips.
+| Column Name   | Data Type  | Description                                                             |
+|----------------|-----------|-------------------------------------------------------------------------|
+| `banner_id`    | SERIAL    | Primary key. Unique ID for each banner image.                           |
+| `image_data`   | BYTEA     | Binary data representing the banner image.                              |
+| `created_at`   | TIMESTAMP | Timestamp when the image was added. Defaults to current timestamp.      |
+
+> Used for rotating banners, UI themes, seasonal events, or category illustrations.
+
+---
+
+## 🧑‍🎨 Table: `avatar_images`
+
+Stores user avatar assets that can be selected during profile customization.
+
+| Column Name     | Data Type     | Description                                                              |
+|------------------|--------------|--------------------------------------------------------------------------|
+| `avatar_id`      | SERIAL       | Primary key. Unique ID for each avatar image.                            |
+| `image_data`     | BYTEA        | Binary data representing the avatar image.                               |
+| `avatar_name`    | VARCHAR(100) | Unique name or label for the avatar (e.g., `"ninja_cat"`, `"wizard_elf"`). |
+| `created_at`     | TIMESTAMP    | Timestamp when the avatar was added. Defaults to current timestamp.      |
+
+> Used for profile personalization. Can be expanded later to support unlockable or animated avatars.
 
 ---
 
 ## 🏅 Table: `achievements`
 Defines achievement milestones users can earn by completing specific actions such as saving goals, completing modules, or participating in challenges.
 
-| Column Name              | Data Type     | Description                                                                  |
-|---------------------------|--------------|------------------------------------------------------------------------------|
-| `achievement_id`          | SERIAL       | Primary key. Unique ID for each achievement.                                 |
-| `achievement_title`       | VARCHAR(100) | The name of the achievement.                                                 |
-| `achievement_description` | TEXT         | A detailed explanation of what the achievement represents.                   |
-| `points_awarded`          | INT          | The number of gamified points awarded to the user when earned. Must be ≥ 0.  |
-| `badge_icon_url`          | BYTEA         | Optional. URL to the icon representing this achievement.                     |
-| `trigger_condition_json`  | JSONB        | A JSON object defining the rule that triggers the achievement (e.g., `{ "goal_completed": true, "amount": 1000 }`). |
+| Column Name              | Data Type     | Description                                                                 |
+|--------------------------|---------------|-----------------------------------------------------------------------------|
+| `achievement_id`         | SERIAL        | Primary key. Unique ID for each achievement.                                |
+| `achievement_title`      | VARCHAR(100)  | The name of the achievement.                                                |
+| `achievement_description`| TEXT          | A detailed explanation of what the achievement represents.                  |
+| `achievement_type`       | VARCHAR(50)   | The category. Must be one of: `goal`, `quiz`, `challenge`, `transaction`, `milestone`, `misc`. |
+| `points_awarded`         | INT           | Number of gamified points awarded when earned. Must be ≥ 0.                 |
+| `badge_icon`             | BYTEA         | Binary image data for the badge icon.                                       |
+| `trigger_condition_json` | JSONB         | JSON rule that defines when the achievement is awarded.                     |
 
-> Achievements are triggered based on various metrics (goals, habits, scores, etc.) evaluated through backend logic or AI events.
+> Achievements are awarded by backend logic based on user behavior and system events.
 
 ---
 
 ## 🧑‍🎓 Table: `user_achievements`
 Tracks which users have earned which achievements and when.
 
-| Column Name       | Data Type  | Description                                                              |
-|--------------------|-----------|--------------------------------------------------------------------------|
-| `user_id`          | INT       | Foreign key to `users`. Identifies the user who earned the achievement. |
-| `achievement_id`   | INT       | Foreign key to `achievements`. The achievement that was unlocked.        |
-| `awarded_at`       | TIMESTAMP | Timestamp when the achievement was granted. Defaults to current time.    |
+| Column Name       | Data Type   | Description                                                                 |
+|-------------------|-------------|------------------------------------------------------------------------------|
+| `user_id`         | INT         | Foreign key to `users`. The user who earned the achievement.                |
+| `achievement_id`  | INT         | Foreign key to `achievements`. The earned achievement.                      |
+| `awarded_at`      | TIMESTAMP   | Timestamp when the achievement was granted. Defaults to current time.       |
 
-> The primary key `(user_id, achievement_id)` ensures a user earns each achievement only once.
+> ✅ Composite primary key `(user_id, achievement_id)` ensures uniqueness.
 
 ---
 
 ## 🧮 Table: `user_points`
-Stores a user’s total accumulated points across all gamified activities such as achievements, quizzes, challenges, and financial goals.
+Tracks a user’s total accumulated gamified points from various activities.
 
-| Column Name     | Data Type  | Description                                                             |
-|------------------|-----------|-------------------------------------------------------------------------|
-| `user_id`        | INT       | Primary key and foreign key to `users`. Represents the owner of the points. |
-| `total_points`   | INT       | Total number of points earned by the user. Defaults to `0`.             |
-| `last_updated`   | TIMESTAMP | Timestamp of the most recent update to the user's point total.          |
+| Column Name     | Data Type   | Description                                                                 |
+|------------------|------------|------------------------------------------------------------------------------|
+| `user_id`        | INT        | Primary key and foreign key to `users`. The user earning points.           |
+| `total_points`   | INT        | Total points accumulated. Defaults to `0`.                                 |
+| `last_updated`   | TIMESTAMP  | Timestamp of the last update to the total points.                          |
+| `tier_status`    | VARCHAR(20)| User’s tier. Must be one of: `wood`, `bronze`, `silver`, `gold`, `platinum`, `diamond`. Defaults to `wood`. |
 
-> This table provides quick access to a user's current point balance and supports ranking or redemption logic.
+> Useful for tier progression, unlocks, and leaderboard displays.
 
 ---
 
 ## 🗂️ Table: `points_log`
-Detailed log of every point-earning event, specifying the source and origin of the awarded points.
+Stores a log of all point-earning events for historical tracking and auditing.
 
-| Column Name   | Data Type   | Description                                                                 |
-|----------------|------------|-----------------------------------------------------------------------------|
-| `log_id`        | SERIAL     | Primary key. Unique identifier for the log entry.                          |
-| `user_id`       | INT        | Foreign key to `users`. Identifies who earned the points.                  |
-| `source`        | VARCHAR(50)| The origin of the points. Must be one of: `achievement`, `quiz`, `goal`, `challenge`, `transaction`. |
-| `source_id`     | INT        | Reference to the ID of the originating source (e.g., `achievement_id`, `quiz_id`). |
-| `points`        | INT        | Number of points earned in this event. Must be greater than 0.            |
-| `created_at`    | TIMESTAMP  | Timestamp when the points were logged. Defaults to current timestamp.     |
+| Column Name    | Data Type    | Description                                                                 |
+|----------------|-------------|------------------------------------------------------------------------------|
+| `log_id`       | SERIAL      | Primary key. Unique log entry.                                              |
+| `user_id`      | INT         | Foreign key to `users`. The user earning points.                            |
+| `source`       | VARCHAR(50) | The origin of the event. Must be one of: `achievement`, `quiz`, `goal`, `challenge`, `transaction`. |
+| `source_id`    | INT         | Optional ID referencing the event (e.g., `quiz_id`, `achievement_id`).      |
+| `points`       | INT         | Points earned from this action. Must be > 0.                                |
+| `created_at`   | TIMESTAMP   | When the points were logged. Defaults to now.                               |
 
-> Enables detailed audit trails and analytics of point generation per feature. Useful for reward histories, leaderboards, and debugging.
+> Enables granular tracking of how, when, and why users earned points.
 
 ---
+
+## 🧾 Table: `point_rules`
+Defines the system’s point-awarding rules for various gamified actions. Used to centrally manage how many points are given for each activity.
+
+| Column Name    | Data Type     | Description                                                                 |
+|----------------|---------------|------------------------------------------------------------------------------|
+| `rule_id`      | SERIAL        | Primary key. Unique ID for the rule.                                        |
+| `action_type`  | VARCHAR(50)   | The type of user action. Must be one of: `transaction`, `goal_created`, `goal_completed`, `quiz_completed`, `achievement_unlocked`, `challenge_completed`. |
+| `base_points`  | INT           | Number of points to award for the action. Must be ≥ 0.                      |
+
+> This table allows the backend to dynamically retrieve and apply point rules without hardcoding logic. It supports scalable and adjustable gamification systems.
+
+---
+
 
 > ✅ End of database schema documentation.
