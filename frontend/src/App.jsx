@@ -11,8 +11,8 @@ import ProfilePage from './pages/Profile/ProfilePage';
 // 🔻 Commented out until the pages are ready
 import Dashboard from './pages/Dashboard/DashboardPage';
 // import Transaction from './pages/Transactions/Transactions';
-// import GoalsPage from './pages/GoalsPage/GoalPage';
-// import GoalsDetailPage from './pages/GoalsPage/GoalsDetailPage/GoalsDetailPage';
+import GoalsPage from './pages/Goals/GoalsPage';
+import GoalsDetailPage from './pages/Goals/GoalDetailPage';
 // import CommunityPage from './pages/CommunityPage/CommunityPage';
 // import CommunityDetailPage from './pages/CommunityPage/CommunityDetail/CommunityDetailPage';
 // import CommunityListPage from './pages/CommunityPage/MyCommunities/CommunityListPage';
@@ -33,8 +33,9 @@ function App() {
           {/* Uncomment when components are ready */}
           <Route path="Dashboard" element={<Dashboard />} />
           {/* <Route path="transactions" element={<Transaction />} /> */}
-          {/* <Route path="goals" element={<GoalsPage />} />
+          <Route path="goals" element={<GoalsPage />} />
           <Route path="goals/:id" element={<GoalsDetailPage />} />
+          {/* 
           <Route path="community" element={<CommunityPage />} />
           <Route path="communities" element={<CommunityListPage />} />
           <Route path="community/:id" element={<CommunityDetailPage />} />
