@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 import Layout from './layouts/Layout';
+import LandingPage from './pages/Landing/LandingPage';
 
 // ✅ Only loading ProfilePage for now
 import ProfilePage from './pages/Profile/ProfilePage';
@@ -29,7 +30,7 @@ function App() {
         <Route path="/register" element={<Register />} />
 
         {/* Protected Routes */}
-        <Route path="/app" element={<Layout />}>
+        <Route path="/" element={<LandingPage />}>
           {/* Uncomment when components are ready */}
           <Route path="Dashboard" element={<Dashboard />} />
           {/* <Route path="transactions" element={<Transaction />} /> */}

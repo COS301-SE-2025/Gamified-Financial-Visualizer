@@ -3,6 +3,7 @@
     "@types/winston": "^2.4.4",
     "argon2": "^0.43.0",
     "bullmq": "^5.53.1",
+    "classnames": "^2.5.1",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
