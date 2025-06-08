@@ -15,6 +15,15 @@ CREATE TABLE users (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- USER TOKENS
+CREATE TABLE user_tokens (
+    token_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    token TEXT NOT NULL,  -- can store JWT, Paseto, or opaque tokens
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NOT NULL
+);
+
 -- USER PREFERENCES
 CREATE TABLE user_preferences (
     user_id INT NOT NULL PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
@@ -59,7 +68,6 @@ EXECUTE FUNCTION update_updated_at_column();
 
 
 
-
 -- ACCOUNTS
 CREATE TABLE accounts (
     account_id SERIAL PRIMARY KEY,
@@ -79,6 +87,7 @@ CREATE TABLE accounts (
             'BTC', 'ETH', 'USDT', 'BUSD', 'LTC', 'XRP', 'SOL', 'BNB', 'DOGE', 'USDC'
         )
     ) DEFAULT 'ZAR',
+    account_balance NUMERIC(14, 2) NOT NULL DEFAULT 0,  -- total of all transactions
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (user_id, account_name)
 );
@@ -89,6 +98,7 @@ CREATE TABLE transactions (
     account_id INT NOT NULL REFERENCES accounts(account_id) ON DELETE CASCADE,
     category_id INT REFERENCES categories(category_id),
     custom_category_id INT REFERENCES custom_categories(custom_category_id),
+    budget_id INT REFERENCES budgets(budget_id) ON DELETE SET NULL,
     transaction_amount NUMERIC(12, 2) NOT NULL CHECK (transaction_amount != 0),
     transaction_type VARCHAR(20) NOT NULL CHECK (
         transaction_type IN ('expense', 'income', 'transfer', 'fee', 'withdrawal', 'deposit')
@@ -250,12 +260,20 @@ CREATE TABLE goals (
     target_amount NUMERIC(12, 2) NOT NULL CHECK (target_amount > 0),
     current_amount NUMERIC(12, 2) NOT NULL DEFAULT 0,
     target_date DATE NOT NULL,
+    end_date DATE, -- Optional actual completion deadline (can help measure lateness)
+    category_id INT REFERENCES categories(category_id),
+    custom_category_id INT REFERENCES custom_categories(custom_category_id),
     goal_status VARCHAR(50) NOT NULL CHECK (
         goal_status IN ('in-progress', 'completed', 'cancelled', 'failed')
     ),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (user_id, goal_name)  -- Enforces uniqueness per user
+    UNIQUE (user_id, goal_name),
+    CHECK (
+        (category_id IS NULL AND custom_category_id IS NOT NULL)
+        OR
+        (category_id IS NOT NULL AND custom_category_id IS NULL)
+    )
 );
 
 -- Trigger function to auto-update `updated_at` column on goal updates
@@ -332,12 +350,7 @@ EXECUTE FUNCTION subtract_goal_on_progress_delete();
 
 
 
-
-
-
-
-
-
+------------------------------------------------------------
 
 -- CHALLENGES (Fronted Needed)
 CREATE TABLE challenges (
@@ -386,6 +399,10 @@ CREATE TABLE leaderboard_entries (
     )
 );
 
+------------------------------------------------------------
+
+
+
 -- LEARNING MODULES
 CREATE TABLE learning_modules (
     module_id SERIAL PRIMARY KEY,
@@ -393,7 +410,8 @@ CREATE TABLE learning_modules (
     topic VARCHAR(100) NOT NULL,
     difficulty VARCHAR(50) CHECK (
         difficulty IN ('beginner', 'intermediate', 'advanced')
-    )
+    ),
+    banner_image BYTEA  -- Stores the image data directly as binary
 );
 
 -- LESSONS
@@ -427,16 +445,6 @@ CREATE TABLE quiz_attempts (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- MODULE REWARDS
-CREATE TABLE module_rewards (
-    reward_id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    module_id INT NOT NULL REFERENCES learning_modules(module_id),
-    reward_points INT NOT NULL,
-    awarded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (user_id, module_id)
-);
-
 -- BUDGETS
 CREATE TABLE budgets (
     budget_id SERIAL PRIMARY KEY,
@@ -444,7 +452,8 @@ CREATE TABLE budgets (
     budget_name VARCHAR(100) NOT NULL,
     period_start DATE NOT NULL,
     period_end DATE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, budget_name)  -- Ensures budget names are unique per user
 );
 
 -- BUDGET ALLOCATIONS PER CATEGORY
@@ -460,24 +469,31 @@ CREATE TABLE budget_categories (
     )
 );
 
--- UI BANNER ADS (IMAGES)
+-- BANNER IMAGES (Decorative UI assets like icons, tabs, event banners)
 CREATE TABLE banner_images (
     banner_id SERIAL PRIMARY KEY,
-    image_data BYTEA NOT NULL,         -- actual image binary data
-    alt_text TEXT,
-    display_start TIMESTAMP,
-    display_end TIMESTAMP,
+    image_data BYTEA NOT NULL,  -- stores the image as binary
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- AVATAR IMAGES (Selectable user avatars)
+CREATE TABLE avatar_images (
+    avatar_id SERIAL PRIMARY KEY,
+    image_data BYTEA NOT NULL,  -- stores avatar image in binary
+    avatar_name VARCHAR(100) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 -- ACHIEVEMENTS
 CREATE TABLE achievements (
     achievement_id SERIAL PRIMARY KEY,
     achievement_title VARCHAR(100) NOT NULL,
     achievement_description TEXT NOT NULL,
+    achievement_type VARCHAR(50) NOT NULL CHECK (
+        achievement_type IN ('goal', 'quiz', 'challenge', 'transaction', 'milestone', 'misc')
+    ),
     points_awarded INT NOT NULL CHECK (points_awarded >= 0),
-    badge_icon BYTEA,                 -- actual binary image data for badge icon
+    badge_icon BYTEA,  -- actual binary image data for badge icon
     trigger_condition_json JSONB NOT NULL  -- e.g., {"goal_completed": true, "amount": 1000}
 );
 
@@ -493,7 +509,7 @@ CREATE TABLE user_achievements (
 CREATE TABLE user_points (
     user_id INT PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
     total_points INT NOT NULL DEFAULT 0,
-    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     tier_status VARCHAR(20) NOT NULL DEFAULT 'wood' CHECK (
     tier_status IN ('wood', 'bronze', 'silver', 'gold', 'platinum', 'diamond'))
 );
