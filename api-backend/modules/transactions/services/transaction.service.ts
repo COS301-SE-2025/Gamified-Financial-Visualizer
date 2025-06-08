@@ -27,61 +27,93 @@ export async function createTransaction(txn: Transaction) {
     transaction_type,
     description,
     transaction_date,
-    is_recurring = false
+    is_recurring = false,
+    linked_goal_id,
+    linked_challenge_id,
+    budget_id,
+    points_awarded = 0
   } = txn;
 
-  const insertTxnSql = `
-    INSERT INTO transactions
-      (account_id, category_id, transaction_amount, transaction_type,
-       description, transaction_date, is_recurring)
-    VALUES ($1, $2, $3, $4, $5, $6, $7)
-    RETURNING transaction_id;
-  `;
-
+  const client = await pool.connect();
   try {
-    const res = await pool.query(insertTxnSql, [
+    await client.query('BEGIN');
+
+    const insertTxnSql = `
+      INSERT INTO transactions
+        (account_id, category_id, transaction_amount, transaction_type,
+         transaction_name, transaction_date, is_recurring,
+         linked_goal_id, linked_challenge_id, budget_id, points_awarded)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      RETURNING transaction_id;
+    `;
+
+    const txnRes = await client.query(insertTxnSql, [
       account_id,
       category_id,
       transaction_amount,
       transaction_type,
       description,
       transaction_date,
-      is_recurring
+      is_recurring,
+      linked_goal_id || null,
+      linked_challenge_id || null,
+      budget_id || null,
+      points_awarded
     ]);
-    const newId = res.rows[ 0 ].transaction_id;
-    logger.info(`[TransactionService] Created transaction ID=${newId}`);
 
-    eventBus.emit('transaction.created', {
-      transaction_id: txn.transaction_id,
-      account_id: txn.account_id,
-      amount: txn.transaction_amount,
-      category_id: txn.category_id,
-      type: txn.transaction_type,
-      timestamp: txn.transaction_date
-    });
-    
+    const transaction_id = txnRes.rows[0].transaction_id;
+
+    if (linked_goal_id) {
+      const getUserSql = `SELECT user_id FROM accounts WHERE account_id = $1`;
+      const { rows } = await client.query(getUserSql, [account_id]);
+      const user_id = rows[0]?.user_id;
+
+      if (!user_id) throw new Error("User not found for goal contribution.");
+
+      const insertGoalProgress = `
+        INSERT INTO goal_progress (goal_id, contributor_id, amount_added)
+        VALUES ($1, $2, $3)
+      `;
+      await client.query(insertGoalProgress, [
+        linked_goal_id,
+        user_id,
+        transaction_amount
+      ]);
+      logger.info(`[TransactionService] Linked to goal_id=${linked_goal_id}`);
+    }
+
     if (is_recurring) {
       const insertRecSql = `
         INSERT INTO recurring_transactions
           (transaction_id, frequency, next_occurrence)
-        VALUES ($1, $2, $3)
+        VALUES ($1, 'monthly', $2)
         ON CONFLICT (transaction_id) DO NOTHING;
       `;
-      // Here we set frequency to 'monthly' and next_occurrence equal to transaction_date
-      await pool.query(insertRecSql, [
-        newId,
-        'monthly',
-        transaction_date
-      ]);
-      logger.info(`[TransactionService] Marked transaction ID=${newId} as recurring.`);
+      await client.query(insertRecSql, [transaction_id, transaction_date]);
+      logger.info(`[TransactionService] Marked transaction ID=${transaction_id} as recurring.`);
     }
 
-    return newId;
+    await client.query('COMMIT');
+
+    eventBus.emit('transaction.created', {
+      transaction_id,
+      account_id,
+      amount: transaction_amount,
+      category_id,
+      type: transaction_type,
+      timestamp: transaction_date
+    });
+
+    return transaction_id;
   } catch (error) {
+    await client.query('ROLLBACK');
     logger.error(`[TransactionService] Error creating transaction:`, error);
     throw error;
+  } finally {
+    client.release();
   }
 }
+
 
 /**
  * Create a new account for a user.
