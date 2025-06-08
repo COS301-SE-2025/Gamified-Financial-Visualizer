@@ -40,14 +40,14 @@ const Navbar = () => {
 
       {/* Center: Navigation Links */}
       <div className="flex items-center space-x-6 text-sm font-medium text-gray-700">
-        <NavLink to="/app/Dashboard" className={navClasses}><FaHome /> <span>Home</span></NavLink>
-        <NavLink to="/app/transactions" className={navClasses}><FaCalculator /> <span>Accounts</span></NavLink>
-        <NavLink to="/app/goals" className={navClasses}><FaBullseye /> <span>Goals</span></NavLink>
-        <NavLink to="/app/community" className={navClasses}><FaUsers /> <span>Community</span></NavLink>
-        <NavLink to="/app/learn" className={navClasses}><FaGraduationCap /> <span>Learn</span></NavLink>
-        <NavLink to="/app/achievements" className={navClasses}><FaMedal /> <span>Achievements</span></NavLink>
-        <NavLink to="/app/support" className={navClasses}><FaQuestionCircle /> <span>Support</span></NavLink>
-        <NavLink to="/app/profile" className={navClasses}><FaUser /> <span>Profile</span></NavLink>
+        <NavLink to="/Dashboard" className={navClasses}><FaHome /> <span>Home</span></NavLink>
+        <NavLink to="/transactions" className={navClasses}><FaCalculator /> <span>Accounts</span></NavLink>
+        <NavLink to="/goals" className={navClasses}><FaBullseye /> <span>Goals</span></NavLink>
+        <NavLink to="/community" className={navClasses}><FaUsers /> <span>Community</span></NavLink>
+        <NavLink to="/learn" className={navClasses}><FaGraduationCap /> <span>Learn</span></NavLink>
+        <NavLink to="/achievements" className={navClasses}><FaMedal /> <span>Achievements</span></NavLink>
+        <NavLink to="/support" className={navClasses}><FaQuestionCircle /> <span>Support</span></NavLink>
+        <NavLink to="/profile" className={navClasses}><FaUser /> <span>Profile</span></NavLink>
       </div>
 
       {/* Right: Icons + Logout */}

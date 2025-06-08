@@ -27,9 +27,6 @@ function App() {
           <Route path="/goals/:id" element={<GoalsDetailPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
-
-        {/* Fallback route */}
-        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
