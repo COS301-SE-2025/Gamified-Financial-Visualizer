@@ -52,7 +52,7 @@ def to_float(txt: str) -> float:
 
 def classify_row(nums: list[str], prev_balance: float | None):
    """
-   nums = list of 2–3 numeric strings found on a row.
+   nums = list of 2-3 numeric strings found on a row.
    Returns (amount_signed, balance, direction) or (None, None, None) if undecidable.
    """
    if len(nums) == 3:                    # debit  credit  balance
