@@ -15,7 +15,7 @@ const GoalsDashboardPage = () => {
         <div className="col-span-3 space-y-4">
           <XPProgressRing level={3} xp={350} />
           <BadgeRow />
-          <GoalStatsCard />
+          <GoalStatsCard /> 
         </div>
 
         {/* Center Area */}
