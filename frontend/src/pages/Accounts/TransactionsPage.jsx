@@ -3,6 +3,7 @@ import AccountsSidebar from '../../layouts/sidebars/AccountsSidebar';
 import {
   FaSearch, FaPlus, FaDownload, FaLightbulb, FaMoneyCheckAlt, FaEdit, FaTrash
 } from 'react-icons/fa';
+import AccountsHeader from '../../layouts/headers/AccountsHeader';
 
 const DashboardPage = () => {
 
@@ -20,28 +21,7 @@ const DashboardPage = () => {
       {/* Main content */}
       <main className="w-3/4 p-6 space-y-6">
         {/* Search and Controls */}
-        <div className="flex justify-between items-center space-x-4">
-          <div className="flex items-center w-full bg-white px-3 py-2 rounded-xl shadow">
-            <FaSearch className="text-gray-400 mr-2" />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full outline-none bg-transparent"
-            />
-          </div>
-          <div className="flex space-x-2">
-            <button onClick={() => setView('budget')}
-              className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 ${view === 'budget' ? 'bg-green-100' : 'bg-white'}`}>
-              <FaMoneyCheckAlt /> Budget
-            </button>
-            <button className="px-4 py-2 bg-white border rounded-xl shadow flex items-center gap-2">
-              <FaLightbulb /> Insight
-            </button>
-            <button className="px-4 py-2 bg-white border rounded-xl shadow flex items-center gap-2">
-              <FaDownload /> Import
-            </button>
-          </div>
-        </div>
+        <AccountsHeader />
 
         {/* Account Cards */}
         <div className="flex overflow-x-auto space-x-4">
