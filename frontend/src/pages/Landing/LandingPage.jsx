@@ -6,11 +6,11 @@ import { FaTrophy, FaUserFriends, FaChartLine, FaRocket, FaCoins, FaShieldAlt } 
 import { SiReact, SiTailwindcss, SiPostgresql, SiPython, SiNodedotjs, SiUnity, SiOpenai } from "react-icons/si";
 
 // Image imports
-import YohaliImg from '../../assets/Images/Team Profiles/Malaika.png';
-import LebogangImg from '../../assets/Images/Team Profiles/Lebo.png';
-import MphoImg from '../../assets/Images/Team Profiles/Mpho.png';
-import NobuhleImg from '../../assets/Images/Team Profiles/Nobuhle.png';
-import AundreaImg from '../../assets/Images/Team Profiles/Aundrea.png';
+import YohaliImg from '../../assets/Team Profiles/Malaika.png';
+import LebogangImg from '../../assets/Team Profiles/Lebo.png';
+import MphoImg from '../../assets/Team Profiles/Mpho.png';
+import NobuhleImg from '../../assets/Team Profiles/Nobuhle.png';
+import AundreaImg from '../../assets/Team Profiles/Aundrea.png';
 
 // Banner header images 
 import heroGif from '../../assets/Images/banners/pixelOffice.gif';
