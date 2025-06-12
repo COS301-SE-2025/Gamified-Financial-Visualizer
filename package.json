@@ -3,6 +3,7 @@
     "@types/winston": "^2.4.4",
     "argon2": "^0.43.0",
     "bullmq": "^5.53.1",
+    "classnames": "^2.5.1",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
@@ -16,7 +17,7 @@
   },
   "scripts": {
     "format": "prettier . --write",
-    "dev": "concurrently \"npx ts-node api-backend/server.ts\" \"npm start --prefix gamified-finance-frontend\""
+    "dev": "concurrently \"npx ts-node api-backend/server.ts\" \"npm start --prefix frontend\""
   },
   "devDependencies": {
     "@types/cors": "^2.8.18",
@@ -47,7 +48,7 @@
   "version": "1.0.0",
   "private": true,
   "workspaces": [
-    "gamified-finance-frontend",
+    "frontend",
     "api-backend/modules/*"
   ]
 }
