@@ -16,7 +16,7 @@ const GoalsDetailPage = () => {
               <div className="flex gap-2 mt-2">
                 <span className="tag">In-Progress</span>
                 <span className="tag">Vacation</span>
-              </div>
+              </div> 
             </div>
           </div>
 
