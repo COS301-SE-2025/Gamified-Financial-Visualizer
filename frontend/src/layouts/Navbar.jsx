@@ -60,7 +60,7 @@ const Navbar = () => {
         <label className="flex items-center cursor-pointer">
           <div className="relative">
             <input type="checkbox" className="sr-only" />
-            <div className="w-10 h-5 bg-[#9C9C9C] rounded-full shadow-inner" />
+            <div className="w-10 h-5 bg-[#d0d0d0] rounded-full shadow-inner" />
             <div className="dot absolute left-1 top-1 w-3 h-3 bg-[#83AB55] rounded-full transition" />
           </div>
         </label>
