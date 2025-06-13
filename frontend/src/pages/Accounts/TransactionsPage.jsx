@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import AccountsSidebar from '../../layouts/sidebars/AccountsSidebar';
 import {
   FaSearch, FaPlus, FaDownload, FaLightbulb, FaMoneyCheckAlt, FaEdit, FaTrash
 } from 'react-icons/fa';
+import AccountsHeader from '../../layouts/headers/AccountsHeader';
 
 const DashboardPage = () => {
 
@@ -14,75 +16,12 @@ const DashboardPage = () => {
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
-      <aside className="w-1/4 p-4 space-y-6">
-        {/* Profile + Performance */}
-        <div className="bg-white p-4 rounded-2xl shadow space-y-3">
-          <h2 className="text-lg font-semibold text-gray-700">Overall Performance</h2>
-          <div className="flex flex-col items-center justify-center">
-            <div className="relative w-24 h-24">
-              <div className="absolute inset-0 rounded-full bg-gradient-to-b from-blue-400 to-blue-200" />
-              <div className="absolute inset-1 flex items-center justify-center bg-white rounded-full text-xl font-bold">350</div>
-            </div>
-            <p className="mt-2 text-sm text-gray-500">Level 3: Silver</p>
-          </div>
-        </div>
-
-        {/* Badges */}
-        <div className="bg-white p-4 rounded-2xl shadow space-y-2">
-          <h3 className="text-sm font-semibold text-gray-600">Badges</h3>
-          <div className="flex justify-between">
-            <img src="/icons/badge1.png" alt="badge" className="w-10 h-10" />
-            <img src="/icons/badge2.png" alt="badge" className="w-10 h-10" />
-            <img src="/icons/badge3.png" alt="badge" className="w-10 h-10" />
-          </div>
-        </div>
-
-        {/* Category Summary */}
-        <div className="bg-white p-4 rounded-2xl shadow">
-          <h3 className="text-sm font-semibold text-gray-600 mb-3">Category Summary</h3>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            {[
-              ['Groceries', 'R1000', 'bg-orange-100 text-orange-700'],
-              ['Health', 'R2200', 'bg-blue-100 text-blue-700'],
-              ['Fuel', 'R620.50', 'bg-red-100 text-red-700'],
-              ['Entertainment', 'R500', 'bg-pink-100 text-pink-700'],
-              ['Personal', 'R750', 'bg-purple-100 text-purple-700'],
-              ['Transport', 'R825.23', 'bg-gray-100 text-gray-700'],
-            ].map(([name, amt, style]) => (
-              <div key={name} className={`rounded-xl px-2 py-1 ${style}`}>
-                <p className="font-bold">{name}</p>
-                <p>{amt}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </aside>
+      <AccountsSidebar />
 
       {/* Main content */}
       <main className="w-3/4 p-6 space-y-6">
         {/* Search and Controls */}
-        <div className="flex justify-between items-center space-x-4">
-          <div className="flex items-center w-full bg-white px-3 py-2 rounded-xl shadow">
-            <FaSearch className="text-gray-400 mr-2" />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full outline-none bg-transparent"
-            />
-          </div>
-          <div className="flex space-x-2">
-            <button onClick={() => setView('budget')}
-              className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 ${view === 'budget' ? 'bg-green-100' : 'bg-white'}`}>
-              <FaMoneyCheckAlt /> Budget
-            </button>
-            <button className="px-4 py-2 bg-white border rounded-xl shadow flex items-center gap-2">
-              <FaLightbulb /> Insight
-            </button>
-            <button className="px-4 py-2 bg-white border rounded-xl shadow flex items-center gap-2">
-              <FaDownload /> Import
-            </button>
-          </div>
-        </div>
+        <AccountsHeader />
 
         {/* Account Cards */}
         <div className="flex overflow-x-auto space-x-4">
