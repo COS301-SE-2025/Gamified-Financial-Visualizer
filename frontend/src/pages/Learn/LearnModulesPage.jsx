@@ -1,7 +1,5 @@
 import React from 'react';
 import { FaSearch } from 'react-icons/fa';
-import XPProgressRing from '../../components/cards/XPProgressRing';
-import BadgeRow from '../../components/cards/BadgeRow';
 
 const courses = {
   active: [
@@ -47,14 +45,14 @@ const LearningPage = () => {
           </div>
           <div className="mt-4">
             <h4 className="text-xs font-semibold text-gray-700 mb-2">Overall Performance</h4>
-            <XPProgressRing value={350} level="Lv 3 Silver" />
+           
           </div>
         </div>
 
         {/* Badges */}
         <div className="bg-white rounded-2xl p-4 shadow">
           <h4 className="text-sm font-semibold text-gray-700 mb-2">Badges</h4>
-          <BadgeRow />
+          
         </div>
 
         {/* Progress Placeholder */}
