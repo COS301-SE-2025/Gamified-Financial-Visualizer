@@ -9,13 +9,13 @@ import BadgeRow from '../components/BadgeRow';
 
 const GoalsDashboardPage = () => {
   return (
-    <GoalsViewLayout>
+
       <div className="grid grid-cols-12 gap-4">
         {/* Left Stats Column */}
         <div className="col-span-3 space-y-4">
           <XPProgressRing level={3} xp={350} />
           <BadgeRow />
-          <GoalStatsCard />
+          <GoalStatsCard /> 
         </div>
 
         {/* Center Area */}
@@ -26,25 +26,12 @@ const GoalsDashboardPage = () => {
               placeholder="Search..."
               className="w-3/4 p-2 border rounded-full shadow-sm"
             />
-            <div className="space-x-2">
-              <button className="btn-primary">Create Goal</button>
-              <button className="btn-secondary">View All Goals</button>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <BarChart />
-            <DonutChart />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <GoalCard />
-            <GoalCard />
           </div>
         </div>
 
         {/* Right Sidebar placeholder (Notifications already fixed) */}
         <div className="col-span-3"></div>
       </div>
-    </GoalsViewLayout>
   );
 };
 

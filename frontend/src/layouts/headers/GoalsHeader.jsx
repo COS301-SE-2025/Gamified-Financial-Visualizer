@@ -1,10 +1,41 @@
 import React from 'react';
+import { FaSearch, FaListUl, FaBullseye  } from 'react-icons/fa';
 
-const GoalsHeader = () => {
+const GoalsHeader = ({ tab, setTab }) => {
   return (
-    <div className="w-full bg-gradient-to-r from-lime-300 to-green-400 text-white p-4 rounded-xl shadow mb-4">
-      <h1 className="text-2xl font-bold">🎯 Your Goals Dashboard</h1>
-      <p className="text-sm text-white/90 mt-1">Track your progress, earn XP, and unlock achievements!</p>
+    
+    // Search main box
+    <div className="flex justify-between rounded-xl items-center space-x-4 px-6 py-4 bg-[#ffffff] border-b shadow">
+      {/* 🔍 Search Input */}
+      <div className="flex items-center w-full bg-white px-3 py-2 rounded-xl shadow border max-w-md">
+        <FaSearch className="text-[#E5794B] mr-2" />
+        <input
+          type="text"
+          placeholder="Search..."
+          className="w-full outline-none bg-transparent text-sm text-[#E5794B]"
+        />
+      </div>
+
+      {/* 🧭 Action Buttons: Main | Settings */}
+      <div className="flex space-x-2">
+        <button
+          onClick={() => setTab('main')}
+          className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${
+            tab === 'main' ? 'bg-[#88BC46] text-[#ffffff]' : 'bg-white text-gray-600'
+          }`}
+        >
+          <FaBullseye  className="text-md" /> Create Goal
+        </button>
+
+        <button
+          onClick={() => setTab('settings')}
+          className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${
+            tab === 'settings' ? 'bg-[#88BC46] text-[#ffffff]' : 'bg-white text-gray-600'
+          }`}
+        >
+          <FaListUl className="text-md" /> View All
+        </button>
+      </div>
     </div>
   );
 };
