@@ -45,16 +45,15 @@ Holds user customization and in-app notification settings.
 |--------------------------------|---------------|-----------------------------------------------------------------------------|
 | `user_id`                      | INT NOT NULL  | Primary key and FK to `users`. One-to-one relationship.                     |
 | `theme`                        | VARCHAR(50)   | Selected UI theme. Must be `'light'` or `'dark'`.                           |
-| `in_app_notifications_enabled` | BOOLEAN       | Toggles in-app notifications on or off. Defaults to `TRUE`.                |
-| `avatar_filename`             | VARCHAR(100)  | Name of the system-provided avatar image file (e.g., `robot_face.png`).    |
+| `in_app_notifications_enabled` | BOOLEAN       | Toggles in-app notifications on or off. Defaults to `TRUE`.                 |
+| `avatar_id`                    | INT NOT NULL  | FK to `avatar_images.avatar_id`. Identifies selected avatar image.         |
 | `ar_customizations_jsonb`      | JSONB         | JSON data for user’s AR environment customizations.                         |
-| `created_at`                   | TIMESTAMP     | Timestamp when preferences were created. **Never null.**                   |
-| `updated_at`                   | TIMESTAMP     | Timestamp for last update. Auto-updated by trigger. **Never null.**       |
+| `created_at`                   | TIMESTAMP     | Timestamp when preferences were created. **Never null.**                    |
+| `updated_at`                   | TIMESTAMP     | Timestamp for last update. Auto-updated by trigger. **Never null.**        |
 
-> 🔒 Avatar selection is limited to pre-defined options stored in `/public/avatars/` and served via `/avatars/{filename}` endpoint.
+> 🔒 Avatar selection is restricted to entries in the `avatar_images` table. Images are served from `/avatars/{avatar_name}` or stored as binary blobs depending on deployment mode.
 
 ---
-
 
 ## 📲 Table: `user_push_subscriptions`
 Stores device-specific push subscription details for PWA notifications.
