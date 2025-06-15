@@ -142,12 +142,17 @@ export async function updateUserPreferences(
   user_id: number,
   theme: string,
   notificationsEnabled: boolean,
-  avatar_id: string
+  avatar_id: number
 ) {
   // Validate theme value against schema constraint
   const allowedThemes = ['light', 'dark'];
   if (!allowedThemes.includes(theme)) {
     throw new Error(`Invalid theme: '${theme}'. Must be 'light' or 'dark'.`);
+  }
+
+  // Optional: Validate avatar_id is a valid integer
+  if (!Number.isInteger(avatar_id) || avatar_id <= 0) {
+    throw new Error(`Invalid avatar_id: must be a positive integer.`);
   }
 
   const query = `
