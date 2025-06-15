@@ -103,3 +103,60 @@ export async function removeCommunityMember(community_id: number, user_id: numbe
     throw err;
   }
 }
+
+// Get all pending invites or requests where the user has not yet been accepted
+export async function getPendingInvites(user_id: number) {
+  const query = `
+    SELECT c.community_id, c.community_name, m.membership_status, m.joined_at
+    FROM community_members m
+    JOIN communities c ON m.community_id = c.community_id
+    WHERE m.user_id = $1 AND m.membership_status IN ('invited', 'requested')
+  `;
+  try {
+    const result = await pool.query(query, [user_id]);
+    logger.info(`[CommunityService] Fetched pending invites/requests for user ID ${user_id}`);
+    return result.rows;
+  } catch (err) {
+    logger.error(`[CommunityService] Failed to fetch pending invites for user ID ${user_id}:`, err);
+    throw err;
+  }
+}
+
+// Get all challenges that a given community is participating in
+export async function getCommunityChallenges(community_id: number) {
+  const query = `
+    SELECT ch.challenge_id, ch.challenge_title, ch.description, ch.challenge_type, ch.measurement_type,
+           cp.actual_start, cp.actual_end, cp.score, cp.challenge_status
+    FROM challenge_progress cp
+    JOIN challenges ch ON cp.challenge_id = ch.challenge_id
+    WHERE cp.community_id = $1
+  `;
+  try {
+    const result = await pool.query(query, [community_id]);
+    logger.info(`[CommunityService] Retrieved challenges for community ID ${community_id}`);
+    return result.rows;
+  } catch (err) {
+    logger.error(`[CommunityService] Failed to fetch challenges for community ID ${community_id}:`, err);
+    throw err;
+  }
+}
+
+// Get leaderboard entries for a specific community (if community-based scores exist)
+export async function getLeaderboard(community_id: number) {
+  const query = `
+    SELECT le.challenge_id, ch.challenge_title, le.leaderboard_score, le.ranking
+    FROM leaderboard_entries le
+    JOIN challenges ch ON le.challenge_id = ch.challenge_id
+    WHERE le.community_id = $1
+    ORDER BY le.ranking ASC;
+  `;
+  try {
+    const result = await pool.query(query, [community_id]);
+    logger.info(`[CommunityService] Leaderboard fetched for community ID ${community_id}`);
+    return result.rows;
+  } catch (err) {
+    logger.error(`[CommunityService] Failed to get leaderboard for community ID ${community_id}:`, err);
+    throw err;
+  }
+}
+
