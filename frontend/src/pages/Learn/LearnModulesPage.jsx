@@ -1,9 +1,5 @@
 import React from 'react';
 import { FaSearch } from 'react-icons/fa';
-import XPProgressRing from '../../components/cards/XPProgressRing';
-import BadgeRow from '../../components/cards/BadgeRow';
-import LearnSidebar from '../../layouts/sidebars/LearnSidebar';
-import LearnHeader from '../../layouts/headers/LearnHeader';
 
 const courses = {
   active: [
