@@ -24,15 +24,15 @@ CREATE TABLE user_tokens (
     expires_at TIMESTAMP NOT NULL
 );
 
--- USER PREFERENCES
+-- USER PREFERENCES TABLE (UPDATED)
 CREATE TABLE user_preferences (
     user_id INT NOT NULL PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
     theme VARCHAR(50) CHECK (theme IN ('light', 'dark')),
     in_app_notifications_enabled BOOLEAN DEFAULT TRUE,
-    avatar_filename VARCHAR(100) NOT NULL DEFAULT 'default_01.png',
+    avatar_id INT NOT NULL DEFAULT 1 REFERENCES avatar_images(avatar_id) ON DELETE SET DEFAULT,
     ar_customizations_jsonb JSONB,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- USER PUSH SUBSCRIPTIONS (for PWA push support - out of app notifications)
