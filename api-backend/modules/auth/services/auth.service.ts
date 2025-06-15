@@ -279,7 +279,7 @@ export async function updateUserSettings(user_id: number, updates: {
   username?: string;
   full_name?: string;
   theme?: 'light' | 'dark';
-  avatar_id?: string;
+  avatar_id?: number;  // updated from string to number
   inAppNotifications?: boolean;
   outOfAppEnabled?: boolean;
   twoFactorEnabled?: boolean;
@@ -299,9 +299,16 @@ export async function updateUserSettings(user_id: number, updates: {
     }
 
     if (
-      updates.theme || updates.avatar_id ||
+      updates.theme || typeof updates.avatar_id !== 'undefined' ||
       typeof updates.inAppNotifications !== 'undefined'
     ) {
+      // Optional validation: ensure avatar_id is valid if provided
+      if (typeof updates.avatar_id !== 'undefined') {
+        if (!Number.isInteger(updates.avatar_id) || updates.avatar_id <= 0) {
+          throw new Error(`Invalid avatar_id: must be a positive integer.`);
+        }
+      }
+
       await client.query(`
         INSERT INTO user_preferences (user_id, theme, avatar_id, in_app_notifications_enabled)
         VALUES ($1, $2, $3, $4)
@@ -340,5 +347,3 @@ export async function updateUserSettings(user_id: number, updates: {
     client.release();
   }
 }
-
-
