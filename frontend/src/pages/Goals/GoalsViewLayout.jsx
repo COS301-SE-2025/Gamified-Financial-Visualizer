@@ -5,7 +5,7 @@ import NotificationsPanel from '../../components/notifications/NotificationsPane
 
 const GoalsViewLayout = ({ children }) => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen overflow-x-hidden bg-gray-50">
       {/* Header at the top */}
       <div className="px-6 pt-6 pb-2">
         <GoalsHeader />
