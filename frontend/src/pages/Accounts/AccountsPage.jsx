@@ -35,7 +35,7 @@ const AccountsPage = () => {
           </button>
         </div>
 
-        {/* ✅ Only One Map Here */}
+        {/* Only One Map Here */}
         <div className="overflow-x-auto scroll-smooth snap-x snap-mandatory">
           <div className="flex space-x-6 px-1">
             {accounts.map((acc, idx) => (

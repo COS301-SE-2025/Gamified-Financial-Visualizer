@@ -14,6 +14,8 @@ import TransactionPage from './pages/Accounts/TransactionsPage';
 import LearningPage from './pages/Learn/LearnModulesPage';
 import SupportPage from './pages/Support/SupportPage';
 
+import AchievementsPage from './pages/Achievements/AchievementsPage';
+
 function App() {
   return (
     <Router>
@@ -30,6 +32,7 @@ function App() {
           <Route path="/learn" element={<LearningPage/>}/>
           <Route path="/support" element={<SupportPage/>}/>
           <Route path="/goals" element={<GoalsPage />} />
+          <Route path="/achievements" element={<AchievementsPage/>}/>
           <Route path="/goals/:id" element={<GoalsDetailPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
