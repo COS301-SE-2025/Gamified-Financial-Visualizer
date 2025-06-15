@@ -1,5 +1,7 @@
 import React from 'react';
 import { FaSearch } from 'react-icons/fa';
+import LearnSidebar from '../../layouts/sidebars/LearnSidebar';
+import LearnHeader from '../../layouts/headers/LearnHeader';
 
 const courses = {
   active: [
@@ -31,7 +33,7 @@ const LearningPage = () => {
   return (
     <div className="flex min-h-screen bg-[#f9fafb]">
       {/* Sidebar */}
-        <LearnSidebar/>
+        <LearnSidebar  />
 
       {/* Main Content */}
       <main className="flex-1 p-6 space-y-6">
