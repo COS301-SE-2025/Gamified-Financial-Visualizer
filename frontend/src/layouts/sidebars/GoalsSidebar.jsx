@@ -78,27 +78,6 @@ const GoalsSidebar = () => {
         <p className="text-sm text-[#F56565] mt-2 font-medium">Lv 3: Silver</p>
       </div>
 
-      {/* Badges */}
-      <div className="bg-white rounded-2xl p-4 shadow text-center">
-        <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-3 py-1 rounded-full inline-block mb-3">
-          Badges
-        </p>
-        <div className="flex justify-between items-center px-2">
-          {[badgeCoins, badgePlant, badgeHighfive, badgeTrophy].map((src, i) => (
-            <div
-              key={i}
-              className="w-16 h-16 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center"
-            >
-              <img
-                src={src}
-                alt={`Badge ${i}`}
-                className="w-16 h-16 rounded-full object-contain"
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Goal Statistics */}
       <div className="bg-white rounded-2xl p-4 shadow">
         <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-4 py-1 rounded-full inline-block mb-4">
