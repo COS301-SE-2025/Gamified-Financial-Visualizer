@@ -237,3 +237,27 @@ export async function getUserGoalStats(user_id: number) {
   const result = await pool.query(sql, [user_id]);
   return result.rows[0];
 }
+
+/**
+ * Fetches all goals for a user that are due within the next 7 days
+ * and still in progress.
+ */
+export async function getUpcomingGoals(user_id: number, daysAhead: number = 30) {
+  const query = `
+    SELECT *
+    FROM goals
+    WHERE user_id = $1
+      AND goal_status = 'in-progress'
+      AND target_date <= CURRENT_DATE + INTERVAL '${daysAhead} days'
+    ORDER BY target_date ASC;
+  `;
+
+  try {
+    const result = await pool.query(query, [user_id]);
+    logger.info(`[GoalService] Fetched upcoming goals for user ID ${user_id}`);
+    return result.rows;
+  } catch (err) {
+    logger.error(`[GoalService] Failed to fetch upcoming goals for user ID ${user_id}:`, err);
+    throw err;
+  }
+}
