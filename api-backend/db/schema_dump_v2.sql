@@ -24,6 +24,14 @@ CREATE TABLE user_tokens (
     expires_at TIMESTAMP NOT NULL
 );
 
+-- AVATAR IMAGES (Selectable user avatars)
+CREATE TABLE avatar_images (
+    avatar_id SERIAL PRIMARY KEY,
+    image_data BYTEA NOT NULL,  -- stores avatar image in binary
+    avatar_name VARCHAR(100) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- USER PREFERENCES TABLE (UPDATED)
 CREATE TABLE user_preferences (
     user_id INT NOT NULL PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
@@ -92,31 +100,6 @@ CREATE TABLE accounts (
     UNIQUE (user_id, account_name)
 );
 
--- TRANSACTIONS
-CREATE TABLE transactions (
-    transaction_id SERIAL PRIMARY KEY,
-    account_id INT NOT NULL REFERENCES accounts(account_id) ON DELETE CASCADE,
-    category_id INT REFERENCES categories(category_id),
-    custom_category_id INT REFERENCES custom_categories(custom_category_id),
-    budget_id INT REFERENCES budgets(budget_id) ON DELETE SET NULL,
-    transaction_amount NUMERIC(12, 2) NOT NULL CHECK (transaction_amount != 0),
-    transaction_type VARCHAR(20) NOT NULL CHECK (
-        transaction_type IN ('expense', 'income', 'transfer', 'fee', 'withdrawal', 'deposit')
-    ),
-    transaction_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    transaction_name TEXT NOT NULL DEFAULT '',
-    is_recurring BOOLEAN NOT NULL DEFAULT FALSE,
-    linked_goal_id INT REFERENCES goals(goal_id) ON DELETE SET NULL,
-    linked_challenge_id INT REFERENCES challenges(challenge_id) ON DELETE SET NULL,
-    points_awarded INT DEFAULT 0 CHECK (points_awarded >= 0),
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CHECK (
-        (category_id IS NULL AND custom_category_id IS NOT NULL)
-        OR
-        (category_id IS NOT NULL AND custom_category_id IS NULL)
-    )
-);
-
 -- GLOBAL CATEGORIES
 CREATE TABLE categories (
     category_id SERIAL PRIMARY KEY,
@@ -144,44 +127,6 @@ CREATE TABLE custom_categories (
     custom_category_name VARCHAR(100) NOT NULL,
     UNIQUE (user_id, custom_category_name)
 );
-
--- TRIGGER FUNCTION to prevent duplicate category names
-CREATE OR REPLACE FUNCTION prevent_duplicate_category()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.custom_category_name := LOWER(NEW.custom_category_name);
-    IF EXISTS (
-        SELECT 1 FROM categories WHERE LOWER(category_name) = LOWER(NEW.custom_category_name)
-    ) THEN
-        RAISE EXCEPTION 'Custom category "%s" already exists in global categories.', NEW.custom_category_name;
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- TRIGGER on insert or update to custom_categories
-CREATE TRIGGER check_duplicate_global_category
-BEFORE INSERT OR UPDATE ON custom_categories
-FOR EACH ROW
-EXECUTE FUNCTION prevent_duplicate_category();
-
-
-
-
--- RECURRING TRANSACTIONS
-CREATE TABLE recurring_transactions (
-    recurring_id SERIAL PRIMARY KEY,
-    transaction_id INT UNIQUE REFERENCES transactions(transaction_id),
-    frequency VARCHAR(50) NOT NULL CHECK (
-        frequency IN ('daily', 'weekly', 'biweekly', 'monthly', 'quarterly', 'yearly')
-    ),
-    next_occurrence DATE NOT NULL,
-    end_date DATE, -- Optional end to the recurrence
-    last_run DATE DEFAULT NULL, -- Logs the last time it was run
-    is_active BOOLEAN NOT NULL DEFAULT TRUE, -- Marks whether the recurrence is currently running
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
 
 -- AI SCORE
 CREATE TABLE ai_scores (
@@ -483,6 +428,92 @@ CREATE TABLE leaderboard_entries (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- BUDGETS
+CREATE TABLE budgets (
+    budget_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    budget_name VARCHAR(100) NOT NULL,
+    period_start DATE NOT NULL,
+    period_end DATE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, budget_name)  -- Ensures budget names are unique per user
+);
+
+-- BUDGET ALLOCATIONS PER CATEGORY
+CREATE TABLE budget_categories (
+    budget_category_id SERIAL PRIMARY KEY,
+    budget_id INT NOT NULL REFERENCES budgets(budget_id) ON DELETE CASCADE,
+    category_id INT REFERENCES categories(category_id),
+    custom_category_id INT REFERENCES custom_categories(custom_category_id),
+    target_amount NUMERIC(12, 2) NOT NULL CHECK (target_amount >= 0),
+    CHECK (
+        (category_id IS NOT NULL AND custom_category_id IS NULL)
+        OR (category_id IS NULL AND custom_category_id IS NOT NULL)
+    )
+);
+
+-- TRANSACTIONS
+CREATE TABLE transactions (
+    transaction_id SERIAL PRIMARY KEY,
+    account_id INT NOT NULL REFERENCES accounts(account_id) ON DELETE CASCADE,
+    category_id INT REFERENCES categories(category_id),
+    custom_category_id INT REFERENCES custom_categories(custom_category_id),
+    budget_id INT REFERENCES budgets(budget_id) ON DELETE SET NULL,
+    transaction_amount NUMERIC(12, 2) NOT NULL CHECK (transaction_amount != 0),
+    transaction_type VARCHAR(20) NOT NULL CHECK (
+        transaction_type IN ('expense', 'income', 'transfer', 'fee', 'withdrawal', 'deposit')
+    ),
+    transaction_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    transaction_name TEXT NOT NULL DEFAULT '',
+    is_recurring BOOLEAN NOT NULL DEFAULT FALSE,
+    linked_goal_id INT REFERENCES goals(goal_id) ON DELETE SET NULL,
+    linked_challenge_id INT REFERENCES challenges(challenge_id) ON DELETE SET NULL,
+    points_awarded INT DEFAULT 0 CHECK (points_awarded >= 0),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CHECK (
+        (category_id IS NULL AND custom_category_id IS NOT NULL)
+        OR
+        (category_id IS NOT NULL AND custom_category_id IS NULL)
+    )
+);
+
+-- TRIGGER FUNCTION to prevent duplicate category names
+CREATE OR REPLACE FUNCTION prevent_duplicate_category()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.custom_category_name := LOWER(NEW.custom_category_name);
+    IF EXISTS (
+        SELECT 1 FROM categories WHERE LOWER(category_name) = LOWER(NEW.custom_category_name)
+    ) THEN
+        RAISE EXCEPTION 'Custom category "%s" already exists in global categories.', NEW.custom_category_name;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- TRIGGER on insert or update to custom_categories
+CREATE TRIGGER check_duplicate_global_category
+BEFORE INSERT OR UPDATE ON custom_categories
+FOR EACH ROW
+EXECUTE FUNCTION prevent_duplicate_category();
+
+
+
+
+-- RECURRING TRANSACTIONS
+CREATE TABLE recurring_transactions (
+    recurring_id SERIAL PRIMARY KEY,
+    transaction_id INT UNIQUE REFERENCES transactions(transaction_id),
+    frequency VARCHAR(50) NOT NULL CHECK (
+        frequency IN ('daily', 'weekly', 'biweekly', 'monthly', 'quarterly', 'yearly')
+    ),
+    next_occurrence DATE NOT NULL,
+    end_date DATE, -- Optional end to the recurrence
+    last_run DATE DEFAULT NULL, -- Logs the last time it was run
+    is_active BOOLEAN NOT NULL DEFAULT TRUE, -- Marks whether the recurrence is currently running
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 -- LEARNING MODULES
 CREATE TABLE learning_modules (
     module_id SERIAL PRIMARY KEY,
@@ -525,42 +556,10 @@ CREATE TABLE quiz_attempts (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- BUDGETS
-CREATE TABLE budgets (
-    budget_id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    budget_name VARCHAR(100) NOT NULL,
-    period_start DATE NOT NULL,
-    period_end DATE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (user_id, budget_name)  -- Ensures budget names are unique per user
-);
-
--- BUDGET ALLOCATIONS PER CATEGORY
-CREATE TABLE budget_categories (
-    budget_category_id SERIAL PRIMARY KEY,
-    budget_id INT NOT NULL REFERENCES budgets(budget_id) ON DELETE CASCADE,
-    category_id INT REFERENCES categories(category_id),
-    custom_category_id INT REFERENCES custom_categories(custom_category_id),
-    target_amount NUMERIC(12, 2) NOT NULL CHECK (target_amount >= 0),
-    CHECK (
-        (category_id IS NOT NULL AND custom_category_id IS NULL)
-        OR (category_id IS NULL AND custom_category_id IS NOT NULL)
-    )
-);
-
 -- BANNER IMAGES (Decorative UI assets like icons, tabs, event banners)
 CREATE TABLE banner_images (
     banner_id SERIAL PRIMARY KEY,
     image_data BYTEA NOT NULL,  -- stores the image as binary
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- AVATAR IMAGES (Selectable user avatars)
-CREATE TABLE avatar_images (
-    avatar_id SERIAL PRIMARY KEY,
-    image_data BYTEA NOT NULL,  -- stores avatar image in binary
-    avatar_name VARCHAR(100) UNIQUE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
