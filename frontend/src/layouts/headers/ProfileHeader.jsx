@@ -3,7 +3,7 @@ import { FaSearch, FaUserCog, 	FaHome } from 'react-icons/fa';
 
 const ProfileHeader = ({ tab, setTab }) => {
   return (
-    
+     
     // Search main box
         <div className="flex justify-between rounded-xl items-center space-x-4 px-6 py-4 bg-[#ffffff] border-b shadow">
           {/* 🔍 Search Input */}
