@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-import GoalsHeader from '../../layouts/headers/GoalsHeader';
-import GoalsSidebar from '../../layouts/sidebars/GoalsSidebar';
+import React from 'react';
+
 import GoalsViewLayout from './GoalsViewLayout';
 import GoalOverviewCards from '../../components/cards/GoalOverviewCards';
 import GoalCard from '../../components/cards/GoalCard';
@@ -13,7 +12,6 @@ import pcImg from '../../assets/Images/banners/pixelHouse.gif';
 import cameraImg from '../../assets/Images/banners/pixelStudents.jpeg';
 
 const GoalsPage = () => {
-  const [tab, setTab] = useState('main');
 
   const goals = [
     { title: 'Vacation: Bali', image: vacationImg, progress: 80, target: 10000, dueDate: '20 Jul 2025' },
