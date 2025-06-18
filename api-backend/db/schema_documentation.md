@@ -409,59 +409,74 @@ Tracks incremental contributions made toward a user's personal financial goal. E
 ---
 
 
+---
+
 ## ⚔️ Table: `challenges`
-Represents gamified challenges that users or communities can participate in. Challenges are configured with types, measurement criteria, and reward details.
+
+Represents community-based challenges where users voluntarily participate and contribute based on specific financial behaviors.
 
 | Column Name         | Data Type     | Description                                                                 |
 |----------------------|--------------|-----------------------------------------------------------------------------|
-| `challenge_id`       | SERIAL       | Primary key. Unique identifier for the challenge.                           |
-| `challenge_title`    | VARCHAR(100) | Title or name of the challenge.                                             |
-| `description`        | TEXT         | Detailed explanation of the challenge's objective.                          |
-| `challenge_type`     | VARCHAR(50)  | Type of challenge. Must be one of: `competition`, `cooperative`.           |
-| `measurement_type`   | VARCHAR(50)  | How performance is measured. Options: `savings_amount`, `goal_completion`, `transaction_count`. |
-| `reward_description` | TEXT         | Description of what the winner or participant will earn.                    |
-| `start_date`         | INTERVAL     | Relative interval from initiation (e.g., '0 days' or '1 week'). Acts as template. |
-| `duration`           | INTERVAL     | Duration that the challenge lasts from the start date (e.g., '30 days').    |
+| `challenge_id`       | SERIAL       | Primary key. Unique ID for each challenge.                                  |
+| `community_id`       | INT          | FK to `communities`. The group that owns the challenge.                     |
+| `creator_id`         | INT          | FK to `users`. The user who created the challenge.                          |
+| `challenge_title`    | VARCHAR(100) | Title or name of the challenge. Must be unique per community.               |
+| `challenge_type`     | VARCHAR(50)  | Thematic type: one of `savings`, `debt`, `investment`, `spending limit`, `donation`. |
+| `target_amount`      | NUMERIC(12,2)| Financial goal for the group. Must be greater than 0.                       |
+| `current_amount`     | NUMERIC(12,2)| Auto-updated sum of all participant contributions. Starts at 0.             |
+| `target_date`        | DATE         | Intended completion deadline.                                               |
+| `end_date`           | DATE         | Optional end/cutoff date for the challenge.                                 |
+| `category_id`        | INT          | FK to `categories` for system-level classification.                         |
+| `custom_category_id` | INT          | FK to `custom_categories` for personal tagging.                             |
+| `measurement_type`   | VARCHAR(50)  | Progress metric. One of:<br>`amount_saved`, `goals_completed`, `transactions_logged`, `amount_invested`, `amount_donated`, `spending_within_limit`. |
+| `challenge_status`   | VARCHAR(50)  | Status: one of `active`, `completed`, `cancelled`, `expired`.              |
+| `created_at`         | TIMESTAMP    | Timestamp when the challenge was created.                                   |
+| `updated_at`         | TIMESTAMP    | Auto-updated on progress or status change.                                  |
 
-> Challenges are often used to motivate users or communities to achieve specific financial behaviors over time.
-
----
-
-
-## 🎮 Table: `challenge_progress`
-Tracks the real-time progress and status of communities participating in challenges. Includes scoring, timelines, and summaries.
-
-| Column Name        | Data Type  | Description                                                                 |
-|---------------------|-----------|-----------------------------------------------------------------------------|
-| `community_id`      | INT       | Foreign key to `communities`. The group participating in the challenge.     |
-| `challenge_id`      | INT       | Foreign key to `challenges`. Identifies which challenge is being tracked.   |
-| `owner_id`          | INT       | Foreign key to `users`. Represents the initiating leader for the community. |
-| `actual_start`      | TIMESTAMP | Actual start time of the challenge for this community. Defaults to now.     |
-| `actual_end`        | TIMESTAMP | Target end time when the challenge is supposed to finish.                   |
-| `score`             | NUMERIC   | Total score accumulated by the community.                                   |
-| `progress_summary`  | TEXT      | Optional summary describing progress, metrics, or commentary.               |
-| `challenge_status`  | VARCHAR(50)| Current state. Must be one of: `joined`, `in-progress`, `completed`, `disqualified`. |
-
-> This table uses `(community_id, challenge_id)` as a composite primary key to ensure uniqueness per community-challenge pair.
+> 🔁 Only one of `category_id` or `custom_category_id` can be set per challenge.  
+> ⚙️ Status updates and `current_amount` are managed via backend triggers.
 
 ---
 
+## 🎮 Table: `challenge_participants`
 
+Tracks individual user participation and progress in a specific challenge. A user must join a challenge to contribute.
 
+| Column Name         | Data Type     | Description                                                                 |
+|----------------------|--------------|-----------------------------------------------------------------------------|
+| `challenge_id`       | INT          | FK to `challenges`. The challenge the user joined.                          |
+| `user_id`            | INT          | FK to `users`. The participant.                                             |
+| `join_date`          | TIMESTAMP    | Timestamp when the user joined the challenge. Defaults to now.              |
+| `progress_amount`    | NUMERIC(12,2)| How much the user has contributed to the challenge. Starts at 0.            |
+
+> 🧠 The combination of (`challenge_id`, `user_id`) is the primary key.  
+> 🔄 Changes to `progress_amount` trigger automatic updates to the challenge's total.
+
+---
+
+## 🧠 Trigger Behavior
+
+| Trigger Function                  | When It Runs                         | What It Does                                                               |
+|----------------------------------|--------------------------------------|----------------------------------------------------------------------------|
+| `update_challenge_progress()`    | On insert/update/delete in `challenge_participants` | Recalculates `current_amount` and updates `updated_at`.              |
+| `complete_challenge_if_met()`    | When `current_amount >= target_amount` | Sets `challenge_status = 'completed'`.                                   |
+| `expire_challenge_if_overdue()`  | On any challenge update (time-sensitive) | Sets `challenge_status = 'expired'` if past `end_date`.              |
+
+---
 
 ## 🏆 Table: `leaderboard_entries`
-Tracks leaderboard scores for individual users or communities in the context of challenges. Used for gamification and competition ranking.
 
-| Column Name       | Data Type | Description                                                                 |
-|--------------------|----------|-----------------------------------------------------------------------------|
-| `entry_id`         | SERIAL   | Primary key. Unique identifier for each leaderboard entry.                 |
-| `user_id`          | INT      | Foreign key to `users`. Set if the entry is for an individual.             |
-| `community_id`     | INT      | Foreign key to `communities`. Set if the entry is for a community.         |
-| `challenge_id`     | INT      | Foreign key to `challenges`. Identifies the challenge this score relates to. |
-| `leaderboard_score`| INT      | The score earned in the challenge.                                          |
-| `ranking`          | INT      | The ranking position on the leaderboard.                                    |
+Stores periodic leaderboard snapshots based on user XP (from `user_points`). Can be used globally or within friend networks.
 
-> Exactly one of `user_id` or `community_id` must be set, enforced via a `CHECK` constraint. This allows flexible support for both individual and community-based leaderboards.
+| Column Name         | Data Type     | Description                                                                 |
+|----------------------|--------------|-----------------------------------------------------------------------------|
+| `entry_id`           | SERIAL       | Primary key. Unique ID for this leaderboard entry.                          |
+| `user_id`            | INT          | FK to `users`. The user being ranked.                                       |
+| `leaderboard_score`  | INT          | The user’s score at the time (typically from `user_points.total_points`).   |
+| `ranking`            | INT          | Their position on the leaderboard (1 = top).                                |
+| `created_at`         | TIMESTAMP    | When this leaderboard snapshot was created.                                 |
+
+> 📊 Leaderboards can be recalculated dynamically or stored as historical records.
 
 ---
 

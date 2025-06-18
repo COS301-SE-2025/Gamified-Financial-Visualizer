@@ -350,58 +350,138 @@ EXECUTE FUNCTION subtract_goal_on_progress_delete();
 
 
 
-------------------------------------------------------------
-
--- CHALLENGES (Fronted Needed)
+-- CHALLENGES
 CREATE TABLE challenges (
     challenge_id SERIAL PRIMARY KEY,
-    challenge_title VARCHAR(100) NOT NULL UNIQUE,
-    description TEXT,
+    community_id INT NOT NULL REFERENCES communities(community_id) ON DELETE CASCADE,
+    creator_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    
+    challenge_title VARCHAR(100) NOT NULL,
     challenge_type VARCHAR(50) NOT NULL CHECK (
-        challenge_type IN ('competition', 'cooperative')
+        challenge_type IN ('savings', 'debt', 'investment', 'spending limit', 'donation')
+    ),
+    target_amount NUMERIC(12,2) NOT NULL CHECK (target_amount > 0),
+    current_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
+    target_date DATE NOT NULL,                      
+    end_date DATE,                              
+    category_id INT REFERENCES categories(category_id),
+    custom_category_id INT REFERENCES custom_categories(custom_category_id),
+    CHECK (
+        (category_id IS NULL AND custom_category_id IS NOT NULL)
+        OR
+        (category_id IS NOT NULL AND custom_category_id IS NULL)
     ),
     measurement_type VARCHAR(50) NOT NULL CHECK (
-        measurement_type IN ('savings_amount', 'goal_completion', 'transaction_count')
+        measurement_type IN (
+            'amount_saved',
+            'goals_completed',
+            'transactions_logged',
+            'amount_invested',
+            'amount_donated',
+            'spending_within_limit')
     ),
-    reward_description TEXT,
-    -- These will act as the template duration, not absolute dates
-    start_date INTERVAL NOT NULL,
-    duration INTERVAL NOT NULL
+    challenge_status VARCHAR(50) NOT NULL DEFAULT 'active' CHECK (
+        challenge_status IN ('active', 'completed', 'cancelled', 'expired')
+    ),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- CHALLENGE PROGRESS (Frontend Needed)
-CREATE TABLE challenge_progress (
-    community_id INT REFERENCES communities(community_id) ON DELETE CASCADE,
-    challenge_id INT REFERENCES challenges(challenge_id),
-    owner_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    actual_start TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    actual_end TIMESTAMP NOT NULL,
-    score NUMERIC DEFAULT 0,
-    progress_summary TEXT,
-    challenge_status VARCHAR(50) NOT NULL CHECK (
-        challenge_status IN ('joined', 'in-progress', 'completed', 'disqualified')
-    ),
-    PRIMARY KEY (community_id, challenge_id)
+-- CHALLENGE PROGRESS
+CREATE TABLE challenge_participants (
+    challenge_id INT NOT NULL REFERENCES challenges(challenge_id) ON DELETE CASCADE,
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    join_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    progress_amount NUMERIC(12,2) DEFAULT 0,
+    PRIMARY KEY (challenge_id, user_id)
 );
 
--- LEADERBOARD (Frontend Needed)
+CREATE OR REPLACE FUNCTION update_challenge_progress()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Recalculate total contribution
+  UPDATE challenges
+  SET 
+    current_amount = (
+      SELECT COALESCE(SUM(progress_amount), 0)
+      FROM challenge_participants
+      WHERE challenge_id = NEW.challenge_id
+    ),
+    updated_at = CURRENT_TIMESTAMP
+  WHERE challenge_id = NEW.challenge_id;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Trigger for INSERT or UPDATE
+CREATE TRIGGER trg_update_challenge_progress_after_change
+AFTER INSERT OR UPDATE ON challenge_participants
+FOR EACH ROW
+EXECUTE FUNCTION update_challenge_progress();
+
+-- Trigger for DELETE
+CREATE TRIGGER trg_update_challenge_progress_after_delete
+AFTER DELETE ON challenge_participants
+FOR EACH ROW
+EXECUTE FUNCTION update_challenge_progress();
+
+
+CREATE OR REPLACE FUNCTION complete_challenge_if_met()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE challenges
+  SET 
+    challenge_status = 'completed',
+    updated_at = CURRENT_TIMESTAMP
+  WHERE 
+    challenge_id = NEW.challenge_id
+    AND current_amount >= target_amount
+    AND challenge_status = 'active';
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER trg_auto_complete_challenge
+AFTER UPDATE OF current_amount ON challenges
+FOR EACH ROW
+WHEN (NEW.current_amount >= NEW.target_amount AND NEW.challenge_status = 'active')
+EXECUTE FUNCTION complete_challenge_if_met();
+
+CREATE OR REPLACE FUNCTION expire_challenge_if_overdue()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.challenge_status = 'active' AND NEW.end_date < CURRENT_DATE THEN
+    UPDATE challenges
+    SET 
+      challenge_status = 'expired',
+      updated_at = CURRENT_TIMESTAMP
+    WHERE challenge_id = NEW.challenge_id;
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER trg_auto_expire_challenge
+AFTER UPDATE ON challenges
+FOR EACH ROW
+EXECUTE FUNCTION expire_challenge_if_overdue();
+
+
+
+-- LEADERBOARD ENTRIES
 CREATE TABLE leaderboard_entries (
     entry_id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
-    community_id INT REFERENCES communities(community_id) ON DELETE CASCADE,
-    challenge_id INT REFERENCES challenges(challenge_id),
-    leaderboard_score INT NOT NULL,
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    leaderboard_score INT NOT NULL, -- This is user_points.total_points
     ranking INT,
-    CHECK (
-        (user_id IS NOT NULL AND community_id IS NULL)
-        OR
-        (user_id IS NULL AND community_id IS NOT NULL)
-    )
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
-------------------------------------------------------------
-
-
 
 -- LEARNING MODULES
 CREATE TABLE learning_modules (
