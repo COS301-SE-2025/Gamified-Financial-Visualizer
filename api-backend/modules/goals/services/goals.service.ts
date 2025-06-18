@@ -8,12 +8,11 @@ import pool from '../../../config/db';
 
 
 /**
- * Represents a financial goal, either personal (user_id) or community (community_id).
+ * Represents a financial goal personal (user_id) .
  */
 export interface Goal {
   goal_id?: number;
   user_id?: number;
-  community_id?: number;
   goal_name: string;
   goal_type: 'savings' | 'debt' | 'investment' | 'spending limit' | 'donation';
   target_amount: number;
@@ -24,7 +23,7 @@ export interface Goal {
 
 /**
  * Create a new financial goal.
- * If `user_id` is provided, creates a personal goal; otherwise, community_id must be set.
+ * If `user_id` is provided, creates a personal goal.
  * Returns the newly created goal_id.
  */
 export async function createGoal(goal: Goal): Promise<number> {
@@ -41,7 +40,7 @@ export async function createGoal(goal: Goal): Promise<number> {
 
   const sql = `
     INSERT INTO goals (
-      user_id, community_id, goal_name, goal_type,
+      user_id, goal_name, goal_type,
       target_amount, current_amount, target_date, goal_status
     )
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
@@ -50,7 +49,6 @@ export async function createGoal(goal: Goal): Promise<number> {
   try {
     const res = await pool.query(sql, [
       user_id,
-      community_id,
       goal_name,
       goal_type,
       target_amount,
