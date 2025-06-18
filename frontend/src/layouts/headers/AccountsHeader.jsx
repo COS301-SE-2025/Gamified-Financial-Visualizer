@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaSearch, FaSlidersH, FaChartLine, FaFileImport } from 'react-icons/fa';
+import { FaSearch, FaSlidersH, FaChartLine, FaFileImport,FaChartBar } from 'react-icons/fa';
 
 const AccountsHeader = ({ tab, setTab }) => {
   return (
@@ -18,6 +18,15 @@ const AccountsHeader = ({ tab, setTab }) => {
 
       {/*Action Buttons */}
       <div className="flex space-x-2 ml-4">
+        <button
+          onClick={() => setTab('accounts')}
+          className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${
+            tab === 'accounts' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
+          }`}
+        >
+          <FaChartBar /> Accounts
+        </button>
+
         <button
           onClick={() => setTab('main')}
           className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${

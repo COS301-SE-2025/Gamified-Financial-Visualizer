@@ -48,7 +48,7 @@ const AddAccountModal = ({ isOpen, onClose, onAdd }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-xl shadow-xl relative">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl relative">
         {/* Close Icon */}
         <button
           onClick={onClose}
@@ -57,10 +57,9 @@ const AddAccountModal = ({ isOpen, onClose, onAdd }) => {
           <FaTimes size={18} />
         </button>
 
-        <h2 className="text-xl font-semibold text-gray-800 mb-2">Add Account</h2>
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">Add Account</h2>
 
-        <div className="space-y-3">
-          {/* Form Fields */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {[
             { label: 'Bank Name', name: 'bankName', placeholder: 'FNB' },
             { label: 'Account Name', name: 'accountName', placeholder: 'Private Account' },
@@ -69,7 +68,7 @@ const AddAccountModal = ({ isOpen, onClose, onAdd }) => {
             { label: 'Balance', name: 'balance', placeholder: '500' },
           ].map((field) => (
             <div key={field.name}>
-              <label className="block text-sm font-medium text-gray-700">{field.label}</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
               <input
                 type="text"
                 name={field.name}
@@ -83,7 +82,7 @@ const AddAccountModal = ({ isOpen, onClose, onAdd }) => {
 
           {/* Currency Select */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Currency</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
             <select
               name="currency"
               value={formData.currency}
@@ -99,7 +98,7 @@ const AddAccountModal = ({ isOpen, onClose, onAdd }) => {
 
           {/* Status Select */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Account Status</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Account Status</label>
             <select
               name="status"
               value={formData.status}
@@ -112,10 +111,10 @@ const AddAccountModal = ({ isOpen, onClose, onAdd }) => {
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 mt-6 ">
+        <div className="flex justify-end gap-3 mt-6">
           <button
             onClick={handleSubmit}
-            className="flex items-center gap-3 px-6 py-3 bg-[#D8F5C5] text-[#467D35] text-base font-semibold rounded-full hover:bg-[#c8ecb4] transition shadow-md -mr-[-160px]"
+            className="flex items-center gap-3 px-6 py-2 bg-[#D8F5C5] text-[#467D35] text-sm font-semibold rounded-full hover:bg-[#c8ecb4] transition shadow-md"
           >
             Add Account
           </button>

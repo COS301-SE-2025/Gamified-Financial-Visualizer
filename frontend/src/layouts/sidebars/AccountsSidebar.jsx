@@ -81,7 +81,7 @@ const AccountsSidebar = () => {
       {/* Categories Summaries */}
       <div className="bg-white rounded-2xl p-4 shadow">
         <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-4 py-1 rounded-full inline-block mb-4">
-          Categories Summaries
+          Categories
         </p>
 
         <div className="grid grid-cols-2 gap-4">
