@@ -11,13 +11,12 @@ export interface UserRecord {
   username: string;
   full_name: string;
   hashed_password: string;
-  password_salt: string;
 }
 
 export async function createUser(user: UserRecord) {
   const query = `
-    INSERT INTO users (email, username, full_name, hashed_password, password_salt)
-    VALUES ($1, $2, $3, $4, $5)
+    INSERT INTO users (email, username, full_name, hashed_password)
+    VALUES ($1, $2, $3, $4)
     RETURNING *;
   `;
   try {
@@ -26,7 +25,6 @@ export async function createUser(user: UserRecord) {
       user.username,
       user.full_name,
       user.hashed_password,
-      user.password_salt
     ]);
     logger.info(`[AuthService] User registered: ${user.username}`);
     return result.rows[0];
@@ -144,12 +142,17 @@ export async function updateUserPreferences(
   user_id: number,
   theme: string,
   notificationsEnabled: boolean,
-  avatar_id: string
+  avatar_id: number
 ) {
   // Validate theme value against schema constraint
   const allowedThemes = ['light', 'dark'];
   if (!allowedThemes.includes(theme)) {
     throw new Error(`Invalid theme: '${theme}'. Must be 'light' or 'dark'.`);
+  }
+
+  // Optional: Validate avatar_id is a valid integer
+  if (!Number.isInteger(avatar_id) || avatar_id <= 0) {
+    throw new Error(`Invalid avatar_id: must be a positive integer.`);
   }
 
   const query = `
@@ -218,17 +221,6 @@ export async function deletePushSubscription(push_id: number) {
   }
 }
 
-export async function verifyUserEmail(user_id: number) {
-  const query = 'UPDATE users SET email_verified = TRUE, updated_at = CURRENT_TIMESTAMP WHERE user_id = $1';
-  try {
-    await pool.query(query, [user_id]);
-    logger.info(`[AuthService] Email verified for user ID ${user_id}`);
-  } catch (err) {
-    logger.error(`[AuthService] Failed to verify email for user ID ${user_id}:`, err);
-    throw err;
-  }
-}
-
 export async function setTwoFactorEnabled(user_id: number, enabled: boolean) {
   const query = 'UPDATE users SET two_factor_enabled = $1, updated_at = CURRENT_TIMESTAMP WHERE user_id = $2';
   try {
@@ -237,5 +229,121 @@ export async function setTwoFactorEnabled(user_id: number, enabled: boolean) {
   } catch (err) {
     logger.error(`[AuthService] Failed to update 2FA setting for user ID ${user_id}:`, err);
     throw err;
+  }
+}
+
+export async function setPasswordResetToken(user_id: number, token: string, expires_at: Date) {
+  const query = `
+    INSERT INTO user_tokens (user_id, token, expires_at)
+    VALUES ($1, $2, $3)
+    ON CONFLICT (user_id) DO UPDATE SET
+      token = EXCLUDED.token,
+      expires_at = EXCLUDED.expires_at,
+      created_at = CURRENT_TIMESTAMP;
+  `;
+  try {
+    await pool.query(query, [user_id, token, expires_at]);
+    logger.info(`[AuthService] Password reset token set for user ID ${user_id}`);
+  } catch (err) {
+    logger.error(`[AuthService] Failed to set reset token for user ID ${user_id}:`, err);
+    throw err;
+  }
+}
+
+export async function resetPassword(token: string, newHashedPassword: string) {
+  const tokenQuery = 'SELECT user_id FROM user_tokens WHERE token = $1 AND expires_at > CURRENT_TIMESTAMP';
+  try {
+    const tokenResult = await pool.query(tokenQuery, [token]);
+    if (tokenResult.rows.length === 0) {
+      throw new Error('Invalid or expired token');
+    }
+    const user_id = tokenResult.rows[0].user_id;
+    await updatePassword(user_id, newHashedPassword);
+    await pool.query('DELETE FROM user_tokens WHERE user_id = $1', [user_id]);
+    logger.info(`[AuthService] Password reset successfully for user ID ${user_id}`);
+  } catch (err) {
+    logger.error('[AuthService] Password reset failed:', err);
+    throw err;
+  }
+}
+
+export async function changePassword(user_id: number, oldHashedPassword: string, newHashedPassword: string) {
+  const user = await getUserById(user_id);
+  if (!user || user.hashed_password !== oldHashedPassword) {
+    throw new Error('Incorrect old password');
+  }
+  return updatePassword(user_id, newHashedPassword);
+}
+
+export async function updateUserSettings(user_id: number, updates: {
+  username?: string;
+  full_name?: string;
+  theme?: 'light' | 'dark';
+  avatar_id?: number;  // updated from string to number
+  inAppNotifications?: boolean;
+  outOfAppEnabled?: boolean;
+  twoFactorEnabled?: boolean;
+}) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    if (updates.username || updates.full_name) {
+      await client.query(`
+        UPDATE users SET
+          username = COALESCE($1, username),
+          full_name = COALESCE($2, full_name),
+          updated_at = CURRENT_TIMESTAMP
+        WHERE user_id = $3
+      `, [updates.username, updates.full_name, user_id]);
+    }
+
+    if (
+      updates.theme || typeof updates.avatar_id !== 'undefined' ||
+      typeof updates.inAppNotifications !== 'undefined'
+    ) {
+      // Optional validation: ensure avatar_id is valid if provided
+      if (typeof updates.avatar_id !== 'undefined') {
+        if (!Number.isInteger(updates.avatar_id) || updates.avatar_id <= 0) {
+          throw new Error(`Invalid avatar_id: must be a positive integer.`);
+        }
+      }
+
+      await client.query(`
+        INSERT INTO user_preferences (user_id, theme, avatar_id, in_app_notifications_enabled)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (user_id) DO UPDATE SET
+          theme = COALESCE(EXCLUDED.theme, user_preferences.theme),
+          avatar_id = COALESCE(EXCLUDED.avatar_id, user_preferences.avatar_id),
+          in_app_notifications_enabled = COALESCE(EXCLUDED.in_app_notifications_enabled, user_preferences.in_app_notifications_enabled),
+          updated_at = CURRENT_TIMESTAMP;
+      `, [
+        user_id,
+        updates.theme,
+        updates.avatar_id,
+        updates.inAppNotifications,
+      ]);
+    }
+
+    if (typeof updates.outOfAppEnabled !== 'undefined') {
+      await client.query(`
+        UPDATE user_push_subscriptions
+        SET enabled = $1
+        WHERE user_id = $2
+      `, [updates.outOfAppEnabled, user_id]);
+    }
+
+    if (typeof updates.twoFactorEnabled !== 'undefined') {
+      await setTwoFactorEnabled(user_id, updates.twoFactorEnabled);
+    }
+
+    await client.query('COMMIT');
+    logger.info(`[AuthService] Updated profile & preferences for user ID ${user_id}`);
+  } catch (err) {
+    await client.query('ROLLBACK');
+    logger.error(`[AuthService] Failed to update settings for user ID ${user_id}:`, err);
+    throw err;
+  } finally {
+    client.release();
   }
 }
