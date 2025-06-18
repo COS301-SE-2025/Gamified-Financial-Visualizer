@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import GoalsHeader from '../../layouts/headers/GoalsHeader';
-import GoalsSidebar from '../../layouts/sidebars/GoalsSidebar';
 import GoalsViewLayout from './GoalsViewLayout';
 import GoalOverviewCards from '../../components/cards/GoalOverviewCards';
 import GoalCard from '../../components/cards/GoalCard';
