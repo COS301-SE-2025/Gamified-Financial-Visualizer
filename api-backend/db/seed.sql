@@ -1,3 +1,5 @@
+-- Need to be updated (subjected to change for demo 2)
+
 -- seed.sql
 -- Run this against a clean GamifiedFinanceDB
 
