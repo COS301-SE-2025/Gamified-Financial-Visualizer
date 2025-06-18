@@ -7,7 +7,7 @@ return (
     <div className="h-screen bg-gray-50">
       <div className="flex h-full">
         {/* Sidebar */}
-        <div className="w-1/4 pl-6 pt-6 pb-6">
+        <div className="w-1/4 pl-6 pt-6 pb-6"> 
           <GoalsSidebar />
         </div>
 

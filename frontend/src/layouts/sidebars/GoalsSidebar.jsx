@@ -1,12 +1,6 @@
 import React from 'react';
 import avatar from '../../assets/Images/avatars/totoroAvatar.jpeg';
 
-// Badge Icons
-import badgeCoins from '../../assets/Images/badges/CoinStack.png';
-import badgePlant from '../../assets/Images/badges/plantIocn.png';
-import badgeHighfive from '../../assets/Images/badges/highFiveIcon.png';
-import badgeTrophy from '../../assets/Images/badges/awardIcon.png';
-
 import {
   FaBolt,
   FaChartBar,

@@ -1,5 +1,4 @@
-import React from 'react';
-
+import React, { useState } from 'react';
 import GoalsViewLayout from './GoalsViewLayout';
 import GoalOverviewCards from '../../components/cards/GoalOverviewCards';
 import GoalCard from '../../components/cards/GoalCard';
