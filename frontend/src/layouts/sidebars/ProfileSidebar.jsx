@@ -4,7 +4,7 @@ import avatar from '../../assets/Images/avatars/totoroAvatar.jpeg';
 import {
   FaBolt,
   FaChartBar,
-  FaHourglassHalf,
+  FaHourglassHalf, 
   FaCheck,
   FaTimes, 
   FaBan,

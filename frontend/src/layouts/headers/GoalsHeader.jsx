@@ -4,7 +4,7 @@ import { FaSearch, FaListUl, FaBullseye } from 'react-icons/fa';
 
 const GoalsHeader = () => {
   const navigate = useNavigate();
-  const location = useLocation();
+  const location = useLocation(); 
   const path = location.pathname;
   return (
     <div className="flex justify-between items-center px-6 py-4 bg-white border-b shadow rounded-xl">
