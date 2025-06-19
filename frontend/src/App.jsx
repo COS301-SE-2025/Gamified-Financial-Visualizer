@@ -20,6 +20,9 @@ import GoalsDetailPage from './pages/Goals/GoalDetailPage';
 
 // The Transactions Page Routes
 import TransactionPage from './pages/Accounts/TransactionsPage';
+import AccountInsights from './pages/Accounts/Insights';
+import AccountBudget from './pages/Accounts/Budget';
+import AccountsImport from './pages/Accounts/Import';
 
 // The Learn Page Routes
 import LearningPage from './pages/Learn/LearnModulesPage';
@@ -51,8 +54,11 @@ function App() {
 
         {/* Protected Routes inside shared Layout */}
         <Route element={<Layout />}>
+          {/* Routes for the home page */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/transactions" element={<TransactionPage />} />
+            
+          {/* Routes for the learn page */}
           <Route path="/learn" element={<LearningPage />} />
 
           {/* Routes for the help page */}
@@ -62,16 +68,21 @@ function App() {
             <Route path="tutorials" element={<TutorialDetails />} />
           </Route>
 
-          {/* Routes for the achievemnets page */}
+          {/* Routes for the Achievements page */}
           <Route path="/achievements" element={<AchievementsPage />} />
 
-          {/* Routes for the community pages */}
+          {/* Routes for the Community pages */}
           <Route path="/community" element={<CommunityDashboard />} />
           <Route path="/community/friends" element={<FriendsList />} />
           <Route path="/community/details/:communityId" element={<CommunityDetail />} />
           <Route path="/community/challenges" element={<ChallengesPage />} />
           <Route path="/community/member/:username" element={<CommunityMemberPage />} />
 
+          {/* Routes for the Accounts pages */}
+          <Route path="/transactions" element={<TransactionPage />} />
+          <Route path="/insights" element={<AccountInsights/>}/>
+          <Route path="/budget" element={<AccountBudget/>}/>
+          <Route path="/import" element={<AccountsImport/>}/
 
           {/* Routes for the goals page */}
           <Route path="/goals" element={<GoalsPage />} />

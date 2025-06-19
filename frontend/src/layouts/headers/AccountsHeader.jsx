@@ -1,12 +1,48 @@
 import React from 'react';
-import { FaSearch, FaSlidersH, FaChartLine, FaFileImport } from 'react-icons/fa';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { FaSearch, FaSlidersH, FaChartLine, FaFileImport, FaChartBar } from 'react-icons/fa';
 
-const AccountsHeader = ({ tab, setTab }) => {
+const AccountsHeader = () => {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+
+  // Button configuration
+  const tabs = [
+    {
+      path: '/transactions',
+      icon: <FaChartBar />,
+      label: 'Accounts',
+      matchPaths: ['/transactions'] // Will match exactly /transactions
+    },
+    {
+      path: '/budget',
+      icon: <FaSlidersH />,
+      label: 'Budget',
+      matchPaths: ['/budget']
+    },
+    {
+      path: '/insights',
+      icon: <FaChartLine />,
+      label: 'Insights',
+      matchPaths: ['/insights']
+    },
+    {
+      path: '/import',
+      icon: <FaFileImport />,
+      label: 'Import',
+      matchPaths: ['/import']
+    }
+  ];
+
+  // Check if tab is active
+  const isActive = (tabPaths) => {
+    return tabPaths.some(path => pathname === path);
+  };
+
   return (
     <div className="flex justify-between items-center px-6 py-4 bg-white border-b shadow rounded-xl">
-      
-      {/*Search Input */}
-      <div className="flex items-center w-full max-w-4xl -ml-[14px] px-4 py-2 rounded-3xl border-4 border-[#E5794B] bg-white shadow-sm">
+      {/* Search Input */}
+      <div className="flex items-center w-full max-w-4xl px-4 py-2 rounded-3xl border-4 border-[#E5794B] bg-white shadow-sm">
         <FaSearch className="text-[#E5794B] mr-2" />
         <input
           type="text"
@@ -15,35 +51,19 @@ const AccountsHeader = ({ tab, setTab }) => {
         />
       </div>
 
-
-      {/*Action Buttons */}
+      {/* Action Buttons */}
       <div className="flex space-x-2 ml-4">
-        <button
-          onClick={() => setTab('main')}
-          className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${
-            tab === 'main' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
-          }`}
-        >
-          <FaSlidersH /> Budget
-        </button>
-
-        <button
-          onClick={() => setTab('insights')}
-          className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${
-            tab === 'insights' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
-          }`}
-        >
-          <FaChartLine /> Insights
-        </button>
-
-        <button
-          onClick={() => setTab('import')}
-          className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${
-            tab === 'import' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
-          }`}
-        >
-          <FaFileImport /> Import
-        </button>
+        {tabs.map((tab) => (
+          <button
+            key={tab.path}
+            onClick={() => navigate(tab.path)}
+            className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${
+              isActive(tab.matchPaths) ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
+            }`}
+          >
+            {tab.icon} {tab.label}
+          </button>
+        ))}
       </div>
     </div>
   );
