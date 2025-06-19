@@ -1,21 +1,21 @@
 import React from 'react';
-import GoalsSidebar from '../../layouts/sidebars/GoalsSidebar';
-import GoalsHeader from '../../layouts/headers/GoalsHeader';
+import ProfileHeader from '../../layouts/headers/ProfileHeader';
+import ProfileSidebar from '../../layouts/sidebars/ProfileSidebar';
 
-const GoalsViewLayout = ({ children }) => {
-return (
+const ProfileViewLayout = ({ children, tab, setTab }) => {
+  return (
     <div className="h-screen bg-gray-50">
       <div className="flex h-full">
         {/* Sidebar */}
         <div className="w-1/4 pl-6 pt-6 pb-6"> 
-          <GoalsSidebar />
+          <ProfileSidebar />
         </div>
 
         {/* Main content with internal scroll */}
         <div className="flex-1 flex flex-col h-full pr-6">
           {/* Header */}
           <div className="p-6">
-            <GoalsHeader />
+            <ProfileHeader />
           </div>
 
           {/* Scrollable content */}
@@ -28,4 +28,4 @@ return (
   );
 };
 
-export default GoalsViewLayout;
+export default ProfileViewLayout;
