@@ -1,18 +1,12 @@
 import React from 'react';
 import avatar from '../../assets/Images/avatars/totoroAvatar.jpeg';
 
-// Badge Icons
-import badgeCoins from '../../assets/Images/badges/CoinStack.png';
-import badgePlant from '../../assets/Images/badges/plantIocn.png';
-import badgeHighfive from '../../assets/Images/badges/highFiveIcon.png';
-import badgeTrophy from '../../assets/Images/badges/awardIcon.png';
-
 import {
   FaBolt,
   FaChartBar,
-  FaHourglassHalf,
+  FaHourglassHalf, 
   FaCheck,
-  FaTimes,
+  FaTimes, 
   FaBan,
 } from 'react-icons/fa';
 
@@ -22,7 +16,7 @@ const ProfileSidebar = () => {
       {/* Goal Performance */}
       <div className="bg-white rounded-2xl p-4 shadow text-center">
         <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-3 py-1 rounded-full inline-block mb-2">
-          Goal Performance
+          Overall Performance
         </p>
 
         {/* Progress Circle Styling */}
@@ -78,41 +72,20 @@ const ProfileSidebar = () => {
         <p className="text-sm text-[#F56565] mt-2 font-medium">Lv 3: Silver</p>
       </div>
 
-      {/* Badges */}
-      <div className="bg-white rounded-2xl p-4 shadow text-center">
-        <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-3 py-1 rounded-full inline-block mb-3">
-          Badges
-        </p>
-        <div className="flex justify-between items-center px-2">
-          {[badgeCoins, badgePlant, badgeHighfive, badgeTrophy].map((src, i) => (
-            <div
-              key={i}
-              className="w-16 h-16 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center"
-            >
-              <img
-                src={src}
-                alt={`Badge ${i}`}
-                className="w-16 h-16 rounded-full object-contain"
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Goal Statistics */}
       <div className="bg-white rounded-2xl p-4 shadow">
         <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-4 py-1 rounded-full inline-block mb-4">
-          Goal Statistics
+          Overall Statistics
         </p>
 
         <div className="grid grid-cols-2 gap-4">
           {[
             { value: '14', label: 'Goals', icon: <FaBolt />, color: '#FF8A8A' },
-            { value: '83%', label: 'Completed', icon: <FaCheck />, color: '#7FDD53' },
-            { value: '12', label: 'Inactive', icon: <FaChartBar />, color: '#5FBFFF' },
-            { value: '14', label: 'In-Progress', icon: <FaHourglassHalf />, color: '#FFC541' },
-            { value: '56%', label: 'Incomplete', icon: <FaTimes />, color: '#F68D2B' },
-            { value: '7', label: 'Cancelled', icon: <FaBan />, color: '#FF7F9E' },
+            { value: '83%', label: 'Ahievements', icon: <FaCheck />, color: '#7FDD53' },
+            { value: '12', label: 'Accounts', icon: <FaChartBar />, color: '#5FBFFF' },
+            { value: '14', label: 'Recent Transactions', icon: <FaHourglassHalf />, color: '#FFC541' },
+            { value: '56%', label: 'Lessons', icon: <FaTimes />, color: '#F68D2B' },
+            { value: '7', label: 'Communities', icon: <FaBan />, color: '#FF7F9E' },
           ].map(({ value, label, icon, color }, i) => (
             <div key={i} className="relative bg-white rounded-xl shadow-md p-3 flex items-center justify-between">
               {/* Icon Bubble */}
