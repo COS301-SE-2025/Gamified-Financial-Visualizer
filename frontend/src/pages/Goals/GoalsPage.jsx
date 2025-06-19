@@ -1,25 +1,35 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import GoalsViewLayout from './GoalsViewLayout';
 import GoalOverviewCards from '../../components/cards/GoalOverviewCards';
 import GoalCard from '../../components/cards/GoalCard';
 import DonutChart from '../../components/charts/DonutChart';
 import BarChart from '../../components/charts/BarChart';
 import UpcomingDeadlinesCard from '../../components/cards/UpcomingDeadlinesCard';
-
 import vacationImg from '../../assets/Images/banners/pixelStore.gif';
 import pcImg from '../../assets/Images/banners/pixelHouse.gif';
 import cameraImg from '../../assets/Images/banners/pixelStudents.jpeg';
 
 const GoalsPage = () => {
+  const user = JSON.parse(localStorage.getItem('user'));
+  const [goals, setGoals] = useState([]);
 
-  const goals = [
-    { title: 'Vacation: Bali', image: vacationImg, progress: 80, target: 10000, dueDate: '20 Jul 2025' },
-    { title: 'New PC', image: pcImg, progress: 55, target: 2500, dueDate: '5 Aug 2025' },
-    { title: 'Camera Kit', image: cameraImg, progress: 30, target: 1500, dueDate: '15 Sept 2025' },
-    { title: 'Vacation: Bali', image: vacationImg, progress: 80, target: 10000, dueDate: '20 Jul 2025' },
-    { title: 'New PC', image: pcImg, progress: 55, target: 2500, dueDate: '5 Aug 2025' },
-    { title: 'Camera Kit', image: cameraImg, progress: 30, target: 1500, dueDate: '15 Sept 2025' },
-  ];
+  const bannerImages = [vacationImg, pcImg, cameraImg];
+
+  useEffect(() => {
+    const fetchGoals = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/goal/user/${user.id}`);
+        const data = await res.json();
+        setGoals(data.data || []); // assuming response format { status, message, data: [] }
+      } catch (error) {
+        console.error('Failed to fetch goals:', error);
+      }
+    };
+
+    if (user?.id) {
+      fetchGoals();
+    }
+  }, [user?.id]);
 
   return (
     <GoalsViewLayout>
@@ -40,14 +50,14 @@ const GoalsPage = () => {
 
         {/* Goal Cards */}
         <div className="grid grid-cols-3 gap-6">
-          {goals.map((goal, idx) => (
-            <GoalCard key={idx} {...goal} />
-          ))}
+          {goals.map((goal, idx) => {
+            const randomImage = bannerImages[Math.floor(Math.random() * bannerImages.length)];
+            return <GoalCard key={idx} {...goal} image={randomImage} />;
+          })}
         </div>
       </div>
     </GoalsViewLayout>
   );
 };
-
 
 export default GoalsPage;

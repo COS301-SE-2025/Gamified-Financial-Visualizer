@@ -85,12 +85,55 @@ export async function getUserGoals(user_id: number): Promise<Goal[]> {
   const sql = `SELECT * FROM goals WHERE user_id = $1 ORDER BY created_at DESC;`;
   try {
     const res = await pool.query(sql, [user_id]);
+    if (res.rows.length === 0) {
+      logger.info(`[GoalService] No goals found for user ${user_id}`);
+    }
+    logger.info(`[GoalService] Fetched ${res.rows.length} goals for user ${user_id}`);
     return res.rows;
   } catch (error) {
     logger.error(`[GoalService] Error fetching goals for user ${user_id}:`, error);
     throw error;
   }
 }
+
+export async function getGoalsSummary(user_id: number) {
+  const sql = `
+    SELECT
+      COUNT(*) AS total_goals,
+      COUNT(*) FILTER (WHERE goal_status = 'completed') AS completed_goals,
+      COUNT(*) FILTER (WHERE goal_status = 'in-progress') AS in_progress_goals,
+      COUNT(*) FILTER (WHERE goal_status = 'paused') AS paused_goals,
+      COUNT(*) FILTER (WHERE goal_status = 'cancelled') AS cancelled_goals,
+      COUNT(*) FILTER (WHERE goal_status = 'failed') AS failed_goals
+    FROM goals
+    WHERE user_id = $1;
+  `;
+  try {
+    const res = await pool.query(sql, [user_id]);
+    return res.rows[0];
+  } catch (error) {
+    logger.error(`[GoalService] Error fetching goals summary for user ${user_id}:`, error);
+    throw error;
+  }
+}
+
+export async function getGoalCategorySummary(user_id: number) {
+  const sql = `
+    SELECT goal_type, COUNT(*) AS count
+    FROM goals
+    WHERE user_id = $1
+    GROUP BY goal_type
+  `;
+
+  try {
+    const res = await pool.query(sql, [user_id]);
+    return res.rows;
+  } catch (error) {
+    logger.error('[GoalService] Failed to fetch category summary', error);
+    throw error;
+  }
+}
+
 
 /**
  * Update fields of an existing goal.
@@ -139,6 +182,22 @@ export async function deleteGoal(goal_id: number): Promise<void> {
   }
 }
 
+export async function getTotalGoalValue(user_id: number): Promise<number> {
+  const query = `
+    SELECT COALESCE(SUM(target_amount), 0) AS total_goal_value
+    FROM goals
+    WHERE user_id = $1;
+  `;
+
+  try {
+    const result = await pool.query(query, [user_id]);
+    return Number(result.rows[0].total_goal_value);
+  } catch (error) {
+    console.error('[GoalService] Failed to get total goal value:', error);
+    throw error;
+  }
+}
+
 /**
  * Add progress (contribution) to a goal.
  * Returns the new progress_id.
@@ -162,6 +221,64 @@ export async function addGoalProgress(
     logger.error(`[GoalService] Error adding progress to goal ${goal_id}:`, error);
     throw error;
   }
+}
+
+export async function getWeeklyGoalCompletions(userId: number) {
+   const sql = `
+    SELECT
+      TO_CHAR(progress_date, 'Dy') AS day,
+      COUNT(*) AS count
+    FROM goal_progress gp
+    INNER JOIN goals g ON gp.goal_id = g.goal_id
+    WHERE g.user_id = $1
+      AND gp.progress_date >= CURRENT_DATE - INTERVAL '6 days'
+    GROUP BY day, progress_date
+    ORDER BY MIN(progress_date);
+  `;
+  try {
+    const result = await pool.query(sql, [userId]);
+    return result.rows; // e.g., [{ day: 'Mon', count: 2 }, ...]
+  } catch (err) {
+    console.error('[GoalService] Error fetching goal progress frequency', err);
+    throw err;
+  }
+}
+
+export async function calculateGoalPerformance(userId: number) {
+  const result = await pool.query(`
+    WITH stats AS (
+      SELECT 
+        COUNT(*) FILTER (WHERE goal_status = 'completed') AS completed,
+        COUNT(*) FILTER (WHERE goal_status = 'failed' OR goal_status = 'cancelled') AS failed,
+        COUNT(*) AS total,
+        AVG(current_amount / target_amount) AS avg_progress
+      FROM goals
+      WHERE user_id = $1
+    ),
+    consistency AS (
+      SELECT COUNT(*) AS streak_count
+      FROM goal_progress
+      WHERE contributor_id = $1 AND progress_date >= CURRENT_DATE - INTERVAL '6 days'
+    )
+    SELECT 
+      stats.completed,
+      stats.failed,
+      stats.total,
+      stats.avg_progress,
+      consistency.streak_count
+    FROM stats, consistency;
+  `, [userId]);
+
+  const { completed, failed, total, avg_progress, streak_count } = result.rows[0];
+
+  if (total === 0) return 0;
+
+  const completedScore = (completed / total) * 200;
+  const progressScore = (avg_progress || 0) * 150;
+  const streakScore = Math.min(streak_count, 5) / 5 * 100;
+  const penalty = (failed / total) * 50;
+
+  return Math.round(completedScore + progressScore + streakScore - penalty);
 }
 
 /**
@@ -239,7 +356,8 @@ export async function getUserGoalStats(user_id: number) {
  * Fetches all goals for a user that are due within the next 7 days
  * and still in progress.
  */
-export async function getUpcomingGoals(user_id: number, daysAhead: number = 30) {
+export async function getUpcomingGoals(user_id: number ) {
+  const daysAhead = 30
   const query = `
     SELECT *
     FROM goals
