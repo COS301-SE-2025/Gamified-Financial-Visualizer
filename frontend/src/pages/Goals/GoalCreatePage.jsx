@@ -13,15 +13,14 @@ const GoalCreatePage = () => {
     endDate: '',
     type: '',
     category: '',
-    recurring: false,
     image: goal1,
   });
 
   const handleChange = (e) => {
-    const { name, value, type: inputType, checked } = e.target;
+    const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: inputType === 'checkbox' ? checked : value,
+      [name]: value,
     }));
   };
 
@@ -37,102 +36,137 @@ const GoalCreatePage = () => {
   return (
     <GoalsViewLayout>
       <form onSubmit={handleSubmit} className="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow space-y-6">
-        {/* Inputs */}
-        <div className="grid grid-cols-3 gap-4">
-          <input
-            type="text"
-            name="name"
-            placeholder="Goal Name"
-            value={form.name}
-            onChange={handleChange}
-            className="rounded-xl px-4 py-2 border shadow focus:outline-none"
-          />
-          <input
-            type="date"
-            name="startDate"
-            value={form.startDate}
-            onChange={handleChange}
-            className="rounded-xl px-4 py-2 border shadow"
-          />
-          <div className="relative">
-            <select
-              name="type"
-              value={form.type}
-              onChange={handleChange}
-              className="rounded-xl px-4 py-2 border shadow w-full appearance-none"
-            >
-              <option>Select</option>
-              <option>Short-Term</option>
-              <option>Long-Term</option>
-            </select>
-            <FaChevronDown className="absolute right-4 top-3 text-gray-400 pointer-events-none" />
-          </div>
-          <input
-            type="number"
-            name="amount"
-            placeholder="Target Amount (R)"
-            value={form.amount}
-            onChange={handleChange}
-            className="rounded-xl px-4 py-2 border shadow"
-          />
-          <input
-            type="date"
-            name="endDate"
-            value={form.endDate}
-            onChange={handleChange}
-            className="rounded-xl px-4 py-2 border shadow"
-          />
-          <div className="relative">
-            <select
-              name="category"
-              value={form.category}
-              onChange={handleChange}
-              className="rounded-xl px-4 py-2 border shadow w-full appearance-none"
-            >
-              <option>Select</option>
-              <option>Savings</option>
-              <option>Health</option>
-              <option>Travel</option>
-            </select>
-            <FaChevronDown className="absolute right-4 top-3 text-gray-400 pointer-events-none" />
+        {/* Basic Information Section */}
+        <div className="space-y-2">
+          <h3 className="text-lg font-semibold text-gray-800">Basic Information</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Goal Name</label>
+              <input
+                type="text"
+                name="name"
+                placeholder="e.g. Vacation Fund"
+                value={form.name}
+                onChange={handleChange}
+                className="rounded-xl px-4 py-2 border shadow focus:outline-none w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Target Amount (R)</label>
+              <input
+                type="number"
+                name="amount"
+                placeholder="e.g. 15000"
+                value={form.amount}
+                onChange={handleChange}
+                className="rounded-xl px-4 py-2 border shadow w-full"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Recurring + XP */}
-        <div className="flex justify-between items-center px-1">
-          <label className="flex items-center gap-2 text-sm text-gray-600">
-            <input
-              type="checkbox"
-              name="recurring"
-              checked={form.recurring}
-              onChange={handleChange}
-              className="w-4 h-4 text-blue-600"
-            />
-            Make this goal recurring
-          </label>
-          <span className="text-sm text-red-400 font-medium">XP Reward: 200 XP</span>
+        {/* Timeframe Section */}
+        <div className="space-y-2">
+          <h3 className="text-lg font-semibold text-gray-800">Timeframe</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+              <input
+                type="date"
+                name="startDate"
+                value={form.startDate}
+                onChange={handleChange}
+                className="rounded-xl px-4 py-2 border shadow w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+              <input
+                type="date"
+                name="endDate"
+                value={form.endDate}
+                onChange={handleChange}
+                className="rounded-xl px-4 py-2 border shadow w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Goal Type</label>
+              <div className="relative">
+                <select
+                  name="type"
+                  value={form.type}
+                  onChange={handleChange}
+                  className="rounded-xl px-4 py-2 border shadow w-full appearance-none"
+                >
+                  <option value="">Select goal type</option>
+                  <option value="Short-Term">Short-Term (under 6 months)</option>
+                  <option value="Long-Term">Long-Term (6+ months)</option>
+                </select>
+                <FaChevronDown className="absolute right-4 top-3 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Image Picker */}
-        <div className="flex gap-4">
-          {[goal1, goal2, goal3].map((img, i) => (
-            <img
-              key={i}
-              src={img}
-              alt={`Goal option ${i}`}
-              onClick={() => handleImageSelect(img)}
-              className={`w-36 h-20 rounded-xl cursor-pointer object-cover border-2 ${
-                form.image === img ? 'border-green-400' : 'border-transparent'
-              }`}
-            />
-          ))}
+        {/* Category Section */}
+        <div className="space-y-2">
+          <h3 className="text-lg font-semibold text-gray-800">Category</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Goal Category</label>
+              <div className="relative">
+                <select
+                  name="category"
+                  value={form.category}
+                  onChange={handleChange}
+                  className="rounded-xl px-4 py-2 border shadow w-full appearance-none"
+                >
+                  <option value="">Select a category</option>
+                  <option value="Savings">Savings</option>
+                  <option value="Health">Health & Wellness</option>
+                  <option value="Travel">Travel</option>
+                  <option value="Education">Education</option>
+                  <option value="Home">Home Improvement</option>
+                </select>
+                <FaChevronDown className="absolute right-4 top-3 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+            <div className="flex items-end">
+              <span className="text-sm font-medium text-green-500">
+                XP Reward: 200 XP
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Visual Representation Section */}
+        <div className="space-y-2">
+          <h3 className="text-lg font-semibold text-gray-800">Visual Representation</h3>
+          <p className="text-sm text-gray-600 mb-2">Choose an image to represent your goal</p>
+          <div className="flex gap-4">
+            {[goal1, goal2, goal3].map((img, i) => (
+              <div key={i} className="flex flex-col items-center">
+                <img
+                  src={img}
+                  alt={`Goal option ${i}`}
+                  onClick={() => handleImageSelect(img)}
+                  className={`w-36 h-20 rounded-xl cursor-pointer object-cover border-2 ${
+                    form.image === img ? 'border-green-400' : 'border-transparent'
+                  }`}
+                />
+                <span className="text-xs mt-1 text-gray-500">
+                  {i === 0 ? 'Apartment' : i === 1 ? 'House' : 'Office'}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Submit Button */}
-        <div className="text-right">
+        <div className="pt-4 text-right">
           <button
             type="submit"
-            className="px-6 py-2 bg-gradient-to-r from-green-400 to-lime-500 text-white rounded-full shadow hover:from-green-500"
+            className="px-8 py-3 bg-gradient-to-r from-green-400 to-lime-500 text-white rounded-full shadow-lg hover:from-green-500 hover:to-lime-600 transition-all font-medium"
           >
             Create Goal
           </button>
@@ -142,4 +176,4 @@ const GoalCreatePage = () => {
   );
 };
 
-export default GoalCreatePage ;
+export default GoalCreatePage;
