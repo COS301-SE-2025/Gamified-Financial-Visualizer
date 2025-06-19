@@ -30,6 +30,13 @@ import HelpViewLayout from './pages/Support/HelpViewLayout';
 import HelpMain from './pages/Support/HelpMain';
 import TutorialDetails from './pages/Support/TutorialDetails';
 
+// The Community Page Routes
+import CommunityDashboard from './pages/Community/CommunityDashboard';
+import FriendsList from './pages/Community/FriendsList';
+import CommunityDetail from './pages/Community/CommunityDetail';
+import ChallengesPage from './pages/Community/ChallengesPage';
+import CommunityMemberPage from './pages/Community/CommunityMemberPage';
+
 // The Achievements Page Routes
 import AchievementsPage from './pages/Achievements/AchievementsPage';
 
@@ -57,6 +64,14 @@ function App() {
 
           {/* Routes for the achievemnets page */}
           <Route path="/achievements" element={<AchievementsPage />} />
+
+          {/* Routes for the community pages */}
+          <Route path="/community" element={<CommunityDashboard />} />
+          <Route path="/community/friends" element={<FriendsList />} />
+          <Route path="/community/details/:communityId" element={<CommunityDetail />} />
+          <Route path="/community/challenges" element={<ChallengesPage />} />
+          <Route path="/community/member/:username" element={<CommunityMemberPage />} />
+
 
           {/* Routes for the goals page */}
           <Route path="/goals" element={<GoalsPage />} />
