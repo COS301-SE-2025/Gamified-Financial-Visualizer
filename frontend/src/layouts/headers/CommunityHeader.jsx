@@ -1,7 +1,11 @@
 import React from 'react';
-import { FaSearch, FaSlidersH, FaChartLine, FaFileImport } from 'react-icons/fa';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { FaSearch, FaListUl, FaBullseye } from 'react-icons/fa';
 
-const AccountsHeader = ({ tab, setTab }) => {
+const GoalsHeader = () => {
+  const navigate = useNavigate();
+  const location = useLocation(); 
+  const path = location.pathname;
   return (
     <div className="flex justify-between items-center px-6 py-4 bg-white border-b shadow rounded-xl">
       
@@ -15,38 +19,39 @@ const AccountsHeader = ({ tab, setTab }) => {
         />
       </div>
 
-
       {/*Action Buttons */}
       <div className="flex space-x-2 ml-4">
         <button
-          onClick={() => setTab('main')}
+          onClick={() => navigate('/community')}
           className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${
-            tab === 'main' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
+            path === 'main' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
           }`}
         >
-          <FaSlidersH /> Budget
+          <FaBullseye/> Community
         </button>
 
         <button
-          onClick={() => setTab('insights')}
+          onClick={() => navigate('/community/friends')}
           className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${
-            tab === 'insights' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
+            path === 'main' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
           }`}
         >
-          <FaChartLine /> Insights
+          <FaBullseye/> Friends
         </button>
 
         <button
-          onClick={() => setTab('import')}
+          onClick={() => navigate('/community/challenges')}
           className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${
-            tab === 'import' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
+            path === 'insights' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
           }`}
         >
-          <FaFileImport /> Import
+          <FaListUl /> Challenges 
         </button>
       </div>
     </div>
   );
 };
 
-export default AccountsHeader;
+export default GoalsHeader;
+
+// onClick={() => navigate('/goals/create')}

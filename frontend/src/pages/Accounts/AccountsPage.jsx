@@ -1,17 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { FaPlus } from 'react-icons/fa';
 import AccountCard from '../../components/cards/AccountCard';
 import AddAccountModal from '../../components/modals/AddAccountModal';
 import EditAccountModal from '../../components/modals/EditAccountModal';
 import RecentTransactionsTable from '../../components/tables/RecentTransactionsTable';
 
-// Mock transaction data linked to accountName for demo purposes
 const mockTransactions = [
-  { name: 'Picknpay', date: '12/06/2025', category: 'Groceries', amount: 'R500.00', accountName: 'Private Savings Account' },
-  { name: 'Shell', date: '11/06/2025', category: 'Fuel', amount: 'R950.00', accountName: 'Private Savings Account' },
-  { name: 'Netflix', date: '10/06/2025', category: 'Entertainment', amount: 'R180.00', accountName: 'Other Account' },
-  { name: 'Uber', date: '09/06/2025', category: 'Transport', amount: 'R120.00', accountName: 'Private Savings Account' },
-  { name: 'Spotify', date: '08/06/2025', category: 'Entertainment', amount: 'R99.00', accountName: 'Other Account' }
+  { name: 'Picknpay', date: '12/06/2025', category: 'Food', amount: 'R5000', accountName: 'Private Savings Account' },
+  { name: 'Shell', date: '11/06/2025', category: 'Fuel', amount: 'R950', accountName: 'Private Savings Account' },
+  { name: 'Uber', date: '10/06/2025', category: 'Transport', amount: 'R120', accountName: 'Capitec Account' },
+  { name: 'Asterhoff', date: '10/06/2025', category: 'Entertainment', amount: 'R345', accountName: 'Capitec Account' },
 ];
 
 const AccountsPage = () => {
@@ -19,6 +17,9 @@ const AccountsPage = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedAccountIndex, setSelectedAccountIndex] = useState(null);
   const [activeAccount, setActiveAccount] = useState(null);
+  const [transactions, setTransactions] = useState(mockTransactions);
+  const transactionsRef = useRef(null);
+
   const [accounts, setAccounts] = useState([
     {
       bankName: 'FNB',
@@ -28,7 +29,22 @@ const AccountsPage = () => {
       accountName: 'Private Savings Account',
       currency: 'ZAR'
     },
+    {
+      bankName: 'Capitec',
+      accountType: 'Savings',
+      available: '5000.00',
+      balance: '0.00',
+      accountName: 'Capitec Account',
+      currency: 'ZAR'
+    }
   ]);
+
+  const handleCardClick = (account) => {
+    setActiveAccount(account);
+    setTimeout(() => {
+      transactionsRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
 
   const handleAddAccount = (newAccount) => {
     setAccounts((prev) => [...prev, newAccount]);
@@ -50,29 +66,34 @@ const AccountsPage = () => {
       updated[selectedAccountIndex] = {
         ...prev[selectedAccountIndex],
         ...updatedAccount,
-        available: prev[selectedAccountIndex].available,
-        balance: prev[selectedAccountIndex].balance,
       };
       return updated;
     });
     setShowEditModal(false);
   };
 
-  const handleCardClick = (account) => {
-    setActiveAccount(account);
+  const handleEditTransaction = (index, updatedTxn) => {
+    setTransactions((prev) => {
+      const updated = [...prev];
+      updated[index] = updatedTxn;
+      return updated;
+    });
+  };
+
+  const handleDeleteTransaction = (index) => {
+    setTransactions((prev) => prev.filter((_, i) => i !== index));
   };
 
   const filteredTransactions = activeAccount
-    ? mockTransactions.filter(txn => txn.accountName === activeAccount.accountName)
-    : mockTransactions;
+    ? transactions.filter(txn => txn.accountName === activeAccount.accountName)
+    : transactions;
 
   const transactionHeading = activeAccount
     ? `${activeAccount.accountName} Transactions`
     : 'Recent Transactions';
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-4 space-y-8">
-      {/* Accounts Carousel Section */}
+    <div className="w-full max-w-6xl mx-auto p-4 space-y-8 -ml-[10px]">
       <div className="bg-white border border-gray-200 rounded-3xl shadow-md px-6 py-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-[#336699]">Accounts</h2>
@@ -84,7 +105,6 @@ const AccountsPage = () => {
           </button>
         </div>
 
-        {/* Carousel */}
         <div className="flex space-x-6 px-1">
           {accounts.map((acc, idx) => (
             <div className="snap-start" key={idx}>
@@ -97,6 +117,7 @@ const AccountsPage = () => {
                 currency={acc.currency}
                 bg={['bg-pink-300', 'bg-yellow-300', 'bg-green-300'][idx % 3]}
                 overlay={['bg-pink-400', 'bg-yellow-400', 'bg-green-400'][idx % 3]}
+                isActive={activeAccount?.accountName === acc.accountName}
                 onClick={() => handleCardClick(acc)}
                 onDelete={() => handleDeleteAccount(idx)}
                 onEdit={() => handleEditAccount(idx)}
@@ -106,23 +127,29 @@ const AccountsPage = () => {
         </div>
       </div>
 
-      {/* Transactions Table */}
-      {filteredTransactions.length > 0 && (
+      <div ref={transactionsRef}>
         <RecentTransactionsTable
           account={activeAccount}
           transactions={filteredTransactions}
           heading={transactionHeading}
+          onAdd={(newTxn) => {
+            const fullTxn = {
+              ...newTxn,
+              accountName: activeAccount?.accountName ?? 'Unknown',
+            };
+            setTransactions(prev => [...prev, fullTxn]);
+          }}
+          onEdit={handleEditTransaction}
+          onDelete={handleDeleteTransaction}
         />
-      )}
+      </div>
 
-      {/* Add Modal */}
       <AddAccountModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         onAdd={handleAddAccount}
       />
 
-      {/* Edit Modal */}
       <EditAccountModal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
