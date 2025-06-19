@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 
+// Layout and Landing Routes
 import Layout from './layouts/Layout';
 import LandingPage from './pages/Landing/LandingPage';
 
@@ -25,8 +26,14 @@ import AccountsImport from './pages/Accounts/Import';
 
 // The Learn Page Routes
 import LearningPage from './pages/Learn/LearnModulesPage';
-import SupportPage from './pages/Support/SupportPage';
 
+// The Support Page Routes
+import FAQDetails from './pages/Support/FAQDetails';
+import HelpViewLayout from './pages/Support/HelpViewLayout';
+import HelpMain from './pages/Support/HelpMain';
+import TutorialDetails from './pages/Support/TutorialDetails';
+
+// The Achievements Page Routes
 import AchievementsPage from './pages/Achievements/AchievementsPage';
 
 function App() {
@@ -48,9 +55,10 @@ function App() {
           <Route path="/learn" element={<LearningPage/>}/>
           <Route path="/support" element={<SupportPage/>}/>
           <Route path="/goals" element={<GoalsPage />} />
-          <Route path="/achievements" element={<AchievementsPage/>}/>
           <Route path="/goals/create" element={<GoalCreatePage />} />
           <Route path="/goals/details/:title" element={<GoalsDetailPage />} />
+
+          {/* Routes for the profile page */}
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Routes>

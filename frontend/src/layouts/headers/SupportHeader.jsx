@@ -1,52 +1,59 @@
 import React from 'react';
-import { FaSearch, FaInfoCircle, FaQuestionCircle, FaPlayCircle } from 'react-icons/fa';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { FaSearch, FaListUl, FaBullseye } from 'react-icons/fa';
 
-const AccountsHeader = ({ tab, setTab }) => {
+const GoalsHeader = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const path = location.pathname;
   return (
-    
-    // Search main box
-        <div className="flex justify-between rounded-xl items-center space-x-4 px-6 py-4 bg-[#ffffff] border-b shadow">
-          {/* 🔍 Search Input */}
-          <div className="flex items-center w-full bg-white px-3 py-2 rounded-xl shadow border max-w-md">
-            <FaSearch className="text-[#E5794B] mr-2" />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full outline-none bg-transparent text-sm text-[#E5794B]"
-            />
-          </div>
+    <div className="flex justify-between items-center px-6 py-4 bg-white border-b shadow rounded-xl">
 
-      {/* 🧭 Action Buttons: Main | Settings */}
-      <div className="flex space-x-2">
+      {/*Search Input */}
+      <div className="flex items-center w-full max-w-4xl -ml-[14px] px-4 py-2 rounded-3xl border-4 border-[#E5794B] bg-white shadow-sm">
+        <FaSearch className="text-[#E5794B] mr-2" />
+        <input
+          type="text"
+          placeholder="Search..."
+          className="w-full outline-none bg-transparent text-sm text-[#E5794B] placeholder-[#E5794B]/70"
+        />
+      </div>
+
+
+      {/*Action Buttons */}
+      <div className="flex space-x-2 ml-4">
+
+        {/* Main Help Page route */}
         <button
-          onClick={() => setTab('main')}
-          className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${
-            tab === 'main' ? 'bg-[#88BC46] text-[#ffffff]' : 'bg-white text-gray-600'
-          }`}
+          onClick={() => navigate('/support')}
+          className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${path === 'main' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
+            }`}
         >
-          <FaQuestionCircle className="text-md" /> Help
+          <FaBullseye /> Main
         </button>
 
+        {/* FAQ Page route */}
         <button
-          onClick={() => setTab('settings')}
-          className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${
-            tab === 'settings' ? 'bg-[#88BC46] text-[#ffffff]' : 'bg-white text-gray-600'
-          }`}
+         onClick={() => navigate('/support/faqs')}
+          className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${path === 'insights' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
+            }`}
         >
-          <FaInfoCircle className="text-md" /> FAQ
+          <FaListUl />FAQ
         </button>
 
+        {/* Tutorial Page route */}
         <button
-          onClick={() => setTab('settings')}
-          className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${
-            tab === 'settings' ? 'bg-[#88BC46] text-[#ffffff]' : 'bg-white text-gray-600'
-          }`}
+          onClick={() => navigate('/support/tutorials')}
+          className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${path === 'insights' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
+            }`}
         >
-          <FaPlayCircle className="text-md" /> Tutorials
+          <FaListUl /> Tutorial
         </button>
       </div>
     </div>
   );
 };
 
-export default AccountsHeader;
+export default GoalsHeader;
+
+// onClick={() => navigate('/goals/create')}
