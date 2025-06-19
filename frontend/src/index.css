@@ -36,3 +36,62 @@
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Confetti for the tutorials page */
+@keyframes coin {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-150px) scale(0.5);
+    opacity: 0;
+  }
+}
+
+@keyframes confetti {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-200px) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.animate-coin {
+  animation: coin 1.4s ease-out forwards;
+}
+
+.animate-confetti {
+  animation: confetti 1.8s ease-in-out forwards;
+}
+
+/* Styling for the FAQ Page */
+@keyframes fadeUp {
+  0% {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+.animate-fade-up {
+  animation: fadeUp 1s ease-out forwards;
+}
+
+@keyframes fadeUp {
+  0% { transform: translateY(8px); opacity: 0; }
+  50% { transform: translateY(-4px); opacity: 1; }
+  100% { transform: translateY(-12px); opacity: 0; }
+}
+.animate-fade-up {
+  animation: fadeUp 1.2s ease-out forwards;
+}
