@@ -82,7 +82,7 @@ function App() {
           <Route path="/transactions" element={<TransactionPage />} />
           <Route path="/insights" element={<AccountInsights/>}/>
           <Route path="/budget" element={<AccountBudget/>}/>
-          <Route path="/import" element={<AccountsImport/>}/
+          <Route path="/import" element={<AccountsImport/>}/>
 
           {/* Routes for the goals page */}
           <Route path="/goals" element={<GoalsPage />} />
