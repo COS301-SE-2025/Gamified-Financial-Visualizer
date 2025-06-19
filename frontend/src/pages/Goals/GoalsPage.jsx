@@ -1,3 +1,4 @@
+// pages/GoalsPage.tsx
 import React, { useEffect, useState } from 'react';
 import GoalsViewLayout from './GoalsViewLayout';
 import GoalOverviewCards from '../../components/cards/GoalOverviewCards';
@@ -20,7 +21,7 @@ const GoalsPage = () => {
       try {
         const res = await fetch(`http://localhost:5000/api/goal/user/${user.id}`);
         const data = await res.json();
-        setGoals(data.data || []); // assuming response format { status, message, data: [] }
+        setGoals(data.data || []);
       } catch (error) {
         console.error('Failed to fetch goals:', error);
       }
@@ -50,9 +51,29 @@ const GoalsPage = () => {
 
         {/* Goal Cards */}
         <div className="grid grid-cols-3 gap-6">
-          {goals.map((goal, idx) => {
-            const randomImage = bannerImages[Math.floor(Math.random() * bannerImages.length)];
-            return <GoalCard key={idx} {...goal} image={randomImage} />;
+          {goals.map((goal) => {
+            const randomImage = bannerImages[goal.banner_id % bannerImages.length];
+            const progress = Math.min(
+              Math.round((Number(goal.current_amount) / Number(goal.target_amount)) * 100),
+              100
+            );
+            const formattedTargetDate = new Date(goal.target_date).toLocaleDateString('en-ZA', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric'
+            });
+
+            return (
+              <GoalCard
+                key={goal.goal_id}
+                goalId={goal.goal_id}  // Pass goal_id as goalId prop
+                title={goal.goal_name}
+                image={randomImage}
+                progress={progress}
+                target={goal.target_amount}
+                dueDate={formattedTargetDate}
+              />
+            );
           })}
         </div>
       </div>

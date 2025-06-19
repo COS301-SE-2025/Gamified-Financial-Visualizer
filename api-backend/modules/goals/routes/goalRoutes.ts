@@ -17,7 +17,7 @@ import {
   calculateGoalPerformance
 } from '../services/goals.service';
 import { logger } from '../../../config/logger';
-
+import pool  from '../../../config/db';
 const router = Router();
 
 /**
@@ -30,41 +30,54 @@ router.post('/', async (req: Request, res: Response) => {
     goal_name,
     goal_type,
     target_amount,
+    start_date,
     target_date,
-    goal_status
+    banner_id,
+    category_id,
+    custom_category_name
   } = req.body;
 
-  if (
-    !goal_name || !goal_type || !target_amount ||
-    !target_date || !goal_status || (!user_id)
-  ) {
-    res.status(400).json({
-      status: 'error',
-      message: 'Missing required fields: user_id or community_id, goal_name, goal_type, target_amount, target_date, goal_status'
-    });
-    return;
-  }
+  let resolvedCategoryId = category_id;
+  let resolvedCustomCategoryId: number | undefined = undefined;
 
   try {
-    const goalId = await createGoal({
+    // If user provides a custom category
+    if (!category_id && custom_category_name) {
+      // Check if it already exists or create it
+      const result = await pool.query(
+        'INSERT INTO custom_categories (user_id, name) VALUES ($1, $2) ON CONFLICT (user_id, name) DO UPDATE SET name = EXCLUDED.name RETURNING custom_category_id',
+        [user_id, custom_category_name]
+      );
+      resolvedCustomCategoryId = result.rows[0].custom_category_id;
+    }
+
+    // Enforce the category constraint
+    if ((resolvedCategoryId && resolvedCustomCategoryId) || (!resolvedCategoryId && !resolvedCustomCategoryId)) {
+       res.status(400).json({
+        status: 'error',
+        message: 'Exactly one of category_id or custom_category_name must be provided.',
+      });
+      return;
+    }
+
+    const goal_id = await createGoal({
       user_id,
       goal_name,
       goal_type,
       target_amount,
+      start_date,
       target_date,
-      goal_status
+      banner_id,
+      category_id: resolvedCategoryId,
+      custom_category_id: resolvedCustomCategoryId,
+      goal_status: 'in-progress'
     });
 
-    res.status(201).json({
-      status: 'success',
-      message: 'Goal created successfully.',
-      data: { goal_id: goalId }
-    });
-  } catch (error) {
+    res.status(201).json({ status: 'success', data: { goal_id } });
+  } catch (error: any) {
     logger.error('[GoalRoutes] Failed to create goal', error);
-    res.status(500).json({ status: 'error', message: 'Internal server error' });
-  }
-});
+    res.status(500).json({ status: 'error', message: error.message });
+  }});
 
 /**
  * @route GET /api/goal/:goalId

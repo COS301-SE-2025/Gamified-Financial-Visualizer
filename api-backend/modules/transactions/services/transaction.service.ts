@@ -333,7 +333,7 @@ export async function getExpenseTotalByRange(
 }
 
 export async function getCategories() {
-  const sql = `SELECT category_id, category_name FROM categories;`
+  const sql = `SELECT category_id, category_name FROM categories ORDER BY category_name ASC;`
   try {
     const res = await pool.query(sql);
     return res.rows;
