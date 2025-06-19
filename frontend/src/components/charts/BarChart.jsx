@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   BarChart as ReBarChart,
   Bar,
@@ -10,21 +10,40 @@ import {
   Cell,
 } from 'recharts';
 
-const data = [
-  { day: 'M', value: 60 },
-  { day: 'T', value: 80 },
-  { day: 'W', value: 40 },
-  { day: 'T', value: 100 },
-  { day: 'F', value: 90 },
-  { day: 'S', value: 70 },
-  { day: 'S', value: 70 },
-];
+const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 const BarChart = () => {
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user?.id) return;
+
+    const fetchData = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/goal/${user.id}/progress-frequency`);
+        const result = await res.json();
+
+        // Map results to full week
+        const apiData = result.data;
+        const mapped = daysOfWeek.map(day => {
+          const match = apiData.find(d => d.day.startsWith(day));
+          return { day, value: match ? parseInt(match.count) : 0 };
+        });
+
+        setData(mapped);
+      } catch (err) {
+        console.error('Failed to load bar chart data', err);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <div className="w-full">
       <div className="bg-white rounded-2xl shadow p-4">
-        <h3 className="text-md font-semibold text-gray-600 mb-4">Weekly Goal Completion</h3>
+        <h3 className="text-md font-semibold text-gray-600 mb-4">Weekly Progress Updates</h3>
 
         <div className="h-48">
           <ResponsiveContainer width="100%" height="100%">
@@ -37,7 +56,7 @@ const BarChart = () => {
                 {data.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={entry.day === 'F' ? '#FF955A' : '#5FBFFF'}
+                    fill={entry.day === 'Fri' ? '#FF955A' : '#5FBFFF'}
                   />
                 ))}
               </Bar>
@@ -51,8 +70,8 @@ const BarChart = () => {
             <span className="text-[#FF955A] font-bold text-lg">☺</span>
           </div>
           <div>
-            <p className="text-sm font-semibold text-gray-700">You are doing good!</p>
-            <p className="text-xs text-gray-500">You almost reached your goal</p>
+            <p className="text-sm font-semibold text-gray-700">You're doing great!</p>
+            <p className="text-xs text-gray-500">Keep adding progress to your goals</p>
           </div>
         </div>
       </div>
