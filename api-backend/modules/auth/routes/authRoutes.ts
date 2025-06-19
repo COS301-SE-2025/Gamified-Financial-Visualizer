@@ -77,7 +77,6 @@ const register = async (req: Request, res: Response): Promise<void> => {
       username,
       email,
       hashed_password,
-      password_salt: crypto.randomBytes(16).toString('hex'),
     });
 
     logger.info(`[Auth] Successfully registered user: ${username}`);
@@ -135,7 +134,7 @@ const login = async (req: Request, res: Response): Promise<void> => {
     const token = await paseto.sign({ user_id: user.id }, secretKey);
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hrs
 
-    await userService.storeUserTokens(user.id, token, expiresAt); // Stored in service
+    //await userService.storeUserTokens(user.id, token, expiresAt); // Stored in service
 
     logger.info(`[Auth] User logged in: ${user.username}`);
 
