@@ -19,6 +19,9 @@ import GoalsDetailPage from './pages/Goals/GoalDetailPage';
 
 // The Transactions Page Routes
 import TransactionPage from './pages/Accounts/TransactionsPage';
+import AccountInsights from './pages/Accounts/Insights';
+import AccountBudget from './pages/Accounts/Budget';
+import AccountsImport from './pages/Accounts/Import';
 
 // The Learn Page Routes
 import LearningPage from './pages/Learn/LearnModulesPage';
@@ -39,6 +42,9 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path= "/transactions" element={<TransactionPage/>}/>
+          <Route path="/insights" element={<AccountInsights/>}/>
+          <Route path="/budget" element={<AccountBudget/>}/>
+          <Route path="/import" element={<AccountsImport/>}/>
           <Route path="/learn" element={<LearningPage/>}/>
           <Route path="/support" element={<SupportPage/>}/>
           <Route path="/goals" element={<GoalsPage />} />
