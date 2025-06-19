@@ -18,8 +18,8 @@ CREATE TABLE users (
 -- USER TOKENS
 CREATE TABLE user_tokens (
     token_id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    token TEXT NOT NULL,  -- can store JWT, Paseto, or opaque tokens
+    user_id INT NOT NULL UNIQUE REFERENCES users(user_id) ON DELETE CASCADE,
+    token TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     expires_at TIMESTAMP NOT NULL
 );
@@ -27,17 +27,24 @@ CREATE TABLE user_tokens (
 -- AVATAR IMAGES (Selectable user avatars)
 CREATE TABLE avatar_images (
     avatar_id SERIAL PRIMARY KEY,
-    image_data BYTEA NOT NULL,  -- stores avatar image in binary
-    avatar_name VARCHAR(100) UNIQUE NOT NULL,
+    avatar_image_path VARCHAR(255) NOT NULL, -- e.g., 'avatars/avatar1.png'
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- USER PREFERENCES TABLE (UPDATED)
+-- BANNER IMAGES (Decorative UI assets like icons, tabs, event banners)
+CREATE TABLE banner_images (
+    banner_id SERIAL PRIMARY KEY,
+    banner_image_path VARCHAR(255) NOT NULL, -- e.g., 'banners/banner1.jpg'
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- USER PREFERENCES TABLE
 CREATE TABLE user_preferences (
     user_id INT NOT NULL PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
     theme VARCHAR(50) CHECK (theme IN ('light', 'dark')),
     in_app_notifications_enabled BOOLEAN DEFAULT TRUE,
     avatar_id INT NOT NULL DEFAULT 1 REFERENCES avatar_images(avatar_id) ON DELETE SET DEFAULT,
+    banner_id INT NOT NULL DEFAULT 1 REFERENCES banner_images(banner_id) ON DELETE SET DEFAULT,
     ar_customizations_jsonb JSONB,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -163,12 +170,13 @@ CREATE TABLE ar_scene_state (
 
 -- COMMUNITIES
 CREATE TABLE communities (
-    community_id SERIAL PRIMARY KEY,
-    owner_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    community_id   SERIAL PRIMARY KEY,
+    owner_id       INT  NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     community_name VARCHAR(100) NOT NULL,
-    description TEXT,
-    banner_filename VARCHAR(100) NOT NULL DEFAULT 'default_banner_01.png',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    description    TEXT,
+    banner_id      INT  NOT NULL DEFAULT 1 REFERENCES banner_images(banner_id)  -- <-- new FK
+                  ON UPDATE CASCADE,
+    created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- COMMUNITY MEMBERS
@@ -204,16 +212,27 @@ CREATE TABLE goals (
     ),
     target_amount NUMERIC(12, 2) NOT NULL CHECK (target_amount > 0),
     current_amount NUMERIC(12, 2) NOT NULL DEFAULT 0,
-    target_date DATE NOT NULL,
-    end_date DATE, -- Optional actual completion deadline (can help measure lateness)
+
+    start_date DATE NOT NULL,                    -- When the goal starts
+    target_date DATE NOT NULL,                   -- When the user *wants* to achieve it
+    end_date DATE,                               -- When it was actually completed (optional)
+
+    banner_id INT NOT NULL DEFAULT 1
+               REFERENCES banner_images(banner_id)
+               ON UPDATE CASCADE,
+
     category_id INT REFERENCES categories(category_id),
     custom_category_id INT REFERENCES custom_categories(custom_category_id),
+
     goal_status VARCHAR(50) NOT NULL CHECK (
         goal_status IN ('in-progress', 'completed', 'cancelled', 'failed')
     ),
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
     UNIQUE (user_id, goal_name),
+
     CHECK (
         (category_id IS NULL AND custom_category_id IS NOT NULL)
         OR
@@ -235,6 +254,8 @@ CREATE TRIGGER trg_set_goal_updated_at
 BEFORE UPDATE ON goals
 FOR EACH ROW
 EXECUTE FUNCTION update_goal_updated_at_column();
+
+
 
 -- GOAL PROGRESS
 CREATE TABLE goal_progress (
@@ -300,15 +321,22 @@ CREATE TABLE challenges (
     challenge_id SERIAL PRIMARY KEY,
     community_id INT NOT NULL REFERENCES communities(community_id) ON DELETE CASCADE,
     creator_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    
+
     challenge_title VARCHAR(100) NOT NULL,
     challenge_type VARCHAR(50) NOT NULL CHECK (
         challenge_type IN ('savings', 'debt', 'investment', 'spending limit', 'donation')
     ),
     target_amount NUMERIC(12,2) NOT NULL CHECK (target_amount > 0),
     current_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
-    target_date DATE NOT NULL,                      
-    end_date DATE,                              
+
+    start_date DATE NOT NULL,                     -- 🆕 Explicit start of challenge
+    target_date DATE NOT NULL,                    -- Goal or milestone date
+    end_date DATE,                                -- Actual end if completed/expired
+
+    banner_id INT NOT NULL DEFAULT 1
+               REFERENCES banner_images(banner_id)
+               ON UPDATE CASCADE,
+
     category_id INT REFERENCES categories(category_id),
     custom_category_id INT REFERENCES custom_categories(custom_category_id),
     CHECK (
@@ -316,6 +344,7 @@ CREATE TABLE challenges (
         OR
         (category_id IS NOT NULL AND custom_category_id IS NULL)
     ),
+
     measurement_type VARCHAR(50) NOT NULL CHECK (
         measurement_type IN (
             'amount_saved',
@@ -323,20 +352,27 @@ CREATE TABLE challenges (
             'transactions_logged',
             'amount_invested',
             'amount_donated',
-            'spending_within_limit')
+            'spending_within_limit'
+        )
     ),
+
     challenge_status VARCHAR(50) NOT NULL DEFAULT 'active' CHECK (
         challenge_status IN ('active', 'completed', 'cancelled', 'expired')
     ),
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CHALLENGE PROGRESS
-CREATE TABLE challenge_participants (
+CREATE TABLE challenge_progress (
     challenge_id INT NOT NULL REFERENCES challenges(challenge_id) ON DELETE CASCADE,
     user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    participation_status VARCHAR(20) NOT NULL DEFAULT 'invited' CHECK (
+        participation_status IN ('invited', 'joined', 'left')
+    ),
     join_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     progress_amount NUMERIC(12,2) DEFAULT 0,
     PRIMARY KEY (challenge_id, user_id)
 );
@@ -344,12 +380,11 @@ CREATE TABLE challenge_participants (
 CREATE OR REPLACE FUNCTION update_challenge_progress()
 RETURNS TRIGGER AS $$
 BEGIN
-  -- Recalculate total contribution
   UPDATE challenges
   SET 
     current_amount = (
       SELECT COALESCE(SUM(progress_amount), 0)
-      FROM challenge_participants
+      FROM challenge_progress
       WHERE challenge_id = NEW.challenge_id
     ),
     updated_at = CURRENT_TIMESTAMP
@@ -359,16 +394,15 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
 -- Trigger for INSERT or UPDATE
 CREATE TRIGGER trg_update_challenge_progress_after_change
-AFTER INSERT OR UPDATE ON challenge_participants
+AFTER INSERT OR UPDATE ON challenge_progress
 FOR EACH ROW
 EXECUTE FUNCTION update_challenge_progress();
 
 -- Trigger for DELETE
 CREATE TRIGGER trg_update_challenge_progress_after_delete
-AFTER DELETE ON challenge_participants
+AFTER DELETE ON challenge_progress
 FOR EACH ROW
 EXECUTE FUNCTION update_challenge_progress();
 
@@ -514,6 +548,13 @@ CREATE TABLE recurring_transactions (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- MODULE BANNERS (for learning modules)
+CREATE TABLE module_banners (
+    module_banner_id   SERIAL PRIMARY KEY,
+    banner_image_path VARCHAR(255) NOT NULL, -- e.g., 'module_banners/banner1.jpg'
+    created_at  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
+);
+
 -- LEARNING MODULES
 CREATE TABLE learning_modules (
     module_id SERIAL PRIMARY KEY,
@@ -522,13 +563,15 @@ CREATE TABLE learning_modules (
     difficulty VARCHAR(50) CHECK (
         difficulty IN ('beginner', 'intermediate', 'advanced')
     ),
-    banner_image BYTEA  -- Stores the image data directly as binary
+    module_banner_id    INT NOT NULL DEFAULT 1
+                   REFERENCES module_banners(module_banner_id)
+                   ON UPDATE CASCADE
 );
 
 -- LESSONS
 CREATE TABLE lessons (
     lesson_id SERIAL PRIMARY KEY,
-    module_id INT NOT NULL REFERENCES learning_modules(module_id),
+    module_id INT NOT NULL REFERENCES learning_modules(module_id) ON DELETE CASCADE,
     lesson_number INT NOT NULL,
     lesson_title VARCHAR(100) NOT NULL,
     content TEXT NOT NULL,
@@ -539,7 +582,7 @@ CREATE TABLE lessons (
 -- QUIZZES
 CREATE TABLE quizzes (
     quiz_id SERIAL PRIMARY KEY,
-    module_id INT NOT NULL REFERENCES learning_modules(module_id),
+    module_id INT NOT NULL REFERENCES learning_modules(module_id) ON DELETE CASCADE,
     questions_jsonb JSONB NOT NULL,
     max_score INT NOT NULL,
     pass_score INT NOT NULL CHECK (pass_score <= max_score)
@@ -556,31 +599,42 @@ CREATE TABLE quiz_attempts (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- BANNER IMAGES (Decorative UI assets like icons, tabs, event banners)
-CREATE TABLE banner_images (
-    banner_id SERIAL PRIMARY KEY,
-    image_data BYTEA NOT NULL,  -- stores the image as binary
+-- BADGES (for achievements and gamification)
+CREATE TABLE badges (
+    badge_id SERIAL PRIMARY KEY,
+    badge_title VARCHAR(100) NOT NULL UNIQUE,
+    image_path VARCHAR(255) NOT NULL, -- e.g., 'badges/badge1.png'
+    rarity VARCHAR(20) CHECK (
+        rarity IN ('Common', 'Uncommon', 'Rare', 'Epic', 'Legendary', 'Obsidian')
+    ),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ACHIEVEMENTS
 CREATE TABLE achievements (
     achievement_id SERIAL PRIMARY KEY,
+    parent_id INT REFERENCES achievements(achievement_id) ON DELETE CASCADE,
+    badge_id INT NOT NULL REFERENCES badges(badge_id) ON DELETE RESTRICT,
     achievement_title VARCHAR(100) NOT NULL,
     achievement_description TEXT NOT NULL,
     achievement_type VARCHAR(50) NOT NULL CHECK (
         achievement_type IN ('goal', 'quiz', 'challenge', 'transaction', 'milestone', 'misc')
     ),
     points_awarded INT NOT NULL CHECK (points_awarded >= 0),
-    badge_icon BYTEA,  -- actual binary image data for badge icon
-    trigger_condition_json JSONB NOT NULL  -- e.g., {"goal_completed": true, "amount": 1000}
+    trigger_condition_json JSONB NOT NULL,
+    is_umbrella BOOLEAN NOT NULL DEFAULT FALSE,
+    display_order INT DEFAULT 0
 );
 
 -- USER ACHIEVEMENTS
 CREATE TABLE user_achievements (
-    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    achievement_id INT NOT NULL REFERENCES achievements(achievement_id),
-    awarded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    user_id        INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    achievement_id INT NOT NULL REFERENCES achievements(achievement_id) ON DELETE CASCADE,
+    awarded_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    achievement_status VARCHAR(20) NOT NULL DEFAULT 'incomplete' CHECK (
+        achievement_status IN ('incomplete', 'complete')
+    ),
+    progress_value INT DEFAULT 0,
     PRIMARY KEY (user_id, achievement_id)
 );
 
@@ -656,3 +710,42 @@ CREATE INDEX idx_budgets_user_id ON budgets(user_id);
 -- Indexes for budget_categories
 CREATE INDEX idx_budget_categories_budget_id ON budget_categories(budget_id);
 
+-- ========================================
+-- ADDITIONAL INDEXES (Optimized for Queries)
+-- ========================================
+
+-- Efficient transaction queries per user (dashboard/history)
+CREATE INDEX idx_transactions_user_date ON transactions(user_id, transaction_date DESC);
+
+-- Participation filters per challenge (e.g., joined, invited)
+CREATE INDEX idx_challenge_progress_status ON challenge_progress(challenge_id, participation_status);
+
+-- Query user achievements by status (complete/incomplete)
+CREATE INDEX idx_user_achievements_status ON user_achievements(user_id, achievement_status);
+
+-- Load active/inactive challenges per community
+CREATE INDEX idx_challenges_community_status ON challenges(community_id, challenge_status);
+
+-- Filter user goals by status
+CREATE INDEX idx_goals_user_status ON goals(user_id, goal_status);
+
+-- Account types per user (e.g., crypto, savings)
+CREATE INDEX idx_accounts_user_type ON accounts(user_id, account_type);
+
+-- Quiz pass/fail history queries
+CREATE INDEX idx_quiz_attempts_user_passed ON quiz_attempts(user_id, passed);
+
+-- Points activity logs and audit trails
+CREATE INDEX idx_points_log_user_date ON points_log(user_id, created_at DESC);
+
+-- Speed up duplicate custom category checks
+CREATE INDEX idx_custom_categories_user_name ON custom_categories(user_id, custom_category_name);
+
+-- Goal progress over time (e.g., charting or tracking)
+CREATE INDEX idx_goal_progress_date ON goal_progress(goal_id, progress_date DESC);
+
+-- JSONB field: Achievement trigger filters
+CREATE INDEX idx_achievements_trigger_condition ON achievements USING GIN (trigger_condition_json);
+
+-- JSONB field: AR customizations in user preferences
+CREATE INDEX idx_user_preferences_ar_customizations ON user_preferences USING GIN (ar_customizations_jsonb);
