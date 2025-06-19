@@ -3,18 +3,19 @@ import { FaSearch, FaUserCog, 	FaHome } from 'react-icons/fa';
 
 const ProfileHeader = ({ tab, setTab }) => {
   return (
-    
-    // Search main box
+    // Search main box 
         <div className="flex justify-between rounded-xl items-center space-x-4 px-6 py-4 bg-[#ffffff] border-b shadow">
-          {/* 🔍 Search Input */}
-          <div className="flex items-center w-full bg-white px-3 py-2 rounded-xl shadow border max-w-md">
-            <FaSearch className="text-[#E5794B] mr-2" />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full outline-none bg-transparent text-sm text-[#E5794B]"
-            />
-          </div>
+         
+         {/*Search Input */}
+               <div className="flex items-center w-full max-w-4xl -ml-[14px] px-4 py-2 rounded-3xl border-4 border-[#E5794B] bg-white shadow-sm">
+                 <FaSearch className="text-[#E5794B] mr-2" />
+                 <input
+                   type="text"
+                   placeholder="Search..."
+                   className="w-full outline-none bg-transparent text-sm text-[#E5794B] placeholder-[#E5794B]/70"
+                 />
+               </div>
+
       {/* 🧭 Action Buttons: Main | Settings */}
       <div className="flex space-x-2">
         <button
