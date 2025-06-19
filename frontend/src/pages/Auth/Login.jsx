@@ -84,10 +84,6 @@ const Login = () => {
               </button>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <input type="checkbox" id="remember" />
-            <label htmlFor="remember" className="text-sm">Remember password</label>
-          </div>
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <button type="submit" className="btn-green">Login</button>
         </form>

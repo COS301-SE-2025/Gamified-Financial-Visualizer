@@ -1,12 +1,5 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import avatar from '../../assets/Images/avatars/totoroAvatar.jpeg';
-
-// Badge Icons
-import badgeCoins from '../../assets/Images/badges/CoinStack.png';
-import badgePlant from '../../assets/Images/badges/plantIocn.png';
-import badgeHighfive from '../../assets/Images/badges/highFiveIcon.png';
-import badgeTrophy from '../../assets/Images/badges/awardIcon.png';
-
 import {
   FaBolt,
   FaChartBar,
@@ -14,9 +7,129 @@ import {
   FaCheck,
   FaTimes,
   FaBan,
+  FaUtensils,
+  FaBus,
+  FaFilm,
+  FaHeartbeat,
+  FaPlane,
+  FaBook,
+  FaLaptop,
+  FaUser,
+  FaHandsHelping,
+  FaTshirt,
+  FaDumbbell,
+  FaMobileAlt,
+  FaWifi,
+  FaTv,
+  FaHome,
+  FaCar,
+  FaShieldAlt,
+  FaCalendarAlt,
+  FaGasPump,
+  FaBuilding,
+  FaUniversity,
+  FaMoneyBillWave,
+  FaPiggyBank,
+  FaChartLine,
+  FaChild,
+  FaPaw,
+  FaTools,
+  FaWallet,
+  FaCoins,
+  FaExchangeAlt
 } from 'react-icons/fa';
 
+// Mock transaction data
+const mockTransactions = [
+  { category: 'Groceries', amount: 'R1200', date: '2023-05-15', name: 'Supermarket' },
+  { category: 'Groceries', amount: 'R850', date: '2023-05-20', name: 'Local Market' },
+  { category: 'Entertainment', amount: 'R500', date: '2023-05-10', name: 'Movie Tickets' },
+  { category: 'Entertainment', amount: 'R350', date: '2023-05-18', name: 'Concert' },
+  { category: 'Health', amount: 'R1200', date: '2023-05-05', name: 'Gym Membership' },
+  { category: 'Health', amount: 'R450', date: '2023-05-12', name: 'Vitamins' },
+  { category: 'Personal', amount: 'R2800', date: '2023-05-01', name: 'Clothing' },
+  { category: 'Personal', amount: 'R1500', date: '2023-05-08', name: 'Electronics' },
+  { category: 'Fuel', amount: 'R800', date: '2023-05-03', name: 'Gas Station' },
+  { category: 'Fuel', amount: 'R750', date: '2023-05-17', name: 'Gas Station' },
+  { category: 'Transport', amount: 'R500', date: '2023-05-07', name: 'Bus Pass' },
+  
+];
+
+// Category icons mapping
+const categoryIcons = {
+  groceries: <FaUtensils />,
+  transport: <FaBus />,
+  fuel: <FaGasPump />,
+  utilities: <FaBolt />,
+  rent: <FaHome />,
+  mortgage: <FaBuilding />,
+  internet: <FaWifi />,
+  phone: <FaMobileAlt />,
+  insurance: <FaShieldAlt />,
+  medical: <FaHeartbeat />,
+  health: <FaHeartbeat />,
+  fitness: <FaDumbbell />,
+  education: <FaBook />,
+  subscriptions: <FaTv />,
+  entertainment: <FaFilm />,
+  restaurants: <FaUtensils />,
+  clothing: <FaTshirt />,
+  'personal care': <FaUser />,
+  personal: <FaUser />,
+  gifts: <FaHandsHelping />,
+  charity: <FaHandsHelping />,
+  default: <FaMoneyBillWave />
+};
+
+// Category colors mapping
+const categoryColors = {
+  groceries: '#FF8A8A',
+  transport: '#5FBFFF',
+  fuel: '#FF7F9E',
+  utilities: '#7FDD53',
+  rent: '#FFC541',
+  mortgage: '#FF7F9E',
+  internet: '#7FDD53',
+  phone: '#93C5FD',
+  insurance: '#4C51BF',
+  medical: '#F56565',
+  health: '#F68D2B',
+  fitness: '#805AD5',
+  education: '#4299E1',
+  subscriptions: '#38B2AC',
+  entertainment: '#FFC541',
+  restaurants: '#E53E3E',
+  clothing: '#DD6B20',
+  personal: '#7FDD53',
+  gifts: '#68D391',
+  charity: '#48BB78',
+  default: '##FF7F9E'
+};
+
 const AccountsSidebar = () => {
+  // Calculate category totals from mock data
+  const categoryTotals = useMemo(() => {
+    const totals = {};
+    
+    mockTransactions.forEach(txn => {
+      const amountValue = parseFloat(txn.amount.replace(/[^0-9.-]+/g, ''));
+      const categoryKey = txn.category.toLowerCase();
+      
+      if (totals[categoryKey]) {
+        totals[categoryKey].total += amountValue;
+      } else {
+        totals[categoryKey] = {
+          total: amountValue,
+          name: txn.category,
+          icon: categoryIcons[categoryKey] || categoryIcons.default,
+          color: categoryColors[categoryKey] || categoryColors.default
+        };
+      }
+    });
+    
+    return Object.values(totals);
+  }, []);
+
   return (
     <aside className="space-y-6">
       {/* Overall Performance */}
@@ -25,19 +138,10 @@ const AccountsSidebar = () => {
           Overall Performance
         </p>
 
-        {/* Progress Circle Styling */}
+        {/* Progress Circle */}
         <div className="relative w-40 h-40 mx-auto">
           <svg viewBox="0 0 100 100" className="w-full h-full">
-            {/* Background Circle */}
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              fill="none"
-              stroke="#E8F0FA"
-              strokeWidth="10"
-            />
-            {/* Foreground Arc */}
+            <circle cx="50" cy="50" r="45" fill="none" stroke="#E8F0FA" strokeWidth="10" />
             <circle
               cx="50"
               cy="50"
@@ -45,12 +149,11 @@ const AccountsSidebar = () => {
               fill="none"
               stroke="url(#gradient)"
               strokeWidth="10"
-              strokeDasharray="270"  /* ~75% of 2πr */
+              strokeDasharray="270"
               strokeDashoffset="67"
               strokeLinecap="round"
               transform="rotate(-90 50 50)"
             />
-            {/* Gradient definition */}
             <defs>
               <linearGradient id="gradient" x1="1" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#60A5FA" />
@@ -59,7 +162,6 @@ const AccountsSidebar = () => {
             </defs>
           </svg>
 
-          {/* Center Content */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <p className="text-[24px] font-bold text-[#2D3748]">350</p>
             <p className="text-sm text-[#718096]">Excellent</p>
@@ -70,7 +172,6 @@ const AccountsSidebar = () => {
             />
           </div>
 
-          {/* Top Blue Dot */}
           <div className="absolute top-[6px] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full flex items-center justify-center">
             <div className="w-4 h-4 bg-blue-400 rounded-full" />
           </div>
@@ -81,39 +182,29 @@ const AccountsSidebar = () => {
       {/* Categories Summaries */}
       <div className="bg-white rounded-2xl p-4 shadow">
         <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-4 py-1 rounded-full inline-block mb-4">
-          Categories Summaries
+          Categories
         </p>
 
         <div className="grid grid-cols-2 gap-4">
-          {[
-            { value: '14', label: 'Goals', icon: <FaBolt />, color: '#FF8A8A' },
-            { value: '83%', label: 'Completed', icon: <FaCheck />, color: '#7FDD53' },
-            { value: '12', label: 'Inactive', icon: <FaChartBar />, color: '#5FBFFF' },
-            { value: '14', label: 'In-Progress', icon: <FaHourglassHalf />, color: '#FFC541' },
-            { value: '56%', label: 'Incomplete', icon: <FaTimes />, color: '#F68D2B' },
-            { value: '7', label: 'Cancelled', icon: <FaBan />, color: '#FF7F9E' },
-          ].map(({ value, label, icon, color }, i) => (
+          {categoryTotals.map((category, i) => (
             <div key={i} className="relative bg-white rounded-xl shadow-md p-3 flex items-center justify-between">
-              {/* Icon Bubble */}
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: color + '20' }} // Light version of color
+                style={{ backgroundColor: `${category.color}20` }}
               >
-                <div className="text-white" style={{ color }}>
-                  {icon}
+                <div style={{ color: category.color }}>
+                  {category.icon}
                 </div>
               </div>
 
-              {/* Stat Content */}
               <div className="text-right">
-                <p className="text-lg font-bold text-gray-900">{value}</p>
-                <p className="text-sm text-gray-500">{label}</p>
+                <p className="text-lg font-bold text-gray-900">R{category.total.toFixed(2)}</p>
+                <p className="text-sm text-gray-500">{category.name}</p>
               </div>
 
-              {/* Bottom Bar */}
               <div
                 className="absolute bottom-0 left-0 h-[5px] w-full rounded-b-xl"
-                style={{ backgroundColor: color }}
+                style={{ backgroundColor: category.color }}
               />
             </div>
           ))}
