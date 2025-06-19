@@ -16,7 +16,7 @@ const SupportSidebar = () => {
       {/* Goal Performance */}
       <div className="bg-white rounded-2xl p-4 shadow text-center">
         <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-3 py-1 rounded-full inline-block mb-2">
-          Goal Performance
+          Overall Performance
         </p>
 
         {/* Progress Circle Styling */}
@@ -75,7 +75,7 @@ const SupportSidebar = () => {
       {/* Goal Statistics */}
       <div className="bg-white rounded-2xl p-4 shadow">
         <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-4 py-1 rounded-full inline-block mb-4">
-          Goal Statistics
+          Overall Statistics
         </p>
 
         <div className="grid grid-cols-2 gap-4">
