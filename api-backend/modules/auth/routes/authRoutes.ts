@@ -3,9 +3,12 @@ import { body, validationResult } from 'express-validator';
 import argon2 from 'argon2';
 import crypto from 'crypto';
 import { V4 as paseto } from 'paseto';
-
+import { V3 }                from 'paseto';
 import { logger } from '../../../config/logger';
 import * as userService from '../services/auth.service';
+
+const localKey = Buffer.from(process.env.PASETO_LOCAL_KEY!, 'hex');
+const TOKEN_TTL = Number(process.env.TOKEN_TTL_SECONDS || 86400);
 
 const router = Router();
 
@@ -115,44 +118,53 @@ const login = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
+  console.log('[DEBUG] PASETO Key:', {
+  envValue: process.env.PASETO_LOCAL_KEY,
+  length: process.env.PASETO_LOCAL_KEY?.length,
+  buffer: Buffer.from(process.env.PASETO_LOCAL_KEY!, 'hex')
+});
   const { username, password } = req.body;
 
   try {
-    const user = await userService.getUserByUsername(username);
-    if (!user) {
-      res.status(401).json({ status: 'error', message: 'Invalid username' });
-      return;
+    /* 1. lookup user ------------------------------------------------------ */
+     const localKeyHex = process.env.PASETO_LOCAL_KEY;
+    if (!localKeyHex || localKeyHex.length !== 64) {
+      throw new Error('Invalid PASETO key: Must be 64-character hex string');
     }
 
-    const valid = await argon2.verify(user.hashed_password, password);
-    if (!valid) {
-      res.status(401).json({ status: 'error', message: 'Invalid password' });
-      return;
+    const user = await  userService.getUserByUsername(username);
+    if (!user || !(await argon2.verify(user.hashed_password, password))) {
+      res.status(401).json({ status: 'error', message: 'Invalid credentials' });
+      return
     }
 
-    const secretKey = crypto.randomBytes(32); // Replace with secure persistent key
-    const token = await paseto.sign({ user_id: user.id }, secretKey);
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hrs
+    
+    /* 2. sign PASETO (v3.local) ------------------------------------------ */
+  const localKey = Buffer.from(process.env.PASETO_LOCAL_KEY!, 'hex');
 
-    //await userService.storeUserTokens(user.id, token, expiresAt); // Stored in service
-
-    logger.info(`[Auth] User logged in: ${user.username}`);
-
-    res.status(200).json({
-      status: 'success',
-      timestamp: new Date().toISOString(),
-      message: 'User authenticated successfully.',
-      data: {
-        user: {
-          id: user.id,
-          username: user.username,
+  const token = await V3.encrypt(
+        { 
+          user_id: user.user_id, 
+          exp: Math.floor(Date.now() / 1000) + TOKEN_TTL 
         },
-        token,
-        expires_at: expiresAt.toISOString(),
+        localKey
+      );
+
+    const expiresAt = new Date(Date.now() + TOKEN_TTL * 1000);
+
+    /* 3. store / update db token ----------------------------------------- */
+    await userService.upsertToken(user.user_id, token, expiresAt);
+    /* 4. respond ---------------------------------------------------------- */
+    logger.info(`[Auth] Login success: ${user.username}`);
+    res.json({
+      status: 'success',
+      data: {
+        user:   { id: user.user_id, username: user.username },
+        token,  expires_at: expiresAt.toISOString(),
       },
     });
-  } catch (error) {
-    logger.error('[Auth] Login failed', error);
+  } catch (err) {
+    logger.error('[Auth] Login failed:', err);
     res.status(500).json({ status: 'error', message: 'Internal server error' });
   }
 };

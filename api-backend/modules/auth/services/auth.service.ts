@@ -34,6 +34,19 @@ export async function createUser(user: UserRecord) {
   }
 }
 
+/* one live token per user; UX-friendly for SPAs */
+export async function upsertToken(user_id: number, token: string, expires_at: Date) {
+
+  await pool.query('DELETE FROM user_tokens WHERE user_id = $1', [user_id]);
+  await pool.query(
+    'INSERT INTO user_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)',
+    [user_id, token, expires_at]
+  );
+  logger.info(`[AuthService] Token updated for user ${user_id}`);
+
+}
+
+
 export async function authenticateUser(username: string, hashedPassword: string) {
   const query = 'SELECT * FROM users WHERE username = $1 AND hashed_password = $2';
   try {
@@ -41,6 +54,24 @@ export async function authenticateUser(username: string, hashedPassword: string)
     return result.rows[0];
   } catch (err) {
     logger.error(`[AuthService] Authentication failed for user ${username}:`, err);
+    throw err;
+  }
+}
+
+ export async function storeUserTokens(user_id: number, accessToken: string, expires_at: Date) {
+  const query = `
+    INSERT INTO user_tokens (user_id, token, expires_at)
+    VALUES ($1, $2, $3)
+    ON CONFLICT (user_id) DO UPDATE SET
+      access_token = EXCLUDED.access_token,
+      refresh_token = ,
+      updated_at = CURRENT_TIMESTAMP;
+  `;
+  try {
+    await pool.query(query, [user_id, accessToken, expires_at]);
+    logger.info(`[AuthService] Tokens stored for user ID ${user_id}`);
+  } catch (err) {
+    logger.error(`[AuthService] Failed to store tokens for user ID ${user_id}:`, err);
     throw err;
   }
 }
