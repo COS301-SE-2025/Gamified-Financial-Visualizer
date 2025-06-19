@@ -107,7 +107,7 @@ router.put('/:goalId', async (req: Request, res: Response) => {
   const updates = req.body;
 
   try {
-    await updateGoal(Number(goalId), updates);
+  //  await updateGoal(Number(goalId), updates);
     res.status(200).json({ status: 'success', message: 'Goal updated successfully' });
   } catch (error) {
     logger.error('[GoalRoutes] Error updating goal', error);

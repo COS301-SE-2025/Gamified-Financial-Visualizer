@@ -29,7 +29,6 @@ export interface Goal {
 export async function createGoal(goal: Goal): Promise<number> {
   const {
     user_id = null,
-    community_id = null,// 
     goal_name,
     goal_type,
     target_amount,
