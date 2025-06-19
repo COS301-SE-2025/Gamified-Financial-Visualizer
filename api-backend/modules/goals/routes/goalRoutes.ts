@@ -8,10 +8,16 @@ import {
   completeGoal,
   reduceGoalProgress,
   getAllGoals,
-  getUserGoalStats
+  getUserGoalStats,
+  getGoalsSummary,
+  getGoalCategorySummary,
+  getUpcomingGoals,
+  getTotalGoalValue ,
+  getWeeklyGoalCompletions,
+  calculateGoalPerformance
 } from '../services/goals.service';
 import { logger } from '../../../config/logger';
-
+import pool  from '../../../config/db';
 const router = Router();
 
 /**
@@ -24,41 +30,54 @@ router.post('/', async (req: Request, res: Response) => {
     goal_name,
     goal_type,
     target_amount,
+    start_date,
     target_date,
-    goal_status
+    banner_id,
+    category_id,
+    custom_category_name
   } = req.body;
 
-  if (
-    !goal_name || !goal_type || !target_amount ||
-    !target_date || !goal_status || (!user_id)
-  ) {
-    res.status(400).json({
-      status: 'error',
-      message: 'Missing required fields: user_id or community_id, goal_name, goal_type, target_amount, target_date, goal_status'
-    });
-    return;
-  }
+  let resolvedCategoryId = category_id;
+  let resolvedCustomCategoryId: number | undefined = undefined;
 
   try {
-    const goalId = await createGoal({
+    // If user provides a custom category
+    if (!category_id && custom_category_name) {
+      // Check if it already exists or create it
+      const result = await pool.query(
+        'INSERT INTO custom_categories (user_id, name) VALUES ($1, $2) ON CONFLICT (user_id, name) DO UPDATE SET name = EXCLUDED.name RETURNING custom_category_id',
+        [user_id, custom_category_name]
+      );
+      resolvedCustomCategoryId = result.rows[0].custom_category_id;
+    }
+
+    // Enforce the category constraint
+    if ((resolvedCategoryId && resolvedCustomCategoryId) || (!resolvedCategoryId && !resolvedCustomCategoryId)) {
+       res.status(400).json({
+        status: 'error',
+        message: 'Exactly one of category_id or custom_category_name must be provided.',
+      });
+      return;
+    }
+
+    const goal_id = await createGoal({
       user_id,
       goal_name,
       goal_type,
       target_amount,
+      start_date,
       target_date,
-      goal_status
+      banner_id,
+      category_id: resolvedCategoryId,
+      custom_category_id: resolvedCustomCategoryId,
+      goal_status: 'in-progress'
     });
 
-    res.status(201).json({
-      status: 'success',
-      message: 'Goal created successfully.',
-      data: { goal_id: goalId }
-    });
-  } catch (error) {
+    res.status(201).json({ status: 'success', data: { goal_id } });
+  } catch (error: any) {
     logger.error('[GoalRoutes] Failed to create goal', error);
-    res.status(500).json({ status: 'error', message: 'Internal server error' });
-  }
-});
+    res.status(500).json({ status: 'error', message: error.message });
+  }});
 
 /**
  * @route GET /api/goal/:goalId
@@ -82,6 +101,42 @@ router.get('/:goalId', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * @route GET /api/goal/:userId/summary
+ * @description Fetch a summary of all goals.
+ */
+router.get('/:userId/summary', async (req: Request, res: Response) => {
+  const { userId } = req.params;
+
+  try {
+    const summary = await getGoalsSummary(Number(userId));
+
+    res.status(200).json({ status: 'success', data: summary });
+  } catch (error) {
+    logger.error('[GoalRoutes] Error fetching user goals summary', error);
+    res.status(500).json({ status: 'error', message: 'Internal server error' });
+  }
+
+});
+
+
+router.get('/:userId/category-summary', async (req: Request, res: Response) => {
+  const { userId } = req.params;
+
+  try {
+    const summary = await getGoalCategorySummary(Number(userId));
+
+    res.status(200).json({
+      status: 'success',
+      data: summary
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      status: 'error',
+      message: error.message || 'Failed to fetch category summary'
+    });
+  }
+});
 /**
  * @route GET /api/goal/user/:userId
  * @description Fetch all personal goals for a user.
@@ -111,6 +166,18 @@ router.put('/:goalId', async (req: Request, res: Response) => {
     res.status(200).json({ status: 'success', message: 'Goal updated successfully' });
   } catch (error) {
     logger.error('[GoalRoutes] Error updating goal', error);
+    res.status(500).json({ status: 'error', message: 'Internal server error' });
+  }
+});
+
+router.get('/:userId/performance', async (req: Request, res: Response) => {
+  const { userId } = req.params;
+
+  try {
+    const performance = await calculateGoalPerformance(Number(userId));
+    res.status(200).json({ status: 'success', data: performance });
+  } catch (error) {
+    logger.error('[GoalRoutes] Error calculating goal performance', error);
     res.status(500).json({ status: 'error', message: 'Internal server error' });
   }
 });
@@ -150,6 +217,51 @@ router.post('/:goalId/progress', async (req: Request, res: Response) => {
   } catch (error) {
     logger.error('[GoalRoutes] Error adding progress', error);
     res.status(500).json({ status: 'error', message: 'Internal server error' });
+  }
+});
+
+router.get('/user/:userId/upcoming', async (req: Request, res: Response) => {
+  const { userId } = req.params;
+
+  try {
+    const goals = await getUpcomingGoals(Number(userId));
+    res.status(200).json({ status: 'success', data: goals });
+  } catch (error) {
+    logger.error('[GoalRoutes] Error fetching upcoming goals', error);
+    res.status(500).json({ status: 'error', message: 'Internal server error' });
+  }
+})
+
+
+router.get('/user/:userId/total-value', async (req: Request, res: Response) => {
+  const userId = Number(req.params.userId);
+
+  if (!userId) {
+    res.status(400).json({ status: 'error', message: 'User ID is required' });
+    return;
+  }
+
+  try {
+    const total = await getTotalGoalValue(userId);
+    res.status(200).json({ status: 'success', data: { total_goal_value: total } });
+  } catch (error: any) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+})
+
+
+router.get('/:userId/progress-frequency', async (req: Request, res: Response) => {
+  const userId = Number(req.params.userId);
+  if (!userId) {
+    res.status(400).json({ status: 'error', message: 'Invalid user ID' });
+    return;
+  }
+
+  try {
+    const frequency = await getWeeklyGoalCompletions(userId);
+    res.status(200).json({ status: 'success', data: frequency });
+  } catch (err) {
+    res.status(500).json({ status: 'error', message: 'Failed to get progress frequency' });
   }
 });
 

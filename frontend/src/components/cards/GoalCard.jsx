@@ -1,11 +1,17 @@
+// components/cards/GoalCard.tsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaArrowRight } from 'react-icons/fa';
 
-const GoalCard = ({ title, image, progress, target, dueDate }) => {
+
+const GoalCard = ({ goalId, title, image, progress, target, dueDate }) => {
     const navigate = useNavigate();
+    if (!goalId || isNaN(Number(goalId))) {
+            console.error('Invalid goalId:', goalId);
+            return;
+        }
     const handleViewMore = () => {
-        navigate(`/goals/details/${encodeURIComponent(title)}`);
+        navigate(`/goals/details/${goalId}`);
     };
 
     return (
