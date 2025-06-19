@@ -25,7 +25,7 @@ const GoalsHeader = () => {
 
         {/* Main Help Page route */}
         <button
-          onClick={() => navigate('/goals/create')}
+          onClick={() => navigate('/support')}
           className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${path === 'main' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
             }`}
         >
@@ -34,7 +34,7 @@ const GoalsHeader = () => {
 
         {/* FAQ Page route */}
         <button
-          onClick={() => navigate('/goals')}
+         onClick={() => navigate('/support/faqs')}
           className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${path === 'insights' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
             }`}
         >
@@ -43,7 +43,7 @@ const GoalsHeader = () => {
 
         {/* Tutorial Page route */}
         <button
-          onClick={() => navigate('/goals')}
+          onClick={() => navigate('/support/tutorials')}
           className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${path === 'insights' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
             }`}
         >
