@@ -17,8 +17,12 @@ export interface Goal {
   goal_type: 'savings' | 'debt' | 'investment' | 'spending limit' | 'donation';
   target_amount: number;
   current_amount?: number;
+  start_date: string; // YYYY-MM-DD
   target_date: string; // YYYY-MM-DD
   goal_status?: 'in-progress' | 'completed' | 'paused' | 'cancelled' | 'failed';
+  banner_id?: number; // ID of the banner image
+  category_id?: number; // ID of the category (if applicable)
+  custom_category_id?: number; // ID of the custom category (if applicable)
 }
 
 /**
@@ -33,16 +37,23 @@ export async function createGoal(goal: Goal): Promise<number> {
     goal_type,
     target_amount,
     current_amount = 0,
+    start_date,
     target_date,
-    goal_status = 'in-progress'
+    goal_status = 'in-progress',
+    banner_id = 1,
+    category_id,
+    custom_category_id
   } = goal;
 
   const sql = `
     INSERT INTO goals (
-      user_id, goal_name, goal_type,
-      target_amount, current_amount, target_date, goal_status
+       user_id, goal_name, goal_type,
+      target_amount, current_amount,
+      start_date, target_date,
+      goal_status, banner_id,
+      category_id, custom_category_id
     )
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
     RETURNING goal_id;
   `;
   try {
@@ -52,8 +63,12 @@ export async function createGoal(goal: Goal): Promise<number> {
       goal_type,
       target_amount,
       current_amount,
+      start_date,
       target_date,
-      goal_status
+      goal_status,
+      banner_id,
+      category_id,
+      custom_category_id
     ]);
     const newId = res.rows[0].goal_id;
     logger.info(`[GoalService] Created goal ID=${newId}`);

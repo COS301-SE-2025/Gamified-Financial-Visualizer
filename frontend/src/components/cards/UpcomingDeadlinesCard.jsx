@@ -44,7 +44,7 @@ const UpcomingDeadlinesCard = () => {
               {getIcon(goal.goal_name)}
               <span>{goal.goal_name}</span>
             </div>
-            <span className="text-gray-500">{formatDate(goal.due_date)}</span>
+            <span className="text-gray-500">{formatDate(goal.target_date)}</span>
           </li>
         ))}
         {deadlines.length === 0 && (
