@@ -1,15 +1,9 @@
 import React from 'react';
 import avatar from '../../assets/Images/avatars/totoroAvatar.jpeg';
 
-// Badge Icons
-import badgeCoins from '../../assets/Images/badges/CoinStack.png';
-import badgePlant from '../../assets/Images/badges/plantIocn.png';
-import badgeHighfive from '../../assets/Images/badges/highFiveIcon.png';
-import badgeTrophy from '../../assets/Images/badges/awardIcon.png';
-
 import {
   FaBolt,
-  FaChartBar,
+  FaChartBar, 
   FaHourglassHalf,
   FaCheck,
   FaTimes,
@@ -76,27 +70,6 @@ const GoalsSidebar = () => {
           </div>
         </div>
         <p className="text-sm text-[#F56565] mt-2 font-medium">Lv 3: Silver</p>
-      </div>
-
-      {/* Badges */}
-      <div className="bg-white rounded-2xl p-4 shadow text-center">
-        <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-3 py-1 rounded-full inline-block mb-3">
-          Badges
-        </p>
-        <div className="flex justify-between items-center px-2">
-          {[badgeCoins, badgePlant, badgeHighfive, badgeTrophy].map((src, i) => (
-            <div
-              key={i}
-              className="w-16 h-16 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center"
-            >
-              <img
-                src={src}
-                alt={`Badge ${i}`}
-                className="w-16 h-16 rounded-full object-contain"
-              />
-            </div>
-          ))}
-        </div>
       </div>
 
       {/* Goal Statistics */}
