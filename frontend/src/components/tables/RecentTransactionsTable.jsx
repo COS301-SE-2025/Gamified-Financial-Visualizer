@@ -15,17 +15,38 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
   const filteredSortedTransactions = useMemo(() => {
     let filtered = [...transactions];
 
+    // Category filter
     if (categoryFilter) {
       filtered = filtered.filter(txn => txn.category === categoryFilter);
     }
 
+    // Date filter
+    if (dateFilter) {
+      const today = new Date();
+      filtered = filtered.filter(txn => {
+        const txnDate = new Date(txn.date);
+        const diffInDays = (today - txnDate) / (1000 * 60 * 60 * 24);
+
+        if (dateFilter === '7 Days') return diffInDays <= 7;
+        if (dateFilter === '10 Days') return diffInDays <= 10;
+        if (dateFilter === 'Last Month') {
+          const txnMonth = txnDate.getMonth();
+          const txnYear = txnDate.getFullYear();
+          const lastMonth = new Date();
+          lastMonth.setMonth(lastMonth.getMonth() - 1);
+          return txnMonth === lastMonth.getMonth() && txnYear === lastMonth.getFullYear();
+        }
+
+        return true;
+      });
+    }
+
+    // Sorting
     if (sortBy === 'Name') {
       filtered.sort((a, b) => a.name.localeCompare(b.name));
-    }
-    if (sortBy === 'Amount') {
+    } else if (sortBy === 'Amount') {
       filtered.sort((a, b) => parseFloat(b.amount.replace('R', '')) - parseFloat(a.amount.replace('R', '')));
-    }
-    if (sortBy === 'Date') {
+    } else if (sortBy === 'Date') {
       filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
     }
 
@@ -45,6 +66,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
               <option value="Amount">Amount</option>
               <option value="Date">Date</option>
             </select>
+
             <select className="border px-4 py-1 rounded-full text-sm" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
               <option value="">Filter by categories</option>
               <option value="Food">Food</option>
@@ -52,6 +74,14 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
               <option value="Fuel">Fuel</option>
               <option value="Entertainment">Entertainment</option>
             </select>
+
+            <select className="border px-4 py-1 rounded-full text-sm" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
+              <option value="">Filter by date</option>
+              <option value="7 Days">Last 7 Days</option>
+              <option value="10 Days">Last 10 Days</option>
+              <option value="Last Month">Last Month</option>
+            </select>
+
             <button
               onClick={() => setShowAddModal(true)}
               className="flex items-center gap-2 px-4 py-1 bg-[#D8F5C5] text-[#467D35] text-sm font-medium rounded-full hover:bg-[#c8ecb4] transition"
@@ -62,6 +92,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
         )}
       </div>
 
+      {/* Transactions Table */}
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm text-left text-gray-700">
           <thead className="border-b">
@@ -103,6 +134,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
         </table>
       </div>
 
+      {/* Add Modal */}
       <AddTransactionModal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
@@ -112,10 +144,15 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
         }}
       />
 
+      {/* Edit Modal */}
       {editTxnData && (
         <EditTransactionModal
-          isOpen={editTxnData !== null}
-          transaction={editTxnData}    
+          isOpen={!!editTxnData}
+          transaction={editTxnData}
+          onClose={() => {
+            setEditTxnData(null);
+            setEditTxnIndex(null);
+          }}
           onSave={(updatedTxn) => {
             onEdit(editTxnIndex, updatedTxn);
             setEditTxnData(null);

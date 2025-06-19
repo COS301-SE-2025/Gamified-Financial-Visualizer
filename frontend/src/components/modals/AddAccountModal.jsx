@@ -8,7 +8,6 @@ const AddAccountModal = ({ isOpen, onClose, onAdd }) => {
     accountType: '',
     balance: '',
     available: '',
-    status: 'Active',
     currency: 'ZAR',
   });
 
@@ -38,8 +37,6 @@ const AddAccountModal = ({ isOpen, onClose, onAdd }) => {
       accountName: '',
       accountType: '',
       balance: '',
-      available: '',
-      status: 'Active',
       currency: 'ZAR',
     });
   };
@@ -93,20 +90,6 @@ const AddAccountModal = ({ isOpen, onClose, onAdd }) => {
               <option value="USD">USD ($)</option>
               <option value="EUR">EUR (€)</option>
               <option value="GBP">GBP (£)</option>
-            </select>
-          </div>
-
-          {/* Status Select */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Account Status</label>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md text-sm"
-            >
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
             </select>
           </div>
         </div>
