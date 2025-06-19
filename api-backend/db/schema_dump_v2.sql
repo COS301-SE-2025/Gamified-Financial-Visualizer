@@ -714,9 +714,6 @@ CREATE INDEX idx_budget_categories_budget_id ON budget_categories(budget_id);
 -- ADDITIONAL INDEXES (Optimized for Queries)
 -- ========================================
 
--- Efficient transaction queries per user (dashboard/history)
-CREATE INDEX idx_transactions_user_date ON transactions(user_id, transaction_date DESC);
-
 -- Participation filters per challenge (e.g., joined, invited)
 CREATE INDEX idx_challenge_progress_status ON challenge_progress(challenge_id, participation_status);
 
