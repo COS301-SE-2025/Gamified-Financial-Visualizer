@@ -73,7 +73,7 @@ const ProfileSidebar = () => {
       </div>
 
       {/* Goal Statistics */}
-      <div className="bg-white rounded-2xl p-4 shadow">
+      <div className="bg-white rounded-2xl p-4 shadow text-center">
         <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-4 py-1 rounded-full inline-block mb-4">
           Overall Statistics
         </p>

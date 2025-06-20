@@ -1,177 +1,203 @@
-// src/pages/Community/ChallengesPage.jsx
 import React from 'react';
+import { Link } from 'react-router-dom';
 import CommunityLayout from '../../pages/Community/CommunityLayout';
 import CommunityHeader from '../../layouts/headers/CommunityHeader';
-import { FaFire, FaTrophy, FaCheckCircle, FaClock, FaCoins, FaChartLine } from 'react-icons/fa';
+import { FaTrophy, FaFire, FaCheckCircle, FaClock, FaCoins, FaUsers } from 'react-icons/fa';
+
+// 🖼 Image import
+import challengeImg from '../../assets/Images/banners/pixelStore.gif';
 
 const mockChallenges = [
   {
     id: 1,
-    title: '💰 Save R5000 in 30 days',
+    title: 'Save R5000 in 30 days',
     description: 'Reach your savings goal and build financial discipline',
     status: 'Active',
-    reward: '100 XP + Bronze Badge',
+    reward: '100 XP Reward',
     daysLeft: 12,
     progress: 65,
     participants: 342,
-    difficulty: 'Medium'
+    difficulty: 'Medium',
   },
   {
     id: 2,
-    title: '📉 Track all spending for 7 days',
+    title: 'Track all spending for 7 days',
     description: 'Record every expense to understand your spending habits',
     status: 'Upcoming',
-    reward: '50 XP',
+    reward: '50 XP Reward',
     startsIn: 3,
     participants: 128,
-    difficulty: 'Easy'
+    difficulty: 'Easy',
   },
   {
     id: 3,
-    title: '🎯 Complete 3 goals this month',
+    title: 'Complete 3 goals this month',
     description: 'Achieve multiple financial targets in one month',
     status: 'Completed',
-    reward: '200 XP + Silver Badge',
+    reward: '200 XP Reward',
     completedOn: '2025-06-10',
     participants: 567,
-    difficulty: 'Hard'
+    difficulty: 'Hard',
   },
   {
     id: 4,
-    title: '💸 No spend weekend',
+    title: 'No spend weekend',
     description: 'Avoid unnecessary purchases for an entire weekend',
     status: 'Active',
-    reward: '75 XP',
+    reward: '75 XP Reward',
     daysLeft: 2,
     progress: 90,
     participants: 421,
-    difficulty: 'Easy'
+    difficulty: 'Easy',
   },
 ];
 
-const getStatusIcon = (status) => {
-  switch(status) {
-    case 'Active': return <FaFire className="text-orange-500" />;
-    case 'Upcoming': return <FaClock className="text-yellow-500" />;
-    case 'Completed': return <FaCheckCircle className="text-green-500" />;
-    default: return <FaChartLine className="text-blue-500" />;
+const handleDelete = (itemName) => {
+  const confirmed = window.confirm(`Are you sure you want to delete "${itemName}"?`);
+  if (confirmed) {
+    // TODO: Delete logic (e.g., remove from state or make API call)
+    console.log(`Deleted ${itemName}`);
   }
 };
 
+
 const ChallengesPage = () => {
-  return (
-    <CommunityLayout>
-      <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-        <CommunityHeader />
-        
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800">Community Challenges</h2>
-            <p className="text-gray-600">Join challenges to earn rewards and improve your finances</p>
-          </div>
-          <button className="flex items-center gap-2 bg-gradient-to-r from-[#72C1F5] to-[#B1E1FF] text-white px-4 py-2 rounded-full text-sm font-medium shadow hover:shadow-md transition">
-            <FaTrophy /> Create Challenge
-          </button>
+  const active = mockChallenges.filter((c) => c.status === 'Active');
+  const upcoming = mockChallenges.filter((c) => c.status === 'Upcoming');
+  const completed = mockChallenges.filter((c) => c.status === 'Completed');
+
+  const renderCard = (challenge) => (
+
+    <div
+      key={challenge.id}
+      className="bg-white pt-12 px-5 pb-5 rounded-3xl shadow-md border relative top-4"
+      style={{ borderColor: '#E5E7EB', minHeight: 'auto' }}
+    >
+      {/* Circular image */}
+      <img
+        src={challengeImg}
+        alt="Challenge"
+        className="absolute -top-8 left-4 w-20 h-20 rounded-full object-cover border-4 border-white shadow"
+      />
+
+      {/* Header & Description */}
+      <div className="flex justify-between items-start">
+        <div>
+          <h4
+            className="text-lg font-semibold text-[#111827] leading-normal mb-1 break-words"
+            style={{ lineHeight: '1.4', wordBreak: 'break-word' }}
+          >
+            <FaCoins className="inline mr-1 text-[#FBBF24]" />
+            {challenge.title}
+          </h4>
+
+          {challenge.status === 'Active' && (
+            <>
+              <p className="text-sm text-[#ED5E52] font-medium mt-1">2000/4000 ZAR</p>
+              <p className="text-sm text-[#374151]">2000 ZAR Left</p>
+              <p className="text-sm text-[#6B7280] mt-1">
+                Goal will be accomplished on{' '}
+                <span className="text-[#ED5E52] font-semibold">21/07/2027</span>
+              </p>
+            </>
+          )}
+          {challenge.status === 'Upcoming' && (
+            <p className="text-sm text-[#F59E0B] mt-1">Starts in {challenge.startsIn} days</p>
+          )}
+          {challenge.status === 'Completed' && (
+            <p className="text-sm text-[#AAD977] mt-1">
+              Completed on <span className="font-semibold">{challenge.completedOn}</span>
+            </p>
+          )}
         </div>
 
-        <div className="grid grid-cols-1 gap-4">
-          {mockChallenges.map((challenge) => (
-            <div
-              key={challenge.id}
-              className={`p-5 rounded-2xl shadow border transition-all hover:shadow-lg ${
-                challenge.status === 'Active'
-                  ? 'bg-gradient-to-br from-green-50 to-white border-green-200'
-                  : challenge.status === 'Upcoming'
-                  ? 'bg-gradient-to-br from-yellow-50 to-white border-yellow-200'
-                  : 'bg-gradient-to-br from-gray-50 to-white border-gray-200'
-              }`}
-            >
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex items-center justify-center sm:justify-start">
-                  <div className="bg-white p-3 rounded-xl shadow-sm border border-gray-200">
-                    {getStatusIcon(challenge.status)}
-                  </div>
-                </div>
-                
-                <div className="flex-1">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <h3 className="text-lg font-bold text-gray-800">{challenge.title}</h3>
-                    <div className="flex items-center gap-2 bg-white px-3 py-1 rounded-full border border-gray-200">
-                      <FaCoins className="text-yellow-500" />
-                      <span className="text-sm font-medium">{challenge.reward}</span>
-                    </div>
-                  </div>
-                  
-                  <p className="text-gray-600 mt-1">{challenge.description}</p>
-                  
-                  <div className="mt-3 flex flex-wrap items-center gap-4">
-                    {challenge.status === 'Active' && (
-                      <div className="flex items-center gap-2">
-                        <div className="w-32 bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-green-500 h-2 rounded-full" 
-                            style={{ width: `${challenge.progress}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-xs font-medium">{challenge.progress}%</span>
-                      </div>
-                    )}
-                    
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        challenge.difficulty === 'Easy' 
-                          ? 'bg-green-100 text-green-800' 
-                          : challenge.difficulty === 'Medium'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {challenge.difficulty}
-                      </span>
-                      <span>•</span>
-                      <span>👥 {challenge.participants} participants</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
-                <div className="flex items-center gap-2 text-sm">
-                  {challenge.status === 'Active' && (
-                    <span className="flex items-center gap-1 text-orange-600">
-                      <FaFire size={14} /> Active • {challenge.daysLeft} days left
-                    </span>
-                  )}
-                  {challenge.status === 'Upcoming' && (
-                    <span className="flex items-center gap-1 text-yellow-600">
-                      <FaClock size={14} /> Starts in {challenge.startsIn} days
-                    </span>
-                  )}
-                  {challenge.status === 'Completed' && (
-                    <span className="flex items-center gap-1 text-green-600">
-                      <FaCheckCircle size={14} /> Completed on {challenge.completedOn}
-                    </span>
-                  )}
-                </div>
-                
-                <button className={`text-sm px-4 py-2 rounded-lg font-medium ${
-                  challenge.status === 'Active'
-                    ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                    : challenge.status === 'Upcoming'
-                    ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
-                    : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                }`}>
-                  {challenge.status === 'Active' ? 'Join Challenge' : 
-                   challenge.status === 'Upcoming' ? 'Remind Me' : 'View Details'}
-                </button>
-              </div>
-            </div>
-          ))}
+        {/* Tags */}
+        <div className="flex flex-col items-end gap-2 ml-4">
+          <span className="text-xs px-3 py-1 rounded-full bg-[#B1E1FF] text-[#4B82A2] font-medium">
+            In-Progress
+          </span>
+          <span className="text-xs px-3 py-1 rounded-full bg-[#FFD18C] text-[#FFFFFF] font-medium">
+            Savings
+          </span>
+          <span className="text-xs px-3 py-1 rounded-full bg-[#FFD18C] text-[#FFFFFF] font-semibold">
+            {challenge.reward}
+          </span>
         </div>
-        
-        <div className="flex justify-center mt-6">
-          <button className="bg-white border border-gray-200 text-gray-700 px-6 py-2 rounded-full text-sm font-medium shadow-sm hover:shadow-md transition">
-            Load More Challenges
-          </button>
+      </div>
+
+      {/* Footer */}
+      <div className="flex justify-between items-center mt-4">
+        <span className="text-xs text-gray-500 flex items-center gap-1">
+          <FaUsers /> {challenge.participants} participants • {challenge.difficulty}
+        </span>
+        {challenge.status === 'Active' && (
+          <span className="text-xs text-[#F97316]">{challenge.progress}% complete</span>
+        )}
+      </div>
+
+      {/* Buttons */}
+      <div className="flex gap-3 mt-4">
+        <div className="flex-1">
+          <Link to={`/community/challenges/${challenge.id}`}>
+            <button className="w-full bg-[#AAD977] text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-[#83AB55] transition">
+              View
+            </button>
+          </Link>
+        </div>
+
+        <div className="flex-1">
+          <button 
+          onClick={() => handleDelete(challenge.title)}
+          className="w-full bg-[#FE9B90] text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-[#ED5E52] transition">
+            Delete
+          </button> 
+        </div>
+      </div>
+
+    </div>
+  );
+
+  return (
+    <CommunityLayout>
+      <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
+        <CommunityHeader />
+
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-600">Community Challenges</h2>
+            <p className="text-gray-400">Join challenges to earn XP and level up!</p>
+          </div>
+          <Link to="/community/challenges/create">
+            <button className="flex items-center gap-2 bg-gradient-to-r from-[#72C1F5] to-[#B1E1FF] text-white px-4 py-2 rounded-full text-sm font-medium shadow hover:shadow-md transition">
+              <FaTrophy /> Create Challenge
+            </button>
+          </Link>
+
+        </div>
+
+        {/* Active */}
+        <div>
+          <h3 className="text-lg font-semibold text-orange-500 mb-3 flex items-center gap-2">
+            <FaFire /> Active
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{active.map(renderCard)}</div>
+        </div>
+
+        {/* Upcoming */}
+        <div>
+          <h3 className="text-lg font-semibold text-yellow-500 mb-3 mt-6 flex items-center gap-2">
+            <FaClock /> Upcoming
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{upcoming.map(renderCard)}</div>
+        </div>
+
+        {/* Completed */}
+        <div>
+          <h3 className="text-lg font-semibold text-lime-500 mb-3 mt-6 flex items-center gap-2">
+            <FaCheckCircle /> Completed
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{completed.map(renderCard)}</div>
         </div>
       </div>
     </CommunityLayout>
