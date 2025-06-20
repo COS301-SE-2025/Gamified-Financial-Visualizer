@@ -1,16 +1,29 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FaTrashAlt, FaUmbrellaBeach } from 'react-icons/fa';
 import GoalsViewLayout from '../../pages/Goals/GoalsViewLayout';
 import image from '../../assets/Images/banners/pixelStore.gif';
 
 const GoalsDetailPage = () => {
   const percentage = 50;
+  const navigate = useNavigate();
 
   return (
     <GoalsViewLayout>
       <div className="flex gap-6 justify-center mt-6">
         <div className="w-full max-w-4xl bg-white p-6 rounded-2xl shadow-md">
+          {/* Back Button */}
+          <div className="max-w-4xl mx-auto mb-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="text-sm text-white hover:[#88BC46] flex items-center gap-1 border-[#AAD977] rounded-full border w-28 h-8 justify-center bg-[#AAD977] "
+            >
+              Back to Goals
+            </button>
+          </div>
+
           <div className="flex items-start gap-6">
+
             {/* Goal Image */}
             <img src={image} alt="Goal" className="rounded-xl w-1/3 object-cover shadow" />
 

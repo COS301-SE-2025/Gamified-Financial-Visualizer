@@ -26,14 +26,14 @@ const GoalsPage = () => {
       <div className="flex flex-col gap-6 px-6 py-6">
         {/* Top Charts and Overview */}
         <div className="w-4/4 overflow-hidden grid grid-cols-12 gap-4">
-          <div className="col-span-3 flex flex-col gap-6">
+          <div className="col-span-3 flex flex-col gap-8">
             <GoalOverviewCards />
             <UpcomingDeadlinesCard />
           </div>
-          <div className="col-span-5">
-            <BarChart />
-          </div>
           <div className="col-span-4">
+            <BarChart />
+          </div> 
+          <div className="col-span-3">
             <DonutChart />
           </div>
         </div>

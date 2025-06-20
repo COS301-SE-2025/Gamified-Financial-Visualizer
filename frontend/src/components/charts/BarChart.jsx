@@ -11,19 +11,24 @@ import {
 } from 'recharts';
 
 const data = [
-  { day: 'M', value: 60 },
-  { day: 'T', value: 80 },
-  { day: 'W', value: 40 },
-  { day: 'T', value: 100 },
-  { day: 'F', value: 90 },
-  { day: 'S', value: 70 },
-  { day: 'S', value: 70 },
+  { day: 'Mon', value: 60 },
+  { day: 'Tue', value: 80 },
+  { day: 'Wed', value: 40 },
+  { day: 'Thu', value: 100 },
+  { day: 'Fri', value: 90 },
+  { day: 'Sat', value: 70 },
+  { day: 'Sun', value: 70 },
 ];
+
+const currentDate = new Date();
+const dayIndex = currentDate.getDay(); // 1 for Monday
+const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const currentDayName = daysOfWeek[dayIndex]; // "Monday"
 
 const BarChart = () => {
   return (
     <div className="w-full">
-      <div className="bg-white rounded-2xl shadow p-4">
+      <div className="bg-white rounded-2xl shadow p-4 w-[320px]">
         <h3 className="text-md font-semibold text-gray-600 mb-4">Weekly Goal Completion</h3>
 
         <div className="h-48">
@@ -37,7 +42,7 @@ const BarChart = () => {
                 {data.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={entry.day === 'F' ? '#FF955A' : '#5FBFFF'}
+                    fill={entry.day === currentDayName ? '#FF955A' : '#5FBFFF'}
                   />
                 ))}
               </Bar>
