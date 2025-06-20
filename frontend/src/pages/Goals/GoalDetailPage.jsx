@@ -6,7 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { FaTrashAlt, FaUmbrellaBeach } from 'react-icons/fa';
 import GoalsViewLayout from '../../pages/Goals/GoalsViewLayout';
 import defaultImage from '../../assets/Images/banners/pixelStore.gif';
-
+import image from '../../assets/Images/banners/pixelStore.gif';
 const GoalsDetailPage = () => {
 
    const { goalId } = useParams();
