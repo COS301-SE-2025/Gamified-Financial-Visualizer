@@ -47,6 +47,7 @@ import CommunityGameRoom from './pages/Community/CommunityGameRoom';
 
 // The Achievements Page Routes
 import AchievementsPage from './pages/Achievements/AchievementsPage';
+import AchievementDetailPage from './pages/Achievements/AchievementDetailPage';
 
 function App() {
   return (
@@ -75,6 +76,8 @@ function App() {
 
           {/* Routes for the Achievements page */}
           <Route path="/achievements" element={<AchievementsPage />} />
+          <Route path="/achievements/:id" element={<AchievementDetailPage />} />
+
 
           {/* Routes for the Community pages */}
           <Route path="/community" element={<CommunityDashboard />} />
@@ -90,9 +93,9 @@ function App() {
 
           {/* Routes for the Accounts pages */}
           <Route path="/transactions" element={<TransactionPage />} />
-          <Route path="/insights" element={<AccountInsights />} />
-          <Route path="/budget" element={<AccountBudget />} />
-          <Route path="/import" element={<AccountsImport />} />
+          <Route path="/insights" element={<AccountInsights/>}/>
+          <Route path="/budget" element={<AccountBudget/>}/>
+          <Route path="/import" element={<AccountsImport/>}/>
 
           {/* Routes for the goals page */}
           <Route path="/goals" element={<GoalsPage />} />
