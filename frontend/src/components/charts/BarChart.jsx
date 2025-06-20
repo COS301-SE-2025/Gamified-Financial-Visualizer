@@ -10,13 +10,14 @@ import {
   Cell,
 } from 'recharts';
 
-const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const BarChart = () => {
   const [data, setData] = useState([]);
   const [performanceMessage, setPerformanceMessage] = useState({
     main: "You're doing great!",
-    sub: "Keep adding progress to your goals"
+    sub: "Keep adding progress to your goals",
+    emoji: "☺"
   });
 
   useEffect(() => {
@@ -28,10 +29,20 @@ const BarChart = () => {
         const res = await fetch(`http://localhost:5000/api/goal/${user.id}/progress-frequency`);
         const result = await res.json();
         
+        // Get current day for highlighting
+        const currentDate = new Date();
+        const dayIndex = currentDate.getDay(); // 0 for Sunday
+        const currentDayName = daysOfWeek[dayIndex];
+
+        // Map API data to chart format
         const apiData = result.data;
         const mapped = daysOfWeek.map(day => {
           const match = apiData.find(d => d.day.startsWith(day));
-          return { day, value: match ? parseInt(match.count) : 0 };
+          return { 
+            day, 
+            value: match ? parseInt(match.count) : 0,
+            isCurrent: day === currentDayName
+          };
         });
 
         setData(mapped);
@@ -41,49 +52,45 @@ const BarChart = () => {
         const activeDays = mapped.filter(day => day.value > 0).length;
         
         // Determine message based on performance
-        if (totalProgress === 0) {
-          setPerformanceMessage({
-            main: "Let's get started!",
-            sub: "Track your first goal progress today"
-          });
-        } else if (activeDays >= 5) {
-          setPerformanceMessage({
-            main: "You're crushing it!",
-            sub: "Amazing consistency this week"
-          });
-        } else if (activeDays >= 3) {
-          setPerformanceMessage({
-            main: "Good progress!",
-            sub: "Almost halfway through the week"
-          });
-        } else if (totalProgress > 10) {
-          setPerformanceMessage({
-            main: "Great effort!",
-            sub: "Quality over quantity"
-          });
-        } else {
-          setPerformanceMessage({
-            main: "You're doing great!",
-            sub: "Keep adding progress to your goals"
-          });
-        }
-
-        const getEmoji = () => {
-          if (totalProgress === 0) return "😴";
-          if (activeDays >= 5) return "🔥";
-          if (totalProgress > 10) return "💪";
-          return "☺";
+        let message = {
+          main: "You're doing great!",
+          sub: "Keep adding progress to your goals",
+          emoji: "☺"
         };
 
-        setPerformanceMessage(prev => ({
-          ...prev,
-          emoji: getEmoji()
-        }));              
+        if (totalProgress === 0) {
+          message = {
+            main: "Let's get started!",
+            sub: "Track your first goal progress today",
+            emoji: "😴"
+          };
+        } else if (activeDays >= 5) {
+          message = {
+            main: "You're crushing it!",
+            sub: "Amazing consistency this week",
+            emoji: "🔥"
+          };
+        } else if (activeDays >= 3) {
+          message = {
+            main: "Good progress!",
+            sub: "Almost halfway through the week",
+            emoji: "😊"
+          };
+        } else if (totalProgress > 10) {
+          message = {
+            main: "Great effort!",
+            sub: "Quality over quantity",
+            emoji: "💪"
+          };
+        }
+
+        setPerformanceMessage(message);              
       } catch (err) {
         console.error('Failed to load bar chart data', err);
         setPerformanceMessage({
           main: "Data loading failed",
-          sub: "We'll try again soon"
+          sub: "We'll try again soon",
+          emoji: "😕"
         });
       }
     };
@@ -94,7 +101,7 @@ const BarChart = () => {
   return (
     <div className="w-full">
       <div className="bg-white rounded-2xl shadow p-4">
-        <h3 className="text-md font-semibold text-gray-600 mb-4">Weekly Progress Updates</h3>
+        <h3 className="text-md font-semibold text-gray-600 mb-4">Weekly Goal Completion</h3>
 
         <div className="h-48">
           <ResponsiveContainer width="100%" height="100%">
@@ -107,7 +114,7 @@ const BarChart = () => {
                 {data.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={entry.day === 'Fri' ? '#FF955A' : '#5FBFFF'}
+                    fill={entry.isCurrent ? '#FF955A' : '#5FBFFF'}
                   />
                 ))}
               </Bar>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { FaCrown, FaChartLine, FaEye, FaMedal, FaFire, FaTrophy, FaStar} from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { FaCrown, FaChartLine, FaEye, FaMedal, FaFire, FaTrophy, FaStar } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
 // Profile banner
@@ -33,6 +34,7 @@ import avatar12 from '../../assets/Images/avatars/butterflyAvatar.jpeg';
 
 const Overview = () => {
   const [setShowXpAnimation] = useState(false);
+  const navigate = useNavigate();
 
   // Mock user data
   const userStats = {
@@ -56,9 +58,22 @@ const Overview = () => {
     }
   };
 
+  // Community posts
+  const userPosts = [
+    { id: 1, image: comm1 },
+    { id: 2, image: comm2 },
+    { id: 3, image: comm3 },
+    { id: 4, image: comm4 },
+    { id: 5, image: profileBanner },
+    { id: 6, image: comm2 },
+    { id: 7, image: comm1 },
+  ];
+
+  // Active community data
   const communityData = [
     {
-      name: 'Community 1',
+      id: 'Happy Savers',
+      name: 'Happy Savers',
       image: comm1,
       members: 8,
       goals: 9,
@@ -66,7 +81,8 @@ const Overview = () => {
       avatars: [avatar1, avatar2, avatar3]
     },
     {
-      name: 'Community 2',
+      id: 'Happy Savers',
+      name: 'Money Makers',
       image: comm2,
       members: 8,
       goals: 9,
@@ -74,7 +90,8 @@ const Overview = () => {
       avatars: [avatar4, avatar5, avatar6]
     },
     {
-      name: 'Community 3',
+      id: 'Happy Savers',
+      name: 'Heists 101',
       image: comm3,
       members: 8,
       goals: 9,
@@ -82,7 +99,8 @@ const Overview = () => {
       avatars: [avatar7, avatar8, avatar9]
     },
     {
-      name: 'Community 4',
+      id: 'Happy Savers',
+      name: 'The Investors',
       image: comm4,
       members: 8,
       goals: 9,
@@ -121,7 +139,6 @@ const Overview = () => {
 
       {/* Add margin below to push content down */}
       <div className="h-4" />
-
 
       {/* Level Progress Card */}
       <div className="bg-white p-6 rounded-3xl shadow flex flex-col gap-4">
@@ -365,7 +382,10 @@ const Overview = () => {
                 </div>
 
                 {/* View Button */}
-                <button className="flex items-center gap-2 bg-[#AAD977] text-white font-medium text-sm px-4 py-1.5 rounded-full hover:bg-[#83AB55] transition-all">
+                <button
+                  onClick={() => navigate(`/community/details/${community.id}`)}
+                  className="flex items-center gap-2 bg-[#AAD977] text-white font-medium text-sm px-4 py-1.5 rounded-full hover:bg-[#83AB55] transition-all"
+                >
                   <FaEye /> View
                 </button>
               </div>
@@ -373,6 +393,29 @@ const Overview = () => {
           ))}
         </div>
       </motion.div>
+
+      {/* Bottom Grid – User Posts */}
+      {/* Bottom Grid – User Posts */}
+      <div className="bg-white p-6 rounded-3xl shadow-md">
+        <h2 className="text-lg font-bold text-[#1f2937] mb-4">My Posts</h2>
+
+        <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-8 gap-1">
+          {userPosts.map((post) => (
+            <div
+              key={post.id}
+              className="relative group overflow-hidden rounded-xl shadow-sm max-w-[110px] mx-auto"
+            >
+              <img
+                src={post.image}
+                alt={`post-${post.id}`}
+                className="w-full h-full object-cover aspect-square transition-transform duration-300 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition duration-300" />
+            </div>
+          ))}
+        </div>
+      </div>
+
 
     </div>
   );
