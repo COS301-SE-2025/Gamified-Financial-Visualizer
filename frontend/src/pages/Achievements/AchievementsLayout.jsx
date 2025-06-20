@@ -3,7 +3,7 @@ import AchievementsSidebar from '../../layouts/sidebars/AchievementsSidebar';
 import AchievementsHeader from '../../layouts/headers/AchievementsHeader';
 
 const AccountsLayout = ({ children }) => {
-  const [tab, setTab] = useState('transaction'); // or 'main', etc.
+  const [tab, setTab] = useState('achievements'); // or 'main', etc.
 
   return (
     <div className="h-screen bg-gray-50">

@@ -26,6 +26,8 @@ import AccountsImport from './pages/Accounts/Import';
 
 // The Learn Page Routes
 import LearningPage from './pages/Learn/LearnModulesPage';
+import IncompleteCourses from './pages/Learn/Incomplete';
+import CompleteCourses from './pages/Learn/Complete';
 
 // The Support Page Routes
 import FAQDetails from './pages/Support/FAQDetails';
@@ -66,6 +68,9 @@ function App() {
 
           {/* Routes for the learn page */}
           <Route path="/learn" element={<LearningPage />} />
+          <Route path="/learn/complete" element={<CompleteCourses/>}/>
+          <Route path="/learn/incomplete" element={<IncompleteCourses/>}/>
+          
 
           {/* Routes for the help page */}
           <Route path="/support" element={<HelpViewLayout />}>
@@ -93,9 +98,9 @@ function App() {
 
           {/* Routes for the Accounts pages */}
           <Route path="/transactions" element={<TransactionPage />} />
-          <Route path="/insights" element={<AccountInsights/>}/>
-          <Route path="/budget" element={<AccountBudget/>}/>
-          <Route path="/import" element={<AccountsImport/>}/>
+          <Route path="/transactions/insights" element={<AccountInsights/>}/>
+          <Route path="/transactions/budget" element={<AccountBudget/>}/>
+          <Route path="/transactions/import" element={<AccountsImport/>}/>
 
           {/* Routes for the goals page */}
           <Route path="/goals" element={<GoalsPage />} />
