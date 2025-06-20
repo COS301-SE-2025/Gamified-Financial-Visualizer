@@ -11,7 +11,7 @@ export interface Transaction {
   custom_category_id?: number;  // Optional if using category_id
   transaction_amount: number;
   transaction_type: 'expense' | 'income' | 'transfer' | 'fee' | 'withdrawal' | 'deposit';
-  description: string;
+  transaction_name: string;  // Name or description of the transaction
   transaction_date: string;  // ISO date string format (YYYY-MM-DD)
   is_recurring?: boolean;
   linked_goal_id?: number;
@@ -26,11 +26,12 @@ export interface Transaction {
  */
 export async function createTransaction(txn: Transaction) {
   const {
-    account_id,
+     account_id,
     category_id,
+    custom_category_id,
     transaction_amount,
     transaction_type,
-    description,
+    transaction_name,
     transaction_date,
     is_recurring = false,
     linked_goal_id,
@@ -45,19 +46,20 @@ export async function createTransaction(txn: Transaction) {
 
     const insertTxnSql = `
       INSERT INTO transactions
-        (account_id, category_id, transaction_amount, transaction_type,
+        (account_id, category_id, custom_category_id, transaction_amount, transaction_type,
          transaction_name, transaction_date, is_recurring,
          linked_goal_id, linked_challenge_id, budget_id, points_awarded)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       RETURNING transaction_id;
     `;
 
     const txnRes = await client.query(insertTxnSql, [
       account_id,
-      category_id,
+      category_id || null,
+      custom_category_id || null,
       transaction_amount,
       transaction_type,
-      description,
+      transaction_name,
       transaction_date,
       is_recurring,
       linked_goal_id || null,
@@ -129,12 +131,12 @@ export async function createAccount(
   account_name: string,
   account_type: string,
   currency: string,
-  account_number?: string
+  account_balance?: number // Optional, can be null
 ) {
   const insertAccSql = `
     INSERT INTO accounts
-      (user_id, bank_name, account_name, account_type, currency, account_number)
-    VALUES ($1, $2, $3, $4, $5, COALESCE($6, CONCAT('GFV-', $1, '-', nextval('accounts_account_id_seq'))))
+      (user_id, bank_name, account_name, account_type, currency, account_balance)
+    VALUES ($1, $2, $3, $4, $5, $6)
     RETURNING account_id;
   `;
 
@@ -145,7 +147,7 @@ export async function createAccount(
       account_name,
       account_type,
       currency,
-      account_number || null
+      account_balance || 0, // Default to 0 if not provided
     ]);
     const accId = res.rows[ 0 ].account_id;
     logger.info(`[TransactionService] Created account ID=${accId} for user ${user_id}`);

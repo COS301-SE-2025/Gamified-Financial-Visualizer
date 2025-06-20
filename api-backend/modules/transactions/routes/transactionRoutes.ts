@@ -18,31 +18,48 @@ router.post('/', async (req: Request, res: Response) => {
   const {
     account_id,
     category_id,
+    custom_category_id,
+    budget_id,
     transaction_amount,
     transaction_type,
     transaction_date,
-    description,
-    is_recurring
+    transaction_name,
+    is_recurring,
+    linked_goal_id,
+    linked_challenge_id,
+    points_awarded
   } = req.body;
 
-  if (!account_id || !transaction_amount || !transaction_type || !description) {
-    res.status(400).json({
+  if (!account_id || !transaction_amount || !transaction_type || !transaction_name) {
+     res.status(400).json({
       status: 'error',
-      message: 'Required fields: account_id, transaction_amount, transaction_type, description'
+      message: 'Missing required fields: account_id, transaction_amount, transaction_type, transaction_name'
     });
-    return;
+  }
+
+  if (category_id && custom_category_id) {
+     res.status(400).json({
+      status: 'error',
+      message: 'Only one of category_id or custom_category_id may be provided'
+    });
   }
 
   try {
     const tx = await createTransaction({
       account_id,
       category_id,
+      custom_category_id,
+      budget_id,
       transaction_amount,
       transaction_type,
       transaction_date,
-      description,
-      is_recurring
+      transaction_name,
+      is_recurring,
+      linked_goal_id,
+      linked_challenge_id,
+      points_awarded
     });
+
     res.status(201).json({
       status: 'success',
       message: 'Transaction created successfully',
@@ -53,6 +70,7 @@ router.post('/', async (req: Request, res: Response) => {
     res.status(500).json({ status: 'error', message: error.message || 'Internal server error' });
   }
 });
+
 
 /**
  * @route GET /api/transactions/user/:userId
