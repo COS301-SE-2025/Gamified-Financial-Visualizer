@@ -92,6 +92,7 @@ Stores user-linked financial accounts across various financial institutions or p
 - `current`
 - `cheque`
 - `savings`
+- `investment`
 - `credit`
 - `fixed deposit`
 - `business`
