@@ -2,6 +2,7 @@
 import { Router, Express, Application } from 'express';
 import transactionRoutes from './routes/transactionRoutes';
 import budgetRoutes from './routes/budgetRoutes'; // Assuming you have budget routes
+import accountRoutes from './routes/accountRoutes'; // Assuming you have account routes
 import { logger }     from '../../config/logger';     // re-use shared logger
 import pool           from '../../config/db';         // re-use shared DB pool
 import { eventBus } from "../../events/event-bus"
@@ -12,6 +13,7 @@ export function registerTransactionModule(app: Application) {
   // Mount routes
    app.use('/api/transaction', transactionRoutes);
    app.use('/api/budget', budgetRoutes); // Mount budget routes
+   app.use('/api/accounts', accountRoutes); // Mount account routes
 
   // Listen for transaction events
   eventBus.on('transaction.created', async (tx) => {
