@@ -169,6 +169,21 @@ export async function getAccounts(user_id: number) {
   }
 }
 
+/**
+ * Fetch a specific account by account_id
+ */
+export async function getAccountById(account_id: number) {
+  const sql = 'SELECT * FROM accounts WHERE account_id = $1';
+  try {
+    const result = await pool.query(sql, [account_id]);
+    return result.rows[0] || null;
+  } catch (error) {
+    logger.error(`[TransactionService] Error fetching account ID ${account_id}:`, error);
+    throw error;
+  }
+}
+
+
 export async function getTransactionByAccount(account_id: number) {
   const sql = `SELECT * FROM transactions WHERE account_id = $1 ORDER BY transaction_date DESC;`;
   try {
@@ -227,6 +242,19 @@ export async function getCategoryNameByID(categoryID: number) {
   }
 
 }
+
+export async function updateAccountName(account_id: number, account_name: string) {
+  const sql = `UPDATE accounts SET account_name = $1 WHERE account_id = $2`;
+  try {
+    await pool.query(sql, [account_name, account_id]);
+    logger.info(`[TransactionService] Updated account name for account ID=${account_id}`);
+  } catch (error) {
+    logger.error(`[TransactionService] Failed to update account name for ID=${account_id}:`, error);
+    throw error;
+  }
+}
+
+
 export async function deleteAccount(account_id: number, user_id: number) {
   const sql = `DELETE FROM accounts WHERE account_id = $1 AND user_id = $2;`;
   try {

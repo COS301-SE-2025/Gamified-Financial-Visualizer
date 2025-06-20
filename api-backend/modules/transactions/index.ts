@@ -11,7 +11,7 @@ import { makeBudgetProgress } from './services/transaction.service'; // Import b
 /** Wrap auth initialisation so root server can call it */
 export function registerTransactionModule(app: Application) {
   // Mount routes
-   app.use('/api/transaction', transactionRoutes);
+   app.use('/api/transactions', transactionRoutes);
    app.use('/api/budget', budgetRoutes); // Mount budget routes
    app.use('/api/accounts', accountRoutes); // Mount account routes
 

@@ -4,7 +4,8 @@ import {
   getUserTransactions,
   getTotalSpentPerCategory,
   getCategoryNameByID,
-  getCategories
+  getCategories,
+  getTransactionByAccount
 } from '../services/transaction.service';
 import { logger } from '../../../config/logger';
 
@@ -63,7 +64,7 @@ router.post('/', async (req: Request, res: Response) => {
     res.status(201).json({
       status: 'success',
       message: 'Transaction created successfully',
-      data: tx
+      data: {transaction_id : tx.transaction_id}
     });
   } catch (error: any) {
     logger.error('[Transaction] Create failed', error);
@@ -142,5 +143,26 @@ router.get('/categories/:category_id', async (req: Request, res: Response) => {
       .json({ status: 'error', message: error.message || 'Internal server error' });
   }
 });
+
+/**
+ * @route GET /api/transaction/accounts/:account_id
+ * @desc Fetch all transactions for a specific account
+ */
+router.get('/accounts/:account_id', async (req: Request, res: Response) => {
+  const account_id = parseInt(req.params.account_id, 10);
+
+  if (isNaN(account_id)) {
+   res.status(400).json({ status: 'error', message: 'Invalid account ID' });
+  }
+
+  try {
+    const transactions = await getTransactionByAccount(account_id);
+    res.status(200).json({ status: 'success', data: transactions });
+  } catch (error: any) {
+    logger.error('[Transaction] Fetch by account failed:', error);
+    res.status(500).json({ status: 'error', message: error.message || 'Internal server error' });
+  }
+});
+
 
 export default router;
