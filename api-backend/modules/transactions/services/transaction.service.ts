@@ -223,13 +223,15 @@ export async function getTotalSpentPerCategory(user_id: number) {
     ORDER BY total_spent DESC;
   `;
   try {
-    const res = await pool.query(sql, [ user_id ]);
+    const res = await pool.query(sql, [user_id]);
     return res.rows;
   } catch (error) {
     logger.error(`[TransactionService] Error fetching last month's spending by category for user ${user_id}:`, error);
     throw error;
   }
 }
+
+
 
 export async function getCategoryNameByID(categoryID: number) {
   const sql = `SELECT category_name FROM categories WHERE category_id = $1;`;
