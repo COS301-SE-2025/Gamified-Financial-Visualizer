@@ -89,11 +89,7 @@ const handleSubmit = async (e) => {
   };
 
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Submitted goal:', form);
-    setShowConfirm(false); // close modal
-  };
+
 
   return (
     <GoalsViewLayout>
