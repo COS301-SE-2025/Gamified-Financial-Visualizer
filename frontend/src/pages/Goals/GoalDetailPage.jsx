@@ -5,16 +5,17 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 import { FaTrashAlt, FaUmbrellaBeach } from 'react-icons/fa';
 import GoalsViewLayout from '../../pages/Goals/GoalsViewLayout';
-import defaultImage from '../../assets/Images/banners/pixelStore.gif';
-
+import image from '../../assets/Images/banners/pixelAllyway.jpeg';
 const GoalsDetailPage = () => {
 
-   const { goalId } = useParams();
+  const { goalId } = useParams();
   const [goal, setGoal] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
+  const [showConfirm, setShowConfirm] = useState(false);
+
 
   useEffect(() => {
     const fetchGoalDetails = async () => {
@@ -37,7 +38,7 @@ const GoalsDetailPage = () => {
     }
   }, [goalId]);
 
-   const handleDelete = async () => {
+  const handleDelete = async () => {
     if (!window.confirm('Are you sure you want to delete this goal?')) {
       return;
     }
@@ -168,21 +169,67 @@ const GoalsDetailPage = () => {
             </div>
           </div>
 
-           {/* Delete Button */}
-          <div className="mt-6 text-right">
-            <button 
-              onClick={handleDelete}
+          {/* Delete Button */}
+          <div className="mt-8 text-right">
+            <button
+              onClick={() => setShowConfirm(true)}
               disabled={isDeleting}
-              className={`px-5 py-2 bg-red-100 text-red-500 hover:bg-red-200 rounded-full flex items-center gap-2 text-sm font-medium ${
-                isDeleting ? 'opacity-70 cursor-not-allowed' : ''
-              }`}
+              className={`px-5 py-2 bg-red-100 text-red-500 hover:bg-red-200 rounded-full flex items-center gap-2 text-sm font-medium ${isDeleting ? 'opacity-70 cursor-not-allowed' : ''
+                }`}
             >
-              <FaTrashAlt /> 
+              <FaTrashAlt />
               {isDeleting ? 'Deleting...' : 'Delete'}
             </button>
           </div>
+          
         </div>
       </div>
+      {showConfirm && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[9999]">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm space-y-4">
+            <h2 className="text-lg font-semibold text-red-500">Confirm Goal Deletion</h2>
+            <p className="text-sm text-gray-600">
+              Are you sure you want to delete this goal? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  setIsDeleting(true);
+                  try {
+                    const response = await fetch(`http://localhost:5000/api/goal/${goalId}`, {
+                      method: 'DELETE',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                      }
+                    });
+
+                    if (!response.ok) {
+                      throw new Error('Failed to delete goal');
+                    }
+
+                    navigate('/goals', { state: { message: 'Goal deleted successfully' } });
+                  } catch (err) {
+                    setError(err.message);
+                  } finally {
+                    setIsDeleting(false);
+                    setShowConfirm(false);
+                  }
+                }}
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md"
+              >
+                {isDeleting ? 'Deleting...' : 'Confirm Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </GoalsViewLayout>
   );
 };
