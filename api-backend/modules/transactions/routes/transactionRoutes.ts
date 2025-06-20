@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import {
   createTransaction,
-  getUserTransactions,
+  // getUserTransactions,
   getTotalSpentPerCategory,
   getCategoryNameByID,
   getCategories,
@@ -77,7 +77,7 @@ router.post('/', async (req: Request, res: Response) => {
  * @route GET /api/transactions/user/:userId
  * @desc Get all transactions for a specific user
  */
-router.get('/user/:userId', async (req: Request, res: Response) => {
+/* router.get('/user/:userId', async (req: Request, res: Response) => {
   try {
     const list = await getUserTransactions(Number(req.params.userId));
     res.status(200).json({ status: 'success', data: list });
@@ -85,7 +85,7 @@ router.get('/user/:userId', async (req: Request, res: Response) => {
     logger.error('[Transaction] Fetch failed', error);
     res.status(500).json({ status: 'error', message: 'Internal server error' });
   }
-});
+}); */
 
 /**
  * @route GET /api/transactions/user/:userId/summary
