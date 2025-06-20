@@ -1,168 +1,107 @@
-// src/pages/Community/FriendsList.jsx
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { FaUserPlus, FaEye, FaUserMinus, FaPaperPlane } from 'react-icons/fa';
 import CommunityLayout from '../../pages/Community/CommunityLayout';
 import CommunityHeader from '../../layouts/headers/CommunityHeader';
-import { FaSearch, FaUserPlus, FaFire, FaCrown, FaMedal, FaAward } from 'react-icons/fa';
 
-const mockFriends = [
-  {
-    username: 'moonrider',
-    xp: 3400,
-    level: 'Gold',
-    avatar: '/images/avatars/moon.png',
-    status: 'Online',
-    streak: 21,
-    achievements: 5
-  },
-  {
-    username: 'satoshi_nak',
-    xp: 2800,
-    level: 'Silver',
-    avatar: '/images/avatars/satoshi.png',
-    status: 'Offline',
-    streak: 7,
-    achievements: 3
-  },
-  {
-    username: 'ayaka',
-    xp: 4100,
-    level: 'Platinum',
-    avatar: '/images/avatars/ayaka.png',
-    status: 'Online',
-    streak: 42,
-    achievements: 8
-  },
-  {
-    username: 'crypto_queen',
-    xp: 5200,
-    level: 'Diamond',
-    avatar: '/images/avatars/queen.png',
-    status: 'Online',
-    streak: 35,
-    achievements: 10
-  },
-  {
-    username: 'bitcoiner',
-    xp: 1900,
-    level: 'Bronze',
-    avatar: '/images/avatars/bitcoin.png',
-    status: 'Offline',
-    streak: 3,
-    achievements: 1
-  },
-  {
-    username: 'fiat_hater',
-    xp: 3800,
-    level: 'Gold',
-    avatar: '/images/avatars/fiat.png',
-    status: 'Online',
-    streak: 28,
-    achievements: 6
-  },
+// Image imports (replace with correct local paths if needed)
+import snowAvatar from '../../assets/Images/avatars/snakeAvatar.jpeg';
+import beachAvatar from '../../assets/Images/avatars/beachAvatar.jpeg';
+import smithAvatar from '../../assets/Images/avatars/windowAvatar.jpeg';
+import meAvatar from '../../assets/Images/avatars/lilyAvatar.jpeg';
+import jamesAvatar from '../../assets/Images/avatars/cottageAvatar.jpeg';
+import kyleAvatar from '../../assets/Images/avatars/pinkskyAvatar.jpeg';
+import randyAvatar from '../../assets/Images/avatars/stonesAvatar.jpeg';
+import sunAvatar from '../../assets/Images/avatars/flowerAvatar.jpeg';
+import zaneleAvatar from '../../assets/Images/avatars/carAvatar.jpeg';
+
+const yourFriends = [
+  { name: 'snow', level: 'Silver', avatar: snowAvatar },
+  { name: 'beached_in', level: 'Gold', avatar: beachAvatar },
+  { name: 'miss_smith', level: 'Gold', avatar: smithAvatar },
+  { name: 'thats_me', level: 'Platinum', avatar: meAvatar },
+  { name: 'james_link', level: 'Silver', avatar: jamesAvatar },
 ];
 
-const getLevelBadgeColor = (level) => {
-  switch(level) {
-    case 'Bronze': return 'bg-[#CD7F32]';
-    case 'Silver': return 'bg-[#C0C0C0]';
-    case 'Gold': return 'bg-[#FFD700]';
-    case 'Platinum': return 'bg-[#E5E4E2]';
-    case 'Diamond': return 'bg-[#B9F2FF]';
-    default: return 'bg-gray-400';
-  }
-};
+const someoneNew = [
+  { name: 'kyle_guy', level: 'Wood', avatar: kyleAvatar },
+  { name: 'randy', level: 'Silver', avatar: randyAvatar },
+  { name: 'sunflower', level: 'Gold', avatar: sunAvatar },
+  { name: 'zanele', level: 'Platinum', avatar: zaneleAvatar },
+];
 
 const FriendsList = () => {
   return (
     <CommunityLayout>
-      <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
         <CommunityHeader />
-        
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <h2 className="text-2xl font-bold text-gray-800">Friends List</h2>
-          <div className="flex gap-3 w-full md:w-auto">
-            <div className="relative flex-1 md:w-64">
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search friends..."
-                className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-[#72C1F5] focus:border-transparent"
-              />
-            </div>
-            <button className="flex items-center gap-2 bg-gradient-to-r from-[#72C1F5] to-[#B1E1FF] text-white px-4 py-2 rounded-full text-sm font-medium shadow hover:shadow-md transition">
-              <FaUserPlus /> Add Friend
-            </button>
+
+        {/* Your Friends */}
+        <div>
+          <h3 className="text-lg font-semibold text-[#333333] mb-3">Your Friends</h3>
+          <div className="bg-white rounded-xl shadow p-4 space-y-2 border border-[#E5E7EB]">
+            {yourFriends.map((friend, i) => (
+              <div key={i} className="flex justify-between items-center py-2 border-b border-[#F3F4F6] last:border-0">
+                <div className="flex items-center gap-4">
+                  <img src={friend.avatar} alt={friend.name} className="w-10 h-10 rounded-full object-cover border" />
+                  <div>
+                    <p className="text-sm font-semibold text-[#111827]">@{friend.name}</p>
+                    <p className="text-xs text-[#6B7280]">{friend.level}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Link to={`/community/member/${friend.name}`}>
+                    <button
+                      className="flex items-center gap-1 px-3 py-1 text-sm rounded-full"
+                      style={{ backgroundColor: '#AAD977', color: '#FFFFFF' }}
+                    >
+                      <FaEye /> View
+                    </button>
+                  </Link>
+                  <button
+                    className="flex items-center gap-1 px-3 py-1 text-sm rounded-full"
+                    style={{ backgroundColor: '#FA8B81', color: '#FFFFFF' }}
+                  >
+                    <FaUserMinus /> Remove
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {mockFriends.map((friend, idx) => (
-            <div
-              key={idx}
-              className="bg-white p-4 rounded-2xl shadow border border-gray-100 hover:shadow-md transition hover:-translate-y-1"
-            >
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <img
-                    src={friend.avatar}
-                    alt={friend.username}
-                    className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
-                  />
-                  <div className={`absolute -bottom-2 -right-2 ${getLevelBadgeColor(friend.level)} text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1`}>
-                    {friend.level === 'Platinum' && <FaCrown size={10} />}
-                    {friend.level === 'Diamond' && <FaAward size={10} />}
-                    {friend.level}
+        {/* Someone New */}
+        <div>
+          <h3 className="text-lg font-semibold text-[#333333] mb-3">Someone New</h3>
+          <div className="bg-white rounded-xl shadow p-4 space-y-2 border border-[#E5E7EB]">
+            {someoneNew.map((person, i) => (
+              <div key={i} className="flex justify-between items-center py-2 border-b border-[#F3F4F6] last:border-0">
+                <div className="flex items-center gap-4">
+                  <img src={person.avatar} alt={person.name} className="w-10 h-10 rounded-full object-cover border" />
+                  <div>
+                    <p className="text-sm font-semibold text-[#111827]">@{person.name}</p>
+                    <p className="text-xs text-[#6B7280]">{person.level}</p>
                   </div>
                 </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-start">
-                    <span className="text-lg font-semibold text-gray-800">@{friend.username}</span>
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      friend.status === 'Online' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-gray-100 text-gray-500'
-                    }`}>
-                      {friend.status}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-sm text-gray-500">XP: {friend.xp.toLocaleString()}</span>
-                    <span className="text-xs text-gray-400">•</span>
-                    <span className="flex items-center gap-1 text-sm text-amber-600">
-                      <FaFire size={12} /> {friend.streak}d
-                    </span>
-                    <span className="text-xs text-gray-400">•</span>
-                    <span className="flex items-center gap-1 text-sm text-purple-600">
-                      <FaMedal size={12} /> {friend.achievements}
-                    </span>
-                  </div>
-                  
-                  <div className="w-full bg-gray-100 rounded-full h-2 mt-2">
-                    <div 
-                      className="bg-gradient-to-r from-[#72C1F5] to-[#B1E1FF] h-2 rounded-full" 
-                      style={{ width: `${Math.min(100, (friend.xp / 6000) * 100)}%` }}
-                    ></div>
-                  </div>
+                <div className="flex gap-2">
+                  <Link to={`/community/member/${person.name}`}>
+                    <button
+                      className="flex items-center gap-1 px-3 py-1 text-sm rounded-full"
+                      style={{ backgroundColor: '#AAD977', color: '#FFFFFF' }}
+                    >
+                      <FaEye /> View
+                    </button>
+                  </Link>
+                  <button
+                    className="flex items-center gap-1 px-3 py-1 text-sm rounded-full"
+                    style={{ backgroundColor: '#FFD18C', color: '#FFFFFF' }}
+                  >
+                    <FaPaperPlane /> Request
+                  </button>
                 </div>
               </div>
-              
-              <div className="flex gap-2 mt-4">
-                <button className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded-lg text-sm font-medium transition">
-                  Message
-                </button>
-                <button className="flex-1 bg-[#f8fafc] hover:bg-gray-100 border border-gray-200 text-gray-800 py-2 rounded-lg text-sm font-medium transition">
-                  Compare
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        <div className="flex justify-center mt-6">
-          <button className="bg-white border border-gray-200 text-gray-700 px-6 py-2 rounded-full text-sm font-medium shadow-sm hover:shadow-md transition">
-            Load More Friends
-          </button>
+            ))}
+          </div>
         </div>
       </div>
     </CommunityLayout>

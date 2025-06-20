@@ -37,8 +37,13 @@ import TutorialDetails from './pages/Support/TutorialDetails';
 import CommunityDashboard from './pages/Community/CommunityDashboard';
 import FriendsList from './pages/Community/FriendsList';
 import CommunityDetail from './pages/Community/CommunityDetail';
+import CommunityList from './pages/Community/CommunityList';
+import ChallengeDetail from './pages/Community/ChallengeDetail';
 import ChallengesPage from './pages/Community/ChallengesPage';
 import CommunityMemberPage from './pages/Community/CommunityMemberPage';
+import CommunityCreate from './pages/Community/CommunityCreate';
+import ChallengeCreate from './pages/Community/ChallengeCreate';
+import CommunityGameRoom from './pages/Community/CommunityGameRoom';
 
 // The Achievements Page Routes
 import AchievementsPage from './pages/Achievements/AchievementsPage';
@@ -57,7 +62,7 @@ function App() {
           {/* Routes for the home page */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/transactions" element={<TransactionPage />} />
-            
+
           {/* Routes for the learn page */}
           <Route path="/learn" element={<LearningPage />} />
 
@@ -73,16 +78,21 @@ function App() {
 
           {/* Routes for the Community pages */}
           <Route path="/community" element={<CommunityDashboard />} />
+          <Route path="/community/list" element={<CommunityList />} />
           <Route path="/community/friends" element={<FriendsList />} />
           <Route path="/community/details/:communityId" element={<CommunityDetail />} />
           <Route path="/community/challenges" element={<ChallengesPage />} />
           <Route path="/community/member/:username" element={<CommunityMemberPage />} />
+          <Route path="/community/challenges/:id" element={<ChallengeDetail />} />
+          <Route path="/community/create" element={<CommunityCreate />} />
+          <Route path="/community/challenges/create" element={<ChallengeCreate />} />
+          <Route path="/community/game" element={<CommunityGameRoom />} />
 
           {/* Routes for the Accounts pages */}
           <Route path="/transactions" element={<TransactionPage />} />
-          <Route path="/insights" element={<AccountInsights/>}/>
-          <Route path="/budget" element={<AccountBudget/>}/>
-          <Route path="/import" element={<AccountsImport/>}/>
+          <Route path="/insights" element={<AccountInsights />} />
+          <Route path="/budget" element={<AccountBudget />} />
+          <Route path="/import" element={<AccountsImport />} />
 
           {/* Routes for the goals page */}
           <Route path="/goals" element={<GoalsPage />} />
