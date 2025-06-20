@@ -6,6 +6,8 @@ import goal3 from '../../assets/Images/banners/pixelOffice1.gif';
 import GoalsViewLayout from './GoalsViewLayout';
 
 const GoalCreatePage = () => {
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const [form, setForm] = useState({
     name: '',
     amount: '',
@@ -86,6 +88,13 @@ const handleSubmit = async (e) => {
     setForm((prev) => ({ ...prev, image: img }));
   };
 
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('Submitted goal:', form);
+    setShowConfirm(false); // close modal
+  };
+
   return (
     <GoalsViewLayout>
       <form onSubmit={handleSubmit} className="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow space-y-6">
@@ -129,6 +138,7 @@ const handleSubmit = async (e) => {
                 name="startDate"
                 value={form.startDate}
                 onChange={handleChange}
+                min={new Date().toISOString().split('T')[0]}
                 className="rounded-xl px-4 py-2 border shadow w-full"
               />
             </div>
@@ -139,6 +149,7 @@ const handleSubmit = async (e) => {
                 name="endDate"
                 value={form.endDate}
                 onChange={handleChange}
+                min={new Date().toISOString().split('T')[0]}
                 className="rounded-xl px-4 py-2 border shadow w-full"
               />
             </div>
@@ -207,9 +218,8 @@ const handleSubmit = async (e) => {
                   src={img}
                   alt={`Goal option ${i}`}
                   onClick={() => handleImageSelect(img)}
-                  className={`w-36 h-20 rounded-xl cursor-pointer object-cover border-2 ${
-                    form.image === img ? 'border-green-400' : 'border-transparent'
-                  }`}
+                  className={`w-36 h-20 rounded-xl cursor-pointer object-cover border-2 ${form.image === img ? 'border-green-400' : 'border-transparent'
+                    }`}
                 />
                 <span className="text-xs mt-1 text-gray-500">
                   {i === 0 ? 'Apartment' : i === 1 ? 'House' : 'Office'}
@@ -222,13 +232,38 @@ const handleSubmit = async (e) => {
         {/* Submit Button */}
         <div className="pt-4 text-right">
           <button
-            type="submit"
-            className="px-8 py-3 bg-gradient-to-r from-green-400 to-lime-500 text-white rounded-full shadow-lg hover:from-green-500 hover:to-lime-600 transition-all font-medium"
+            type="button"
+            onClick={() => setShowConfirm(true)}
+            className="px-8 py-3 bg-gradient-to-r from-[#B4CB98] to-[#AAD977] text-white rounded-full shadow-lg hover:from-[#AAD977] hover:to-[#B4CB98] transition-all font-medium"
           >
             Create Goal
           </button>
+
         </div>
       </form>
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white p-6 rounded-2xl shadow-lg w-[90%] max-w-md text-center space-y-4">
+            <h2 className="text-xl font-semibold text-gray-800">Confirm Goal Creation</h2>
+            <p className="text-sm text-gray-600">Are you sure you want to create this goal?</p>
+            <div className="flex justify-center gap-4 pt-2">
+              <button
+                onClick={handleSubmit}
+                className="px-5 py-2 bg-[#AAD977] text-white rounded-full hover:bg-[#B4CB98]"
+              >
+                Yes, Create
+              </button>
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="px-5 py-2 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </GoalsViewLayout>
   );
 };
