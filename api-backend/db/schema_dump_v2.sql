@@ -618,7 +618,7 @@ CREATE TABLE achievements (
     achievement_title VARCHAR(100) NOT NULL,
     achievement_description TEXT NOT NULL,
     achievement_type VARCHAR(50) NOT NULL CHECK (
-        achievement_type IN ('goal', 'quiz', 'challenge', 'transaction', 'milestone', 'misc')
+        achievement_type IN ('goal', 'quiz', 'challenge', 'transaction', 'milestone', 'tutorial', 'misc')
     ),
     points_awarded INT NOT NULL CHECK (points_awarded >= 0),
     trigger_condition_json JSONB NOT NULL,
