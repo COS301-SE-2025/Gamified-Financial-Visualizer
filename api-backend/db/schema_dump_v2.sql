@@ -91,7 +91,7 @@ CREATE TABLE accounts (
     account_name VARCHAR(100) NOT NULL DEFAULT 'My Account',
     account_type VARCHAR(50) NOT NULL CHECK (
         account_type IN (
-            'current', 'cheque', 'savings', 'credit', 'fixed deposit',
+            'current', 'cheque', 'savings', 'investment','credit', 'fixed deposit',
             'business', 'transmission', 'tax-free savings', 'trust', 
             'corporate trading', 'crypto', 'forex'
         )
