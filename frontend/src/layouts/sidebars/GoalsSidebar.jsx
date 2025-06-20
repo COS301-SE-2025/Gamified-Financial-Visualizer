@@ -119,6 +119,7 @@ const GoalsSidebar = () => {
               <div key={i} className="relative bg-white rounded-xl shadow-md p-3 flex items-center justify-between">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: `${color}20` }}>
                   <div className="text-white" style={{ color }}>{icon}</div>
+
                 </div>
                 <div className="text-right">
                   <p className="text-lg font-bold text-gray-900">{value}</p>

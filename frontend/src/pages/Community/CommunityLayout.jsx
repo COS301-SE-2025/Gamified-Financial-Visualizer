@@ -9,7 +9,7 @@ const CommunityLayout = ({ children }) => {
     <div className="flex bg-[#F7F9FB] h-screen overflow-hidden">
       
       {/* Left Sidebar */}
-      <div className="w-1/4 p-4">
+      <div className="w-1/4 pl-6 pt-6 pb-6">
         <CommunitySidebar />
       </div>
 

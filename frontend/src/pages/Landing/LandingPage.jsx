@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button } from '../../components/ui/Button';
-import { motion, AnimatePresence } from "framer-motion";
-import { FaTrophy, FaUserFriends, FaChartLine, FaRocket, FaCoins, FaShieldAlt, FaArrowRight, FaCrown, FaGem, FaMedal, FaLightbulb } from "react-icons/fa";
+import { motion} from "framer-motion";
+import { FaTrophy, FaUserFriends, FaChartLine, FaRocket, FaCoins, FaShieldAlt, FaArrowRight, FaMedal} from "react-icons/fa";
 import { SiReact, SiTailwindcss, SiPostgresql, SiPython, SiNodedotjs, SiUnity, SiOpenai } from "react-icons/si";
 
 // Image imports
@@ -11,132 +11,115 @@ import MphoImg from '../../assets/Team Profiles/Mpho.png';
 import NobuhleImg from '../../assets/Team Profiles/Nobuhle.png';
 import AundreaImg from '../../assets/Team Profiles/Aundrea.png';
 
+//Testimonial imports
+import avatar1 from '../../assets/Images/avatars/crossiontAvatar.jpeg';
+import avatar2 from '../../assets/Images/avatars/butterflyAvatar.jpeg';
+import avatar3 from '../../assets/Images/avatars/lilyAvatar.jpeg';
+
 // Banner header images 
 import heroGif from '../../assets/Images/banners/pixelOffice.gif';
-import journeyGif from '../../assets/Images/banners/pixelOffice2.gif';
-import coinImg from '../../assets/Images/badges/CoinStack.png';
-import xpImg from '../../assets/Images/badges/awardIcon.png';
-import gemImg from '../../assets/Images/Logo.png'; // adjust path if necessary
-import achievementImg from '../../assets/Images/badges/moneyBagIcon.png';
 
-const FloatingCoins = () => {
-    return (
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            {[...Array(15)].map((_, i) => (
-                <motion.div
-                    key={i}
-                    className="absolute w-8 h-8"
-                    initial={{
-                        x: Math.random() * window.innerWidth,
-                        y: -50,
-                        opacity: 0,
-                        rotate: 0
-                    }}
-                    animate={{
-                        y: window.innerHeight + 50,
-                        x: Math.random() * 200 - 100,
-                        opacity: [0, 1, 0],
-                        rotate: 360
-                    }}
-                    transition={{
-                        duration: 5 + Math.random() * 5,
-                        delay: Math.random() * 3,
-                        repeat: Infinity,
-                        ease: "linear"
-                    }}
-                >
-                    <img src={coinImg} alt="Floating coin" className="w-full h-full" />
-                </motion.div>
-            ))}
-        </div>
-    );
-};
+
+import xpImg from '../../assets/Images/badges/awardIcon.png';
+import gemImg from '../../assets/Images/Logo.png';
+;
 
 const AchievementBadge = ({ title, description, icon, color }) => (
     <motion.div
-        className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all flex items-start gap-4"
-        whileHover={{ y: -5 }}
+        className="bg-white/90 backdrop-blur-sm p-4 rounded-lg border-2 border-gray-200/50 shadow-lg hover:shadow-xl transition-all flex flex-col items-center gap-3 text-center"
+        whileHover={{ y: -5, scale: 1.03 }}
     >
-        <div className={`w-12 h-12 rounded-full ${color} flex items-center justify-center text-white text-xl`}>
+        <div className={`w-16 h-16 rounded-full ${color} flex items-center justify-center text-white text-2xl shadow-md`}>
             {icon}
         </div>
         <div>
-            <h4 className="font-bold text-gray-800">{title}</h4>
-            <p className="text-sm text-gray-600">{description}</p>
+            <h4 className="font-bold text-gray-800 text-lg">{title}</h4>
+            <p className="text-sm text-gray-600 mt-1">{description}</p>
+        </div>
+        <div className="absolute -top-2 -right-2 text-white bg-[#FFD18C] text-xs font-bold px-2 py-1 rounded-full shadow">
+            NEW!
         </div>
     </motion.div>
+);
+
+const SectionHeader = ({ title, subtitle, highlight }) => (
+    <div className="text-center mb-16">
+        <h3 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            {title} <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#4B6343] to-[#AAD977]">{highlight}</span>
+        </h3>
+        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            {subtitle}
+        </p>
+    </div>
 );
 
 export default function LandingPage() {
     const [activeTestimonial, setActiveTestimonial] = useState(0);
 
-    // team names and details 
     const team = [
         {
-            name: 'Malaika Yohali',
-            role: 'Frontend Developer',
+            name: 'Yohali Malaika Kamangu',
+            role: 'Data Engineer, Project Manager',
             image: YohaliImg,
-            github: 'https://github.com/malaika',
-            linkedin: 'https://linkedin.com/in/malaika',
+            github: 'https://github.com/YourfavCompSciGirlie',
+            linkedin: 'https://www.linkedin.com/in/ymkamangu/',
         },
         {
-            name: 'Lebogang Lebo',
-            role: 'Backend Developer',
+            name: 'Lebogang Masenya',
+            role: 'Services Engineer, Systems Architect',
             image: LebogangImg,
-            github: 'https://github.com/lebo',
-            linkedin: 'https://linkedin.com/in/lebo',
+            github: 'https://github.com/B-WayneZA',
+            linkedin: 'https://www.linkedin.com/in/lebogang-masenya/',
         },
         {
-            name: 'Mpho Mthembu',
-            role: 'UI/UX Designer',
+            name: 'Mpho Siminya',
+            role: 'UX/UI Designer, UI Engineer',
             image: MphoImg,
-            github: 'https://github.com/mpho',
-            linkedin: 'https://linkedin.com/in/mpho',
+            github: 'https://github.com/MphoSiminya',
+            linkedin: 'https://www.linkedin.com/in/mpho-siminya/',
         },
         {
-            name: 'Nobuhle Nkosi',
-            role: 'QA Engineer',
+            name: 'Nobuhle Mtshali',
+            role: 'UI Engineer, DevOps',
             image: NobuhleImg,
-            github: 'https://github.com/nobuhle',
-            linkedin: 'https://linkedin.com/in/nobuhle',
+            github: 'https://github.com/ReituTheCompSciGirlie',
+            linkedin: 'https://www.linkedin.com/in/nobuhle-reitumetse-mtshali/',
         },
         {
-            name: 'Aundrea Smith',
-            role: 'Project Manager',
+            name: 'Aundrea Ncube',
+            role: 'Integration Engineer, Testing Engineer',
             image: AundreaImg,
-            github: 'https://github.com/aundrea',
-            linkedin: 'https://linkedin.com/in/aundrea',
+            github: 'https://github.com/AundreaNcube',
+            linkedin: 'http://www.linkedin.com/in/aundrea-ncube-1484a9356',
         },
     ];
 
     const testimonials = [
         {
-            name: "Sarah K.",
+            name: "yummy",
             role: "Financial Beginner",
             quote: "I went from avoiding my finances to checking them daily thanks to the game elements!",
-            avatar: "https://randomuser.me/api/portraits/women/44.jpg"
+            avatar: avatar1
         },
         {
-            name: "Michael T.",
+            name: "mike_t",
             role: "Small Business Owner",
             quote: "The goal quests helped me finally organize my business finances in a way that stuck.",
-            avatar: "https://randomuser.me/api/portraits/men/32.jpg"
+            avatar: avatar2
         },
         {
-            name: "Priya M.",
+            name: "lily_luna",
             role: "College Student",
             quote: "Earning badges for saving money made budgeting actually fun for the first time.",
-            avatar: "https://randomuser.me/api/portraits/women/63.jpg"
+            avatar: avatar3
         }
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white text-gray-800 font-sans">
-            {/* Floating XP and coins */}
-            <FloatingCoins />
+        <div className={`min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 text-gray-800 font-sans overflow-x-hidden`}>
 
-            {/* Header */}
-            <header className="p-6 flex justify-between items-center bg-white/80 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-200 shadow-sm">
+            {/* Header with game UI styling */}
+            <header className="p-4 flex justify-between items-center bg-white sticky top-0 z-50 border-b border-gray-200 shadow-sm">
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -147,52 +130,63 @@ export default function LandingPage() {
                         <img
                             src={gemImg}
                             alt="Gem Icon"
-                            className="w-20 h-20 animate-pulse"
+                            className="w-20 h-20"
                         />
-
                         <div className="absolute -inset-2 rounded-full border-2 border-indigo-200 animate-ping opacity-0"></div>
                     </div>
                     <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#5c7e51] to-[#88BC46]">
                         Gamified Finance
                     </h1>
                 </motion.div>
-                <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                >
-                    <Button
-                        className="bg-gradient-to-r from-[#98C988] to-[#4B6343] hover:from-[#4B6343] hover:to-[#98C988] text-white px-6 py-2 font-medium shadow-md hover:shadow-lg transition-all group"
-                        onClick={() => window.location.href = '/login'}
+                <div className="flex items-center gap-4">
+                    <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                     >
-                        <span className="flex items-center gap-2">
-                            Start Playing <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
-                        </span>
-                    </Button>
-                </motion.div>
+                        <Button
+                            className="bg-gradient-to-r from-[#98C988] to-[#4B6343] hover:from-[#4B6343] hover:to-[#98C988] text-white px-6 py-2 font-medium shadow-md hover:shadow-lg transition-all group"
+                            onClick={() => window.location.href = '/login'}
+                        >
+                            <span className="flex items-center gap-2">
+                                Continue Playing <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+                            </span>
+                        </Button>
+                    </motion.div>
+                </div>
             </header>
 
-            {/* Hero Section */}
-            <section className="relative h-screen flex items-center justify-center overflow-hidden">
-                <div className="absolute inset-0 bg-white/90 z-0"></div>
-                <img src={heroGif} alt="Finance Quest" className="absolute inset-0 w-full h-full object-cover z-0 opacity-50" />
+            {/* Hero Section with game-like UI */}
+            <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden py-24">
+                <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/10 to-emerald-600/10 z-0"></div>
+                <img src={heroGif} alt="Finance Quest" className="absolute inset-0 w-full h-full object-cover z-0 opacity-20" />
 
                 <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8 }}
+                        className="inline-block mb-6 bg-[#AAD977] text-[#4B6343] px-4 py-1 rounded-full text-sm font-semibold"
+                    >
+                        PLAY TO EARN • LEVEL UP YOUR FINANCES
+                    </motion.div>
+
                     <motion.h2
-                        className="text-5xl md:text-7xl font-extrabold mb-6 text-gray-900"
+                        className="text-5xl md:text-7xl font-extrabold mb-6 text-gray-900 leading-tight"
                         initial={{ opacity: 0, y: 50 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8 }}
                     >
-                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#4B6343] to-[#98C988]">Level Up</span> Your Financial Game
+                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#4B6343] to-[#AAD977]">Turn Finance</span><br />
+                        Into an Adventure
                     </motion.h2>
 
                     <motion.p
-                        className="text-xl md:text-2xl text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed"
+                        className="text-xl md:text-2xl text-gray-700 mb-10 max-w-3xl mx-auto leading-relaxed"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.3, duration: 0.8 }}
                     >
-                        Transform boring money management into an exciting RPG adventure. Earn XP, unlock achievements, and conquer your financial goals!
+                        Earn XP, collect rare badges, and complete quests as you master your money management skills.
                     </motion.p>
 
                     <motion.div
@@ -202,7 +196,7 @@ export default function LandingPage() {
                         className="flex flex-col sm:flex-row justify-center gap-4"
                     >
                         <Button
-                            className="bg-gradient-to-r from-[#4B6343] to-[#98C988] hover:from-[#4B6343] hover:to-[#98C988] text-white px-8 py-4 text-lg font-bold shadow-lg hover:shadow-xl transition-all group"
+                            className="bg-gradient-to-r from-[#4B6343] to-[#AAD977] hover:from-[#4B6343] hover:to-[#AAD977] text-white px-8 py-4 text-lg font-bold shadow-lg hover:shadow-xl transition-all group"
                             onClick={() => window.location.href = '/login'}
                         >
                             <span className="flex items-center gap-2">
@@ -211,71 +205,51 @@ export default function LandingPage() {
                         </Button>
                         <Button
                             variant="outline"
-                            className="border-[#4B6343] text-[#4B6343] hover:bg-[#98C988] px-8 py-4 text-lg font-medium shadow-sm hover:shadow-md transition-all"
+                            className="border-lime-900 text-lime-700 hover:bg-[#4B6343] hover:text-white px-8 py-4 text-lg font-medium shadow-sm hover:shadow-md transition-all"
                             onClick={() => window.location.href = '/features'}
                         >
                             <span className="flex items-center gap-2">
-                                See How It Works
+                                How It Works
                             </span>
                         </Button>
                     </motion.div>
-
-                    <div className="mt-16 flex flex-wrap justify-center gap-4">
-                        <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-indigo-100 shadow-sm">
-                            <img src={xpImg} alt="XP" className="w-6 h-6" />
-                            <span className="font-medium text-gray-700">+100 XP Signup Bonus</span>
-                        </div>
-                        <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-indigo-100 shadow-sm">
-                            <FaMedal className="text-yellow-500" />
-                            <span className="font-medium text-gray-700">Exclusive Starter Badge</span>
-                        </div>
-                        <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-indigo-100 shadow-sm">
-                            <FaLightbulb className="text-[#4B6343]" />
-                            <span className="font-medium text-gray-700">No Credit Card Needed</span>
-                        </div>
-                    </div>
                 </div>
             </section>
 
-            {/* Stats Bar */}
-            <section className="py-8 bg-gradient-to-r from-[#4B6343] to-[#98C988] text-white">
+            {/* Stats Bar with game UI styling */}
+            <section className="py-7 bg-gradient-to-r from-[#4B6343] to-[#AAD977] text-white shadow-lg">
                 <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 px-6">
-                    <div className="text-center">
-                        <div className="text-3xl font-bold">10K+</div>
-                        <div className="text-sm opacity-90">Active Players</div>
-                    </div>
-                    <div className="text-center">
-                        <div className="text-3xl font-bold">500K+</div>
-                        <div className="text-sm opacity-90">XP Earned Daily</div>
-                    </div>
-                    <div className="text-center">
-                        <div className="text-3xl font-bold">120+</div>
-                        <div className="text-sm opacity-90">Unique Badges</div>
-                    </div>
-                    <div className="text-center">
-                        <div className="text-3xl font-bold">$5M+</div>
-                        <div className="text-sm opacity-90">Collectively Saved</div>
-                    </div>
+                    {[
+                        { value: "100+", label: "Active Players", icon: <FaUserFriends /> },
+                        { value: "500+", label: "XP Earned Daily", icon: <FaChartLine /> },
+                        { value: "30+", label: "Unique Badges", icon: <FaTrophy /> },
+                        { value: "R100K+", label: "Collectively Saved", icon: <FaCoins /> }
+                    ].map((stat, i) => (
+                        <motion.div
+                            key={i}
+                            className="text-center p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20"
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.1 }}
+                            viewport={{ once: true }}
+                        >
+                            <div className="text-3xl font-bold flex items-center justify-center gap-2">
+                                {stat.icon} {stat.value}
+                            </div>
+                            <div className="text-sm opacity-90 mt-1">{stat.label}</div>
+                        </motion.div>
+                    ))}
                 </div>
             </section>
 
-            {/* Core Features */}
+            {/* Core Features with game card styling */}
             <section className="py-20 px-6 bg-white">
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    transition={{ duration: 0.8 }}
-                    viewport={{ once: true }}
-                    className="max-w-7xl mx-auto"
-                >
-                    <div className="text-center mb-16">
-                        <h3 className="text-4xl font-bold text-gray-900 mb-4">
-                            Financial Growth <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#4B6343] to-[#98C988]">Feels Like Play</span>
-                        </h3>
-                        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                            We've transformed every aspect of personal finance into rewarding game mechanics
-                        </p>
-                    </div>
+                <div className="max-w-7xl mx-auto">
+                    <SectionHeader
+                        title="Financial Growth"
+                        highlight="Feels Like Play"
+                        subtitle="We've transformed every aspect of personal finance into rewarding game mechanics"
+                    />
 
                     <div className="grid md:grid-cols-3 gap-8">
                         {[
@@ -283,48 +257,48 @@ export default function LandingPage() {
                                 icon: <FaChartLine className="text-4xl" />,
                                 title: "Goal Quests",
                                 desc: "Transform financial goals into exciting quests with XP rewards",
-                                color: "bg-gradient-to-br from-indigo-500 to-purple-500",
+                                color: "bg-gradient-to-br from-[#3AADFA] to-[#B1E1FF]",
                                 features: ["Visual progress tracking", "Milestone rewards", "Custom challenges"]
                             },
                             {
                                 icon: <FaTrophy className="text-4xl" />,
                                 title: "Achievements",
                                 desc: "Unlock badges for financial milestones and good habits",
-                                color: "bg-gradient-to-br from-amber-400 to-amber-500",
+                                color: "bg-gradient-to-br from-[#FFBF1A] to-[#FFD18C]",
                                 features: ["100+ unique badges", "Special edition collectibles", "Shareable accomplishments"]
                             },
                             {
                                 icon: <FaUserFriends className="text-4xl" />,
                                 title: "Social Features",
                                 desc: "Join forces with friends and compete on leaderboards",
-                                color: "bg-gradient-to-br from-emerald-400 to-emerald-500",
+                                color: "bg-gradient-to-br from-[#AAD977] to-lime-500",
                                 features: ["Private groups", "Friendly challenges", "Progress sharing"]
                             },
                             {
                                 icon: <FaCoins className="text-4xl" />,
                                 title: "Reward Economy",
                                 desc: "Earn coins for completing financial tasks",
-                                color: "bg-gradient-to-br from-yellow-400 to-yellow-500",
+                                color: "bg-gradient-to-br from-[#FF4C28] to-[#FF907A]",
                                 features: ["Redeem for perks", "Avatar customization", "Exclusive content"]
                             },
                             {
                                 icon: <FaShieldAlt className="text-4xl" />,
                                 title: "Security",
                                 desc: "Bank-level protection for your financial data",
-                                color: "bg-gradient-to-br from-blue-500 to-blue-600",
+                                color: "bg-gradient-to-br from-indigo-500 to-purple-500",
                                 features: ["Encrypted connections", "Read-only access", "Privacy controls"]
                             },
                             {
                                 icon: <FaRocket className="text-4xl" />,
                                 title: "Quick Start",
                                 desc: "Get set up in minutes with our interactive tutorial",
-                                color: "bg-gradient-to-br from-pink-500 to-pink-600",
+                                color: "bg-gradient-to-br from-pink-400 to-pink-500",
                                 features: ["Instant XP rewards", "Beginner quests", "Personalized onboarding"]
                             }
                         ].map((feature, i) => (
                             <motion.div
                                 key={i}
-                                className="bg-white rounded-xl border border-gray-200 hover:border-indigo-200 transition-all overflow-hidden shadow-sm hover:shadow-md"
+                                className="bg-white rounded-xl border-2 border-gray-200 hover:border-white transition-all overflow-hidden shadow-lg hover:shadow-xl relative"
                                 initial={{ opacity: 0, y: 50 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: i * 0.1 }}
@@ -341,7 +315,7 @@ export default function LandingPage() {
                                     <ul className="space-y-2">
                                         {feature.features.map((item, j) => (
                                             <li key={j} className="flex items-center gap-2 text-gray-700">
-                                                <div className="w-2 h-2 rounded-full bg-[#4B6343]"></div>
+                                                <div className="w-2 h-2 rounded-full bg-[#AAD977]"></div>
                                                 {item}
                                             </li>
                                         ))}
@@ -350,51 +324,48 @@ export default function LandingPage() {
                             </motion.div>
                         ))}
                     </div>
-                </motion.div>
+                </div>
             </section>
 
             {/* Achievement Showcase */}
             <section className="py-20 px-6 bg-gray-50">
                 <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-16">
-                        <h3 className="text-4xl font-bold text-gray-900 mb-4">
-                            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#4B6343] to-[#98C988]">Earn Prestige</span> With Achievements
-                        </h3>
-                        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                            Collect badges that showcase your financial accomplishments
-                        </p>
-                    </div>
+                    <SectionHeader
+                        title="Earn Prestige With"
+                        highlight="Achievements"
+                        subtitle="Collect badges that showcase your financial accomplishments"
+                    />
 
                     <div className="grid md:grid-cols-3 gap-6">
                         <AchievementBadge
                             title="Savings Streak"
                             description="Save money for 7 days in a row"
                             icon={<FaCoins />}
-                            color="bg-gradient-to-br from-yellow-400 to-yellow-500"
+                            color="bg-gradient-to-br from-[#FFBF1A] to-[#FFD18C]"
                         />
                         <AchievementBadge
                             title="Budget Master"
                             description="Stay under budget for a full month"
                             icon={<FaChartLine />}
-                            color="bg-gradient-to-br from-emerald-400 to-emerald-500"
+                            color="bg-gradient-to-br from-[#AAD977] to-lime-500"
                         />
                         <AchievementBadge
                             title="Debt Slayer"
                             description="Pay off a significant debt"
                             icon={<FaShieldAlt />}
-                            color="bg-gradient-to-br from-red-400 to-red-500"
+                            color="bg-gradient-to-br from-[#FF4C28] to-[#FF907A]"
                         />
                         <AchievementBadge
                             title="Investment Novice"
                             description="Make your first investment"
                             icon={<FaTrophy />}
-                            color="bg-gradient-to-br from-blue-400 to-blue-500"
+                            color="bg-gradient-to-br from-[#3AADFA] to-[#B1E1FF]"
                         />
                         <AchievementBadge
                             title="Community Hero"
                             description="Help 5 friends with their finances"
                             icon={<FaUserFriends />}
-                            color="bg-gradient-to-br from-purple-400 to-purple-500"
+                            color="bg-gradient-to-br from-indigo-500 to-purple-500"
                         />
                         <AchievementBadge
                             title="Early Bird"
@@ -407,11 +378,11 @@ export default function LandingPage() {
                     <div className="text-center mt-12">
                         <Button
                             variant="outline"
-                            className="border-[#4B6343] text-[#4B6343] hover:bg-[#98C988] px-8 py-3 font-medium"
+                            className="border-[#4B6343] text-[#4B6343] hover:bg-[#88BC46] hover:text-white px-8 py-3 font-medium"
                             onClick={() => window.location.href = '/achievements'}
                         >
                             View All 120+ Achievements
-                        </Button>
+                        </Button> 
                     </div>
                 </div>
             </section>
@@ -419,14 +390,11 @@ export default function LandingPage() {
             {/* Financial Quest Roadmap */}
             <section className="py-20 px-6 bg-white">
                 <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-16">
-                        <h3 className="text-4xl font-bold text-gray-900 mb-4">
-                            Your <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#4B6343] to-[#98C988]">Financial Quest</span> Roadmap
-                        </h3>
-                        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                            Journey through our gamified financial system with clear milestones
-                        </p>
-                    </div>
+                    <SectionHeader
+                        title="Your Financial"
+                        highlight="Quest Roadmap"
+                        subtitle="Journey through our gamified financial system with clear milestones"
+                    />
 
                     <div className="relative h-[400px]">
                         {/* Animated Path */}
@@ -440,7 +408,7 @@ export default function LandingPage() {
                         >
                             <motion.path
                                 fill="none"
-                                stroke="#98C988"
+                                stroke="#AAD977"
                                 strokeWidth="8"
                                 strokeLinecap="round"
                                 d="M0,200 Q360,50 720,200 T1440,200"
@@ -450,7 +418,7 @@ export default function LandingPage() {
                             />
                             <motion.path
                                 fill="none"
-                                stroke="#98C988"
+                                stroke="#AAD977"
                                 strokeWidth="4"
                                 strokeDasharray="20 20"
                                 d="M0,200 Q360,50 720,200 T1440,200"
@@ -474,7 +442,7 @@ export default function LandingPage() {
                                 title: "Set Goals",
                                 desc: "Choose financial quests",
                                 icon: <FaChartLine className="text-xl" />,
-                                color: "bg-gradient-to-br from-emerald-500 to-teal-500",
+                                color: "bg-gradient-to-br from-[#AAD977] to-lime-500",
                                 x: "25%",
                                 y: "50px"
                             },
@@ -482,7 +450,7 @@ export default function LandingPage() {
                                 title: "Earn XP",
                                 desc: "Complete money tasks",
                                 icon: <FaCoins className="text-xl" />,
-                                color: "bg-gradient-to-br from-amber-400 to-amber-500",
+                                color: "bg-gradient-to-br from-[#FFBF1A] to-[#FFD18C]",
                                 x: "45%",
                                 y: "180px"
                             },
@@ -498,7 +466,7 @@ export default function LandingPage() {
                                 title: "Join Guilds",
                                 desc: "Team up with friends",
                                 icon: <FaUserFriends className="text-xl" />,
-                                color: "bg-gradient-to-br from-blue-500 to-cyan-500",
+                                color: "bg-gradient-to-br from-[#3AADFA] to-[#B1E1FF]",
                                 x: "85%",
                                 y: "180px"
                             }
@@ -515,8 +483,8 @@ export default function LandingPage() {
                                 <div className={`w-14 h-14 rounded-full ${step.color} flex items-center justify-center text-white shadow-lg mb-3`}>
                                     {step.icon}
                                 </div>
-                                <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-lg text-center max-w-[200px]">
-                                    <h4 className="font-bold text-[#4B6343] mb-1">{step.title}</h4>
+                                <div className="bg-white border-2 border-gray-200 p-4 rounded-lg shadow-lg text-center max-w-[200px]">
+                                    <h4 className="font-bold text-emerald-600 mb-1">{step.title}</h4>
                                     <p className="text-sm text-gray-600">{step.desc}</p>
                                 </div>
                             </motion.div>
@@ -525,32 +493,49 @@ export default function LandingPage() {
                 </div>
             </section>
 
+            {/* Tech Stack */}
+             <section className="py-10 px-6 bg-gradient-to-tr from-[#FFFFFF] via-[#FFFFFF] to-[#ffffff]">
+                <h3 className="text-4xl font-bold text-[#83AB55] mb-10 text-center">Powered by Cutting Edge Tech</h3>
+                <div className="flex flex-wrap justify-center gap-10 text-6xl text-[#FF7256]">
+                    <SiReact title="React" />
+                    <SiTailwindcss title="Tailwind CSS" />
+                    <SiNodedotjs title="Node.js" />
+                    <SiPostgresql title="PostgreSQL" />
+                    <SiPython title="Python" />
+                    <SiUnity title="Unity (AR)" />
+                    <SiOpenai title="OpenAI / ML" />
+                </div>
+                <p className="mt-6 text-center text-[#9ca3af]">Engineered for speed, scale, and future-proof gamification</p>
+            </section>
+
             {/* Testimonials */}
-            <section className="py-20 px-6 bg-white">
+            <section className="py-20 px-6 bg-gray-50">
                 <div className="max-w-5xl mx-auto">
-                    <div className="text-center mb-16">
-                        <h3 className="text-4xl font-bold text-gray-900 mb-4">
-                            What <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#4B6343] to-[#98C988]">Players</span> Are Saying
-                        </h3>
-                        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                            Real people achieving real financial progress through gamification
-                        </p>
-                    </div>
+                    <SectionHeader
+                        title="What"
+                        highlight="Players Are Saying"
+                        subtitle="Real people achieving real financial progress through gamification"
+                    />
 
                     <div className="relative h-64">
                         {testimonials.map((testimonial, i) => (
                             <motion.div
                                 key={i}
-                                className={`absolute inset-0 bg-white p-8 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center text-center ${activeTestimonial === i ? 'z-10 opacity-100' : 'z-0 opacity-0'}`}
+                                className={`absolute inset-0 bg-white p-8 rounded-xl border-2 border-gray-200 shadow-lg flex flex-col items-center text-center ${activeTestimonial === i ? 'z-10 opacity-100' : 'z-0 opacity-0'}`}
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: activeTestimonial === i ? 1 : 0 }}
                                 transition={{ duration: 0.5 }}
                             >
-                                <img src={testimonial.avatar} alt={testimonial.name} className="w-16 h-16 rounded-full mb-4 object-cover border-4 border-indigo-100" />
+                                <div className="relative">
+                                    <img src={testimonial.avatar} alt={testimonial.name} className="w-20 h-20 rounded-full mb-4 object-cover border-4 border-lime-400" />
+                                    <div className="absolute -top-1 -right-1 bg-[#FFD18C] text-white text-xs font-bold px-2 py-1 rounded-full">
+                                        ★★★★★
+                                    </div>
+                                </div>
                                 <p className="text-lg text-gray-700 mb-4 italic">"{testimonial.quote}"</p>
                                 <div>
                                     <h4 className="font-bold text-gray-900">{testimonial.name}</h4>
-                                    <p className="text-sm text-[#4B6343]">{testimonial.role}</p>
+                                    <p className="text-sm text-[#AAD977]">{testimonial.role}</p>
                                 </div>
                             </motion.div>
                         ))}
@@ -561,7 +546,7 @@ export default function LandingPage() {
                             <button
                                 key={i}
                                 onClick={() => setActiveTestimonial(i)}
-                                className={`w-3 h-3 rounded-full ${activeTestimonial === i ? 'bg-[#4B6343]' : 'bg-gray-300'}`}
+                                className={`w-3 h-3 rounded-full transition-all ${activeTestimonial === i ? 'bg-[#AAD977] scale-125' : 'bg-gray-300'}`}
                                 aria-label={`View testimonial ${i + 1}`}
                             />
                         ))}
@@ -570,44 +555,42 @@ export default function LandingPage() {
             </section>
 
             {/* Team Section */}
-            <section className="py-20 px-6 bg-gray-50">
+            <section className="py-20 px-6 bg-white">
                 <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-16">
-                        <h3 className="text-4xl font-bold text-gray-900 mb-4">
-                            Meet the <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#4B6343] to-[#98C988]">Gamified Finance</span> Team
-                        </h3>
-                        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                            The passionate creators behind your financial adventure
-                        </p>
-                    </div>
+                    <SectionHeader
+                        title="Meet the"
+                        highlight="Gamified Finance Team"
+                        subtitle="The passionate creators behind your financial adventure"
+                    />
 
                     <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-8">
                         {team.map((member, i) => (
                             <motion.div
                                 key={i}
-                                className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all"
+                                className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all relative group"
                                 initial={{ opacity: 0, y: 50 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: i * 0.1 }}
                                 viewport={{ once: true }}
                                 whileHover={{ y: -5 }}
                             >
-                                <div className="h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
+                                <div className="h-48 bg-gray-100 flex items-center justify-center overflow-hidden relative">
                                     <img
                                         src={member.image}
                                         alt={member.name}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                                     />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
                                 </div>
                                 <div className="p-6 text-center">
                                     <h4 className="text-xl font-bold text-gray-800 mb-1">{member.name}</h4>
-                                    <p className="text-[#72af5e] text-sm mb-4">{member.role}</p>
+                                    <p className="text-[#88BC46] text-sm mb-4">{member.role}</p>
                                     <div className="flex justify-center gap-4">
                                         <a
                                             href={member.github}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="text-gray-500 hover:text-[#98C988] transition-colors"
+                                            className="text-gray-500 hover:text-lime-600 transition-colors"
                                             aria-label={`${member.name}'s GitHub`}
                                         >
                                             GitHub
@@ -616,7 +599,7 @@ export default function LandingPage() {
                                             href={member.linkedin}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="text-gray-500 hover:text-[#98C988] transition-colors"
+                                            className="text-gray-500 hover:text-lime-600 transition-colors"
                                             aria-label={`${member.name}'s LinkedIn`}
                                         >
                                             LinkedIn
@@ -630,18 +613,22 @@ export default function LandingPage() {
             </section>
 
             {/* Final CTA */}
-            <section className="py-32 px-6 bg-gradient-to-r from-[#4B6343] to-[#9cd987] text-white">
-                <div className="max-w-4xl mx-auto text-center">
+            <section className="py-32 px-6 bg-gradient-to-r from-[#4B6343] to-[#AAD977] text-white relative overflow-hidden">
+                <div className="absolute inset-0 opacity-10">
+                    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2IiBoZWlnaHQ9IjYiPgo8cmVjdCB3aWR0aD0iNiIgaGVpZ2h0PSI2IiBmaWxsPSIjZmZmIj48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDBMNiA2WiIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2U9IiNmZmYiPjwvcGF0aD4KPHBhdGggZD0iTTYgMEwwIDZaIiBzdHJva2Utd2lkdGg9IjEiIHN0cm9rZT0iI2ZmZiI+PC9wYXRoPgo8L3N2Zz4=')]"></div>
+                </div>
+
+                <div className="max-w-4xl mx-auto text-center relative z-10">
                     <h3 className="text-4xl font-bold mb-6">
                         Ready to Transform Your Financial Life?
                     </h3>
-                    <p className="text-xl text-[#c9e8be] mb-10 max-w-2xl mx-auto">
+                    <p className="text-xl text-white mb-10 max-w-2xl mx-auto">
                         Join thousands of players who've made finance fun and rewarding
                     </p>
 
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
                         <Button
-                            className="bg-white text-[#4B6343] hover:bg-[#98C988] px-8 py-4 text-lg font-bold shadow-lg hover:shadow-xl transition-all"
+                            className="bg-white text-lime-600 hover:bg-lime-100 px-8 py-4 text-lg font-bold shadow-lg hover:shadow-xl transition-all"
                             onClick={() => window.location.href = '/register'}
                         >
                             <span className="flex items-center gap-2">
@@ -660,11 +647,11 @@ export default function LandingPage() {
                     </div>
 
                     <div className="mt-8 flex flex-wrap justify-center gap-4">
-                        <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm">
-                            <img src={xpImg} alt="XP" className="w-5 h-5" />
+                        <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm border border-white/20">
+                            <FaMedal className="text-yellow-300" />
                             <span>+100 XP Signup Bonus</span>
                         </div>
-                        <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm">
+                        <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm border border-white/20">
                             <FaMedal className="text-yellow-300" />
                             <span>Exclusive Starter Badge</span>
                         </div>
@@ -680,20 +667,17 @@ export default function LandingPage() {
                             <img
                                 src={gemImg}
                                 alt="Gem Icon"
-                                className="w-10 h-10 animate-pulse"
+                                className="w-10 h-10"
                             />
-
-                            <h4 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#4B6343] to-[#98C988]">
+                            <h4 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#4B6343] to-[#AAD977]">
                                 Gamified Finance
                             </h4>
                         </div>
 
                         <div className="flex gap-6">
-                            <a href="/about" className="text-gray-600 hover:text-[#98C988]">About</a>
-                            <a href="/features" className="text-gray-600 hover:text-[#98C988]">Features</a>
-                            <a href="/pricing" className="text-gray-600 hover:text-[#98C988]">Pricing</a>
-                            <a href="/blog" className="text-gray-600 hover:text-[#98C988]">Blog</a>
-                            <a href="/contact" className="text-gray-600 hover:text-[#98C988]">Contact</a>
+                            <a href="/about" className="text-gray-600 hover:text-emerald-600 transition-colors">About</a>
+                            <a href="/features" className="text-gray-600 hover:text-emerald-600 transition-colors">Features</a>
+                            <a href="/contact" className="text-gray-600 hover:text-emerald-600 transition-colors">Contact</a>
                         </div>
                     </div>
 
@@ -702,19 +686,13 @@ export default function LandingPage() {
                             © {new Date().getFullYear()} Gamified Finance. All rights reserved.
                         </div>
                         <div className="flex gap-4">
-                            <a href="#" className="text-gray-400 hover:text-[#98C988]">
-                                <span className="sr-only">Twitter</span>
-                                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
-                                </svg>
-                            </a>
-                            <a href="#" className="text-gray-400 hover:text-[#98C988]">
+                            <a href="#" className="text-gray-400 hover:text-emerald-600 transition-colors">
                                 <span className="sr-only">GitHub</span>
                                 <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
                                 </svg>
                             </a>
-                            <a href="#" className="text-gray-400 hover:text-[#98C988]">
+                            <a href="#" className="text-gray-400 hover:text-emerald-600 transition-colors">
                                 <span className="sr-only">LinkedIn</span>
                                 <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
