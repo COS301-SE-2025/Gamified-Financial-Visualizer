@@ -1,10 +1,14 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+
+
 import { FaTrashAlt, FaUmbrellaBeach } from 'react-icons/fa';
 import GoalsViewLayout from '../../pages/Goals/GoalsViewLayout';
 import defaultImage from '../../assets/Images/banners/pixelStore.gif';
-
+import image from '../../assets/Images/banners/pixelStore.gif';
 const GoalsDetailPage = () => {
+
    const { goalId } = useParams();
   const [goal, setGoal] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -77,9 +81,19 @@ const GoalsDetailPage = () => {
     <GoalsViewLayout>
       <div className="flex gap-6 justify-center mt-6">
         <div className="w-full max-w-4xl bg-white p-6 rounded-2xl shadow-md">
+          {/* Back Button */}
+          <div className="max-w-4xl mx-auto mb-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="text-sm text-white hover:[#88BC46] flex items-center gap-1 border-[#AAD977] rounded-full border w-28 h-8 justify-center bg-[#AAD977] "
+            >
+              Back to Goals
+            </button>
+          </div>
+
           <div className="flex items-start gap-6">
-            {/* Goal Image - Using default image since banner_id isn't used in the example */}
-            <img src={defaultImage} alt="Goal" className="rounded-xl w-1/3 object-cover shadow" />
+            {/* Goal Image */}
+            <img src={image} alt="Goal" className="rounded-xl w-1/3 object-cover shadow" />
 
             {/* Goal Info */}
             <div className="flex-1 space-y-2">
