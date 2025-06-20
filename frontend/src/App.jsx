@@ -87,7 +87,7 @@ function App() {
           {/* Routes for the goals page */}
           <Route path="/goals" element={<GoalsPage />} />
           <Route path="/goals/create" element={<GoalCreatePage />} />
-          <Route path="/goals/details/:title" element={<GoalsDetailPage />} />
+          <Route path="/goals/details/:goalId" element={<GoalsDetailPage />} />
 
           {/* Routes for the profile page */}
           <Route path="/profile" element={<ProfilePage />} />
