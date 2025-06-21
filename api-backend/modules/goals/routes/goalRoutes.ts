@@ -37,7 +37,7 @@ router.post('/', async (req: Request, res: Response) => {
     custom_category_name
   } = req.body;
 
-  let resolvedCategoryId = category_id;
+  const resolvedCategoryId = category_id;
   let resolvedCustomCategoryId: number | undefined = undefined;
 
   try {
