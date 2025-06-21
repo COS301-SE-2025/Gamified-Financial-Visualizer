@@ -10,7 +10,6 @@ const mockModules = {
       title: 'Introduction to Budgeting', 
       color: 'green', 
       content: 'A budget helps you track income vs expenses. It gives you control over your finances, reduces stress, and ensures you live within your means.',
-      video: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
     },
     { 
       id: 2, 
@@ -95,11 +94,36 @@ const mockModules = {
 };
 
 const colorMap = {
-  green: 'border-l-green-400 text-green-500 bg-green-50',
-  pink: 'border-l-pink-400 text-pink-500 bg-pink-50',
-  orange: 'border-l-orange-400 text-orange-500 bg-orange-50',
-  blue: 'border-l-blue-400 text-blue-500 bg-blue-50',
-  purple: 'border-l-purple-400 text-purple-500 bg-purple-50'
+  green: {
+    border: 'border-l-[#88BC46]',
+    text: 'text-[#88BC46]',
+    bg: 'bg-[#88BC46]',
+    ring: 'ring-[#88BC46]'
+  },
+  pink: {
+    border: 'border-l-[#EA746A]',
+    text: 'text-[#EA746A]',
+    bg: 'bg-[]',
+    ring: 'ring-[#EA746A]'
+  },
+  orange: {
+    border: 'border-l-[#FBBF1A]',
+    text: 'text-[#FBBF1A]',
+    bg: 'bg-[]',
+    ring: 'ring-[#FBBF1A]'
+  },
+  blue: {
+    border: 'border-l-[#5FBFFF]',
+    text: 'text-[#5FBFFF]',
+    bg: 'bg-[]',
+    ring: 'ring-[#5FBFFF]'
+  },
+  purple: {
+    border: 'border-l-[#a78bfa]',
+    text: 'text-[#8b5cf6]',
+    bg: 'bg-[]',
+    ring: 'ring-[#8b5cf6]'
+  }
 };
 
 const ModuleLessonsPage = () => {
@@ -167,7 +191,7 @@ const ModuleLessonsPage = () => {
                           name={`question-${q.id}`}
                           checked={quizAnswers[q.id] === idx}
                           onChange={() => handleQuizAnswer(q.id, idx)}
-                          className="text-purple-500 focus:ring-purple-400"
+                          className="text-[#8b5cf6] focus:ring-[#8b5cf6]"
                         />
                         <span>{option}</span>
                       </label>
@@ -180,7 +204,7 @@ const ModuleLessonsPage = () => {
                 disabled={Object.keys(quizAnswers).length !== lesson.questions.length}
                 className={`mt-4 px-4 py-2 rounded-full font-medium ${
                   Object.keys(quizAnswers).length === lesson.questions.length
-                    ? 'bg-purple-500 text-white hover:bg-purple-600'
+                    ? 'bg-[#8b5cf6] text-white hover:bg-[#7c3aed]'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >
@@ -189,7 +213,7 @@ const ModuleLessonsPage = () => {
             </div>
           ) : (
             <div className="bg-white p-6 rounded-lg shadow-sm text-center">
-              <div className="text-4xl font-bold text-purple-500 mb-2">
+              <div className="text-4xl font-bold text-[#8b5cf6] mb-2">
                 {quizScore}/{lesson.questions.length}
               </div>
               <div className="text-lg font-medium mb-4">
@@ -199,7 +223,7 @@ const ModuleLessonsPage = () => {
               {quizScore !== lesson.questions.length && (
                 <button
                   onClick={resetQuiz}
-                  className="mt-2 px-4 py-2 bg-purple-100 text-purple-600 rounded-full font-medium hover:bg-purple-200"
+                  className="mt-2 px-4 py-2 bg-[#f5f3ff] text-[#8b5cf6] rounded-full font-medium hover:bg-[#ede9fe]"
                 >
                   Try Again
                 </button>
@@ -240,9 +264,9 @@ const ModuleLessonsPage = () => {
         )}
         
         {lesson.example && (
-          <div className="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-r">
-            <h4 className="font-medium text-yellow-700">Example</h4>
-            <p className="text-yellow-800">{lesson.example}</p>
+          <div className="mt-4 p-4 bg-[#fef9c3] border-l-4 border-[#facc15] rounded-r">
+            <h4 className="font-medium text-[#b45309]">Example</h4>
+            <p className="text-[#b45309]">{lesson.example}</p>
           </div>
         )}
         
@@ -278,8 +302,8 @@ const ModuleLessonsPage = () => {
       {showCompletion && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl p-6 max-w-md w-full text-center animate-bounce-in">
-            <div className="bg-yellow-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FaTrophy className="text-yellow-500 text-3xl" />
+            <div className="bg-[#fef9c3] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FaTrophy className="text-[#eab308] text-3xl" />
             </div>
             <h3 className="text-2xl font-bold text-gray-800 mb-2">Congratulations!</h3>
             <p className="text-gray-600 mb-4">
@@ -288,7 +312,7 @@ const ModuleLessonsPage = () => {
             <div className="flex justify-center space-x-3">
               <button
                 onClick={() => setShowCompletion(false)}
-                className="px-4 py-2 bg-purple-500 text-white rounded-full hover:bg-purple-600"
+                className="px-4 py-2 bg-[#8b5cf6] text-white rounded-full hover:bg-[#7c3aed]"
               >
                 Continue Learning
               </button>
@@ -305,8 +329,8 @@ const ModuleLessonsPage = () => {
       
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-semibold text-sky-500 bg-sky-100 inline-block px-4 py-1 rounded-full mb-6">
-            {moduleId.charAt(0).toUpperCase() + moduleId.slice(1)} Module
+          <h2 className="text-lg font-semibold text-[#0ea5e9] bg-[#e0f2fe] inline-block px-4 py-1 rounded-full mb-6">
+            {moduleId.charAt(0).toUpperCase() + moduleId.slice(1)} Lessons
           </h2>
           <button 
             onClick={() => navigate(-1)} 
@@ -319,11 +343,10 @@ const ModuleLessonsPage = () => {
           </button>
         </div>
 
-        {/* Progress indicator */}
         <div className="flex items-center mb-6">
           <div className="w-48 bg-gray-200 rounded-full h-2.5 mr-2">
             <div 
-              className="bg-green-500 h-2.5 rounded-full" 
+              className="bg-[#22c55e] h-2.5 rounded-full" 
               style={{ width: `${calculateProgress()}%` }}
             ></div>
           </div>
@@ -336,8 +359,8 @@ const ModuleLessonsPage = () => {
           {lessons.map((lesson) => (
             <div
               key={lesson.id}
-              className={`bg-white shadow-md rounded-xl overflow-hidden border-l-4 ${colorMap[lesson.color]} transition-all duration-200 ${
-                expandedId === lesson.id ? 'ring-2 ring-opacity-50 ring-current' : ''
+              className={`bg-white shadow-md rounded-xl overflow-hidden border-l-4 ${colorMap[lesson.color].border} ${colorMap[lesson.color].bg} transition-all duration-200 ${
+                expandedId === lesson.id ? `ring-2 ring-opacity-50 ${colorMap[lesson.color].ring}` : ''
               }`}
             >
               <div
@@ -345,14 +368,16 @@ const ModuleLessonsPage = () => {
                 onClick={() => toggleExpand(lesson.id)}
               >
                 <div className="flex items-center">
-                  {/* Number badge - now shown for all lessons */}
-                  <div className={`w-8 h-8 rounded-full ${colorMap[lesson.color].split(' ')[1].replace('text-', 'bg-')} bg-opacity-20 flex items-center justify-center mr-3`}>
-                    <span className={`text-xs font-bold ${colorMap[lesson.color].split(' ')[1]}`}>
+                  <div 
+                    className={`w-8 h-8 rounded-full flex items-center justify-center mr-3`}
+                    style={{ backgroundColor: `${colorMap[lesson.color].bg.replace('bg-[', '').replace(']', '')}80` }}
+                  >
+                    <span className={`text-xs font-bold ${colorMap[lesson.color].text}`}>
                       {lesson.id}
                     </span>
                   </div>
                   <div>
-                    <h3 className={`font-semibold text-md ${colorMap[lesson.color].split(' ')[1]}`}>
+                    <h3 className={`font-semibold text-md ${colorMap[lesson.color].text}`}>
                       {lesson.title}
                     </h3>
                     <p className="text-xs text-gray-500">
@@ -362,7 +387,7 @@ const ModuleLessonsPage = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   {readLessons.includes(lesson.id) && !lesson.isQuiz && (
-                    <FaCheckCircle className="text-green-400" />
+                    <FaCheckCircle className="text-[#22c55e]" />
                   )}
                   {expandedId === lesson.id ? (
                     <FaChevronUp className="text-gray-400" />
