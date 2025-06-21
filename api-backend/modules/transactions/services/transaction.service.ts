@@ -26,7 +26,7 @@ export interface Transaction {
  */
 export async function createTransaction(txn: Transaction) {
   const {
-     account_id,
+    account_id,
     category_id,
     custom_category_id,
     transaction_amount,
@@ -44,15 +44,31 @@ export async function createTransaction(txn: Transaction) {
   try {
     await client.query('BEGIN');
 
+    const { rows } = await client.query(
+      `SELECT account_balance, user_id FROM accounts WHERE account_id = $1`,
+      [account_id]
+    );
+    const currentBalance = Number(rows[0]?.account_balance ?? 0);
+    const user_id = rows[0]?.user_id;
+
+    let balanceDelta = Math.abs(transaction_amount);
+    const deducting = ['expense', 'withdrawal', 'fee'].includes(transaction_type);
+    if (deducting) {
+      if (transaction_amount > currentBalance) {
+        throw new Error("Insufficient funds for this transaction.");
+      }
+      balanceDelta *= -1;
+    }
+
     const insertTxnSql = `
-      INSERT INTO transactions
-        (account_id, category_id, custom_category_id, transaction_amount, transaction_type,
-         transaction_name, transaction_date, is_recurring,
-         linked_goal_id, linked_challenge_id, budget_id, points_awarded)
+      INSERT INTO transactions (
+        account_id, category_id, custom_category_id, transaction_amount, transaction_type,
+        transaction_name, transaction_date, is_recurring,
+        linked_goal_id, linked_challenge_id, budget_id, points_awarded
+      )
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       RETURNING transaction_id;
     `;
-
     const txnRes = await client.query(insertTxnSql, [
       account_id,
       category_id || null,
@@ -67,37 +83,33 @@ export async function createTransaction(txn: Transaction) {
       budget_id || null,
       points_awarded
     ]);
-
     const transaction_id = txnRes.rows[0].transaction_id;
 
-    if (linked_goal_id) {
-      const getUserSql = `SELECT user_id FROM accounts WHERE account_id = $1`;
-      const { rows } = await client.query(getUserSql, [account_id]);
-      const user_id = rows[0]?.user_id;
+    const updateBalanceSql = `
+      UPDATE accounts
+      SET account_balance = account_balance + $1
+      WHERE account_id = $2
+      RETURNING account_balance;
+    `;
+    const balanceRes = await client.query(updateBalanceSql, [balanceDelta, account_id]);
+    const updatedBalance = balanceRes.rows[0].account_balance;
 
-      if (!user_id) throw new Error("User not found for goal contribution.");
-
-      const insertGoalProgress = `
-        INSERT INTO goal_progress (goal_id, contributor_id, amount_added)
-        VALUES ($1, $2, $3)
-      `;
-      await client.query(insertGoalProgress, [
-        linked_goal_id,
-        user_id,
-        transaction_amount
-      ]);
-      logger.info(`[TransactionService] Linked to goal_id=${linked_goal_id}`);
+    if (linked_goal_id && user_id) {
+      await client.query(
+        `INSERT INTO goal_progress (goal_id, contributor_id, amount_added)
+         VALUES ($1, $2, $3)`,
+        [linked_goal_id, user_id, transaction_amount]
+      );
     }
 
     if (is_recurring) {
-      const insertRecSql = `
-        INSERT INTO recurring_transactions
-          (transaction_id, frequency, next_occurrence)
-        VALUES ($1, 'monthly', $2)
-        ON CONFLICT (transaction_id) DO NOTHING;
-      `;
-      await client.query(insertRecSql, [transaction_id, transaction_date]);
-      logger.info(`[TransactionService] Marked transaction ID=${transaction_id} as recurring.`);
+      await client.query(
+        `INSERT INTO recurring_transactions
+         (transaction_id, frequency, next_occurrence)
+         VALUES ($1, 'monthly', $2)
+         ON CONFLICT (transaction_id) DO NOTHING`,
+        [transaction_id, transaction_date]
+      );
     }
 
     await client.query('COMMIT');
@@ -111,7 +123,7 @@ export async function createTransaction(txn: Transaction) {
       timestamp: transaction_date
     });
 
-    return transaction_id;
+    return { transaction_id, updated_balance: updatedBalance };
   } catch (error) {
     await client.query('ROLLBACK');
     logger.error(`[TransactionService] Error creating transaction:`, error);
@@ -120,6 +132,7 @@ export async function createTransaction(txn: Transaction) {
     client.release();
   }
 }
+
 
 
 /**

@@ -31,6 +31,7 @@ router.post('/', async (req: Request, res: Response) => {
     points_awarded
   } = req.body;
 
+  // Validation: Check required fields
   if (!account_id || !transaction_amount || !transaction_type || !transaction_name) {
      res.status(400).json({
       status: 'error',
@@ -38,6 +39,16 @@ router.post('/', async (req: Request, res: Response) => {
     });
   }
 
+  // Validation: Check that transaction_amount is a valid number
+  const amount = parseFloat(transaction_amount);
+  if (isNaN(amount) || amount <= 0) {
+     res.status(400).json({
+      status: 'error',
+      message: 'transaction_amount must be a valid positive number'
+    });
+  }
+
+  // Validation: Check category conflict
   if (category_id && custom_category_id) {
      res.status(400).json({
       status: 'error',
@@ -51,7 +62,7 @@ router.post('/', async (req: Request, res: Response) => {
       category_id,
       custom_category_id,
       budget_id,
-      transaction_amount,
+      transaction_amount: amount, // Use the parsed amount
       transaction_type,
       transaction_date,
       transaction_name,
@@ -61,14 +72,20 @@ router.post('/', async (req: Request, res: Response) => {
       points_awarded
     });
 
-    res.status(201).json({
+     res.status(201).json({
       status: 'success',
       message: 'Transaction created successfully',
-      data: {transaction_id : tx.transaction_id}
+      data: {
+        transaction_id: tx.transaction_id,
+        updated_balance: tx.updated_balance
+      }
     });
   } catch (error: any) {
-    logger.error('[Transaction] Create failed', error);
-    res.status(500).json({ status: 'error', message: error.message || 'Internal server error' });
+    logger.error('[Transaction] Create failed', error.message || error);
+     res.status(500).json({ 
+      status: 'error', 
+      message: error.message || 'Internal server error' 
+    });
   }
 });
 
