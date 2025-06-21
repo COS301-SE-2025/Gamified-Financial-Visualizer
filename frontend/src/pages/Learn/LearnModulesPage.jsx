@@ -1,14 +1,20 @@
 import React from 'react';
 import LearnLayout from '../../pages/Learn/LearnLayout';
-import CourseCard from '../../components/cards/CourseCard'; // adjust path
+import CourseCard from '../../components/cards/CoursesCard'; 
+import banner1 from '../../assets/Images/banners/pixelAllyway.jpeg'
+import banner2 from '../../assets/Images/banners/pixelApartment.gif';
+import banner3 from '../../assets/Images/banners/pixelBalcony.gif';
+import banner4 from '../../assets/Images/banners/pixelCafe.gif';
+import banner5 from '../../assets/Images/banners/pixelCornerStore.gif';
+import banner6 from '../../assets/Images/banners/pixelGirl.gif';
 
 const allCourses = [
-  { title: 'Budget', lessons: 22, progress: 65, image: '/images/budget.jpg' },
-  { title: 'Investment', lessons: 10, progress: 78, image: '/images/investment.jpg' },
-  { title: 'Savings', lessons: 22, progress: 50, image: '/images/savings.jpg' },
-  { title: 'Budget', lessons: 22, progress: 89, image: '/images/budget.jpg' },
-  { title: 'Investment', lessons: 10, image: '/images/investment.jpg' },
-  { title: 'Savings', lessons: 22, image: '/images/savings.jpg' },
+  { title: 'Budget', lessons: 22, progress: 65, image: banner1 },
+  { title: 'Investment', lessons: 10, progress: 78, image: banner2 },
+  { title: 'Savings', lessons: 22, progress: 50, image: banner3 },
+  { title: 'Budget', lessons: 22, progress: 89, image: banner4},
+  { title: 'Investment', lessons: 10, image: banner5 },
+  { title: 'Savings', lessons: 22, image: banner6},
 ];
 
 const LearningPage = () => {

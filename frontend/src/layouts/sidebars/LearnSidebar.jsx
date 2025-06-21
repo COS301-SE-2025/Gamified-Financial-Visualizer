@@ -11,7 +11,7 @@ import {
 
 const LearnSidebar = () => {
   return (
-    <aside className="space-y-6 mt-1"> {/* Changed from -mb-[90px] to mt-6 */}
+    <aside className="space-y-6 mt-0"> {/* Changed from -mb-[90px] to mt-6 */}
       {/* Goal Performance */}
       <div className="bg-white rounded-2xl p-4 shadow text-center ">
         <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-3 py-1 rounded-full inline-block mb-2">
