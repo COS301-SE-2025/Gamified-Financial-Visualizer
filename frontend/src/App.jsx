@@ -28,6 +28,7 @@ import AccountsImport from './pages/Accounts/Import';
 import LearningPage from './pages/Learn/LearnModulesPage';
 import IncompleteCourses from './pages/Learn/Incomplete';
 import CompleteCourses from './pages/Learn/Complete';
+import LessonsModulesDetailPage from './pages/Learn/LessonDetailPage';
 
 // The Support Page Routes
 import FAQDetails from './pages/Support/FAQDetails';
@@ -70,6 +71,7 @@ function App() {
           <Route path="/learn" element={<LearningPage />} />
           <Route path="/learn/complete" element={<CompleteCourses/>}/>
           <Route path="/learn/incomplete" element={<IncompleteCourses/>}/>
+          <Route path="/modules/:moduleId/lessons" element={<LessonsModulesDetailPage/>} />
           
 
           {/* Routes for the help page */}
