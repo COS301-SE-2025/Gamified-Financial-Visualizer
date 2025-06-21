@@ -5,7 +5,8 @@ import {
   getTotalSpentPerCategory,
   getCategoryNameByID,
   getCategories,
-  getTransactionByAccount
+  getTransactionByAccount,
+  deleteTransaction
 } from '../services/transaction.service';
 import { logger } from '../../../config/logger';
 
@@ -180,6 +181,33 @@ router.get('/accounts/:account_id', async (req: Request, res: Response) => {
     res.status(500).json({ status: 'error', message: error.message || 'Internal server error' });
   }
 });
+
+/**
+ * @route DELETE /api/transactions/:transaction_id
+ * @desc Delete a specific transaction by its ID
+ */
+router.delete('/:transaction_id', async (req: Request, res: Response) => {
+  const transaction_id = parseInt(req.params.transaction_id, 10);
+
+  if (isNaN(transaction_id)) {
+     res.status(400).json({ status: 'error', message: 'Invalid transaction ID' });
+  }
+
+  try {
+    await deleteTransaction(transaction_id);
+    res.status(200).json({
+      status: 'success',
+      message: `Transaction ID ${transaction_id} deleted successfully`,
+    });
+  } catch (error: any) {
+    logger.error('[Transaction] Delete failed:', error);
+    res.status(500).json({
+      status: 'error',
+      message: error.message || 'Internal server error',
+    });
+  }
+});
+
 
 
 export default router;
