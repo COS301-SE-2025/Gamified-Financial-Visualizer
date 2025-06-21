@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import toast, { Toaster } from 'react-hot-toast';
 import { FaUserPlus, FaEye, FaUserMinus, FaPaperPlane } from 'react-icons/fa';
 import CommunityLayout from '../../pages/Community/CommunityLayout';
 import CommunityHeader from '../../layouts/headers/CommunityHeader';
 
-// Image imports (replace with correct local paths if needed)
+// Image imports
 import snowAvatar from '../../assets/Images/avatars/snakeAvatar.jpeg';
 import beachAvatar from '../../assets/Images/avatars/beachAvatar.jpeg';
 import smithAvatar from '../../assets/Images/avatars/windowAvatar.jpeg';
@@ -31,10 +32,52 @@ const someoneNew = [
 ];
 
 const FriendsList = () => {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalText, setModalText] = useState('');
+  const [modalData, setModalData] = useState({ name: '', avatar: '' });
+  const [onConfirm, setOnConfirm] = useState(() => () => { });
+
+  const openModal = (message, user, action) => {
+    setModalText(message);
+    setModalData(user);
+    setOnConfirm(() => action);
+    setModalOpen(true);
+  };
+
+  const handleFriendRequest = (user) => {
+    openModal(`Send a friend request to @${user.name}?`, user, () => {
+      toast.success(`Friend request sent to @${user.name}`, {
+        icon: <FaPaperPlane className="text-[#1E3A8A]" />,
+        style: {
+          borderRadius: '9999px',
+          background: '#B1E1FF',
+          color: '#1E3A8A',
+        },
+      });
+      setModalOpen(false);
+    });
+  };
+
+  const handleRemoveFriend = (user) => {
+    openModal(`Remove @${user.name} from your friends list?`, user, () => {
+      toast.success(`@${user.name} removed from your friends list`, {
+        icon: <FaUserMinus className="text-[#7F1D1D]" />,
+        style: {
+          borderRadius: '9999px',
+          background: '#FE9B90',
+          color: '#FFFFFF',
+        },
+      });
+      setModalOpen(false);
+    });
+  };
+
+
   return (
     <CommunityLayout>
       <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
-        <CommunityHeader />
+         <CommunityHeader />
+        <Toaster position="top-right" />
 
         {/* Your Friends */}
         <div>
@@ -51,16 +94,13 @@ const FriendsList = () => {
                 </div>
                 <div className="flex gap-2">
                   <Link to={`/community/member/${friend.name}`}>
-                    <button
-                      className="flex items-center gap-1 px-3 py-1 text-sm rounded-full"
-                      style={{ backgroundColor: '#AAD977', color: '#FFFFFF' }}
-                    >
+                    <button className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#AAD977] text-white">
                       <FaEye /> View
                     </button>
                   </Link>
                   <button
-                    className="flex items-center gap-1 px-3 py-1 text-sm rounded-full"
-                    style={{ backgroundColor: '#FA8B81', color: '#FFFFFF' }}
+                    onClick={() => handleRemoveFriend(friend)}
+                    className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#FA8B81] text-white"
                   >
                     <FaUserMinus /> Remove
                   </button>
@@ -85,16 +125,13 @@ const FriendsList = () => {
                 </div>
                 <div className="flex gap-2">
                   <Link to={`/community/member/${person.name}`}>
-                    <button
-                      className="flex items-center gap-1 px-3 py-1 text-sm rounded-full"
-                      style={{ backgroundColor: '#AAD977', color: '#FFFFFF' }}
-                    >
+                    <button className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#AAD977] text-white">
                       <FaEye /> View
                     </button>
                   </Link>
                   <button
-                    className="flex items-center gap-1 px-3 py-1 text-sm rounded-full"
-                    style={{ backgroundColor: '#FFD18C', color: '#FFFFFF' }}
+                    onClick={() => handleFriendRequest(person)}
+                    className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#FFD18C] text-white"
                   >
                     <FaPaperPlane /> Request
                   </button>
@@ -104,6 +141,34 @@ const FriendsList = () => {
           </div>
         </div>
       </div>
+
+      {/* Stylized Confirmation Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-2xl shadow-xl text-center space-y-4 max-w-sm w-full">
+            <img
+              src={modalData.avatar}
+              alt={modalData.name}
+              className="w-20 h-20 rounded-full mx-auto object-cover border-4 border-white shadow-md"
+            />
+            <p className="text-gray-800 font-semibold">{modalText}</p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={onConfirm}
+                className="bg-[#AAD977] hover:bg-[#83AB55] text-white px-4 py-2 rounded-full font-medium"
+              >
+                Yes
+              </button>
+              <button
+                onClick={() => setModalOpen(false)}
+                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-full font-medium"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </CommunityLayout>
   );
 };

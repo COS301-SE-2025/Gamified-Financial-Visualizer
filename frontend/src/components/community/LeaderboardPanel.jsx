@@ -1,7 +1,7 @@
 import React from 'react';
 import { FaTrophy } from 'react-icons/fa';
 
-// User Avatars 
+// User Avatars
 import avatar1 from '../../assets/Images/avatars/beachAvatar.jpeg';
 import avatar2 from '../../assets/Images/avatars/ghostAvatar.jpeg';
 import avatar3 from '../../assets/Images/avatars/windowAvatar.jpeg';
@@ -40,13 +40,17 @@ const LeaderboardPanel = () => {
       {mockLeaderboard.map((user, i) => (
         <div
           key={i}
-          className="flex items-start py-3 border-b last:border-b-0 gap-3"
+          className="flex items-start py-3 border-b last:border-b-0 gap-4"
         >
+          {/* Rank Number (no bubble) */}
+          <span className="text-sm font-bold text-gray-600 w-6 text-right">#{i + 1}</span>
+
           <img
             src={user.avatar}
             alt={user.username}
             className="w-12 h-12 rounded-full object-cover border-2 border-white shadow"
           />
+
           <div className="flex flex-col">
             <span className="text-sm font-semibold text-gray-800 leading-tight">{user.username}</span>
             <span className="text-xs text-gray-500 leading-tight mb-1">{user.level}</span>
