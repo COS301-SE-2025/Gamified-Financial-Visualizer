@@ -1,97 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaChevronDown, FaChevronUp, FaCheckCircle, FaTrophy } from 'react-icons/fa';
 import LearnLayout from './LearnLayout';
-
-const mockModules = {
-  budget: [
-    { 
-      id: 1, 
-      title: 'Introduction to Budgeting', 
-      color: 'green', 
-      content: 'A budget helps you track income vs expenses. It gives you control over your finances, reduces stress, and ensures you live within your means.',
-    },
-    { 
-      id: 2, 
-      title: 'Why Budget?', 
-      color: 'pink', 
-      content: 'Budgeting is the foundation of financial wellness. It allows you to plan for expenses, save for the future, and avoid debt.',
-      infographic: '/path/to/infographic.png'
-    },
-    { 
-      id: 3, 
-      title: 'The 50/30/20 Rule', 
-      color: 'orange', 
-      content: 'This rule divides your income: 50% for needs, 30% for wants, 20% for savings and debt repayments. It\'s a simple way to manage money.',
-      example: 'For a $3000 monthly income: $1500 needs, $900 wants, $600 savings/debt'
-    },
-    { 
-      id: 4, 
-      title: 'Creating Your First Budget', 
-      color: 'blue', 
-      content: 'Start by listing income, tracking expenses, and setting realistic spending limits per category. Use tools like spreadsheets or budgeting apps.',
-      checklist: [
-        'Track all income sources',
-        'List fixed expenses (rent, utilities)',
-        'Estimate variable expenses (food, entertainment)',
-        'Set savings goals',
-        'Review and adjust monthly'
-      ]
-    },
-    { 
-      id: 5, 
-      title: 'Budgeting Quiz', 
-      color: 'purple', 
-      isQuiz: true,
-      questions: [
-        {
-          id: 1,
-          question: 'What is the primary purpose of a budget?',
-          options: [
-            'To restrict your spending',
-            'To track income and expenses',
-            'To impress your friends',
-            'To make more money'
-          ],
-          correctAnswer: 1
-        },
-        {
-          id: 2,
-          question: 'In the 50/30/20 rule, what does the 20% represent?',
-          options: [
-            'Entertainment expenses',
-            'Savings and debt repayment',
-            'Housing costs',
-            'Taxes'
-          ],
-          correctAnswer: 1
-        },
-        {
-          id: 3,
-          question: 'Which of these is NOT a benefit of budgeting?',
-          options: [
-            'Reduced financial stress',
-            'Better control over finances',
-            'Guaranteed wealth increase',
-            'Clear spending priorities'
-          ],
-          correctAnswer: 2
-        },
-        {
-          id: 4,
-          question: 'How often should you review your budget?',
-          options: [
-            'Once a year',
-            'Only when you have money problems',
-            'Monthly or when income/expenses change',
-            'Never - set it and forget it'
-          ],
-          correctAnswer: 2
-        }
-      ]
-    }
-  ]
-};
 
 const colorMap = {
   green: {
@@ -100,69 +10,129 @@ const colorMap = {
     bg: 'bg-[#88BC46]',
     ring: 'ring-[#88BC46]'
   },
-  pink: {
-    border: 'border-l-[#EA746A]',
-    text: 'text-[#EA746A]',
-    bg: 'bg-[]',
-    ring: 'ring-[#EA746A]'
-  },
-  orange: {
-    border: 'border-l-[#FBBF1A]',
-    text: 'text-[#FBBF1A]',
-    bg: 'bg-[]',
-    ring: 'ring-[#FBBF1A]'
-  },
   blue: {
     border: 'border-l-[#5FBFFF]',
     text: 'text-[#5FBFFF]',
-    bg: 'bg-[]',
+    bg: 'bg-[#5FBFFF]',
     ring: 'ring-[#5FBFFF]'
   },
   purple: {
     border: 'border-l-[#a78bfa]',
     text: 'text-[#8b5cf6]',
-    bg: 'bg-[]',
+    bg: 'bg-[#8b5cf6]',
     ring: 'ring-[#8b5cf6]'
   }
 };
 
 const ModuleLessonsPage = () => {
-  const { moduleId } = useParams();
+  const { moduleSlug, moduleId } = useParams();
   const navigate = useNavigate();
-  const lessons = mockModules[moduleId] || [];
+  
+  const user = localStorage.getItem('user');
+  const userId = user ? JSON.parse(user).id : null;
+
+  const [lessons, setLessons] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
   const [readLessons, setReadLessons] = useState([]);
+  const [quizData, setQuizData] = useState(null);
   const [quizAnswers, setQuizAnswers] = useState({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [quizScore, setQuizScore] = useState(0);
   const [showCompletion, setShowCompletion] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [moduleTitle, setModuleTitle] = useState('');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Fetch module details
+        const moduleResponse = await fetch(`http://localhost:5000/api/learning/${moduleId}`);
+        if (!moduleResponse.ok) throw new Error('Failed to load module');
+        const moduleData = await moduleResponse.json();
+        setModuleTitle(moduleData.data.module_title);
+        
+        // Fetch lessons
+        const lessonsResponse = await fetch(`http://localhost:5000/api/learning/${moduleId}/lessons`);
+        if (!lessonsResponse.ok) throw new Error('Failed to load lessons');
+        const lessonsData = await lessonsResponse.json();
+        
+        // Fetch quiz
+        const quizResponse = await fetch(`http://localhost:5000/api/learning/quizzes/${moduleId}`);
+        if (!quizResponse.ok) throw new Error('Failed to load quiz');
+        const quizData = await quizResponse.json();
+        
+        setLessons(lessonsData.data.map((lesson, index) => ({
+          id: lesson.lesson_id,
+          title: lesson.lesson_title,
+          color: index % 2 === 0 ? 'green' : 'blue',
+          content: lesson.content,
+          estimated_duration: lesson.estimated_duration
+        })));
+        
+        setQuizData(quizData.data[0]); // Assuming the API returns an array with one quiz
+      } catch (error) {
+        console.error('Error:', error);
+        setError(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [moduleId]);
 
   const toggleExpand = (id) => {
     setExpandedId(prev => (prev === id ? null : id));
     setReadLessons(prev => prev.includes(id) ? prev : [...prev, id]);
   };
 
-  const handleQuizAnswer = (questionId, answerIndex) => {
+  const handleQuizAnswer = (questionIndex, answerIndex) => {
     setQuizAnswers(prev => ({
       ...prev,
-      [questionId]: answerIndex
+      [questionIndex]: answerIndex
     }));
   };
 
-  const submitQuiz = (quizLesson) => {
-    let score = 0;
-    quizLesson.questions.forEach(question => {
-      if (quizAnswers[question.id] === question.correctAnswer) {
-        score += 1;
-      }
-    });
-    setQuizScore(score);
-    setQuizSubmitted(true);
-    
-    if (readLessons.length === lessons.length - 1) {
-      setShowCompletion(true);
+const submitQuiz = async () => {
+  if (!quizData) return;
+  
+  let score = 0;
+  quizData.questions_jsonb.forEach((question, index) => {
+    if (quizAnswers[index] === question.correct_answer) {
+      score += question.points;
     }
-  };
+  });
+
+  // Submit quiz answers to backend
+  try {
+    await fetch(`http://localhost:5000/api/learning/quizzes/${moduleId}/submit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        answers: quizAnswers,
+        userId: userId,
+        passed: score >= quizData.pass_score,
+        attempt_score : score
+      })
+    });
+  } catch (err) {
+    // Optionally handle error
+    console.error('Failed to submit quiz:', err);
+  }
+  
+  setQuizScore(score);
+  setQuizSubmitted(true);
+  
+  if (readLessons.length === lessons.length) {
+    setShowCompletion(true);
+  }
+};
+
 
   const resetQuiz = () => {
     setQuizAnswers({});
@@ -171,118 +141,17 @@ const ModuleLessonsPage = () => {
   };
 
   const calculateProgress = () => {
-    return Math.round((readLessons.length / lessons.length) * 100);
+    const totalLessons = lessons.length + (quizData ? 1 : 0); // Count quiz as a lesson
+    const completed = readLessons.length + (quizSubmitted ? 1 : 0);
+    return totalLessons ? Math.round((completed / totalLessons) * 100) : 0;
   };
 
   const renderLessonContent = (lesson) => {
-    if (lesson.isQuiz) {
-      return (
-        <div className="mt-4">
-          {!quizSubmitted ? (
-            <div className="space-y-4">
-              {lesson.questions.map((q) => (
-                <div key={q.id} className="bg-white p-4 rounded-lg shadow-sm">
-                  <h4 className="font-medium text-gray-800 mb-2">{q.question}</h4>
-                  <div className="space-y-2">
-                    {q.options.map((option, idx) => (
-                      <label key={idx} className="flex items-center space-x-2 cursor-pointer">
-                        <input
-                          type="radio"
-                          name={`question-${q.id}`}
-                          checked={quizAnswers[q.id] === idx}
-                          onChange={() => handleQuizAnswer(q.id, idx)}
-                          className="text-[#8b5cf6] focus:ring-[#8b5cf6]"
-                        />
-                        <span>{option}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              ))}
-              <button
-                onClick={() => submitQuiz(lesson)}
-                disabled={Object.keys(quizAnswers).length !== lesson.questions.length}
-                className={`mt-4 px-4 py-2 rounded-full font-medium ${
-                  Object.keys(quizAnswers).length === lesson.questions.length
-                    ? 'bg-[#8b5cf6] text-white hover:bg-[#7c3aed]'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
-              >
-                Submit Quiz
-              </button>
-            </div>
-          ) : (
-            <div className="bg-white p-6 rounded-lg shadow-sm text-center">
-              <div className="text-4xl font-bold text-[#8b5cf6] mb-2">
-                {quizScore}/{lesson.questions.length}
-              </div>
-              <div className="text-lg font-medium mb-4">
-                {quizScore === lesson.questions.length ? 'Perfect! 🎉' : 
-                 quizScore >= lesson.questions.length / 2 ? 'Good job! 👍' : 'Keep practicing! 💪'}
-              </div>
-              {quizScore !== lesson.questions.length && (
-                <button
-                  onClick={resetQuiz}
-                  className="mt-2 px-4 py-2 bg-[#f5f3ff] text-[#8b5cf6] rounded-full font-medium hover:bg-[#ede9fe]"
-                >
-                  Try Again
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-      );
-    }
-
     return (
       <div className="mt-4 space-y-4">
         <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
           {lesson.content}
         </div>
-        
-        {lesson.video && (
-          <div className="mt-4 aspect-w-16 aspect-h-9">
-            <iframe 
-              src={lesson.video} 
-              title={lesson.title}
-              frameBorder="0" 
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-              allowFullScreen
-              className="w-full h-64 rounded-lg"
-            ></iframe>
-          </div>
-        )}
-        
-        {lesson.infographic && (
-          <div className="mt-4">
-            <img 
-              src={lesson.infographic} 
-              alt={lesson.title} 
-              className="w-full rounded-lg border border-gray-200"
-            />
-          </div>
-        )}
-        
-        {lesson.example && (
-          <div className="mt-4 p-4 bg-[#fef9c3] border-l-4 border-[#facc15] rounded-r">
-            <h4 className="font-medium text-[#b45309]">Example</h4>
-            <p className="text-[#b45309]">{lesson.example}</p>
-          </div>
-        )}
-        
-        {lesson.checklist && (
-          <div className="mt-4">
-            <h4 className="font-medium text-gray-700 mb-2">Action Items:</h4>
-            <ul className="space-y-2">
-              {lesson.checklist.map((item, index) => (
-                <li key={index} className="flex items-start">
-                  <span className="inline-block w-5 h-5 mr-2 mt-0.5 border border-gray-300 rounded-full flex-shrink-0"></span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
         
         <div className="pt-4 border-t border-gray-100">
           <button 
@@ -297,6 +166,17 @@ const ModuleLessonsPage = () => {
     );
   };
 
+  if (error) {
+    return (
+      <LearnLayout>
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <strong className="font-bold">Error: </strong>
+          <span className="block sm:inline">{error}</span>
+        </div>
+      </LearnLayout>
+    );
+  }
+
   return (
     <LearnLayout>
       {showCompletion && (
@@ -307,7 +187,7 @@ const ModuleLessonsPage = () => {
             </div>
             <h3 className="text-2xl font-bold text-gray-800 mb-2">Congratulations!</h3>
             <p className="text-gray-600 mb-4">
-              You've completed the {moduleId} module with a {quizScore}/{lessons.find(l => l.isQuiz)?.questions.length} on the quiz!
+              You've completed the {moduleTitle} module with a score of {quizScore}/{quizData?.max_score} on the quiz!
             </p>
             <div className="flex justify-center space-x-3">
               <button
@@ -330,15 +210,12 @@ const ModuleLessonsPage = () => {
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-lg font-semibold text-[#0ea5e9] bg-[#e0f2fe] inline-block px-4 py-1 rounded-full mb-6">
-            {moduleId.charAt(0).toUpperCase() + moduleId.slice(1)} Lessons
+            {moduleTitle || 'Module Lessons'}
           </h2>
           <button 
             onClick={() => navigate(-1)} 
-            className="mt-4 px-4 py-2 bg-[#AAD977] text-white text-sm rounded-full shadow hover:from-green-500 flex items-center gap-2"
+            className="px-4 py-2 bg-[#AAD977] text-white text-sm rounded-full shadow hover:from-green-500"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
             Back to Courses
           </button>
         </div>
@@ -351,15 +228,15 @@ const ModuleLessonsPage = () => {
             ></div>
           </div>
           <span className="text-sm text-gray-600">
-            {readLessons.length} of {lessons.length} lessons completed
+            {readLessons.length + (quizSubmitted ? 1 : 0)} of {lessons.length + (quizData ? 1 : 0)} items completed
           </span>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 mb-8">
           {lessons.map((lesson) => (
             <div
               key={lesson.id}
-              className={`bg-white shadow-md rounded-xl overflow-hidden border-l-4 ${colorMap[lesson.color].border} ${colorMap[lesson.color].bg} transition-all duration-200 ${
+              className={`bg-white shadow-md rounded-xl overflow-hidden border-l-4 ${colorMap[lesson.color].border} transition-all duration-200 ${
                 expandedId === lesson.id ? `ring-2 ring-opacity-50 ${colorMap[lesson.color].ring}` : ''
               }`}
             >
@@ -381,12 +258,12 @@ const ModuleLessonsPage = () => {
                       {lesson.title}
                     </h3>
                     <p className="text-xs text-gray-500">
-                      {lesson.isQuiz ? 'Test your knowledge' : 'Click to expand'}
+                      {lesson.estimated_duration} min • Click to expand
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {readLessons.includes(lesson.id) && !lesson.isQuiz && (
+                  {readLessons.includes(lesson.id) && (
                     <FaCheckCircle className="text-[#22c55e]" />
                   )}
                   {expandedId === lesson.id ? (
@@ -404,6 +281,120 @@ const ModuleLessonsPage = () => {
             </div>
           ))}
         </div>
+
+        {/* Quiz Section */}
+        {quizData && (
+          <div className="mt-12">
+            <h3 className="text-xl font-semibold text-gray-800 mb-6 pb-2 border-b border-gray-200">
+              Module Quiz
+            </h3>
+            
+            <div className={`bg-white shadow-md rounded-xl overflow-hidden border-l-4 ${colorMap.purple.border} ${expandedId === 'quiz' ? `ring-2 ring-opacity-50 ${colorMap.purple.ring}` : ''}`}>
+              <div
+                className="flex justify-between items-center p-4 cursor-pointer"
+                onClick={() => setExpandedId(prev => prev === 'quiz' ? null : 'quiz')}
+              >
+                <div className="flex items-center">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${colorMap.purple.bg} bg-opacity-50`}>
+                    <span className={`text-xs font-bold ${colorMap.purple.text}`}>
+                      Q
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className={`font-semibold text-md ${colorMap.purple.text}`}>
+                      Test Your Knowledge
+                    </h3>
+                    <p className="text-xs text-gray-500">
+                      {quizData.questions_jsonb.length} questions • Pass score: {quizData.pass_score}/{quizData.max_score}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {quizSubmitted && (
+                    <span className={`text-sm font-medium ${quizScore >= quizData.pass_score ? 'text-green-600' : 'text-red-600'}`}>
+                      {quizScore}/{quizData.max_score}
+                    </span>
+                  )}
+                  {expandedId === 'quiz' ? (
+                    <FaChevronUp className="text-gray-400" />
+                  ) : (
+                    <FaChevronDown className="text-gray-400" />
+                  )}
+                </div>
+              </div>
+              
+              {expandedId === 'quiz' && (
+                <div className="p-4 pt-0">
+                  {!quizSubmitted ? (
+                    <div className="space-y-6">
+                      {quizData.questions_jsonb.map((question, qIndex) => (
+                        <div key={qIndex} className="bg-gray-50 p-4 rounded-lg">
+                          <h4 className="font-medium text-gray-800 mb-3">
+                            {question.question} <span className="text-sm text-gray-500">({question.points} point{question.points !== 1 ? 's' : ''})</span>
+                          </h4>
+                          <div className="space-y-3">
+                            {question.options.map((option, oIndex) => (
+                              <label key={oIndex} className="flex items-center space-x-3 cursor-pointer">
+                                <input
+                                  type="radio"
+                                  name={`question-${qIndex}`}
+                                  checked={quizAnswers[qIndex] === oIndex}
+                                  onChange={() => handleQuizAnswer(qIndex, oIndex)}
+                                  className="text-purple-600 focus:ring-purple-500"
+                                />
+                                <span className="text-gray-700">{option}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                      
+                      <button
+                        onClick={submitQuiz}
+                        disabled={Object.keys(quizAnswers).length !== quizData.questions_jsonb.length}
+                        className={`w-full mt-4 px-6 py-3 rounded-lg font-medium ${
+                          Object.keys(quizAnswers).length === quizData.questions_jsonb.length
+                            ? 'bg-purple-600 text-white hover:bg-purple-700'
+                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        }`}
+                      >
+                        Submit Quiz
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="bg-white p-6 rounded-lg text-center">
+                      <div className={`text-4xl font-bold mb-2 ${
+                        quizScore >= quizData.pass_score ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {quizScore}/{quizData.max_score}
+                      </div>
+                      <div className="text-lg font-medium mb-4">
+                        {quizScore >= quizData.pass_score ? (
+                          <span className="text-green-600">Congratulations! You passed! 🎉</span>
+                        ) : (
+                          <span className="text-red-600">Keep practicing! You'll get it next time! 💪</span>
+                        )}
+                      </div>
+                      <div className="mb-6">
+                        <p className="text-gray-600">
+                          {quizScore >= quizData.pass_score 
+                            ? "You've demonstrated a good understanding of this module."
+                            : "Review the material and try again to improve your score."}
+                        </p>
+                      </div>
+                      <button
+                        onClick={resetQuiz}
+                        className="px-6 py-2 bg-purple-100 text-purple-700 rounded-lg font-medium hover:bg-purple-200"
+                      >
+                        Retake Quiz
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </LearnLayout>
   );
