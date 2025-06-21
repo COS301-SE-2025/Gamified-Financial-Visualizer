@@ -73,7 +73,10 @@ function App() {
           <Route path="/learn/complete" element={<CompleteCourses/>}/>
           <Route path="/learn/incomplete" element={<IncompleteCourses/>}/>
           <Route path="/modules/:moduleId/lessons" element={<LessonsModulesDetailPage/>} />
+          <Route path="/learning/:moduleSlug/:moduleId/lessons"   element={<LessonsModulesDetailPage />} />
           
+        
+        
 
           {/* Routes for the help page */}
           <Route path="/support" element={<HelpViewLayout />}>

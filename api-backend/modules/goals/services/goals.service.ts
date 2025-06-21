@@ -103,7 +103,6 @@ export async function getUserGoals(user_id: number): Promise<Goal[]> {
     if (res.rows.length === 0) {
       logger.info(`[GoalService] No goals found for user ${user_id}`);
     }
-    logger.info(`[GoalService] Fetched ${res.rows.length} goals for user ${user_id}`);
     return res.rows;
   } catch (error) {
     logger.error(`[GoalService] Error fetching goals for user ${user_id}:`, error);
@@ -384,7 +383,6 @@ export async function getUpcomingGoals(user_id: number ) {
 
   try {
     const result = await pool.query(query, [user_id]);
-    logger.info(`[GoalService] Fetched upcoming goals for user ID ${user_id}`);
     return result.rows;
   } catch (err) {
     logger.error(`[GoalService] Failed to fetch upcoming goals for user ID ${user_id}:`, err);
