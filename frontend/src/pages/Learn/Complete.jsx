@@ -17,11 +17,11 @@ const allCourses = [
   { title: 'Savings', lessons: 22, image: banner6},
 ];
 
-const LearningPage = () => {
+const LearningCompletePage = () => {
   return (
     <LearnLayout>
       <h2 className="text-lg font-semibold text-sky-500 bg-sky-100 inline-block px-4 py-1 rounded-full mb-6">
-        All Courses
+        Completed Courses
       </h2>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -33,4 +33,4 @@ const LearningPage = () => {
   );
 };
 
-export default LearningPage;
+export default LearningCompletePage;

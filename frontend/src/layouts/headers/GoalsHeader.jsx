@@ -45,4 +45,3 @@ const GoalsHeader = () => {
 
 export default GoalsHeader;
 
-// onClick={() => navigate('/goals/create')}
