@@ -6,6 +6,8 @@ const Settings = () => {
   const [theme, setTheme] = useState(true);
   const [notifications, setNotifications] = useState(true);
   const [verified, setVerified] = useState(false);
+  const [username, setUsername] = useState(''); // Add username state
+  const [isEditingUsername, setIsEditingUsername] = useState(false); // Add editing state
 
   // Change avatar configurations
   // Avatar list (add at top or inside component)
@@ -27,8 +29,54 @@ const Settings = () => {
   const navigate = useNavigate();
   const [showConfirm, setShowConfirm] = useState(false);
 
+  const handleUsernameChange = () => {
+    // Here you would typically make an API call to update the username
+    console.log('Username changed to:', username);
+    setIsEditingUsername(false);
+    // Reset the username field or update it with the new value from the server
+  };
+
   return (
     <div className="space-y-6">
+      {/* Username Change Section */}
+      <div className="bg-white shadow rounded-xl p-6">
+        <h3 className="font-semibold text-[#88BC46] text-lg mb-4">Change Username</h3>
+        {isEditingUsername ? (
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter new username"
+              className="input flex-1"
+            />
+            <button
+              onClick={handleUsernameChange}
+              className="bg-[#AAD977] text-white px-4 py-2 rounded-md"
+            >
+              Save
+            </button>
+            <button
+              onClick={() => setIsEditingUsername(false)}
+              className="bg-gray-200 px-4 py-2 rounded-md"
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-gray-700">
+              Current username: <span className="font-bold">{username || 'Not set'}</span>
+            </p>
+            <button
+              onClick={() => setIsEditingUsername(true)}
+              className="bg-[#AAD977] text-white px-4 py-2 rounded-md text-sm"
+            >
+              Change Username
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Toggle Settings Area */}
       <div className="bg-white shadow rounded-xl p-6">
@@ -40,12 +88,17 @@ const Settings = () => {
             setter: setTheme,
           },
           {
+            label: 'Enable In-App Notifications',
+            state: notifications,
+            setter: setNotifications,
+          },
+          {
             label: 'Enable Notifications',
             state: notifications,
             setter: setNotifications,
           },
           {
-            label: 'Verified Account',
+            label: 'Two Factor Verification',
             state: verified,
             setter: setVerified,
           },
