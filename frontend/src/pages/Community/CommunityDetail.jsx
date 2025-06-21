@@ -1,21 +1,20 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 
 import CommunityLayout from '../../pages/Community/CommunityLayout';
 import CommunityHeader from '../../layouts/headers/CommunityHeader';
 
-// Icons
-import { FaPlus, FaArrowLeft } from 'react-icons/fa';
+import { FaChartLine, FaStar, FaPlus, FaArrowLeft, FaCrown, FaEye, FaMedal, FaUserPlus, FaEdit, FaSave, FaTimes } from 'react-icons/fa';
 
-// Avatar Imports
 import cindy from '../../assets/Images/avatars/beachAvatar.jpeg';
 import shark from '../../assets/Images/avatars/crossiontAvatar.jpeg';
 import bear from '../../assets/Images/avatars/butterflyAvatar.jpeg';
 import thatsMe from '../../assets/Images/avatars/stonesAvatar.jpeg';
 import banner from '../../assets/Images/banners/pixelStudents.jpeg';
 import banner1 from '../../assets/Images/banners/pixelGirlAlly.gif';
+import banner2 from '../../assets/Images/banners/pixelApartment.gif';
+import banner3 from '../../assets/Images/banners/pixelStore.gif';
 
 const mockMembers = [
   { name: 'just_cindy', level: 'Gold', avatar: cindy },
@@ -41,74 +40,228 @@ const mockChallenges = [
   },
 ];
 
-const handleDelete = (itemName) => {
-  toast((t) => (
-    <div className="space-y-2">
-      <p className="text-sm font-medium text-gray-800">Delete <strong>{itemName}</strong>?</p>
-      <div className="flex gap-2">
-        <button
-          onClick={() => {
-            toast.dismiss(t.id);
-            toast.success(`Deleted "${itemName}"`);
-            // TODO: Actual delete logic here
-            console.log(`Deleted ${itemName}`);
-          }}
-          className="px-4 py-1 text-sm font-semibold text-white bg-[#ED5E52] rounded-full hover:bg-[#FE9B90]"
-        >
-          Confirm
-        </button>
-        <button
-          onClick={() => toast.dismiss(t.id)}
-          className="px-4 py-1 text-sm font-medium text-gray-600 bg-gray-100 rounded-full hover:bg-gray-200"
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  ), {
-    duration: 5000,
-    position: 'top-center',
-  });
-};
-
+const bannerOptions = [
+  { id: 'students', label: 'Pixel Students', src: banner },
+  { id: 'ally', label: 'Pixel Ally', src: banner1 },
+  { id: 'apartment', label: 'Pixel Apartment', src: banner2 },
+  { id: 'store', label: 'Pixel Store', src: banner3 },
+];
 
 const CommunityDetail = () => {
   const navigate = useNavigate();
+  const [isEditing, setIsEditing] = useState(false);
+  const [communityData, setCommunityData] = useState({
+    name: 'Happy Savers',
+    bannerId: 'students',
+    description: 'A community for people who enjoy saving money together',
+  });
+
+  const handleDelete = (itemName) => {
+    toast.custom((t) => (
+      <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-lg max-w-sm w-full space-y-3">
+        <p className="text-sm font-semibold text-gray-800">
+          Delete <span className="text-[#ED5E52]">"{itemName}"</span> community?
+        </p>
+        <div className="flex gap-2 justify-end">
+          <button
+            onClick={() => {
+              toast.dismiss(t.id);
+              toast.success(`Deleted "${itemName}"`);
+              // TODO: Actual deletion logic here
+              console.log(`Deleted ${itemName}`);
+            }}
+            className="bg-[#ED5E52] hover:bg-[#FE9B90] text-white px-4 py-1.5 text-sm rounded-full font-medium"
+          >
+            Confirm
+          </button>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-1.5 text-sm rounded-full font-medium"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    ), { duration: 10000, position: 'top-center' });
+  };
+
+  const handleRequestMembers = () => {
+    toast((t) => (
+      <div className="space-y-2">
+        <p className="text-sm font-medium text-gray-800">Send friend request to <strong>all members</strong>?</p>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              toast.dismiss(t.id);
+              toast.success('Friend requests sent to all community members!');
+              console.log('Friend requests sent to:', mockMembers.map(m => m.name));
+            }}
+            className="px-4 py-1 text-sm font-semibold text-white bg-[#5FBFFF] rounded-full hover:bg-[#3297E6]"
+          >
+            Confirm
+          </button>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="px-4 py-1 text-sm font-medium text-gray-600 bg-gray-100 rounded-full hover:bg-gray-200"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    ), {
+      duration: 5000,
+      position: 'top-center',
+    });
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setCommunityData({ ...communityData, [name]: value });
+  };
+
+  const handleSave = () => {
+    toast.success('Community updated successfully!');
+    setIsEditing(false);
+    // Here you would typically send the updated data to your backend
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    // Reset to original data if needed
+  };
+
+  const selectedBanner = bannerOptions.find(b => b.id === communityData.bannerId)?.src || banner;
+
   return (
     <CommunityLayout>
       <Toaster position="top-right" />
       <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
-        {/* Search bar */}
         <CommunityHeader />
 
-        {/* Header */}
         <div className="bg-white p-4 rounded-2xl shadow flex justify-between items-center border" style={{ borderColor: '#E5E7EB' }}>
           <div className="flex items-center gap-4">
-            <img src={banner} className="w-16 h-16 rounded-full object-cover border" />
-            <h2 className="text-2xl font-bold" style={{ color: '#66BFBF' }}>Happy Savers</h2>
+            <img src={selectedBanner} className="w-16 h-16 rounded-full object-cover border" />
+            {isEditing ? (
+              <input
+                type="text"
+                name="name"
+                value={communityData.name}
+                onChange={handleChange}
+                className="text-2xl font-bold border-b border-gray-300 focus:outline-none focus:border-[#66BFBF]"
+                style={{ color: '#66BFBF' }}
+              />
+            ) : (
+              <h2 className="text-2xl font-bold" style={{ color: '#66BFBF' }}>{communityData.name}</h2>
+            )}
           </div>
-          <div className="flex items-center gap-2">
-            <button className="flex items-center gap-2 bg-[#E0F2FE] hover:bg-[#BDE0FE] text-[#5FBFFF] px-4 py-2 rounded-full text-sm font-semibold shadow-sm">
-              <FaPlus /> Request
-            </button>
-            <Link to={`/community/edit/happy_savers`}>
-              <button className="flex items-center gap-2 bg-[#B1E1FF] hover:bg-[#4BA5E6] text-white px-4 py-2 rounded-full text-sm font-semibold shadow-sm">
-                Edit
-              </button>
-            </Link>
-            {/* Back Button */}
+          <div className="flex items-center gap-4">
             <div className="pt-2 flex justify-end">
-              <button
-                onClick={() => navigate(-1)}
-                className="flex items-center gap-2 bg-[#E5E7EB] text-[#374151] px-4 py-1.5 rounded-full text-sm font-medium hover:bg-[#D1D5DB] transition"
-              >
-                <FaArrowLeft /> Back
-              </button>
+              {isEditing ? (
+                <>
+                  <button
+                    onClick={handleSave}
+                    className="flex items-center gap-2 bg-[#AAD977] text-white px-4 py-1.5 rounded-full text-sm font-semibold hover:bg-[#83AB55] transition"
+                  >
+                    <FaSave /> Save
+                  </button>
+                  <button
+                    onClick={handleCancel}
+                    className="flex items-center gap-2 bg-gray-200 text-gray-700 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-gray-300 transition ml-2"
+                  >
+                    <FaTimes /> Cancel
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={handleRequestMembers}
+                    className="flex items-center gap-2 bg-[#B1E1FF] text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-[#4BA5E6] transition"
+                  >
+                    <FaUserPlus /> Request
+                  </button>
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="flex items-center gap-2 bg-[#B1E1FF] hover:bg-[#4BA5E6] text-white px-4 py-2 rounded-full text-sm font-semibold shadow-sm"
+                  >
+                    <FaEdit /> Edit
+                  </button>
+                  <button
+                    onClick={() => navigate(-1)}
+                    className="flex items-center gap-2 bg-[#E5E7EB] text-[#374151] px-4 py-1.5 rounded-full text-sm font-medium hover:bg-[#D1D5DB] transition"
+                  >
+                    <FaArrowLeft /> Back
+                  </button>
+                </>
+              )}
             </div>
-
           </div>
         </div>
 
+        {isEditing && (
+          <div className="bg-white p-6 rounded-2xl shadow border" style={{ borderColor: '#E5E7EB' }}>
+            <h3 className="text-lg font-semibold mb-4" style={{ color: '#4B5563' }}>Edit Community Details</h3>
+            
+            {/* Banner Selection */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Change Banner</label>
+              <div className="flex gap-4 overflow-x-auto pb-2">
+                {bannerOptions.map((banner) => (
+                  <div 
+                    key={banner.id} 
+                    className={`cursor-pointer border-2 rounded-xl p-1 flex-shrink-0 ${communityData.bannerId === banner.id ? 'border-[#66BFBF]' : 'border-gray-300'}`}
+                    onClick={() => setCommunityData({...communityData, bannerId: banner.id})}
+                  >
+                    <img src={banner.src} alt={banner.label} className="w-20 h-20 rounded-lg object-cover" />
+                    <p className="text-xs text-center mt-1">{banner.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <textarea
+                name="description"
+                value={communityData.description}
+                onChange={handleChange}
+                rows={3}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                placeholder="Enter a description for your community"
+              />
+            </div>
+
+            {/* Member Management */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Manage Members</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {mockMembers.map((member, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-4 bg-white p-3 rounded-2xl shadow-sm border relative"
+                    style={{ borderColor: '#E5E7EB' }}
+                  >
+                    <img
+                      src={member.avatar}
+                      className="w-12 h-12 rounded-full border object-cover"
+                      alt={member.name}
+                    />
+                    <div>
+                      <p className="text-sm font-semibold" style={{ color: '#374151' }}>{member.name}</p>
+                      <p className="text-xs" style={{ color: '#6B7280' }}>{member.level}</p>
+                    </div>
+                    <button 
+                      onClick={() => handleDelete(member.name)}
+                      className="absolute top-2 right-2 text-xs bg-red-100 text-red-600 rounded-full px-2 py-1 hover:bg-red-200"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Community Members */}
         <div>
@@ -198,12 +351,10 @@ const CommunityDetail = () => {
                     </button>
                   </div>
                 </div>
-
               </div>
             ))}
           </div>
         </div>
-
 
         {/* Community Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -249,7 +400,6 @@ const CommunityDetail = () => {
             <p className="text-xs mt-1 text-right" style={{ color: '#6B7280' }}>Goals Completed</p>
           </div>
         </div>
-
       </div>
     </CommunityLayout>
   );

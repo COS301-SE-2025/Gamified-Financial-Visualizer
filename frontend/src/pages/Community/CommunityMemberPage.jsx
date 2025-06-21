@@ -1,12 +1,11 @@
-// src/pages/Community/CommunityMemberPage.jsx
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 
 import CommunityLayout from '../../pages/Community/CommunityLayout';
 import CommunityHeader from '../../layouts/headers/CommunityHeader';
-import { FaChartLine, FaStar, FaArrowLeft, FaCrown, FaEye, FaMedal } from 'react-icons/fa';
+import { FaChartLine, FaStar, FaArrowLeft, FaCrown, FaEye, FaMedal, FaUserPlus, FaUserMinus, FaPaperPlane } from 'react-icons/fa';
 
 import profileBanner from '../../assets/Images/banners/pixelCornerStore.gif';
 import avatar4 from '../../assets/Images/avatars/beachAvatar.jpeg';
@@ -69,7 +68,33 @@ const mockMember = {
 };
 
 const CommunityMemberPage = () => {
+  const [isFriend, setIsFriend] = useState(false); // Track friend status
   const navigate = useNavigate();
+
+  const handleFriendRequest = () => {
+    toast.success(`Friend request sent to @${mockMember.username}`, {
+      icon: <FaPaperPlane className="text-[#1E3A8A]" />,
+      style: {
+        borderRadius: '9999px',
+        background: '#B1E1FF',
+        color: '#1E3A8A',
+      },
+    });
+    setIsFriend(true);
+  };
+
+  const handleRemoveFriend = () => {
+    toast.success(`@${mockMember.username} removed from your friends list`, {
+      icon: <FaUserMinus className="text-[#7F1D1D]" />,
+      style: {
+        borderRadius: '9999px',
+        background: '#FE9B90',
+        color: '#FFFFFF',
+      },
+    });
+    setIsFriend(false);
+  };
+
   return (
     <CommunityLayout>
       <Toaster position="top-right" />
@@ -88,26 +113,39 @@ const CommunityMemberPage = () => {
               className="w-28 h-28 rounded-full border-4 border-white shadow-md object-cover"
             />
             <div className="bg-white shadow-md px-4 py-2 rounded-full flex items-center gap-3">
-              <p className="text-lg font-medium text-gray-800">@{mockMember.username}</p>
+              <p className="text-lg font-medium text-gray-800">{mockMember.username}</p>
               <p className="text-sm italic text-[#F28B82]">Joined: <span className="font-medium">{mockMember.joined}</span></p>
             </div>
           </div>
+          
+          {/* Action buttons moved to right side */}
+          <div className="absolute right-6 -bottom-10 flex justify-end gap-3">
+            {!isFriend ? (
+              <button
+                onClick={handleFriendRequest}
+                className="flex items-center gap-1 px-4 py-2 text-sm rounded-full bg-[#FFD18C] text-white shadow hover:bg-[#f9b54c] transition"
+              >
+                <FaPaperPlane /> Request
+              </button>
+            ) : (
+              <button
+                onClick={handleRemoveFriend}
+                className="flex items-center gap-1 px-4 py-2 text-sm rounded-full bg-[#FA8B81] text-white shadow hover:bg-[#f56a5a] transition"
+              >
+                <FaUserMinus /> Remove
+              </button>
+            )}
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 bg-[#E5E7EB] text-[#374151] px-4 py-2 rounded-full text-sm font-medium hover:bg-[#D1D5DB] transition"
+            >
+              <FaArrowLeft /> Back
+            </button>
+          </div>
         </div>
-
-        {/* Back Button */}
-        <div className="pt-2 flex justify-end">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 bg-[#E5E7EB] text-[#374151] px-4 py-1.5 rounded-full text-sm font-medium hover:bg-[#D1D5DB] transition"
-          >
-            <FaArrowLeft /> Back
-          </button>
-        </div>
-
-
 
         {/* XP Progress */}
-        <div className="bg-white p-6 rounded-3xl shadow flex flex-col gap-4">
+        <div className="bg-white p-6 rounded-3xl shadow flex flex-col gap-4 mt-14">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-full border-4 border-yellow-400 text-yellow-600 font-bold flex items-center justify-center shadow-sm">

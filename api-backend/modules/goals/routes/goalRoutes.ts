@@ -1,448 +1,23 @@
-// import { Router, Request, Response } from 'express';
-// import { 
-//   // createCommunityGoal,
-//   // getPersonalGoalsByUserId,
-//   // getCommunityGoalsForUser, // Not implemented
-//   // updateGoalNameByUser,
-//   // deleteGoalByUser,
-//   // updateCommunityGoalNameByUser,
-//   // deleteCommunityGoalByUser,
-//   // getAchievedPersonalGoals, // Not implemented
-//   // getInProgressPersonalGoals, // Not implemented
-//   // getAchievedCommunityGoals, // Not implemented
-//   // getInProgressCommunityGoals, // Not implemented
-//   // getPersonalGoalById,
-//   // getCommunityGoalById
-//   createGoal,
-//   getGoal,
-//   getUserGoals,
-//   updateGoal,
-//   deleteGoal,
-//   addGoalProgress,
-//   completeGoal,
-//   reduceGoalProgress,
-//   getAllGoals
-// } from '../services/goals.service.js';
-// import { logger } from '../config/logger';
-
-// const router = Router();
-
-// /**
-//  * @route POST /api/goal
-//  * @description Creates a personal financial goal for a user.
-//  * @body user_id, goal_name, goal_type, target_amount, target_date, goal_status
-//  */
-// router.post('/', async (req: Request, res: Response): Promise<void> => {
-//   const { user_id, goal_name, goal_type, target_amount, target_date, goal_status } = req.body;
-
-//   if (!user_id || !goal_name || !goal_type || !target_amount || !target_date || !goal_status) {
-//     res.status(400).json({
-//       status: 'error',
-//       message: 'All fields are required.'
-//     });
-//     return;
-//   }
-
-//   try {
-//     const goal = await createPersonalGoal({
-//       user_id,
-//       goal_name,
-//       goal_type,
-//       target_amount,
-//       target_date,
-//       goal_status
-//     });
-
-//     res.status(201).json({
-//       status: 'success',
-//       message: 'Goal created successfully.',
-//       data: goal
-//     });
-//   } catch (error) {
-//     logger.error('[Routes] Failed to create goal', error);
-//     res.status(500).json({ status: 'error', message: 'Internal server error' });
-//   }
-// });
-
-// /**
-//  * @route POST /api/goal/community
-//  * @description Creates a community goal tied to a community.
-//  * @body user_id, community_id, goal_name, goal_type, target_amount, target_date, goal_status
-//  */
-// router.post('/community', async (req: Request, res: Response): Promise<void> => {
-//   const {
-//     user_id,
-//     community_id,
-//     goal_name,
-//     goal_type,
-//     target_amount,
-//     target_date,
-//     goal_status
-//   } = req.body;
-
-//   if (
-//     !user_id || !community_id || !goal_name || !goal_type ||
-//     !target_amount || !target_date || !goal_status
-//   ) {
-//     res.status(400).json({
-//       status: 'error',
-//       message: 'All fields are required for a community goal.'
-//     });
-//     return;
-//   }
-
-//   try {
-//     const goal = await createCommunityGoal({
-//       user_id,
-//       community_id,
-//       goal_name,
-//       goal_type,
-//       target_amount,
-//       target_date,
-//       goal_status
-//     });
-
-//     res.status(201).json({
-//       status: 'success',
-//       message: 'Community goal created successfully.',
-//       data: goal
-//     });
-//   } catch (error) {
-//     logger.error('[Routes] Failed to create community goal', error);
-//     res.status(500).json({ status: 'error', message: 'Internal server error' });
-//   }
-// });
-
-// /**
-//  * @route GET /api/goal/user/:userId
-//  * @description Retrieves all personal (non-community) goals for a specific user.
-//  * @param userId Path param — ID of the user
-//  * @returns {Object[]} List of personal goals
-//  */
-// router.get('/user/:userId', async (req: Request, res: Response): Promise<void> => {
-//   const { userId } = req.params;
-
-//   try {
-//     const goals = await getPersonalGoalsByUserId(userId);
-//     res.status(200).json({
-//       status: 'success',
-//       data: goals
-//     });
-//   } catch (error) {
-//     logger.error('[Routes] Failed to fetch personal goals', error);
-//     res.status(500).json({ status: 'error', message: 'Internal server error' });
-//   }
-// });
-
-// /**
-//  * @route GET /api/goal/user/:userId/community
-//  * @description Retrieves all community goals where the user is a member of the community.
-//  * @param userId - the user's ID
-//  * @returns List of community goals (excluding progress_percent)
-//  */
-// router.get('/user/:userId/community', async (req: Request, res: Response): Promise<void> => {
-//   const { userId } = req.params;
-
-//   try {
-//     const goals = await getCommunityGoalsForUser(userId);
-//     res.status(200).json({
-//       status: 'success',
-//       data: goals
-//     });
-//   } catch (error) {
-//     logger.error('[Routes] Failed to fetch community goals for user', error);
-//     res.status(500).json({ status: 'error', message: 'Internal server error' });
-//   }
-// });
-
-// /**
-//  * @route PUT /api/goal/:goalId
-//  * @description Allows a user to update the name of a goal they created.
-//  * @body user_id
-//  * @body {string} goal_name
-//  */
-// router.put('/:goalId', async (req: Request, res: Response): Promise<void> => {
-//   const { goalId } = req.params;
-//   const { user_id, goal_name } = req.body;
-
-//   if (!user_id || !goal_name || goal_name.trim() === '') {
-//     res.status(400).json({
-//       status: 'error',
-//       message: 'Both user_id and a valid new goal_name are required.'
-//     });
-//     return;
-//   }
-
-//   try {
-//     const updated = await updateGoalNameByUser(goalId, user_id, goal_name.trim());
-
-//     if (!updated) {
-//       res.status(404).json({
-//         status: 'error',
-//         message: 'Goal not found or user not authorized.'
-//       });
-//       return;
-//     }
-
-//     res.status(200).json({
-//       status: 'success',
-//       message: 'Goal name updated successfully.',
-//       data: updated
-//     });
-//   } catch (error) {
-//     logger.error('[Routes] Failed to update goal name', error);
-//     res.status(500).json({ status: 'error', message: 'Internal server error' });
-//   }
-// });
-
-// /**
-//  * @route DELETE /api/goal/:goalId
-//  * @description Allows a user to delete a goal they created.
-//  * @body {string} user_id - The ID of the user requesting deletion
-//  */
-// router.delete('/:goalId', async (req: Request, res: Response): Promise<void> => {
-//   const { goalId } = req.params;
-//   const { user_id } = req.body;
-
-//   if (!user_id) {
-//     res.status(400).json({
-//       status: 'error',
-//       message: 'user_id is required to delete a goal.'
-//     });
-//     return;
-//   }
-
-//   try {
-//     const deleted = await deleteGoalByUser(goalId, user_id);
-
-//     if (!deleted) {
-//       res.status(404).json({
-//         status: 'error',
-//         message: 'Goal not found or user not authorized to delete.'
-//       });
-//       return;
-//     }
-
-//     res.status(200).json({
-//       status: 'success',
-//       message: `Goal ${goalId} deleted successfully.`
-//     });
-//   } catch (error) {
-//     logger.error('[Routes] Failed to delete goal', error);
-//     res.status(500).json({ status: 'error', message: 'Internal server error' });
-//   }
-// });
-
-// /**
-//  * @route PUT /api/goal/community/:goalId
-//  * @description Allows a user to update the name of a community goal they created.
-//  * @body {string} user_id - the creator of the goal
-//  * @body {string} goal_name - new name
-//  */
-// router.put('/community/:goalId', async (req: Request, res: Response): Promise<void> => {
-//   const { goalId } = req.params;
-//   const { user_id, goal_name } = req.body;
-
-//   if (!user_id || !goal_name || goal_name.trim() === '') {
-//     res.status(400).json({
-//       status: 'error',
-//       message: 'Both user_id and a valid new goal_name are required.'
-//     });
-//     return;
-//   }
-
-//   try {
-//     const updated = await updateCommunityGoalNameByUser(goalId, user_id, goal_name.trim());
-
-//     if (!updated) {
-//       res.status(404).json({
-//         status: 'error',
-//         message: 'Community goal not found or user not authorized.'
-//       });
-//       return;
-//     }
-
-//     res.status(200).json({
-//       status: 'success',
-//       message: 'Community goal name updated successfully.',
-//       data: updated
-//     });
-//   } catch (error) {
-//     logger.error('[Routes] Failed to update community goal name', error);
-//     res.status(500).json({ status: 'error', message: 'Internal server error' });
-//   }
-// });
-
-// /**
-//  * @route DELETE /api/goal/community/:goalId
-//  * @description Allows a user to delete a community goal they created.
-//  * @body {string} user_id - The ID of the user requesting deletion
-//  */
-// router.delete('/community/:goalId', async (req: Request, res: Response): Promise<void> => {
-//   const { goalId } = req.params;
-//   const { user_id } = req.body;
-
-//   if (!user_id) {
-//     res.status(400).json({
-//       status: 'error',
-//       message: 'user_id is required to delete a community goal.'
-//     });
-//     return;
-//   }
-
-//   try {
-//     const deleted = await deleteCommunityGoalByUser(goalId, user_id);
-
-//     if (!deleted) {
-//       res.status(404).json({
-//         status: 'error',
-//         message: 'Community goal not found or user not authorized.'
-//       });
-//       return;
-//     }
-
-//     res.status(200).json({
-//       status: 'success',
-//       message: `Community goal ${goalId} deleted successfully.`
-//     });
-//   } catch (error) {
-//     logger.error('[Routes] Failed to delete community goal', error);
-//     res.status(500).json({ status: 'error', message: 'Internal server error' });
-//   }
-// });
-
-// /**
-//  * @route GET /api/goal/user/:userId/in-progress
-//  * @description Get all personal goals still in progress for a user
-//  */
-// router.get('/user/:userId/in-progress', async (req: Request, res: Response): Promise<void> => {
-//   const { userId } = req.params;
-
-//   try {
-//     const goals = await getInProgressPersonalGoals(userId);
-//     res.status(200).json({ status: 'success', data: goals });
-//   } catch (error) {
-//     logger.error('[Routes] Failed to fetch in-progress goals', error);
-//     res.status(500).json({ status: 'error', message: 'Internal server error' });
-//   }
-// });
-
-// /**
-//  * @route GET /api/goal/user/:userId/achieved
-//  * @description Get all personal goals that have been achieved by a user
-//  */
-// router.get('/user/:userId/achieved', async (req: Request, res: Response): Promise<void> => {
-//   const { userId } = req.params;
-
-//   try {
-//     const goals = await getAchievedPersonalGoals(userId);
-//     res.status(200).json({ status: 'success', data: goals });
-//   } catch (error) {
-//     logger.error('[Routes] Failed to fetch achieved goals', error);
-//     res.status(500).json({ status: 'error', message: 'Internal server error' });
-//   }
-// });
-
-// /**
-//  * @route GET /api/goal/user/:userId/community/achieved
-//  * @description Get all community goals marked as achieved for communities the user belongs to
-//  */
-// router.get('/user/:userId/community/achieved', async (req: Request, res: Response): Promise<void> => {
-//   const { userId } = req.params;
-
-//   try {
-//     const goals = await getAchievedCommunityGoals(userId);
-//     res.status(200).json({ status: 'success', data: goals });
-//   } catch (error) {
-//     logger.error('[Routes] Failed to fetch achieved community goals', error);
-//     res.status(500).json({ status: 'error', message: 'Internal server error' });
-//   }
-// });
-
-// /**
-//  * @route GET /api/goal/user/:userId/community/in-progress
-//  * @description Get all in-progress community goals for communities the user belongs to
-//  */
-// router.get('/user/:userId/community/in-progress', async (req: Request, res: Response): Promise<void> => {
-//   const { userId } = req.params;
-
-//   try {
-//     const goals = await getInProgressCommunityGoals(userId);
-//     res.status(200).json({ status: 'success', data: goals });
-//   } catch (error) {
-//     logger.error('[Routes] Failed to fetch in-progress community goals', error);
-//     res.status(500).json({ status: 'error', message: 'Internal server error' });
-//   }
-// });
-
-// /**
-//  * @route GET /api/goal/community/:goalId
-//  * @description Returns a specific community goal
-//  */
-// router.get('/community/:goalId', async (req: Request, res: Response): Promise<void> => {
-//   const { goalId } = req.params;
-
-//   try {
-//     const goal = await getCommunityGoalById(goalId);
-
-//     if (!goal) {
-//       res.status(404).json({
-//         status: 'error',
-//         message: 'Community goal not found.'
-//       });
-//     }
-
-//     res.status(200).json({ status: 'success', data: goal });
-//   } catch (error) {
-//     logger.error('[Routes] Failed to fetch community goal', error);
-//     res.status(500).json({ status: 'error', message: 'Internal server error' });
-//   }
-// });
-
-// /**
-//  * @route GET /api/goal/personal/:goalId
-//  * @description Returns a specific personal goal (not linked to a community)
-//  */
-// router.get('/personal/:goalId', async (req: Request, res: Response): Promise<void> => {
-//   const { goalId } = req.params;
-
-//   try {
-//     const goal = await getPersonalGoalById(goalId);
-
-//     if (!goal) {
-//       res.status(404).json({
-//         status: 'error',
-//         message: 'Personal goal not found.'
-//       });
-//     }
-
-//     res.status(200).json({ status: 'success', data: goal });
-//   } catch (error) {
-//     logger.error('[Routes] Failed to fetch personal goal', error);
-//     res.status(500).json({ status: 'error', message: 'Internal server error' });
-//   }
-// });
-
-
-
-// export default router;
-
-
 import { Router, Request, Response } from 'express';
 import {
   createGoal,
   getGoal,
   getUserGoals,
-  updateGoal,
   deleteGoal,
   addGoalProgress,
   completeGoal,
   reduceGoalProgress,
   getAllGoals,
-  getUserGoalStats
+  getUserGoalStats,
+  getGoalsSummary,
+  getGoalCategorySummary,
+  getUpcomingGoals,
+  getTotalGoalValue ,
+  getWeeklyGoalCompletions,
+  calculateGoalPerformance
 } from '../services/goals.service';
 import { logger } from '../../../config/logger';
-
+import pool  from '../../../config/db';
 const router = Router();
 
 /**
@@ -452,46 +27,57 @@ const router = Router();
 router.post('/', async (req: Request, res: Response) => {
   const {
     user_id,
-    community_id,
     goal_name,
     goal_type,
     target_amount,
+    start_date,
     target_date,
-    goal_status
+    banner_id,
+    category_id,
+    custom_category_name
   } = req.body;
 
-  if (
-    !goal_name || !goal_type || !target_amount ||
-    !target_date || !goal_status || (!user_id && !community_id)
-  ) {
-    res.status(400).json({
-      status: 'error',
-      message: 'Missing required fields: user_id or community_id, goal_name, goal_type, target_amount, target_date, goal_status'
-    });
-    return;
-  }
+  let resolvedCategoryId = category_id;
+  let resolvedCustomCategoryId: number | undefined = undefined;
 
   try {
-    const goalId = await createGoal({
+    // If user provides a custom category
+    if (!category_id && custom_category_name) {
+      // Check if it already exists or create it
+      const result = await pool.query(
+        'INSERT INTO custom_categories (user_id, name) VALUES ($1, $2) ON CONFLICT (user_id, name) DO UPDATE SET name = EXCLUDED.name RETURNING custom_category_id',
+        [user_id, custom_category_name]
+      );
+      resolvedCustomCategoryId = result.rows[0].custom_category_id;
+    }
+
+    // Enforce the category constraint
+    if ((resolvedCategoryId && resolvedCustomCategoryId) || (!resolvedCategoryId && !resolvedCustomCategoryId)) {
+       res.status(400).json({
+        status: 'error',
+        message: 'Exactly one of category_id or custom_category_name must be provided.',
+      });
+      return;
+    }
+
+    const goal_id = await createGoal({
       user_id,
-      community_id,
       goal_name,
       goal_type,
       target_amount,
+      start_date,
       target_date,
-      goal_status
+      banner_id,
+      category_id: resolvedCategoryId,
+      custom_category_id: resolvedCustomCategoryId,
+      goal_status: 'in-progress'
     });
 
-    res.status(201).json({
-      status: 'success',
-      message: 'Goal created successfully.',
-      data: { goal_id: goalId }
-    });
-  } catch (error) {
+    res.status(201).json({ status: 'success', data: { goal_id } });
+  } catch (error: any) {
     logger.error('[GoalRoutes] Failed to create goal', error);
-    res.status(500).json({ status: 'error', message: 'Internal server error' });
-  }
-});
+    res.status(500).json({ status: 'error', message: error.message });
+  }});
 
 /**
  * @route GET /api/goal/:goalId
@@ -515,6 +101,42 @@ router.get('/:goalId', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * @route GET /api/goal/:userId/summary
+ * @description Fetch a summary of all goals.
+ */
+router.get('/:userId/summary', async (req: Request, res: Response) => {
+  const { userId } = req.params;
+
+  try {
+    const summary = await getGoalsSummary(Number(userId));
+
+    res.status(200).json({ status: 'success', data: summary });
+  } catch (error) {
+    logger.error('[GoalRoutes] Error fetching user goals summary', error);
+    res.status(500).json({ status: 'error', message: 'Internal server error' });
+  }
+
+});
+
+
+router.get('/:userId/category-summary', async (req: Request, res: Response) => {
+  const { userId } = req.params;
+
+  try {
+    const summary = await getGoalCategorySummary(Number(userId));
+
+    res.status(200).json({
+      status: 'success',
+      data: summary
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      status: 'error',
+      message: error.message || 'Failed to fetch category summary'
+    });
+  }
+});
 /**
  * @route GET /api/goal/user/:userId
  * @description Fetch all personal goals for a user.
@@ -540,10 +162,22 @@ router.put('/:goalId', async (req: Request, res: Response) => {
   const updates = req.body;
 
   try {
-    await updateGoal(Number(goalId), updates);
+  //  await updateGoal(Number(goalId), updates);
     res.status(200).json({ status: 'success', message: 'Goal updated successfully' });
   } catch (error) {
     logger.error('[GoalRoutes] Error updating goal', error);
+    res.status(500).json({ status: 'error', message: 'Internal server error' });
+  }
+});
+
+router.get('/:userId/performance', async (req: Request, res: Response) => {
+  const { userId } = req.params;
+
+  try {
+    const performance = await calculateGoalPerformance(Number(userId));
+    res.status(200).json({ status: 'success', data: performance });
+  } catch (error) {
+    logger.error('[GoalRoutes] Error calculating goal performance', error);
     res.status(500).json({ status: 'error', message: 'Internal server error' });
   }
 });
@@ -583,6 +217,51 @@ router.post('/:goalId/progress', async (req: Request, res: Response) => {
   } catch (error) {
     logger.error('[GoalRoutes] Error adding progress', error);
     res.status(500).json({ status: 'error', message: 'Internal server error' });
+  }
+});
+
+router.get('/user/:userId/upcoming', async (req: Request, res: Response) => {
+  const { userId } = req.params;
+
+  try {
+    const goals = await getUpcomingGoals(Number(userId));
+    res.status(200).json({ status: 'success', data: goals });
+  } catch (error) {
+    logger.error('[GoalRoutes] Error fetching upcoming goals', error);
+    res.status(500).json({ status: 'error', message: 'Internal server error' });
+  }
+})
+
+
+router.get('/user/:userId/total-value', async (req: Request, res: Response) => {
+  const userId = Number(req.params.userId);
+
+  if (!userId) {
+    res.status(400).json({ status: 'error', message: 'User ID is required' });
+    return;
+  }
+
+  try {
+    const total = await getTotalGoalValue(userId);
+    res.status(200).json({ status: 'success', data: { total_goal_value: total } });
+  } catch (error: any) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+})
+
+
+router.get('/:userId/progress-frequency', async (req: Request, res: Response) => {
+  const userId = Number(req.params.userId);
+  if (!userId) {
+    res.status(400).json({ status: 'error', message: 'Invalid user ID' });
+    return;
+  }
+
+  try {
+    const frequency = await getWeeklyGoalCompletions(userId);
+    res.status(200).json({ status: 'success', data: frequency });
+  } catch (err) {
+    res.status(500).json({ status: 'error', message: 'Failed to get progress frequency' });
   }
 });
 

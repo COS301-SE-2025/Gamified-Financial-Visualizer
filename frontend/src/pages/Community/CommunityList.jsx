@@ -1,11 +1,12 @@
 // src/pages/Community/CommunityList.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
+import toast, { Toaster } from 'react-hot-toast';
 import { FaEye, FaTrophy } from 'react-icons/fa';
 import CommunityLayout from '../../pages/Community/CommunityLayout';
 import CommunityHeader from '../../layouts/headers/CommunityHeader';
 
-// 🖼️ Image imports
+// Image imports
 import happySavers from '../../assets/Images/banners/pixelApartment.gif';
 import coupons from '../../assets/Images/banners/pixelGirlAlly.gif';
 import money from '../../assets/Images/banners/pixelStudents.jpeg';
@@ -58,17 +59,40 @@ const communities = [
 ];
 
 const handleDelete = (itemName) => {
-    const confirmed = window.confirm(`Are you sure you want to delete "${itemName}"?`);
-    if (confirmed) {
-        // TODO: Delete logic (e.g., remove from state or make API call)
-        console.log(`Deleted ${itemName}`);
-    }
+  toast.custom((t) => (
+    <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-lg max-w-sm w-full space-y-3">
+      <p className="text-sm font-semibold text-gray-800">
+        Delete <span className="text-[#ED5E52]">"{itemName}"</span> community?
+      </p>
+      <div className="flex gap-2 justify-end">
+        <button
+          onClick={() => {
+            toast.dismiss(t.id);
+            toast.success(`Deleted "${itemName}"`);
+            // TODO: Actual deletion logic here
+            console.log(`Deleted ${itemName}`);
+          }}
+          className="bg-[#ED5E52] hover:bg-[#FE9B90] text-white px-4 py-1.5 text-sm rounded-full font-medium"
+        >
+          Confirm
+        </button>
+        <button
+          onClick={() => toast.dismiss(t.id)}
+          className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-1.5 text-sm rounded-full font-medium"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  ), { duration: 10000, position: 'top-center' });
 };
 
 
 const CommunityList = () => {
     return (
+        
         <CommunityLayout>
+              <Toaster position="top-right" />
             <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
                 <CommunityHeader />
                 <div className="flex justify-end mb-4">
@@ -78,7 +102,6 @@ const CommunityList = () => {
                         </button>
                     </Link>
                 </div>
-
 
                 {communities.map((community, i) => (
                     <div
@@ -126,12 +149,6 @@ const CommunityList = () => {
                                 <Link to={`/community/details/${community.name.toLowerCase().replace(/\s+/g, '_')}`}>
                                     <button className="bg-[#AAD977] text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-[#83AB55] transition whitespace-nowrap">
                                         <FaEye className="inline-block mr-1" /> View
-                                    </button>
-                                </Link>
-
-                                <Link to={`/community/edit/${community.name.toLowerCase().replace(/\s+/g, '_')}`}>
-                                    <button className="bg-[#B1E1FF] text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-[#4BA5E6] transition whitespace-nowrap">
-                                        Edit
                                     </button>
                                 </Link>
 
