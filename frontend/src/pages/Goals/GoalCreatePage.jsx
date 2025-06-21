@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaChevronDown } from 'react-icons/fa';
 import goal1 from '../../assets/Images/banners/pixelApartment.gif';
 import goal2 from '../../assets/Images/banners/pixelHouse.gif';
@@ -6,6 +6,8 @@ import goal3 from '../../assets/Images/banners/pixelOffice1.gif';
 import GoalsViewLayout from './GoalsViewLayout';
 
 const GoalCreatePage = () => {
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const [form, setForm] = useState({
     name: '',
     amount: '',
@@ -15,6 +17,64 @@ const GoalCreatePage = () => {
     category: '',
     image: goal1,
   });
+
+  const user = JSON.parse(localStorage.getItem('user'));
+const [categories, setCategories] = useState([]);
+
+useEffect(() => {
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('http://localhost:5000/api/transaction/categories');
+      const data = await res.json();
+      setCategories(data.data || []);
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+    }
+  };
+
+  fetchCategories();
+}, []);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const bannerIdMap = {
+    [goal1]: 1,
+    [goal2]: 2,
+    [goal3]: 3
+  };
+
+  const goalPayload = {
+    user_id: user?.id,
+    goal_name: form.name,
+    target_amount: parseFloat(form.amount),
+    goal_type: form.type, 
+    start_date: form.startDate,
+    target_date: form.endDate,
+    banner_id: bannerIdMap[form.image],
+    goal_status: 'in-progress',
+    ...(form.customCategory
+    ? { custom_category_id: form.customCategory }
+    : { category_id: Number(form.category) })
+  };
+
+  try {
+    const res = await fetch('http://localhost:5000/api/goal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(goalPayload)
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      window.location.href = '/goals';
+    } else {
+      alert(`Failed to create goal: ${data.message}`);
+    }
+  } catch (err) {
+    console.error('Error submitting goal:', err);
+    alert('An error occurred while creating the goal.');
+  }
+};
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -28,10 +88,8 @@ const GoalCreatePage = () => {
     setForm((prev) => ({ ...prev, image: img }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Submitted goal:', form);
-  };
+
+
 
   return (
     <GoalsViewLayout>
@@ -76,6 +134,7 @@ const GoalCreatePage = () => {
                 name="startDate"
                 value={form.startDate}
                 onChange={handleChange}
+                min={new Date().toISOString().split('T')[0]}
                 className="rounded-xl px-4 py-2 border shadow w-full"
               />
             </div>
@@ -86,6 +145,7 @@ const GoalCreatePage = () => {
                 name="endDate"
                 value={form.endDate}
                 onChange={handleChange}
+                min={new Date().toISOString().split('T')[0]}
                 className="rounded-xl px-4 py-2 border shadow w-full"
               />
             </div>
@@ -99,8 +159,11 @@ const GoalCreatePage = () => {
                   className="rounded-xl px-4 py-2 border shadow w-full appearance-none"
                 >
                   <option value="">Select goal type</option>
-                  <option value="Short-Term">Short-Term (under 6 months)</option>
-                  <option value="Long-Term">Long-Term (6+ months)</option>
+                  <option value="savings">Savings</option>
+                  <option value="debt">Debt</option>
+                  <option value="investment">Investment</option>
+                  <option value="spending limit">Spending limit</option>
+                  <option value="donation">Donation</option>
                 </select>
                 <FaChevronDown className="absolute right-4 top-3 text-gray-400 pointer-events-none" />
               </div>
@@ -116,24 +179,25 @@ const GoalCreatePage = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Goal Category</label>
               <div className="relative">
                 <select
-                  name="category"
-                  value={form.category}
-                  onChange={handleChange}
-                  className="rounded-xl px-4 py-2 border shadow w-full appearance-none"
-                >
-                  <option value="">Select a category</option>
-                  <option value="Savings">Savings</option>
-                  <option value="Health">Health & Wellness</option>
-                  <option value="Travel">Travel</option>
-                  <option value="Education">Education</option>
-                  <option value="Home">Home Improvement</option>
+                name="category"
+                value={form.category}
+                onChange={handleChange}
+                className="rounded-xl px-4 py-2 border shadow w-full appearance-none"
+                 >
+                <option value="">Select a category</option>
+                {categories.map((cat) => (
+                  <option key={cat.category_id} value={cat.category_id}>
+                    {cat.category_name}
+                  </option>
+                ))} 
+
                 </select>
                 <FaChevronDown className="absolute right-4 top-3 text-gray-400 pointer-events-none" />
               </div>
             </div>
             <div className="flex items-end">
               <span className="text-sm font-medium text-green-500">
-                XP Reward: 200 XP
+                XP Reward: 20 XP
               </span>
             </div>
           </div>
@@ -150,9 +214,8 @@ const GoalCreatePage = () => {
                   src={img}
                   alt={`Goal option ${i}`}
                   onClick={() => handleImageSelect(img)}
-                  className={`w-36 h-20 rounded-xl cursor-pointer object-cover border-2 ${
-                    form.image === img ? 'border-green-400' : 'border-transparent'
-                  }`}
+                  className={`w-36 h-20 rounded-xl cursor-pointer object-cover border-2 ${form.image === img ? 'border-green-400' : 'border-transparent'
+                    }`}
                 />
                 <span className="text-xs mt-1 text-gray-500">
                   {i === 0 ? 'Apartment' : i === 1 ? 'House' : 'Office'}
@@ -165,13 +228,38 @@ const GoalCreatePage = () => {
         {/* Submit Button */}
         <div className="pt-4 text-right">
           <button
-            type="submit"
-            className="px-8 py-3 bg-gradient-to-r from-green-400 to-lime-500 text-white rounded-full shadow-lg hover:from-green-500 hover:to-lime-600 transition-all font-medium"
+            type="button"
+            onClick={() => setShowConfirm(true)}
+            className="px-8 py-3 bg-gradient-to-r from-[#B4CB98] to-[#AAD977] text-white rounded-full shadow-lg hover:from-[#AAD977] hover:to-[#B4CB98] transition-all font-medium"
           >
             Create Goal
           </button>
+
         </div>
       </form>
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white p-6 rounded-2xl shadow-lg w-[90%] max-w-md text-center space-y-4">
+            <h2 className="text-xl font-semibold text-gray-800">Confirm Goal Creation</h2>
+            <p className="text-sm text-gray-600">Are you sure you want to create this goal?</p>
+            <div className="flex justify-center gap-4 pt-2">
+              <button
+                onClick={handleSubmit}
+                className="px-5 py-2 bg-[#AAD977] text-white rounded-full hover:bg-[#B4CB98]"
+              >
+                Yes, Create
+              </button>
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="px-5 py-2 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </GoalsViewLayout>
   );
 };

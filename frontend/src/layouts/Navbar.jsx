@@ -27,7 +27,7 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem('user');
     setUser(null);
-    navigate('/login');
+    navigate('/landing');
   };
 
   const navClasses = ({ isActive }) =>
@@ -92,7 +92,7 @@ const Navbar = () => {
               <FaSignOutAlt className="text-[#83AB55] text-2xl" />
             </button>
           ) : (
-            <NavLink to="/login" className="bg-[#83AB55] text-white px-4 py-1 rounded-full shadow">
+            <NavLink to="/landing" className="bg-[#83AB55] text-white px-4 py-1 rounded-full shadow">
               Login
             </NavLink>
           )}
