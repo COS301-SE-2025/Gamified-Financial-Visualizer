@@ -9,7 +9,7 @@ import pool       from './config/db';
 import { registerAuthModule }        from './modules/auth';
 import { registerTransactionModule } from './modules/transactions';
 import { registerGoalModule }        from './modules/goals';
-
+import { registerLearningModule }    from './modules/learning'; // Learning module
 // …add others as they migrate
 
 dotenv.config();
@@ -30,6 +30,7 @@ app.use(express.json());
 registerAuthModule(app);
 registerTransactionModule(app);
 registerGoalModule(app);
+registerLearningModule(app);
 
 // ...
 

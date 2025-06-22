@@ -2,11 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaRegImage,FaArrowRight } from 'react-icons/fa';
 
-const CourseCard = ({ title, lessons, image }) => {
+const CourseCard = ({ moduleId, title, lessons, image }) => {
   const slug = title.toLowerCase().replace(/\s+/g, '-');
 
   return (
-    <Link to={`/modules/${slug}/lessons`}>
+    <Link to={`/learning/${slug}/${moduleId}/lessons`}>
       <div className="bg-white rounded-2xl shadow-md overflow-hidden w-64 hover:shadow-lg transition">
         <img src={image} alt={title} className="w-full h-32 object-cover" />
         <div className="p-4">
