@@ -77,12 +77,18 @@ function App() {
           <Route path="/transactions" element={<TransactionPage />} />
 
           {/* Routes for the learn page */}
+          {/* Routes for the learn page */}
           <Route path="/learn" element={<LearningPage />} />
+
           <Route path="/learn/complete" element={<CompleteCourses />} />
           <Route path="/learn/incomplete" element={<IncompleteCourses />} />
           <Route path="/modules/:moduleId/lessons" element={<LessonsModulesDetailPage />} />
 
-
+          <Route path="/learn/complete" element={<CompleteCourses/>}/>
+          <Route path="/learn/incomplete" element={<IncompleteCourses/>}/>
+          <Route path="/modules/:moduleId/lessons" element={<LessonsModulesDetailPage/>} />
+          <Route path="/learning/:moduleSlug/:moduleId/lessons"   element={<LessonsModulesDetailPage />} />
+          
           {/* Routes for the help page */}
           <Route path="/support" element={<HelpViewLayout />}>
             <Route index element={<HelpMain />} />
