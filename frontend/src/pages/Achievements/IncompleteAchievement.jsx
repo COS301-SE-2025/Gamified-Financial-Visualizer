@@ -1,6 +1,5 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
-import { FaBolt } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 import AchievementsLayout from '../../pages/Achievements/AchievementsLayout';
 import badge1 from '../../assets/Images/badges/CoinStack.png';
 import badge2 from '../../assets/Images/badges/notesIcon.png';
@@ -12,153 +11,180 @@ import badge7 from '../../assets/Images/badges/moneyGrowIcon.png';
 import badge8 from '../../assets/Images/badges/mountainIcon.png';
 import badge9 from '../../assets/Images/badges/awardIcon.png';
 
-const sampleTasks = [
-  { title: 'First Time Saver', reward: 500, progress: 3, total: 5, status: 'complete' },
-  { title: 'First Time Saver', reward: 500, progress: 3, total: 5, status: 'incomplete' },
-  { title: 'First Time Saver', reward: 500, progress: 3, total: 5, status: 'complete' },
-  { title: 'First Time Saver', reward: 500, progress: 3, total: 5, status: 'incomplete' },
+const achievements = [
+  {
+    title: 'Cash Horder',
+    reward: 500,
+    progress: 3,
+    total: 5,
+    image: badge1,
+    color: 'from-[#FFC857] to-[#F5A623]',
+    border: 'border-[#ED5E52]',
+    text: 'text-[#ED5E52]'
+  },
+  {
+    title: 'OverAchiever',
+    reward: 600,
+    progress: 3,
+    total: 5,
+    image: badge8,
+    color: 'from-[#5FBFFF] to-[#5FBFFF]',
+    border: 'border-[#5FBFFF]',
+    text: 'text-[#5FBFFF]'
+  },
+  {
+    title: 'Just Grow it',
+    reward: 450,
+    progress: 3,
+    total: 5,
+    image: badge4,
+    color: 'from-[#88BC46] to-[#88BC46]',
+    border: 'border-[#88BC46]',
+    text: 'text-[#88BC46]'
+  },
+  {
+    title: 'Money Major',
+    reward: 50,
+    progress: 3,
+    total: 5,
+    image: badge6,
+    color: 'from-[#FFC857] to-[#F5A623]',
+    border: 'border-[#ED5E52]',
+    text: 'text-[#ED5E52]'
+  },
+  {
+    title: 'Real Banker',
+    reward: 900,
+    progress: 3,
+    total: 5,
+    image: '/images/achievements/banker.png',
+    color: 'from-[#5FBFFF] to-[#5FBFFF]',
+    border: 'border-[#5FBFFF]',
+    text: 'text-[#5FBFFF]'
+  },
+  {
+    title: 'Stack Stacker',
+    reward: 650,
+    progress: 3,
+    total: 5,
+    image: badge2,
+    color: 'from-[#88BC46] to-[#88BC46]',
+    border: 'border-[#88BC46]',
+    text: 'text-[#88BC46]'
+  },
+  {
+    title: 'All My Friends',
+    reward: 150,
+    progress: 3,
+    total: 5,
+    image: badge5,
+    color: 'from-[#FFC857] to-[#F5A623]',
+    border: 'border-[#ED5E52]',
+    text: 'text-[#ED5E52]'
+  },
+  {
+    title: 'Target Chaser',
+    reward: 5000,
+    progress: 3,
+    total: 5,
+    image:  badge3,
+    color: 'from-[#5FBFFF] to-[#5FBFFF]',
+    border: 'border-[#5FBFFF]',
+    text: 'text-[#5FBFFF]'
+  },
+  {
+    title: 'Building Wealth',
+    reward: 30,
+    progress: 3,
+    total: 5,
+    image:  badge7,
+    color: 'from-[#88BC46] to-[#88BC46]',
+    border: 'border-[#88BC46]',
+    text: 'text-[#88BC46]'
+  },
+  {
+    title: '#1 Investor',
+    reward: 850,
+    progress: 3,
+    total: 5,
+    image: badge9,
+    color: 'from-[#FFC857] to-[#F5A623]',
+    border: 'border-[#ED5E52]',
+    text: 'text-[#ED5E52]'
+  }
 ];
 
-const gradientMap = {
-  red: 'linear-gradient(to right, #FF4C28, #FFCE51)',
-  blue: 'linear-gradient(to right, #5FBFFF, #B1E1FF)',
-  green: 'linear-gradient(to right, #88BC46, #CBEEA5)',
-};
+const ProgressBar = ({ percentage }) => (
+  <div className="w-full p-4 bg-white rounded-xl border border-yellow-300">
+    <div className="relative w-full bg-white border border-yellow-300 rounded-full h-6 flex items-center px-2">
+      <div className="absolute h-6 left-0 rounded-full bg-gradient-to-r from-[#FFC857] to-[#F5A623]"
+        style={{ width: `${percentage}%` }}></div>
+      <div className="w-full flex justify-between text-[12px] font-semibold text-[#ED5E52] relative z-10">
+        <span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span>
+      </div>
+    </div>
+  </div>
+);
 
-const colorMap = {
-  'Cash Horder': 'red',
-  'OverAchiever': 'blue',
-  'Just Grow it': 'green',
-  'Money Major': 'red',
-  'Real Banker': 'blue',
-  'Stack Stacker': 'green',
-  'All My Friends': 'red',
-  'Target Chaser': 'blue',
-  'Building Wealth': 'green',
-  '#1 Investor': 'red',
-};
-
-const hexMap = {
-  red: '#ED5E52',
-  blue: '#5FBFFF',
-  green: '#88BC46'
-};
-
-const BadgeTaskCard = ({ task, primaryColor, image, barGradient }) => {
+const AchievementCard = ({ title, reward, progress, total, image, color, border, text }) => {
+  const navigate = useNavigate();
+  const progressPercent = (progress / total) * 100;
   return (
-    <div className="flex items-center justify-between bg-white rounded-2xl p-4 shadow-md border"
-         style={{ borderColor: primaryColor }}>
-      <div className="flex items-center gap-4">
-        {/* Badge container - increased size to accommodate larger image */}
-        <div 
-          className="w-24 h-24 flex items-center justify-center rounded-full relative" 
-          style={{
-            border: `2px solid ${primaryColor}`,
-            boxShadow: `
-              0 1px 1px rgba(0,0,0,0.12),
-              0 2px 2px rgba(0,0,0,0.12),
-              0 4px 4px rgba(0,0,0,0.12),
-              0 8px 8px rgba(0,0,0,0.12),
-              0 0 0 4px ${primaryColor}20
-            `,
-            background: 'white'
-          }}
-        >
-          {/* Larger image with drop shadow */}
-          <img 
-            src={image} 
-            alt="icon" 
-            className="w-16 h-16 object-contain" 
-            style={{
-              filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.1))'
-            }}
-          />
+    <div
+      className={`rounded-2xl p-4 shadow-md transition duration-300 ease-in-out hover:shadow-lg cursor-pointer border-2 ${border} bg-white`}
+      onClick={() => navigate(`/achievements/${encodeURIComponent(title)}`)}
+    >
+      <div className="flex flex-col items-center gap-2">
+        {/* Title */}
+        <h3 className={`text-sm font-bold ${text}`}>{title}</h3>
+
+        {/* Image */}
+        <img
+          src={image}
+          alt={title}
+          className="w-22 h-20 object-contain"
+        />
+
+        {/* Progress bar */}
+        <div className="w-full mt-1">
+          <div className="relative h-2 rounded-full bg-gray-200">
+            <div
+              className={`absolute top-0 left-0 h-2 rounded-full bg-gradient-to-r ${color}`}
+              style={{ width: `${progressPercent}%` }}
+            ></div>
+          </div>
         </div>
 
-        {/* Task info remains unchanged */}
-        <div>
-          <div className="flex items-center gap-4">
-            <h3 className="text-[16px] font-semibold" style={{ color: primaryColor }}>
-              {task.title}
-            </h3>
-            <p className="text-sm font-light" style={{ color: primaryColor }}>
-              {task.reward} XP Reward
-            </p>
-          </div>
-
-          <div className="w-64 bg-gray-200 h-2 rounded-full mt-2">
-            <div
-              className="h-2 rounded-full"
-              style={{
-                width: `${(task.progress / task.total) * 100}%`,
-                background: barGradient
-              }}
-            />
-          </div>
-
-          <p className="text-xs mt-1" style={{ color: primaryColor }}>
-            {task.progress}/{task.total}
-          </p>
+        {/* Footer */}
+        <div className="flex justify-between w-full text-xs text-gray-600 font-medium pt-1">
+          <span>{reward} XP Reward</span>
+          <span>{progress}/{total}</span>
         </div>
       </div>
     </div>
   );
 };
 
-const AchievementDetailPage = () => {
-  const { id } = useParams();
-  const colorKey = colorMap[id] || 'red';
-  const primaryColor = hexMap[colorKey];
-  const barGradient = gradientMap[colorKey];
-  const badgeMap = {
-    'Cash Horder': badge1,
-    'Stack Stacker': badge2,
-    'Target Chaser': badge3,
-    'Just Grow it': badge4,
-    'All My Friends': badge5,
-    'Money Major': badge6,
-    'Building Wealth': badge7,
-    'OverAchiever': badge8,
-    '#1 Investor': badge9
-  };
-
-  const badgeImage = badgeMap[id] || badge9;
-
+const IncompleteAchievementsPage = () => {
   return (
     <AchievementsLayout>
-      <div className="p-6 space-y-6 rounded-2xl -mt-6">
+      <div className="space-y-6 px-6 pt-10 pb-6 -mt-8">
+        {/* Heading */}
         <div>
-          <div
-            className="inline-block px-4 py-1 rounded-full border font-bold text-lg"
-            style={{
-              borderColor: primaryColor,
-              backgroundImage: barGradient,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
-            }}
-          >
-            {id}
-          </div>
+          <h2 className="text-2xl font-semibold text-sky-500 bg-sky-100 inline-block px-4 py-1 rounded-full mb-6">
+            Achievements
+          </h2>
+        </div>
 
-          <p className="text-sm text-gray-500 mt-2 mb-4">
-            Unlock your badges by completing tasks on the site.
-          </p>
-
-          <div className="space-y-4">
-            {sampleTasks.map((task, i) => (
-              <BadgeTaskCard
-                key={i}
-                task={task}
-                primaryColor={primaryColor}
-                barGradient={barGradient}
-                image={badgeImage}
-              />
-            ))}
-          </div>
+        {/* Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          {achievements.map((a, i) => (
+            <AchievementCard key={i} {...a} />
+          ))}
         </div>
       </div>
     </AchievementsLayout>
   );
 };
 
-export default AchievementDetailPage;
+export default IncompleteAchievementsPage;
