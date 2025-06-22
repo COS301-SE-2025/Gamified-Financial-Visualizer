@@ -233,25 +233,27 @@ const DashboardPage = () => {
   return (
     <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-slate-900' : 'bg-slate-50'} p-4 md:p-6 relative`}>
       {/* Header - welcome banner*/}
-      <div className="flex-1 mb-4 bg-gradient-to-r from-[#B1E1FF] via-[#AAD977] to-[#FBD38D] p-6 rounded-3xl shadow-md flex flex-col md:flex-row items-center justify-between gap-6">
-        <h2 className="text-xl md:text-2xl font-bold text-white mb-2">
-          Welcome Back satoshi_nak!
-        </h2>
-
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-1">
-            <FaCoins className="text-white" />
-            <span className={`font-medium ${colors.text}`}>{userData.coins}</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            <FaGem className="text-white" />
-            <span className={`font-medium ${colors.text}`}>{userData.gems}</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center">
-              <FaFire className="text-orange-300 text-xs" />
+      <div className="relative overflow-hidden mb-4 bg-gradient-to-r from-[#B1E1FF] via-[#AAD977] to-[#FFD18C] p-6 rounded-3xl shadow-lg">
+        <div className="absolute inset-0 opacity-20 bg-gray-700"></div>
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
+          <h2 className="text-xl md:text-2xl font-bold text-white mb-2">
+            Welcome Back satoshi_nak!
+          </h2>
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-1">
+              <FaCoins className="text-white" />
+              <span className={`font-medium ${colors.text}`}>{userData.coins}</span>
             </div>
-            <span className={`font-medium ${colors.text}`}>{userData.streak}</span>
+            <div className="flex items-center space-x-1">
+              <FaGem className="text-white" />
+              <span className={`font-medium ${colors.text}`}>{userData.gems}</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center">
+                <FaFire className="text-orange-300 text-xs" />
+              </div>
+              <span className={`font-medium ${colors.text}`}>{userData.streak}</span>
+            </div>
           </div>
         </div>
       </div>

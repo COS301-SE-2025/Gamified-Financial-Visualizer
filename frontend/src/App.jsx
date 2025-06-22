@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // The Login Page Routes
 import Login from './pages/Auth/Login';
@@ -8,6 +8,9 @@ import Register from './pages/Auth/Register';
 // Layout and Landing Routes
 import Layout from './layouts/Layout';
 import LandingPage from './pages/Landing/LandingPage';
+import LandingAchievements from './pages/Landing/LandingAchievements';
+import AboutPage from './pages/Landing/about';
+import ContactPage from './pages/Landing/contact';
 
 // The Profile Page Routes
 import ProfilePage from './pages/Profile/ProfilePage';
@@ -34,7 +37,9 @@ import LessonsModulesDetailPage from './pages/Learn/LessonDetailPage';
 import FAQDetails from './pages/Support/FAQDetails';
 import HelpViewLayout from './pages/Support/HelpViewLayout';
 import HelpMain from './pages/Support/HelpMain';
+import HelpOverview from './pages/Support/OverviewLanding';
 import TutorialDetails from './pages/Support/TutorialDetails';
+import SectionDetail from './pages/Support/SectionDetail';
 
 // The Community Page Routes
 import CommunityDashboard from './pages/Community/CommunityDashboard';
@@ -59,6 +64,9 @@ function App() {
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/landing" element={<LandingPage />} />
+        <Route path="/landingAchievements" element={<LandingAchievements />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
@@ -69,19 +77,26 @@ function App() {
           <Route path="/transactions" element={<TransactionPage />} />
 
           {/* Routes for the learn page */}
+          {/* Routes for the learn page */}
           <Route path="/learn" element={<LearningPage />} />
+
+          <Route path="/learn/complete" element={<CompleteCourses />} />
+          <Route path="/learn/incomplete" element={<IncompleteCourses />} />
+          <Route path="/modules/:moduleId/lessons" element={<LessonsModulesDetailPage />} />
+
           <Route path="/learn/complete" element={<CompleteCourses/>}/>
           <Route path="/learn/incomplete" element={<IncompleteCourses/>}/>
           <Route path="/modules/:moduleId/lessons" element={<LessonsModulesDetailPage/>} />
           <Route path="/learning/:moduleSlug/:moduleId/lessons"   element={<LessonsModulesDetailPage />} />
           
-        
-        
-
           {/* Routes for the help page */}
           <Route path="/support" element={<HelpViewLayout />}>
             <Route index element={<HelpMain />} />
             <Route path="faqs" element={<FAQDetails />} />
+            <Route path="overview">
+              <Route index element={<HelpOverview />} />
+              <Route path=":section" element={<SectionDetail />} />
+            </Route>
             <Route path="tutorials" element={<TutorialDetails />} />
           </Route>
 
@@ -104,9 +119,9 @@ function App() {
 
           {/* Routes for the Accounts pages */}
           <Route path="/transactions" element={<TransactionPage />} />
-          <Route path="/transactions/insights" element={<AccountInsights/>}/>
-          <Route path="/transactions/budget" element={<AccountBudget/>}/>
-          <Route path="/transactions/import" element={<AccountsImport/>}/>
+          <Route path="/transactions/insights" element={<AccountInsights />} />
+          <Route path="/transactions/budget" element={<AccountBudget />} />
+          <Route path="/transactions/import" element={<AccountsImport />} />
 
           {/* Routes for the goals page */}
           <Route path="/goals" element={<GoalsPage />} />
