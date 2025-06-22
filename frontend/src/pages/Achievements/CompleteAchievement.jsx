@@ -172,7 +172,7 @@ const CompleteAchievementsPage = () => {
         {/* Heading */}
         <div>
           <h2 className="text-2xl font-semibold text-sky-500 bg-sky-100 inline-block px-4 py-1 rounded-full mb-6">
-            Achievements
+            Completed Achievements
           </h2>
         </div>
 
