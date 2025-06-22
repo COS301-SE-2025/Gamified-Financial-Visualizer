@@ -41,6 +41,15 @@ const GoalsHeader = () => {
           <FaListUl />FAQ
         </button>
 
+        {/* FAQ Page route */}
+        <button
+         onClick={() => navigate('/support/overview')}
+          className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${path === '/support/overview' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
+            }`}
+        >
+          <FaListUl />Help
+        </button>
+
         {/* Tutorial Page route */}
         <button
           onClick={() => navigate('/support/tutorials')}

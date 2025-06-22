@@ -7,6 +7,28 @@ const HelpMain = () => {
   const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(null);
   const [showXpAnimation, setShowXpAnimation] = useState(false);
+  const [tasks, setTasks] = useState(() => {
+    const saved = localStorage.getItem('dailyTasks');
+    return saved
+      ? JSON.parse(saved)
+      : [
+        { task: 'Complete a tutorial', done: false, path: '/support/tutorials' },
+        { task: 'Read through the FAQs', done: false, path: '/support/faqs' },
+        { task: 'Check out the AI Companion Info Page', done: false, path: '/support/overview/ai' }
+      ];
+  });
+
+
+  const toggleTask = (index) => {
+    setTasks(prev => {
+      const updated = prev.map((task, i) =>
+        i === index ? { ...task, done: !task.done } : task
+      );
+      localStorage.setItem('dailyTasks', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
 
   // Mock user data
   const userStats = {
@@ -32,6 +54,21 @@ const HelpMain = () => {
 
   const xpProgress = (userStats.xp / userStats.nextLevelXp) * 100;
 
+  // Calculate completed count
+  const completedCount = tasks.filter(t => t.done).length;
+
+  // Claim reward function
+  const claimReward = () => {
+    if (completedCount === 3) {
+      alert('Reward Claimed! +15 XP');
+      // Reset all tasks
+      setTasks(tasks.map(t => ({ ...t, done: false })));
+
+    } else {
+      alert(`${3 - completedCount} more tasks to complete!`);
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
       {/* Top Row - XP Overview Card */}
@@ -42,7 +79,7 @@ const HelpMain = () => {
         className="bg-[#ffffff] p-6 rounded-3xl shadow-md border-l-8 border-t-2 border-r-2 border-b-2 border-[#FFD18C] relative overflow-hidden"
       >
         <div className="absolute top-0 right-0 w-32 h-32 bg-[#fef9c3] rounded-full filter blur-3xl opacity-40 -mr-10 -mt-10"></div>
-        
+
         <div className="relative z-10 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-[#FFBF1A] mb-1">Knowledge Quest</h1>
@@ -195,30 +232,63 @@ const HelpMain = () => {
         </motion.div>
       </div>
 
+
       {/* Bottom Row - Daily Challenge */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.3 }}
-        className="bg-[#ffffff] p-6 rounded-3xl shadow-md border-t-8 border-[#fb923c] relative overflow-hidden"
+        className="bg-white p-6 rounded-3xl shadow-md border-t-8 border-[#fb923c] relative overflow-hidden"
       >
         <div className="absolute top-0 right-0 w-24 h-24 bg-[#ffedd5] rounded-full filter blur-3xl opacity-40 -mr-10 -mt-10"></div>
         <div className="relative z-10">
           <h2 className="text-xl font-bold text-[#1f2937] mb-2">Daily Challenge</h2>
-          <p className="text-[#4b5563] mb-4">Complete 1 tutorial today to earn bonus XP!</p>
+          <p className="text-[#4b5563] mb-4">Complete today's tasks to earn bonus XP!</p>
 
-          <div className="flex items-center gap-3">
+          <ul className="space-y-3">
+            {tasks.map((item, i) => (
+              <li
+                key={i}
+                className={`flex items-center justify-between px-4 py-2 rounded-xl border ${item.done ? 'bg-[#ecfccb] border-[#a3e635] text-green-800' : 'bg-[#fef3c7] border-[#facc15] text-yellow-800'
+                  } cursor-pointer hover:opacity-80 transition-opacity`}
+                onClick={() => {
+                  toggleTask(i);
+                  if (!tasks[i].done && tasks[i].path) navigate(tasks[i].path);
+                }}
+
+              >
+                <span className="text-sm font-medium">{item.task}</span>
+                {item.done ? (
+                  <span className="text-xs font-bold">✓ Done</span>
+                ) : (
+                  <span className="text-xs font-medium opacity-70">Pending</span>
+                )}
+              </li>
+            ))}
+          </ul>
+
+          <div className="flex items-center gap-3 mt-5">
             <div className="flex-1 bg-[#f3f4f6] rounded-full h-3">
-              <div className="bg-gradient-to-r from-[#f8994c] to-[#FFD18C] h-3 rounded-full w-1/3"></div>
+              <div
+                className="bg-gradient-to-r from-[#f8994c] to-[#FFD18C] h-3 rounded-full"
+                style={{ width: `${Math.min((completedCount / 3) * 100, 100)}%` }}
+              ></div>
             </div>
-            <span className="text-sm font-medium text-[#374151]">1/3 completed</span>
+            <span className="text-sm font-medium text-[#374151]">{completedCount}/3 completed</span>
           </div>
 
-          <button className="mt-4 px-6 py-2 bg-gradient-to-r from-[#fb923c] to-[#FFD18C] hover:from-[#f9925b] hover:to-[#f59e0b] text-[#ffffff] font-bold rounded-full shadow-md transition-all">
-            Start Challenge
+          <button
+            className={`mt-4 px-6 py-2 ${completedCount === 3
+              ? 'bg-gradient-to-r from-[#22c55e] to-[#86efac] hover:to-[#4ade80]'
+              : 'bg-gradient-to-r from-[#fb923c] to-[#FFD18C] hover:from-[#f9925b] hover:to-[#f59e0b]'
+              } text-white font-bold rounded-full shadow-md transition-all w-full`}
+            onClick={claimReward}
+          >
+            {completedCount === 3 ? 'Claim Reward' : 'Start Challenge'}
           </button>
         </div>
       </motion.div>
+
     </div>
   );
 };
