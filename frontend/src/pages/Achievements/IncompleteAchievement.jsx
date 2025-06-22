@@ -45,19 +45,37 @@ const hexMap = {
 };
 
 const BadgeTaskCard = ({ task, primaryColor, image, barGradient }) => {
-  const isComplete = task.status === 'complete';
-
   return (
     <div className="flex items-center justify-between bg-white rounded-2xl p-4 shadow-md border"
          style={{ borderColor: primaryColor }}>
       <div className="flex items-center gap-4">
-        <div
-          className="w-14 h-14 flex items-center justify-center rounded-full bg-gradient-to-br "
-          style={{ border: `1.5px solid ${primaryColor}` }}
+        {/* Badge container - increased size to accommodate larger image */}
+        <div 
+          className="w-24 h-24 flex items-center justify-center rounded-full relative" 
+          style={{
+            border: `2px solid ${primaryColor}`,
+            boxShadow: `
+              0 1px 1px rgba(0,0,0,0.12),
+              0 2px 2px rgba(0,0,0,0.12),
+              0 4px 4px rgba(0,0,0,0.12),
+              0 8px 8px rgba(0,0,0,0.12),
+              0 0 0 4px ${primaryColor}20
+            `,
+            background: 'white'
+          }}
         >
-          <img src={image} alt="icon" className="w-9 h-9 object-contain" />
+          {/* Larger image with drop shadow */}
+          <img 
+            src={image} 
+            alt="icon" 
+            className="w-16 h-16 object-contain" 
+            style={{
+              filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.1))'
+            }}
+          />
         </div>
 
+        {/* Task info remains unchanged */}
         <div>
           <div className="flex items-center gap-4">
             <h3 className="text-[16px] font-semibold" style={{ color: primaryColor }}>
@@ -87,25 +105,25 @@ const BadgeTaskCard = ({ task, primaryColor, image, barGradient }) => {
   );
 };
 
-
 const AchievementDetailPage = () => {
   const { id } = useParams();
   const colorKey = colorMap[id] || 'red';
   const primaryColor = hexMap[colorKey];
   const barGradient = gradientMap[colorKey];
   const badgeMap = {
-  'Cash Horder': badge1,
-  'Stack Stacker': badge2,
-  'Target Chaser': badge3,
-  'Just Grow it': badge4,
-  'All My Friends': badge5,
-  'Money Major': badge6,
-  'Building Wealth': badge7,
-  'OverAchiever': badge8,
-  '#1 Investor': badge9
-};
+    'Cash Horder': badge1,
+    'Stack Stacker': badge2,
+    'Target Chaser': badge3,
+    'Just Grow it': badge4,
+    'All My Friends': badge5,
+    'Money Major': badge6,
+    'Building Wealth': badge7,
+    'OverAchiever': badge8,
+    '#1 Investor': badge9
+  };
 
-const badgeImage = badgeMap[id] || badge9;
+  const badgeImage = badgeMap[id] || badge9;
+
   return (
     <AchievementsLayout>
       <div className="p-6 space-y-6 rounded-2xl -mt-6">
