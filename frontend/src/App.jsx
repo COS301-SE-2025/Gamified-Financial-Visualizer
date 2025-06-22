@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // The Login Page Routes
 import Login from './pages/Auth/Login';
@@ -8,6 +8,9 @@ import Register from './pages/Auth/Register';
 // Layout and Landing Routes
 import Layout from './layouts/Layout';
 import LandingPage from './pages/Landing/LandingPage';
+import LandingAchievements from './pages/Landing/LandingAchievements';
+import AboutPage from './pages/Landing/about';
+import ContactPage from './pages/Landing/contact';
 
 // The Profile Page Routes
 import ProfilePage from './pages/Profile/ProfilePage';
@@ -61,6 +64,9 @@ function App() {
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/landing" element={<LandingPage />} />
+        <Route path="/landingAchievements" element={<LandingAchievements />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 

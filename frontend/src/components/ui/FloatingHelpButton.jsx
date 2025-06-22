@@ -27,7 +27,7 @@ const FloatingHelpButton = () => {
 
     const handleClick = () => {
         if (helpTopic) {
-            navigate(`/support/tutorials`, { state: { focus: helpTopic } });
+            navigate(`/support/overview/${helpTopic}`);
         } else {
             navigate(`/support`);
         }
