@@ -2,7 +2,6 @@ import { Router, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import argon2 from 'argon2';
 import crypto from 'crypto';
-import { V4 as paseto } from 'paseto';
 import { V3 }                from 'paseto';
 import { logger } from '../../../config/logger';
 import * as userService from '../services/auth.service';
