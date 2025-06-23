@@ -119,6 +119,22 @@ export async function submitQuizAttempt(
   attempt_score: number,
   passed: boolean
 ) {
+  // Get module difficulty for the quiz
+  const moduleDifficultyQuery = `
+    SELECT lm.difficulty
+    FROM quizzes q
+    JOIN learning_modules lm ON q.module_id = lm.module_id
+    WHERE q.quiz_id = $1
+    LIMIT 1;
+  `;
+  const difficultyResult = await pool.query(moduleDifficultyQuery, [quiz_id]);
+  const difficulty = difficultyResult.rows[0]?.difficulty || 'easy';
+
+  // Assign points based on difficulty
+  let pointsToAdd = 10;
+  if (difficulty === 'intermediate') pointsToAdd = 20;
+  else if (difficulty === 'advanced') pointsToAdd = 30;
+
   const attemptQuery = `
     INSERT INTO quiz_attempts (
       user_id, quiz_id, attempt_score, passed, attempt_number
@@ -143,7 +159,7 @@ export async function submitQuizAttempt(
     alreadyPassed = passedResult.rows.length > 0;
   }
   
-if (passed && !alreadyPassed) {
+  if (passed && !alreadyPassed) {
     const checkQuery = `
       SELECT total_points FROM user_points WHERE user_id = $1;
     `;
@@ -152,21 +168,20 @@ if (passed && !alreadyPassed) {
     if (rows.length === 0) {
       await pool.query(
         `INSERT INTO user_points (user_id, total_points) VALUES ($1, $2);`,
-        [ user_id, 10 ]
+        [ user_id, pointsToAdd ]
       );
       logger.info(`[LearningService] Created points entry for user ${user_id}`);
     } else {
       await pool.query(
         `UPDATE user_points
-         SET total_points = total_points + 10,
+         SET total_points = total_points + $2,
              last_updated = CURRENT_TIMESTAMP
          WHERE user_id = $1;`,
-        [ user_id ]
+        [ user_id, pointsToAdd ]
       );
-      logger.info(`[LearningService] Added 10 points for user ${user_id}`);
+      logger.info(`[LearningService] Added ${pointsToAdd} points for user ${user_id}`);
     }
   }
-    
   await pool.query(
     `UPDATE user_points
     SET tier_status = CASE
@@ -250,7 +265,6 @@ export async function getLearningSummary(user_id: number) {
   const minScore = 300;
   const maxScore = 850;
   const normalized = (performance - minScore) / (maxScore - minScore); // 0 to 1
-  const percent = performance > 0 ? Math.round(normalized * 100) : 0;
   // Calculate total points earned from quizzes alone
   const quizPointsQuery = `
     SELECT COALESCE(SUM(CASE WHEN passed THEN 10 ELSE 0 END), 0) AS quiz_points
@@ -270,7 +284,8 @@ export async function getLearningSummary(user_id: number) {
   const quizAttemptsLeftQuery = `
     SELECT COUNT(*) AS total_left
     FROM quizzes q
-    LEFT JOIN quiz_attempts qa ON q.quiz_id = qa.quiz_id AND qa.user_id = $1
+    LEFT JOIN quiz_attempts qa 
+      ON q.quiz_id = qa.quiz_id AND qa.user_id = $1 AND qa.passed = true
     WHERE qa.quiz_id IS NULL;
   `;
   const quizAttemptsLeftResult = await pool.query(quizAttemptsLeftQuery, [user_id]);
@@ -283,6 +298,17 @@ export async function getLearningSummary(user_id: number) {
   const modulesResult = await pool.query(modulesQuery);
   const totalModules = parseInt(modulesResult.rows[0].total_modules) || 0;
 
+  // get percent of quizzes completed
+  const completedQuizzesQuery = `
+    SELECT COUNT(DISTINCT quiz_id) AS completed_quizzes
+    FROM quiz_attempts
+    WHERE user_id = $1 AND passed = true;
+  `;
+
+  const completedQuizzesResult = await pool.query(completedQuizzesQuery, [user_id]);
+  const completedQuizzes = parseInt(completedQuizzesResult.rows[0].completed_quizzes) || 0;
+  const percentCompleted = totalModules > 0 ? (completedQuizzes / totalModules) * 100 : 0;
+
   const summary = {
     modules: totalModules,
     points: quizPoints,
@@ -290,6 +316,7 @@ export async function getLearningSummary(user_id: number) {
     total_quizzes_left: parseInt(quizAttemptsLeftResult.rows[0].total_left) || 0,
     total_views: 1, // stubbed
     score: performance,
+    percent: percentCompleted.toFixed(2)
   };
 
   return summary;
