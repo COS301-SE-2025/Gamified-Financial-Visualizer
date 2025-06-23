@@ -82,8 +82,6 @@ const register = async (req: Request, res: Response): Promise<void> => {
       hashed_password,
     });
 
-    logger.info(`[Auth] Successfully registered user: ${username}`);
-
     res.status(201).json({
       status: 'success',
       timestamp: new Date().toISOString(),

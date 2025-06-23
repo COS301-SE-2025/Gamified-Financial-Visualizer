@@ -140,18 +140,18 @@ const LearnSidebar = () => {
           {[
             { 
               value: summary ? summary.modules : '--', 
-              label: 'Modules', 
+              label: 'Courses', 
               icon: <FaBolt />, 
               color: '#FF8A8A' 
             },
             { 
-              value: summary ? `${Math.round((summary.total_attempts / (summary.total_attempts + summary.total_quizzes_left)) * 100)}%` : '--', 
+              value: summary ? summary.percent + "%" : '--', 
               label: 'Completed', 
               icon: <FaCheck />, 
               color: '#7FDD53' 
             },
             { 
-              value: summary ? summary.points : '--', 
+              value: summary ? summary.points  : '--', 
               label: 'Points', 
               icon: <FaChartBar />, 
               color: '#5FBFFF' 
