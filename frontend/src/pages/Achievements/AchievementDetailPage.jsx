@@ -2,6 +2,15 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { FaBolt } from 'react-icons/fa';
 import AchievementsLayout from '../../pages/Achievements/AchievementsLayout';
+import badge1 from '../../assets/Images/badges/CoinStack.png';
+import badge2 from '../../assets/Images/badges/notesIcon.png';
+import badge3 from '../../assets/Images/badges/targetIcon.png';
+import badge4 from '../../assets/Images/badges/plantIocn.png';
+import badge5 from '../../assets/Images/badges/highFiveIcon.png';
+import badge6 from '../../assets/Images/badges/moneyBagIcon.png';
+import badge7 from '../../assets/Images/badges/moneyGrowIcon.png';
+import badge8 from '../../assets/Images/badges/mountainIcon.png';
+import badge9 from '../../assets/Images/badges/awardIcon.png';
 
 const sampleTasks = [
   { title: 'First Time Saver', reward: 500, progress: 3, total: 5, status: 'complete' },
@@ -10,38 +19,45 @@ const sampleTasks = [
   { title: 'First Time Saver', reward: 500, progress: 3, total: 5, status: 'incomplete' },
 ];
 
-// Map achievement ID to its base color
-const colorMap = {
-  'Cash Horder': '#ED5E52',
-  'OverAchiever': '#5FBFFF',
-  'Just Grow it': '#88BC46',
-  'Money Major': '#ED5E52',
-  'Real Banker': '#5FBFFF',
-  'Stack Stacker': '#88BC46',
-  'All My Friends': '#ED5E52',
-  'Target Chaser': '#5FBFFF',
-  'Building Wealth': '#88BC46',
-  '#1 Investor': '#ED5E52',
+const gradientMap = {
+  red: 'linear-gradient(to right, #FF4C28, #FFCE51)',
+  blue: 'linear-gradient(to right, #5FBFFF, #B1E1FF)',
+  green: 'linear-gradient(to right, #88BC46, #CBEEA5)',
 };
 
-const BadgeTaskCard = ({ task, primaryColor, image }) => {
+const colorMap = {
+  'Cash Horder': 'red',
+  'OverAchiever': 'blue',
+  'Just Grow it': 'green',
+  'Money Major': 'red',
+  'Real Banker': 'blue',
+  'Stack Stacker': 'green',
+  'All My Friends': 'red',
+  'Target Chaser': 'blue',
+  'Building Wealth': 'green',
+  '#1 Investor': 'red',
+};
+
+const hexMap = {
+  red: '#ED5E52',
+  blue: '#5FBFFF',
+  green: '#88BC46'
+};
+
+const BadgeTaskCard = ({ task, primaryColor, image, barGradient }) => {
   const isComplete = task.status === 'complete';
 
   return (
-    <div
-      className="flex items-center justify-between bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition"
-      style={{ border: `1.5px solid ${primaryColor}` }}
-    >
+    <div className="flex items-center justify-between bg-white rounded-2xl p-4 shadow-md border"
+         style={{ borderColor: primaryColor }}>
       <div className="flex items-center gap-4">
-        {/* Icon circle */}
         <div
-          className="w-14 h-14 flex items-center justify-center rounded-full bg-gradient-to-br from-white to-[#FFF0F0]"
+          className="w-14 h-14 flex items-center justify-center rounded-full bg-gradient-to-br "
           style={{ border: `1.5px solid ${primaryColor}` }}
         >
           <img src={image} alt="icon" className="w-9 h-9 object-contain" />
         </div>
 
-        {/* Text and progress */}
         <div>
           <div className="flex items-center gap-4">
             <h3 className="text-[16px] font-semibold" style={{ color: primaryColor }}>
@@ -57,7 +73,7 @@ const BadgeTaskCard = ({ task, primaryColor, image }) => {
               className="h-2 rounded-full"
               style={{
                 width: `${(task.progress / task.total) * 100}%`,
-                background: `linear-gradient(to right, ${primaryColor}, #FACC15)`
+                background: barGradient
               }}
             />
           </div>
@@ -67,64 +83,41 @@ const BadgeTaskCard = ({ task, primaryColor, image }) => {
           </p>
         </div>
       </div>
-
-      {/* Status badge */}
-      <div
-        className="flex items-center px-4 py-2 text-sm font-medium rounded-full shadow"
-        style={{
-          background: isComplete
-            ? 'linear-gradient(to right, #FFF5D1, #FFECA8)'
-            : 'linear-gradient(to right, #FFE3E3, #FFD1D1)',
-          color: isComplete ? '#E1A400' : primaryColor,
-          border: `1.5px solid ${isComplete ? '#FACC15' : primaryColor}`
-        }}
-      >
-        <div
-          className="w-6 h-6 rounded-full flex items-center justify-center mr-2"
-          style={{
-            background: isComplete
-              ? 'linear-gradient(to right, #FDE68A, #F59E0B)'
-              : 'linear-gradient(to right, #FFBABA, #FF8C8C)'
-          }}
-        >
-          <FaBolt className="text-white text-xs" />
-        </div>
-        {isComplete ? 'Completed' : 'Incomplete'}
-      </div>
     </div>
   );
 };
 
+
 const AchievementDetailPage = () => {
   const { id } = useParams();
-  const primaryColor = colorMap[id] || '#ED5E52';
-  const badgeImage = `/images/badges/${id.toLowerCase().replace(/ /g, '_')}.png`;
+  const colorKey = colorMap[id] || 'red';
+  const primaryColor = hexMap[colorKey];
+  const barGradient = gradientMap[colorKey];
+  const badgeMap = {
+  'Cash Horder': badge1,
+  'Stack Stacker': badge2,
+  'Target Chaser': badge3,
+  'Just Grow it': badge4,
+  'All My Friends': badge5,
+  'Money Major': badge6,
+  'Building Wealth': badge7,
+  'OverAchiever': badge8,
+  '#1 Investor': badge9
+};
 
+const badgeImage = badgeMap[id] || badge9;
   return (
     <AchievementsLayout>
-      <div
-        className="p-6 space-y-6 border-[3px] rounded-2xl"
-        style={{ borderColor: primaryColor }}
-      >
-        {/* Progress Bar */}
-        <div className="bg-white border border-yellow-200 rounded-xl p-4">
-          <h2 className="text-blue-600 text-sm font-semibold">Badge Collection Progress</h2>
-          <div className="relative w-full bg-yellow-100 h-4 mt-2 rounded-full">
-            <div
-              className="absolute top-0 left-0 h-4 bg-gradient-to-r from-[#FFC857] to-[#F5A623] rounded-full"
-              style={{ width: '50%' }}
-            ></div>
-          </div>
-          <div className="flex justify-between text-xs mt-1 px-1 text-orange-500 font-semibold">
-            <span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span>
-          </div>
-        </div>
-
-        {/* Header + Tasks */}
+      <div className="p-6 space-y-6 rounded-2xl -mt-6">
         <div>
           <div
-            className="bg-white px-3 py-1 inline-block rounded-full text-sm font-semibold border"
-            style={{ color: primaryColor, borderColor: primaryColor }}
+            className="inline-block px-4 py-1 rounded-full border font-bold text-lg"
+            style={{
+              borderColor: primaryColor,
+              backgroundImage: barGradient,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}
           >
             {id}
           </div>
@@ -139,6 +132,7 @@ const AchievementDetailPage = () => {
                 key={i}
                 task={task}
                 primaryColor={primaryColor}
+                barGradient={barGradient}
                 image={badgeImage}
               />
             ))}

@@ -1,12 +1,21 @@
 import React from 'react';
-import { FaSearch, FaSlidersH, FaChartLine, FaFileImport } from 'react-icons/fa';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { 
+  FaSearch, 
+  FaBook,         // For All courses
+  FaCheckCircle,  // For Completed
+  FaClock        // For Incomplete
+} from 'react-icons/fa';
 
-const LearnHeader = ({ tab, setTab }) => {
+const AccountsHeader = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const path = location.pathname;
+
   return (
     <div className="flex justify-between items-center px-6 py-4 bg-white border-b shadow rounded-xl">
-      
-      {/*Search Input */}
-      <div className="flex items-center w-full max-w-4xl -ml-[14px] px-4 py-2 rounded-3xl border-4 border-[#E5794B] bg-white shadow-sm">
+      {/* Search Input - Reduced width */}
+      <div className="flex items-center w-full max-w-l px-4 py-2 rounded-3xl border-4 border-[#E5794B] bg-white shadow-sm">
         <FaSearch className="text-[#E5794B] mr-2" />
         <input
           type="text"
@@ -15,38 +24,37 @@ const LearnHeader = ({ tab, setTab }) => {
         />
       </div>
 
-
-      {/*Action Buttons */}
+      {/* Action Buttons */}
       <div className="flex space-x-2 ml-4">
-        <button
-          onClick={() => setTab('main')}
+        <button 
+          onClick={() => navigate('/learn')}
           className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${
-            tab === 'main' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
+            path === '/learn' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
           }`}
         >
-          <FaSlidersH /> Budget
+          <FaBook /> All 
         </button>
 
-        <button
-          onClick={() => setTab('insights')}
+        <button 
+          onClick={() => navigate('/learn/complete')}
           className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${
-            tab === 'insights' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
+            path === '/learn/complete' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
           }`}
         >
-          <FaChartLine /> Insights
+          <FaCheckCircle /> Completed 
         </button>
 
-        <button
-          onClick={() => setTab('import')}
+        <button 
+          onClick={() => navigate('/learn/incomplete')}
           className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${
-            tab === 'import' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
+            path === '/learn/incomplete' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
           }`}
         >
-          <FaFileImport /> Import
+          <FaClock /> Incomplete
         </button>
       </div>
     </div>
   );
 };
 
-export default LearnHeader;
+export default AccountsHeader;
