@@ -173,7 +173,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
         <div className="grid grid-cols-2 gap-4 text-sm">
           {/* Transaction Type */}
           <div className="flex flex-col">
-            <label className="text-gray-600 mb-1">Transaction type *</label>
+            <label className="text-gray-600 mb-1">Transaction type </label>
             <select name="type" value={form.type} onChange={handleChange} className="border p-2 rounded">
               <option value="">Select type</option>
               <option value="expense">Expense</option>
@@ -199,7 +199,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
 
           {/* Transaction Name */}
           <div className="flex flex-col">
-            <label className="text-gray-600 mb-1">Transaction name *</label>
+            <label className="text-gray-600 mb-1">Transaction name </label>
             <input
               name="name"
               value={form.name}
@@ -211,7 +211,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
 
           {/* Amount */}
           <div className="flex flex-col">
-            <label className="text-gray-600 mb-1">Amount *</label>
+            <label className="text-gray-600 mb-1">Amount </label>
             <input
               name="amount"
               type="number"

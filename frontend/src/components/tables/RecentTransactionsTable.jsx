@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { FaTrash, FaEdit, FaPlus } from 'react-icons/fa';
 import AddTransactionModal from '../modals/AddTransactionModal';
 import EditTransactionModal from '../modals/EditTransactionModal';
@@ -13,6 +13,40 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
   const [editTxnData, setEditTxnData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+
+  // Fetch categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setCategoriesLoading(true);
+      try {
+        const response = await fetch('http://localhost:5000/api/transactions/categories');
+        if (!response.ok) {
+          throw new Error('Failed to fetch categories');
+        }
+        const data = await response.json();
+        if (data.status === 'success') {
+          setCategories(data.data);
+        }
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        // Fallback to hardcoded categories if API fails
+        setCategories([
+          { category_id: 1, category_name: 'Food' },
+          { category_id: 2, category_name: 'Transport' },
+          { category_id: 3, category_name: 'Fuel' },
+          { category_id: 4, category_name: 'Entertainment' },
+          { category_id: 5, category_name: 'Health' },
+          { category_id: 6, category_name: 'Personal' }
+        ]);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const filteredSortedTransactions = useMemo(() => {
     let filtered = [...transactions];
@@ -135,14 +169,20 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
               <option value="Date">Date</option>
             </select>
 
-            <select className="border px-4 py-1 rounded-full text-sm" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
-              <option value="">Filter by categories</option>
-              <option value="Food">Food</option>
-              <option value="Transport">Transport</option>
-              <option value="Fuel">Fuel</option>
-              <option value="Entertainment">Entertainment</option>
-              <option value="Health">Health</option>
-              <option value="Personal">Personal</option>
+            <select 
+              className="border px-4 py-1 rounded-full text-sm" 
+              value={categoryFilter} 
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              disabled={categoriesLoading}
+            >
+              <option value="">
+                {categoriesLoading ? 'Loading categories...' : 'Filter by categories'}
+              </option>
+              {categories.map(category => (
+                <option key={category.category_id} value={category.category_name}>
+                  {category.category_name}
+                </option>
+              ))}
             </select>
 
             <select className="border px-4 py-1 rounded-full text-sm" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>

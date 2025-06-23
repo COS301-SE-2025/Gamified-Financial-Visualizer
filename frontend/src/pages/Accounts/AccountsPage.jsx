@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FaPlus } from 'react-icons/fa';
 import AccountCard from '../../components/cards/AccountCard';
 import AddAccountModal from '../../components/modals/AddAccountModal';
@@ -12,6 +12,7 @@ const AccountsPage = () => {
   const [activeAccount, setActiveAccount] = useState(null);
   const [accounts, setAccounts] = useState([]);
   const [transactions, setTransactions] = useState([]);
+  const [categories, setCategories] = useState([]); // Add categories state
   const [loading, setLoading] = useState(true);
   const [loadingTransactions, setLoadingTransactions] = useState(false);
   const [error, setError] = useState(null);
@@ -20,6 +21,78 @@ const AccountsPage = () => {
   const userData = JSON.parse(localStorage.getItem('user') || '{}');
   const userId = userData?.id || null;
 
+  // Helper function to get category name by ID
+  const getCategoryName = (categoryId, customCategoryId) => {
+    if (customCategoryId) {
+      // For custom categories, you might need another endpoint
+      // For now, return a placeholder
+      return `Custom Category ${customCategoryId}`;
+    }
+    
+    if (categoryId) {
+      const category = categories.find(cat => cat.category_id === categoryId);
+      return category ? category.category_name : 'Unknown Category';
+    }
+    
+    return 'Uncategorized';
+  };
+
+  // Fetch all user transactions (across all accounts) - wrapped in useCallback
+  const fetchAllUserTransactions = useCallback(async () => {
+    if (!userId) {
+      setTransactions([]);
+      return;
+    }
+
+    try {
+      setLoadingTransactions(true);
+      setError(null);
+
+      const res = await fetch(`http://localhost:5000/api/transactions/user/${userId}`);
+      if (!res.ok) throw new Error('Failed to fetch user transactions');
+
+      const data = await res.json();
+      const mapped = (data.data || []).map(txn => ({
+        name: txn.transaction_name,
+        date: new Date(txn.transaction_date).toLocaleDateString(),
+        category: txn.category_name || 'Uncategorized',
+        amount: `${txn.transaction_amount >= 0 ? '' : '-'}${txn.transaction_amount >= 0 ? 'ZAR' : 'ZAR'}${Math.abs(txn.transaction_amount).toFixed(2)}`,
+        account_id: txn.account_id,
+        account_name: txn.account_name, // Include account name for display
+        transaction_id: txn.transaction_id,
+        transaction_type: txn.transaction_type,
+        original_amount: txn.transaction_amount,
+        category_id: txn.category_id,
+        custom_category_id: txn.custom_category_id,
+      }));
+
+      setTransactions(mapped);
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+      setTransactions([]);
+    } finally {
+      setLoadingTransactions(false);
+    }
+  }, [userId]); // Include userId as dependency
+
+  // Fetch categories when component mounts
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/transactions/categories');
+        if (!response.ok) throw new Error('Failed to fetch categories');
+        const data = await response.json();
+        setCategories(data.data || []);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        // Don't set error here as it's not critical for the main functionality
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   useEffect(() => {
     if (!userId) {
       setError('User not logged in. Please log in again.');
@@ -27,14 +100,19 @@ const AccountsPage = () => {
       return;
     }
 
-    const fetchAccounts = async () => {
+    const fetchAccountsAndTransactions = async () => {
       try {
         setLoading(true);
         setError(null);
+        
+        // Fetch accounts
         const accountsResponse = await fetch(`http://localhost:5000/api/accounts/user/${userId}`);
         if (!accountsResponse.ok) throw new Error('Failed to fetch accounts');
         const accountsData = await accountsResponse.json();
         setAccounts(accountsData.data || []);
+
+        // Fetch all user transactions
+        await fetchAllUserTransactions();
       } catch (err) {
         setError(err.message);
       } finally {
@@ -42,12 +120,13 @@ const AccountsPage = () => {
       }
     };
 
-    fetchAccounts();
-  }, [userId]);
+    fetchAccountsAndTransactions();
+  }, [userId, fetchAllUserTransactions]); // Now include fetchAllUserTransactions
 
   const fetchTransactionsForAccount = async (accountId) => {
     if (!accountId) {
-      setTransactions([]);
+      // If no account selected, show all user transactions
+      await fetchAllUserTransactions();
       return;
     }
 
@@ -62,12 +141,15 @@ const AccountsPage = () => {
       const mapped = (data.data || []).map(txn => ({
         name: txn.transaction_name,
         date: new Date(txn.transaction_date).toLocaleDateString(),
-        category: txn.category_name || txn.category || 'Uncategorized', // Fixed: Use category_name from JOIN
+        // Fix: Use proper category resolution
+        category: getCategoryName(txn.category_id, txn.custom_category_id),
         amount: `${txn.transaction_amount >= 0 ? '' : '-'}${activeAccount?.currency || 'ZAR'}${Math.abs(txn.transaction_amount).toFixed(2)}`,
         account_id: txn.account_id,
         transaction_id: txn.transaction_id,
         transaction_type: txn.transaction_type,
         original_amount: txn.transaction_amount, // Keep original for calculations
+        category_id: txn.category_id, // Keep for editing
+        custom_category_id: txn.custom_category_id, // Keep for editing
       }));
 
       setTransactions(mapped);
@@ -199,35 +281,44 @@ const AccountsPage = () => {
   const handleRefreshTransactions = async (accountId) => {
     if (accountId && activeAccount?.account_id === accountId) {
       await fetchTransactionsForAccount(accountId);
+    } else {
+      // If no specific account, refresh all user transactions
+      await fetchAllUserTransactions();
     }
   };
 
   // Fixed: Handle transaction operations with proper refresh
   const handleAddTransaction = async (newTransaction) => {
     // The transaction was already added to database in AddTransactionModal
-    // Just refresh the transactions list
+    // Refresh the appropriate transactions list
     if (activeAccount?.account_id) {
       await fetchTransactionsForAccount(activeAccount.account_id);
+    } else {
+      await fetchAllUserTransactions();
     }
   };
 
   const handleEditTransaction = async (index, updatedTransaction) => {
     // The transaction was already updated in database in EditTransactionModal
-    // Just refresh the transactions list
+    // Refresh the appropriate transactions list
     if (activeAccount?.account_id) {
       await fetchTransactionsForAccount(activeAccount.account_id);
+    } else {
+      await fetchAllUserTransactions();
     }
   };
 
   const handleDeleteTransaction = async (index) => {
     // The transaction was already deleted in database in RecentTransactionsTable
-    // Just refresh the transactions list
+    // Refresh the appropriate transactions list
     if (activeAccount?.account_id) {
       await fetchTransactionsForAccount(activeAccount.account_id);
+    } else {
+      await fetchAllUserTransactions();
     }
   };
 
-  const filteredTransactions = activeAccount ? transactions : [];
+  const filteredTransactions = transactions; // Show all transactions, whether filtered by account or not
 
   const transactionHeading = activeAccount
     ? `${activeAccount.account_name || activeAccount.accountName} Transactions`
@@ -278,12 +369,7 @@ const AccountsPage = () => {
         {accounts.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500 mb-4">No accounts found</p>
-            <button
-              onClick={() => setShowModal(true)}
-              className="px-4 py-2 bg-[#336699] text-white rounded-lg hover:bg-[#2a5278] transition"
-            >
-              Add Your First Account
-            </button>
+              {/* onClick={() => setShowModal(true)} */}
           </div>
         ) : (
           <div className="flex space-x-6 px-1 overflow-x-auto">
@@ -315,6 +401,7 @@ const AccountsPage = () => {
           transactions={filteredTransactions}
           heading={transactionHeading}
           loading={loadingTransactions}
+          categories={categories} // Pass categories to the table component
           onAdd={handleAddTransaction}
           onEdit={handleEditTransaction}
           onDelete={handleDeleteTransaction}
