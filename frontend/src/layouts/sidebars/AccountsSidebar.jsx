@@ -49,6 +49,11 @@ const mockTransactions = [
   { category: 'Health', amount: 'R450', date: '2023-05-12', name: 'Vitamins' },
   { category: 'Personal', amount: 'R2800', date: '2023-05-01', name: 'Clothing' },
   { category: 'Personal', amount: 'R1500', date: '2023-05-08', name: 'Electronics' },
+  { category: 'Personal', amount: 'R1500', date: '2023-05-08', name: 'Electronics' },
+  { category: 'Personal', amount: 'R1500', date: '2023-05-08', name: 'Electronics' },
+  { category: 'Personal', amount: 'R1500', date: '2023-05-08', name: 'Electronics' },
+    { category: 'Personal', amount: 'R1500', date: '2023-05-08', name: 'Electronics' },
+
   { category: 'Fuel', amount: 'R800', date: '2023-05-03', name: 'Gas Station' },
   { category: 'Fuel', amount: 'R750', date: '2023-05-17', name: 'Gas Station' },
   { category: 'Transport', amount: 'R500', date: '2023-05-07', name: 'Bus Pass' },
@@ -163,7 +168,7 @@ const AccountsSidebar = () => {
           </svg>
 
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <p className="text-[24px] font-bold text-[#2D3748]">350</p>
+            <p className="text-[24px] font-bold text-[#2D3748]">150</p>
             <p className="text-sm text-[#718096]">Excellent</p>
             <img
               src={avatar}

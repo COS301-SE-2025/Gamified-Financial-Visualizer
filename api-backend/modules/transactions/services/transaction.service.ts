@@ -183,6 +183,55 @@ export async function getAccounts(user_id: number) {
 }
 
 /**
+ * Update a transaction's details (name, date, amount, category).
+ */
+export async function updateTransactionDetails(
+  transaction_id: number,
+  updates: Partial<{
+    transaction_name: string;
+    transaction_date: string;
+    transaction_amount: number;
+    category_id: number;
+    custom_category_id: number;
+  }>
+) {
+  const fields: string[] = [];
+  const values: any[] = [];
+  let idx = 1;
+
+  for (const [key, value] of Object.entries(updates)) {
+    if (value !== undefined && value !== null) {
+      fields.push(`${key} = $${idx}`);
+      values.push(value);
+      idx++;
+    }
+  }
+
+  if (fields.length === 0) {
+    throw new Error("No valid fields provided for update.");
+  }
+
+  const sql = `
+    UPDATE transactions
+    SET ${fields.join(', ')}
+    WHERE transaction_id = $${idx}
+    RETURNING *;
+  `;
+
+  values.push(transaction_id);
+
+  try {
+    const res = await pool.query(sql, values);
+    logger.info(`[TransactionService] Updated transaction ID=${transaction_id}`);
+    return res.rows[0];
+  } catch (error) {
+    logger.error(`[TransactionService] Error updating transaction ${transaction_id}:`, error);
+    throw error;
+  }
+}
+
+
+/**
  * Fetch a specific account by account_id
  */
 export async function getAccountById(account_id: number) {
@@ -298,13 +347,14 @@ export async function getUserTransactions(user_id: number) {
       t.transaction_id,
       t.transaction_amount,
       t.transaction_type,
+      a.account_id,
       a.account_name,
-      t.description,
+      t.transaction_name,
       t.transaction_date,
       c.category_name
     FROM transactions t
     JOIN accounts a ON t.account_id = a.account_id
-    JOIN categories c ON t.category_id = c.category_id
+    LEFT JOIN categories c ON t.category_id = c.category_id
     WHERE a.user_id = $1
     ORDER BY t.transaction_date DESC;
   `;
@@ -312,10 +362,11 @@ export async function getUserTransactions(user_id: number) {
     const res = await pool.query(sql, [ user_id ]);
     return res.rows;
   } catch (error) {
-    logger.error(`[TransactionService] Error fetching user ${user_id} transactions:`, error);
+    logger.error(`[TransactionService] Error fetching transactions for user ${user_id}:`, error);
     throw error;
   }
 }
+
 
 export async function deleteTransaction(id: number) {
   const sql = `DELETE FROM transactions WHERE transaction_id = $1;`;
