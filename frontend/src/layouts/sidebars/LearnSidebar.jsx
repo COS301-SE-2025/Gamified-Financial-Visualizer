@@ -1,25 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import avatar from '../../assets/Images/avatars/totoroAvatar.jpeg';
 import {
-  FaBolt,
-  FaChartBar,
-  FaHourglassHalf,
+  FaGraduationCap,
+  FaStar,
+  FaBook,
   FaCheck,
-  FaTimes,
-  FaBan,
+  FaHourglassHalf,
+  FaBullseye,
 } from 'react-icons/fa';
 
 const LearnSidebar = () => {
   const user = JSON.parse(localStorage.getItem('user'));
   const id = user ? user.id : null;
   const [summary, setSummary] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true);
         const response = await fetch(`http://localhost:5000/api/learning/summary/${id}`);
         const data = await response.json();
         if (data.status === 'success') {
@@ -30,7 +28,6 @@ const LearnSidebar = () => {
       } catch (err) {
         setError(err.message);
       } finally {
-        setLoading(false);
       }
     };
 
@@ -58,7 +55,7 @@ const LearnSidebar = () => {
 
   if (error) {
     return (
-      <aside className="space-y-6 mt-0">
+      <aside className="space-y-6">
         <div className="bg-white rounded-2xl p-4 shadow text-center">
           <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-3 py-1 rounded-full inline-block mb-2">
             Error loading data
@@ -70,7 +67,7 @@ const LearnSidebar = () => {
   }
 
   return (
-    <aside className="space-y-6 mt-0">
+    <aside className="space-y-6">
       {/* Performance Overview */}
       <div className="bg-white rounded-2xl p-4 shadow text-center">
         <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-3 py-1 rounded-full inline-block mb-2">
@@ -125,7 +122,7 @@ const LearnSidebar = () => {
             />
           </div>
         </div>
-        <p className="text-sm font-medium mt-2" style={{ color: performance.color }}>
+        <p className="text-sm font-medium mt-2" style={{ color: "#F56565"}}>
           Lv {summary ? Math.floor(summary.score/20) + 1 : 1}: {performance.tier}
         </p>
       </div>
@@ -141,7 +138,7 @@ const LearnSidebar = () => {
             { 
               value: summary ? summary.modules : '--', 
               label: 'Modules', 
-              icon: <FaBolt />, 
+              icon: <FaGraduationCap />, 
               color: '#FF8A8A' 
             },
             { 
@@ -153,25 +150,25 @@ const LearnSidebar = () => {
             { 
               value: summary ? summary.points : '--', 
               label: 'Points', 
-              icon: <FaChartBar />, 
+              icon: <FaStar/>, 
               color: '#5FBFFF' 
             },
             { 
               value: summary ? summary.total_views : '--', 
-              label: 'Lessons Viewed', 
-              icon: <FaHourglassHalf />, 
+              label: 'Lessons View', 
+              icon: <FaBook />, 
               color: '#FFC541' 
             },
             { 
               value: summary ? summary.total_quizzes_left : '--', 
               label: 'Quizzes Left', 
-              icon: <FaTimes />, 
+              icon: <FaHourglassHalf />, 
               color: '#F68D2B' 
             },
             { 
               value: summary ? summary.total_attempts : '--', 
               label: 'Quiz Attempts', 
-              icon: <FaBan />, 
+              icon: <FaBullseye/>, 
               color: '#FF7F9E' 
             },
           ].map(({ value, label, icon, color }, i) => (

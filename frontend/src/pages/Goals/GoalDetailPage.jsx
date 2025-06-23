@@ -38,34 +38,6 @@ const GoalsDetailPage = () => {
     }
   }, [goalId]);
 
-  const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this goal?')) {
-      return;
-    }
-
-    setIsDeleting(true);
-    try {
-      const response = await fetch(`http://localhost:5000/api/goal/${goalId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}` // Add if using auth
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete goal');
-      }
-
-      // Redirect to goals list with success message
-      navigate('/goals', { state: { message: 'Goal deleted successfully' } });
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
   if (loading) return <div className="flex justify-center mt-6">Loading...</div>;
   if (error) return <div className="flex justify-center mt-6 text-red-500">Error: {error}</div>;
   if (!goal) return <div className="flex justify-center mt-6">Goal not found</div>;

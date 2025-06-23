@@ -4,7 +4,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import CommunityLayout from '../../pages/Community/CommunityLayout';
 import CommunityHeader from '../../layouts/headers/CommunityHeader';
 import {
-  FaFire, FaTag, FaPlusCircle, FaSearch, FaClock, FaMedal, FaArrowLeft, FaCoins, FaUsers, FaImage, FaListUl, FaUserPlus
+  FaFire, FaTag, FaPlusCircle, FaSearch, FaClock, FaMedal, FaArrowLeft, FaCoins, FaUsers, FaListUl
 } from 'react-icons/fa';
 
 const bannerOptions = [
@@ -23,7 +23,6 @@ const friendsList = [
 
 
 const CommunityCreate = () => {
-    const [searchFriend, setSearchFriend] = useState('');
   const [invitedFriends, setInvitedFriends] = useState([]);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -43,31 +42,11 @@ const CommunityCreate = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleFriendToggle = (friendName) => {
-    setFormData((prev) => {
-      const already = prev.selectedFriends.includes(friendName);
-      const updated = already
-        ? prev.selectedFriends.filter((f) => f !== friendName)
-        : [...prev.selectedFriends, friendName];
-      return { ...prev, selectedFriends: updated, memberCount: updated.length };
-    });
-  };
-
-  const handleChallengeChange = (index, value) => {
-    const updated = [...formData.challengeTitles];
-    updated[index] = value;
-    setFormData({ ...formData, challengeTitles: updated });
-  };
-
     const handleInvite = (friend) => {
     if (!invitedFriends.includes(friend.name)) {
       setInvitedFriends([...invitedFriends, friend.name]);
       toast.success(`Invite sent to ${friend.name}`);
     }
-  };
-
-  const addChallenge = () => {
-    setFormData({ ...formData, challengeTitles: [...formData.challengeTitles, ''] });
   };
 
   const handleSubmit = (e) => {
@@ -176,7 +155,7 @@ const CommunityCreate = () => {
               {/* Type, Category */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                  <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                     <FaListUl /> Challenge Type
                   </label>
                   <select
@@ -192,16 +171,20 @@ const CommunityCreate = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                  <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                     <FaTag /> Category
                   </label>
-                  <input
-                    type="text"
-                    name="category"
-                    value={formData.category}
+                  <select
+                    name="type"
+                    value={formData.type}
                     onChange={handleChange}
                     className="w-full border border-gray-300 rounded-lg px-4 py-2"
-                  />
+                  >
+                    <option value="">Select Type</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Travel">Travel</option>
+                    <option value="Subscriptions">Subscriptions</option>
+                  </select>
                 </div>
               </div>
 
@@ -209,7 +192,7 @@ const CommunityCreate = () => {
               {/* Target & XP */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                  <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                     <FaCoins /> Target Amount (ZAR)
                   </label>
                   <input
@@ -217,12 +200,12 @@ const CommunityCreate = () => {
                     name="targetAmount"
                     value={formData.targetAmount}
                     onChange={handleChange}
-                    min="1"
+                    min="0"
                     className="w-full border border-gray-300 rounded-lg px-4 py-2"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                  <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                     <FaMedal /> XP Reward
                   </label>
                   <input
