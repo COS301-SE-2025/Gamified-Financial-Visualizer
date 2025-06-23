@@ -1,20 +1,11 @@
 import React from 'react';
-import { FaSearch, FaUserCog, 	FaHome } from 'react-icons/fa';
+import { FaUserCog, FaHome } from 'react-icons/fa';
 
 const ProfileHeader = ({ tab, setTab }) => {
   return (
-    // Search main box 
-        <div className="flex justify-between rounded-xl items-center space-x-4 px-6 py-4 bg-[#ffffff] border-b shadow">
-         
-         {/*Search Input */}
-               <div className="flex items-center w-full max-w-4xl -ml-[14px] px-4 py-2 rounded-3xl border-4 border-[#E5794B] bg-white shadow-sm">
-                 <FaSearch className="text-[#E5794B] mr-2" />
-                 <input
-                   type="text"
-                   placeholder="Search..."
-                   className="w-full outline-none bg-transparent text-sm text-[#E5794B] placeholder-[#E5794B]/70"
-                 />
-               </div>
+    <div className="flex justify-between rounded-xl items-center px-6 py-4 bg-[#ffffff] border-b shadow">
+      {/* Empty div to take up left space and keep actions right-aligned */}
+      <div className="w-full"></div>
 
       {/* 🧭 Action Buttons: Main | Settings */}
       <div className="flex space-x-2">
@@ -24,7 +15,7 @@ const ProfileHeader = ({ tab, setTab }) => {
             tab === 'main' ? 'bg-[#88BC46] text-[#ffffff]' : 'bg-white text-gray-600'
           }`}
         >
-          <	FaHome className="text-md" /> Main
+          <FaHome className="text-md" /> Main
         </button>
 
         <button

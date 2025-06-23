@@ -15,16 +15,16 @@ const AchievementsHeader = () => {
       matchPaths: ['/achievements'] 
     },
     {
-      path: '/incomplete',
+      path: '/achievements/incomplete',
       icon: <FaListAlt />,
       label: 'Incomplete',
-      matchPaths: ['/incomplete']
+      matchPaths: ['/achievements/incomplete']
     },
     {
-      path: 'complete',
+      path: '/achievements/complete',
       icon: <FaCheckCircle />,
       label: 'Complete',
-      matchPaths: ['complete']
+      matchPaths: ['/achievements/complete']
     }
   ];
 
