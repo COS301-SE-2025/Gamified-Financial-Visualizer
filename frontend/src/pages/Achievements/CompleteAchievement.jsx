@@ -11,6 +11,9 @@ import badge7 from '../../assets/Images/badges/moneyGrowIcon.png';
 import badge8 from '../../assets/Images/badges/mountainIcon.png';
 import badge9 from '../../assets/Images/badges/awardIcon.png';
 
+import badge10 from '../../assets/Images/badges/bank.png';
+
+
 const achievements = [
   {
     title: 'Cash Horder',
@@ -57,7 +60,7 @@ const achievements = [
     reward: 900,
     progress: 3,
     total: 5,
-    image: '/images/achievements/banker.png',
+    image: badge10,
     color: 'from-[#5FBFFF] to-[#5FBFFF]',
     border: 'border-[#5FBFFF]',
     text: 'text-[#5FBFFF]'
@@ -187,4 +190,6 @@ const CompleteAchievementsPage = () => {
   );
 };
 
+
 export default CompleteAchievementsPage;
+

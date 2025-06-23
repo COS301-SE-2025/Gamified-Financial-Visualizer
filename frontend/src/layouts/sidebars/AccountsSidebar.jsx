@@ -1,42 +1,9 @@
 import React, { useMemo } from 'react';
 import avatar from '../../assets/Images/avatars/totoroAvatar.jpeg';
 import {
-  FaBolt,
-  FaChartBar,
-  FaHourglassHalf,
-  FaCheck,
-  FaTimes,
-  FaBan,
-  FaUtensils,
-  FaBus,
-  FaFilm,
-  FaHeartbeat,
-  FaPlane,
-  FaBook,
-  FaLaptop,
-  FaUser,
-  FaHandsHelping,
-  FaTshirt,
-  FaDumbbell,
-  FaMobileAlt,
-  FaWifi,
-  FaTv,
-  FaHome,
-  FaCar,
-  FaShieldAlt,
-  FaCalendarAlt,
-  FaGasPump,
-  FaBuilding,
-  FaUniversity,
-  FaMoneyBillWave,
-  FaPiggyBank,
-  FaChartLine,
-  FaChild,
-  FaPaw,
-  FaTools,
-  FaWallet,
-  FaCoins,
-  FaExchangeAlt
+  FaBolt, FaUtensils, FaBus, FaFilm, FaHeartbeat, FaBook, FaUser,
+  FaHandsHelping, FaTshirt, FaDumbbell, FaMobileAlt, FaWifi, FaTv,
+  FaHome, FaShieldAlt, FaGasPump, FaBuilding, FaMoneyBillWave
 } from 'react-icons/fa';
 
 // Mock transaction data
@@ -180,9 +147,9 @@ const AccountsSidebar = () => {
       </div>
 
       {/* Categories Summaries */}
-      <div className="bg-white rounded-2xl p-4 shadow">
+      <div className="bg-white rounded-2xl p-4 shadow text-center">
         <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-4 py-1 rounded-full inline-block mb-4">
-          Categories
+          Transaction Statistcs
         </p>
 
         <div className="grid grid-cols-2 gap-4">

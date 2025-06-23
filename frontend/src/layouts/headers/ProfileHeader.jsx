@@ -10,7 +10,7 @@ const ProfileHeader = ({ tab, setTab }) => {
       {/* 🧭 Action Buttons: Main | Settings */}
       <div className="flex space-x-2">
         <button
-          onClick={() => setTab('main')}
+          onClick={() => setTab('main')} 
           className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${
             tab === 'main' ? 'bg-[#88BC46] text-[#ffffff]' : 'bg-white text-gray-600'
           }`}
