@@ -10,7 +10,9 @@ import badge6 from '../../assets/Images/badges/moneyBagIcon.png';
 import badge7 from '../../assets/Images/badges/moneyGrowIcon.png';
 import badge8 from '../../assets/Images/badges/mountainIcon.png';
 import badge9 from '../../assets/Images/badges/awardIcon.png';
+
 import badge10 from '../../assets/Images/badges/bank.png';
+
 
 const achievements = [
   {
@@ -188,4 +190,6 @@ const CompleteAchievementsPage = () => {
   );
 };
 
+
 export default CompleteAchievementsPage;
+
