@@ -16,7 +16,7 @@ const CommunitySidebar = () => {
       {/* Goal Performance */}
       <div className="bg-white rounded-2xl p-4 shadow text-center">
         <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-3 py-1 rounded-full inline-block mb-2">
-          Goal Performance
+          Community Performance
         </p>
 
         {/* Progress Circle Styling */}
@@ -73,19 +73,19 @@ const CommunitySidebar = () => {
       </div>
 
       {/* Goal Statistics */}
-      <div className="bg-white rounded-2xl p-4 shadow">
+      <div className="bg-white rounded-2xl p-4 shadow text-center">
         <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-4 py-1 rounded-full inline-block mb-4">
-          Goal Statistics
+          Community Statistics
         </p>
 
         <div className="grid grid-cols-2 gap-4">
           {[
-            { value: '14', label: 'Goals', icon: <FaBolt />, color: '#FF8A8A' },
-            { value: '83%', label: 'Completed', icon: <FaCheck />, color: '#7FDD53' },
-            { value: '12', label: 'Inactive', icon: <FaChartBar />, color: '#5FBFFF' },
-            { value: '14', label: 'In-Progress', icon: <FaHourglassHalf />, color: '#FFC541' },
-            { value: '56%', label: 'Incomplete', icon: <FaTimes />, color: '#F68D2B' },
-            { value: '7', label: 'Cancelled', icon: <FaBan />, color: '#FF7F9E' },
+            { value: '14', label: 'Communities', icon: <FaBolt />, color: '#FF8A8A' },
+            { value: '13', label: 'Challenges', icon: <FaCheck />, color: '#7FDD53' },
+            { value: '12', label: 'Leaderboard', icon: <FaChartBar />, color: '#5FBFFF' },
+            { value: '42', label: 'Games Played', icon: <FaHourglassHalf />, color: '#FFC541' },
+            { value: '21', label: 'Friends', icon: <FaTimes />, color: '#F68D2B' },
+            { value: '17', label: 'Social Post', icon: <FaBan />, color: '#FF7F9E' },
           ].map(({ value, label, icon, color }, i) => (
             <div key={i} className="relative bg-white rounded-xl shadow-md p-3 flex items-center justify-between">
               {/* Icon Bubble */}

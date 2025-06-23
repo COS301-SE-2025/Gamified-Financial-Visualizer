@@ -1,65 +1,84 @@
-import React from 'react';
-import { FaSearch } from 'react-icons/fa';
-import LearnSidebar from '../../layouts/sidebars/LearnSidebar';
-import LearnHeader from '../../layouts/headers/LearnHeader';
+import React, { useEffect, useState } from 'react';
+import LearnLayout from '../../pages/Learn/LearnLayout';
+import CourseCard from '../../components/cards/CoursesCard'; 
+import banner1 from '../../assets/Images/banners/pixelAllyway.jpeg';
+import banner2 from '../../assets/Images/banners/pixelApartment.gif';
+import banner3 from '../../assets/Images/banners/pixelBalcony.gif';
+import banner4 from '../../assets/Images/banners/pixelCafe.gif';
+import banner5 from '../../assets/Images/banners/pixelCornerStore.gif';
+import banner6 from '../../assets/Images/banners/pixelGirl.gif';
 
-const courses = {
-  active: [
-    { title: 'Budget', duration: '22 mins', progress: '50%', image: '/images/budget.jpg' },
-    { title: 'Investment', duration: '18 mins', progress: '67%', image: '/images/investment.jpg' },
-    { title: 'Savings', duration: '24 mins', progress: '90%', image: '/images/savings.jpg' },
-  ],
-  upcoming: [
-    { title: 'Investment', duration: '32 mins', image: '/images/investment.jpg' },
-    { title: 'Savings', duration: '20 mins', image: '/images/savings.jpg' },
-    { title: 'Budget', duration: '25 mins', image: '/images/budget.jpg' },
-  ],
+// Map of banner images to use for courses
+const bannerImages = {
+  1: banner1,
+  2: banner2,
+  3: banner3,
+  4: banner4,
+  5: banner5,
+  6: banner6
 };
 
-const CourseCard = ({ title, duration, progress, image }) => (
-  <div className="bg-white rounded-xl shadow-md overflow-hidden w-48">
-    <img src={image} alt={title} className="w-full h-24 object-cover" />
-    <div className="p-3">
-      <h3 className="text-sm font-bold text-gray-700">{title}</h3>
-      <p className="text-xs text-gray-500">{duration}</p>
-      {progress && (
-        <p className="text-xs font-semibold text-green-600">{progress} complete</p>
-      )}
-    </div>
-  </div>
-);
-
 const LearningPage = () => {
+  const [modulesData, setModulesData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchModules = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('http://localhost:5000/api/learning');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        setModulesData(data.data);
+      } catch (error) {
+        console.error('Error fetching modules:', error);
+        setError(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchModules();
+  }, []);
+
+ 
+
+  if (error) {
+    return (
+      <LearnLayout>
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <strong className="font-bold">Error: </strong>
+          <span className="block sm:inline">{error}</span>
+        </div>
+      </LearnLayout>
+    );
+  }
+
   return (
-    <div className="flex min-h-screen bg-[#f9fafb]">
-      {/* Sidebar */}
-        <LearnSidebar  />
+    <LearnLayout>
+      <h2 className="text-lg font-semibold text-sky-500 bg-sky-100 inline-block px-4 py-1 rounded-full mb-6">
+        All Courses
+      </h2>
 
-      {/* Main Content */}
-      <main className="flex-1 p-6 space-y-6">
-        <LearnHeader/>
-
-        {/* Active Courses */}
-        <section>
-          <h2 className="text-lg font-bold text-gray-700 mb-3">Active Courses</h2>
-          <div className="flex gap-4 overflow-x-auto">
-            {courses.active.map((course, index) => (
-              <CourseCard key={index} {...course} />
-            ))}
-          </div>
-        </section>
-
-        {/* Upcoming Courses */}
-        <section>
-          <h2 className="text-lg font-bold text-gray-700 mb-3">Upcoming Courses</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {courses.upcoming.map((course, index) => (
-              <CourseCard key={index} {...course} />
-            ))}
-          </div>
-        </section>
-      </main>
-    </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {modulesData.map((module) => (
+          <CourseCard 
+            id={module.module_id}
+            title={module.module_title}
+            lessons={module.lesson_count} // You might want to fetch actual lesson count from API
+            topic={module.topic}
+            difficulty={module.difficulty}
+            image={bannerImages[module.module_banner_id] || banner1} // Fallback to banner1 if no mapping
+            moduleId={module.module_id}
+          />
+        ))}
+      </div>
+    </LearnLayout>
   );
 };
 

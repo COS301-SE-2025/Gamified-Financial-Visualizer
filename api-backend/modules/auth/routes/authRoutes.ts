@@ -118,11 +118,6 @@ const login = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  console.log('[DEBUG] PASETO Key:', {
-  envValue: process.env.PASETO_LOCAL_KEY,
-  length: process.env.PASETO_LOCAL_KEY?.length,
-  buffer: Buffer.from(process.env.PASETO_LOCAL_KEY!, 'hex')
-});
   const { username, password } = req.body;
 
   try {

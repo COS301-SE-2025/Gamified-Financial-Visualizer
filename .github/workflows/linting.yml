@@ -1,0 +1,46 @@
+name: Lint Frontend & API Modules
+
+on:
+  push:
+    branches: [main, development]
+  pull_request:
+    branches: [main, development]
+
+permissions:
+  contents: read
+
+jobs:
+  lint-codebase:
+    name: Lint ${{ matrix.folder }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        folder: [frontend, api-backend]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: ${{ matrix.folder }}
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Run ESLint
+        working-directory: ${{ matrix.folder }}
+        run: |
+          if [ -f node_modules/.bin/eslint ]; then
+            npx eslint . --ext .ts,.tsx,.js,.jsx --fix
+          else
+            echo "ESLint not found. Skipping linting in ${{ matrix.folder }}."
+          fi

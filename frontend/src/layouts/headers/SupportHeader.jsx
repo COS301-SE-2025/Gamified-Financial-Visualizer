@@ -26,7 +26,7 @@ const GoalsHeader = () => {
         {/* Main Help Page route */}
         <button
           onClick={() => navigate('/support')}
-          className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${path === 'main' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
+          className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${path === '/support' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
             }`}
         >
           <FaBullseye /> Main
@@ -35,16 +35,25 @@ const GoalsHeader = () => {
         {/* FAQ Page route */}
         <button
          onClick={() => navigate('/support/faqs')}
-          className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${path === 'insights' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
+          className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${path === '/support/faqs' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
             }`}
         >
           <FaListUl />FAQ
         </button>
 
+        {/* FAQ Page route */}
+        <button
+         onClick={() => navigate('/support/overview')}
+          className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${path === '/support/overview' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
+            }`}
+        >
+          <FaListUl />Help
+        </button>
+
         {/* Tutorial Page route */}
         <button
           onClick={() => navigate('/support/tutorials')}
-          className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${path === 'insights' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
+          className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${path === '/support/tutorials' ? 'bg-[#88BC46] text-white' : 'bg-white text-gray-600'
             }`}
         >
           <FaListUl /> Tutorial
