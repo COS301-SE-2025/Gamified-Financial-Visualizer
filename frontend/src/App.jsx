@@ -56,6 +56,8 @@ import CommunityGameRoom from './pages/Community/CommunityGameRoom';
 // The Achievements Page Routes
 import AchievementsPage from './pages/Achievements/AchievementsPage';
 import AchievementDetailPage from './pages/Achievements/AchievementDetailPage';
+import IncompleteAchievements from './pages/Achievements/IncompleteAchievement';
+import CompleteAchievements from './pages/Achievements/CompleteAchievement';
 
 function App() {
   return (
@@ -103,6 +105,9 @@ function App() {
           {/* Routes for the Achievements page */}
           <Route path="/achievements" element={<AchievementsPage />} />
           <Route path="/achievements/:id" element={<AchievementDetailPage />} />
+          <Route path="/achievements/complete" element={<CompleteAchievements/>}/>
+          <Route path="/achievements/incomplete" element={<IncompleteAchievements/>}/>
+          
 
 
           {/* Routes for the Community pages */}

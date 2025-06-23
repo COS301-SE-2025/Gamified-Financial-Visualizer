@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import AchievementsLayout from '../../pages/Achievements/AchievementsLayout';
+
 import badge1 from '../../assets/Images/badges/coin.png';
 import badge2 from '../../assets/Images/badges/banknote.png';
 import badge3 from '../../assets/Images/badges/target.png';
