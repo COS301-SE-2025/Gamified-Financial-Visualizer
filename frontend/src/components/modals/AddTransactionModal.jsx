@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaSave, FaTimes } from 'react-icons/fa';
 
+
 const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
   const [form, setForm] = useState({
     type: '',
@@ -17,13 +18,29 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [budgets, setBudgets] = useState([]);
 
   // Fetch categories from API
   useEffect(() => {
     if (isOpen) {
       fetchCategories();
+      fetchBudgets();
     }
   }, [isOpen]);
+
+  const fetchBudgets = async () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user?.id) return;
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/budget/${user.id}`);
+      const data = await res.json();
+      setBudgets(data.data || []);
+    } catch (err) {
+      console.error('Failed to fetch budgets:', err);
+      setBudgets([]);
+    }
+  };
 
   const fetchCategories = async () => {
     try {
@@ -44,6 +61,8 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
       ]);
     }
   };
+
+
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -119,7 +138,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
         name: form.name,
         type: form.type,
         date: form.date || new Date().toISOString().split('T')[0],
-        category: form.categories ? 
+        category: form.categories ?
           categories.find(cat => cat.category_id === parseInt(form.categories))?.category_name || 'Unknown' :
           form.newCategories || 'Uncategorized',
         amount: `${activeAccount.currency || 'ZAR'}${form.amount}`,
@@ -133,7 +152,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
 
       // Call the parent's onAdd function
       onAdd(newTransaction);
-      
+
       // Reset form and close modal
       setForm({
         type: '',
@@ -163,7 +182,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-xl shadow-xl w-[500px] relative">
         <h3 className="text-lg font-bold mb-4 text-center">Add New Transaction</h3>
-        
+
         {error && (
           <div className="bg-red-50 border border-red-200 rounded p-3 mb-4 text-red-700 text-sm">
             {error}
@@ -246,8 +265,11 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
               className="border p-2 rounded"
             >
               <option value="">Select budget</option>
-              <option value="1">Budget 1</option>
-              <option value="2">Budget 2</option>
+              {budgets.map(b => (
+                <option key={b.budget_id} value={b.budget_id}>
+                  {b.budget_name}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -267,11 +289,11 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
           {/* New Category (alternative input) */}
           <div className="flex flex-col">
             <label className="text-gray-600 mb-1">New Category</label>
-            <input 
-              name="newCategories" 
-              value={form.newCategories} 
-              onChange={handleChange} 
-              className="border p-2 rounded" 
+            <input
+              name="newCategories"
+              value={form.newCategories}
+              onChange={handleChange}
+              className="border p-2 rounded"
               placeholder="Enter new category"
             />
           </div>

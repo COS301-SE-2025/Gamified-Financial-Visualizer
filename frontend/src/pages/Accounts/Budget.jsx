@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AccountsLayout from './AccountsLayout';
 import { 
   FaEdit, FaTrash, FaUtensils, FaBus, FaBolt, FaFilm, FaHeartbeat, 
@@ -9,7 +9,7 @@ import {
   FaCoins, FaExchangeAlt, FaPlus, FaTimes, FaCheck 
 } from 'react-icons/fa';
 
-// Category icons mapping (same as before)
+// Category icons mapping
 const categoryIcons = {
   groceries: <FaUtensils />,
   transport: <FaBus />,
@@ -65,16 +65,12 @@ const categoryIcons = {
   default: <FaMoneyBillWave />
 };
 
-const initialBudgets = [
-  { id: 1, category: 'Groceries', limit: 9000, used: 5000 },
-  { id: 2, category: 'Transport', limit: 9000, used: 5000 },
-  { id: 3, category: 'Entertainment', limit: 9000, used: 5000 },
-];
-
 const BudgetForm = ({ 
-  initialData = { category: '', limit: 0, used: 0 }, 
+  initialData = { budget_name: '', category_id: '', target_amount: 0 }, 
   onSave, 
-  onCancel 
+  onCancel,
+  categories = [],
+  isEdit = false
 }) => {
   const [formData, setFormData] = useState(initialData);
   
@@ -82,7 +78,7 @@ const BudgetForm = ({
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'category' ? value : Number(value)
+      [name]: name === 'target_amount' || name === 'category_id' ? Number(value) : value
     }));
   };
 
@@ -91,56 +87,65 @@ const BudgetForm = ({
     onSave(formData);
   };
 
+  const selectedCategory = categories.find(cat => cat.category_id === formData.category_id);
+  const categoryName = selectedCategory?.category_name?.toLowerCase() || '';
+
   return (
     <div className="bg-white rounded-xl shadow-md p-4 mb-4">
       <form onSubmit={handleSubmit}>
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-xl text-[#555]">
-            {categoryIcons[formData.category.toLowerCase()] || categoryIcons.default}
+            {categoryIcons[categoryName] || categoryIcons.default}
           </div>
           <div className="flex-1">
             <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm text-gray-500 mb-1">Category</label>
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  className="w-full p-2 border rounded-md"
-                  required
-                >
-                  <option value="">Select Category</option>
-                  {Object.keys(categoryIcons).map(cat => (
-                    <option key={cat} value={cat}>
-                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm text-gray-500 mb-1">Limit</label>
-                <input
-                  type="number"
-                  name="limit"
-                  value={formData.limit}
-                  onChange={handleChange}
-                  className="w-full p-2 border rounded-md"
-                  required
-                  min="0"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-500 mb-1">Used</label>
-                <input
-                  type="number"
-                  name="used"
-                  value={formData.used}
-                  onChange={handleChange}
-                  className="w-full p-2 border rounded-md"
-                  required
-                  min="0"
-                />
-              </div>
+              {isEdit ? (
+                <div>
+                  <label className="block text-sm text-gray-500 mb-1">Budget Name</label>
+                  <input
+                    type="text"
+                    name="budget_name"
+                    value={formData.budget_name}
+                    onChange={handleChange}
+                    className="w-full p-2 border rounded-md"
+                    required
+                    placeholder="Enter budget name"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm text-gray-500 mb-1">Category</label>
+                  <select
+                    name="category_id"
+                    value={formData.category_id}
+                    onChange={handleChange}
+                    className="w-full p-2 border rounded-md"
+                    required
+                  >
+                    <option value="">Select Category</option>
+                    {categories.map(cat => (
+                      <option key={cat.category_id} value={cat.category_id}>
+                        {cat.category_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {!isEdit && (
+                <div>
+                  <label className="block text-sm text-gray-500 mb-1">Target Amount</label>
+                  <input
+                    type="number"
+                    name="target_amount"
+                    value={formData.target_amount}
+                    onChange={handleChange}
+                    className="w-full p-2 border rounded-md"
+                    required
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+              )}
             </div>
           </div>
           <div className="flex gap-2">
@@ -165,14 +170,16 @@ const BudgetForm = ({
 };
 
 const BudgetCard = ({ 
-  category, 
-  limit, 
+  budget_id,
+  budget_name, 
+  total_target, 
   used, 
   onEdit, 
   onDelete 
 }) => {
-  const percentageUsed = Math.min((used / limit) * 100, 100);
-  const icon = categoryIcons[category.toLowerCase()] || categoryIcons.default;
+  const percentageUsed = total_target > 0 ? Math.min((used / total_target) * 100, 100) : 0;
+  const categoryName = budget_name?.toLowerCase() || '';
+  const icon = categoryIcons[categoryName] || categoryIcons.default;
   
   return (
     <div className="bg-white rounded-xl shadow-md p-4 mb-4 flex items-center justify-between">
@@ -181,9 +188,9 @@ const BudgetCard = ({
           {icon}
         </div>
         <div>
-          <h3 className="text-md font-semibold text-gray-800">{category}</h3>
+          <h3 className="text-md font-semibold text-gray-800">{budget_name}</h3>
           <p className="text-sm text-gray-500">
-            Limit: {limit} &nbsp; Used: {used}
+            Target: {total_target} &nbsp; Used: {used}
           </p>
 
           {/* Styled gradient progress bar */}
@@ -215,9 +222,54 @@ const BudgetCard = ({
 };
 
 const BudgetPage = () => {
-  const [budgets, setBudgets] = useState(initialBudgets);
+  const [budgets, setBudgets] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Replace with actual user ID from your auth context
+  const userId = 1; // This should come from your authentication system
+  
+  useEffect(() => {
+    fetchBudgets();
+    fetchCategories();
+  }, []);
+
+  const fetchBudgets = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`http://localhost:5000/api/budget/user/${userId}`);
+      const result = await response.json();
+      
+      if (result.status === 'success') {
+        setBudgets(result.data);
+      } else {
+        setError(result.message || 'Failed to fetch budgets');
+      }
+    } catch (err) {
+      setError('Failed to fetch budgets');
+      console.error('Error fetching budgets:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/budget/categories');
+      const result = await response.json();
+      
+      if (result.status === 'success') {
+        setCategories(result.data);
+      } else {
+        console.error('Failed to fetch categories:', result.message);
+      }
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+    }
+  };
   
   const handleCreate = () => {
     setIsCreating(true);
@@ -229,25 +281,91 @@ const BudgetPage = () => {
     setIsCreating(false);
   };
 
-  const handleDelete = (id) => {
-    setBudgets(budgets.filter(budget => budget.id !== id));
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this budget?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/budget/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ user_id: userId }),
+      });
+
+      const result = await response.json();
+      
+      if (result.status === 'success') {
+        setBudgets(budgets.filter(budget => budget.budget_id !== id));
+      } else {
+        setError(result.message || 'Failed to delete budget');
+      }
+    } catch (err) {
+      setError('Failed to delete budget');
+      console.error('Error deleting budget:', err);
+    }
   };
 
-  const handleSave = (formData) => {
-    if (editingId) {
-      // Update existing budget
-      setBudgets(budgets.map(budget => 
-        budget.id === editingId ? { ...budget, ...formData } : budget
-      ));
-      setEditingId(null);
-    } else {
-      // Add new budget
-      const newBudget = {
-        id: Date.now(), // Simple unique ID
-        ...formData
-      };
-      setBudgets([...budgets, newBudget]);
-      setIsCreating(false);
+  const handleSave = async (formData) => {
+    try {
+      if (editingId) {
+        // Update existing budget (name only)
+        const response = await fetch(`http://localhost:5000/api/budget/${editingId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            budget_name: formData.budget_name,
+            user_id: userId
+          }),
+        });
+
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+          setBudgets(budgets.map(budget => 
+            budget.budget_id === editingId 
+              ? { ...budget, budget_name: formData.budget_name }
+              : budget
+          ));
+          setEditingId(null);
+        } else {
+          setError(result.message || 'Failed to update budget');
+        }
+      } else {
+        // Create new budget
+        const response = await fetch('http://localhost:5000/api/budget', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            category_id: formData.category_id,
+            allocations: [
+              {
+                category_id: formData.category_id,
+                target_amount: formData.target_amount
+              }
+            ]
+          }),
+        });
+
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+          await fetchBudgets(); // Refresh the budget list
+          setIsCreating(false);
+        } else {
+          setError(result.message || 'Failed to create budget');
+        }
+      }
+    } catch (err) {
+      setError('Failed to save budget');
+      console.error('Error saving budget:', err);
     }
   };
 
@@ -257,8 +375,18 @@ const BudgetPage = () => {
   };
 
   const getBudgetById = (id) => {
-    return budgets.find(budget => budget.id === id);
+    return budgets.find(budget => budget.budget_id === id);
   };
+
+  if (loading) {
+    return (
+      <AccountsLayout>
+        <div className="bg-white p-6 rounded-3xl shadow-md">
+          <div className="text-center">Loading budgets...</div>
+        </div>
+      </AccountsLayout>
+    );
+  }
 
   return (
     <AccountsLayout>
@@ -273,33 +401,52 @@ const BudgetPage = () => {
           </button>
         </div>
 
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+        )}
+
         <div>
           {/* Create Form */}
           {isCreating && (
             <BudgetForm 
               onSave={handleSave}
               onCancel={handleCancel}
+              categories={categories}
+              isEdit={false}
             />
           )}
 
           {/* Budget List */}
           {budgets.map((budget) => (
-            editingId === budget.id ? (
+            editingId === budget.budget_id ? (
               <BudgetForm
-                key={budget.id}
-                initialData={budget}
+                key={budget.budget_id}
+                initialData={{ budget_name: budget.budget_name }}
                 onSave={handleSave}
                 onCancel={handleCancel}
+                categories={categories}
+                isEdit={true}
               />
             ) : (
               <BudgetCard
-                key={budget.id}
-                {...budget}
-                onEdit={() => handleEdit(budget.id)}
-                onDelete={() => handleDelete(budget.id)}
+                key={budget.budget_id}
+                budget_id={budget.budget_id}
+                budget_name={budget.budget_name}
+                total_target={budget.total_target}
+                used={budget.used}
+                onEdit={() => handleEdit(budget.budget_id)}
+                onDelete={() => handleDelete(budget.budget_id)}
               />
             )
           ))}
+
+          {budgets.length === 0 && !isCreating && (
+            <div className="text-center text-gray-500 py-8">
+              No budgets created yet. Click "Create" to add your first budget.
+            </div>
+          )}
         </div>
       </div>
     </AccountsLayout>
