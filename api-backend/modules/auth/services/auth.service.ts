@@ -378,3 +378,74 @@ export async function updateUserSettings(user_id: number, updates: {
     client.release();
   }
 }
+
+
+
+// ------------ Profile Specific Functions ------------- //
+
+
+export async function getProfileTopBar(user_id: number) {
+  const query = `
+    SELECT 
+      u.username,
+      u.created_at,
+      a.avatar_image_path,
+      b.banner_image_path
+    FROM users u
+    JOIN user_preferences up ON u.user_id = up.user_id
+    JOIN avatar_images a ON up.avatar_id = a.avatar_id
+    JOIN banner_images b ON up.banner_id = b.banner_id
+    WHERE u.user_id = $1
+  `;
+  try {
+    const result = await pool.query(query, [user_id]);
+    if (result.rows.length === 0) {
+      throw new Error('User not found');
+    }
+    return result.rows[0]; // Contains: username, created_at, avatar_image_path, banner_image_path
+  } catch (err) {
+    logger.error(`[AuthService] Failed to load profile top bar for user ID ${user_id}:`, err);
+    throw err;
+  }
+}
+
+
+export async function getUserSidebarStats(user_id: number) {
+  const query = `
+    SELECT
+      -- Total active or completed goals
+      (SELECT COUNT(*) FROM goals WHERE user_id = $1 AND goal_status IN ('in-progress', 'completed')) AS total_goals,
+
+      -- Achievement percentage
+      (
+        SELECT
+          ROUND(COUNT(*) FILTER (WHERE achievement_status = 'complete') * 100.0 / NULLIF(COUNT(*), 0), 0)
+        FROM user_achievements
+        WHERE user_id = $1
+      ) AS achievement_percentage,
+
+      -- Total accounts
+      (SELECT COUNT(*) FROM accounts WHERE user_id = $1) AS total_accounts,
+
+      -- Recent transactions (last 30 days)
+      (
+        SELECT COUNT(*) FROM transactions
+        WHERE account_id IN (SELECT account_id FROM accounts WHERE user_id = $1)
+        AND transaction_date >= NOW() - INTERVAL '30 days'
+      ) AS recent_transactions,
+
+      -- Total joined communities
+      (
+        SELECT COUNT(*) FROM community_members
+        WHERE user_id = $1 AND membership_status = 'accepted'
+      ) AS total_communities
+  `;
+
+  try {
+    const result = await pool.query(query, [user_id]);
+    return result.rows[0];
+  } catch (err) {
+    logger.error(`[AuthService] Failed to fetch sidebar stats for user ID ${user_id}:`, err);
+    throw err;
+  }
+}

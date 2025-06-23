@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaCrown, FaChartLine, FaEye, FaMedal, FaFire, FaTrophy, FaStar } from 'react-icons/fa';
 import { motion } from 'framer-motion';
@@ -35,6 +35,18 @@ import avatar12 from '../../assets/Images/avatars/butterflyAvatar.jpeg';
 const Overview = () => {
   const [setShowXpAnimation] = useState(false);
   const navigate = useNavigate();
+
+  const [profileData, setProfileData] = useState(null);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user')); // assuming you store { id, username } here
+    if (!user?.id) return;
+
+    fetch(`http://localhost:5000/api/auth/top-bar/${user.id}`)
+      .then(res => res.json())
+      .then(res => setProfileData(res.data))
+      .catch(err => console.error('Failed to load profile bar:', err));
+  }, []);
 
   // Mock user data
   const userStats = {
@@ -115,7 +127,7 @@ const Overview = () => {
       <div className="relative">
         {/* Banner Image */}
         <img
-          src={profileBanner}
+          src={profileData ? `/assets/Images/${profileData.banner_image_path}` : profileBanner}
           alt="profile-banner"
           className="w-full h-60 object-cover rounded-2xl"
         />
@@ -124,15 +136,24 @@ const Overview = () => {
         <div className="absolute -bottom-10 left-6 flex items-center gap-4">
           {/* Avatar */}
           <img
-            src={avatar4}
+            src={profileData ? `/assets/Images/${profileData.avatar_image_path}` : avatar4}
             alt="avatar"
             className="w-28 h-28 rounded-full border-4 border-white shadow-md object-cover"
           />
 
+
           {/* Username and Join date card */}
           <div className="bg-white shadow-md px-4 py-2 rounded-full flex items-center gap-3">
-            <p className="text-lg font-medium text-gray-800">{userStats.username}</p>
-            <p className="text-sm italic text-[#F28B82]">Joined: <span className="font-medium">21/07/2027</span></p>
+            <p className="text-lg font-medium text-gray-800">{profileData?.username || '...'}</p>
+            <p className="text-sm italic text-[#F28B82]">
+              Joined: <span className="font-medium">
+                {profileData && new Date(profileData.created_at).toLocaleDateString('en-GB', {
+                  day: '2-digit',
+                  month: 'long',
+                  year: 'numeric',
+                })}
+              </span>
+            </p>
           </div>
         </div>
       </div>
