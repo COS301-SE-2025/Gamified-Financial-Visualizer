@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config({ path: '../.env' });
 
-import pool from '../../db/index';
+import pool from '../../config/db';
 
 import {
   createTransaction,
@@ -13,7 +13,7 @@ import {
   deleteTransaction,
   getBalance,
   createBudget
-} from '../../services/transactions.service';
+} from '../../modules/transactions/services/transaction.service';
 
 const testId = Math.floor(Math.random() * 1000000);
 const testUserId = 6;
