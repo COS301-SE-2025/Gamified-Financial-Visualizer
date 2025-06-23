@@ -162,7 +162,7 @@ export async function createAccount(
       currency,
       account_balance || 0, // Default to 0 if not provided
     ]);
-    const accId = res.rows[ 0 ].account_id;
+    const accId = res.rows[0].account_id;
     logger.info(`[TransactionService] Created account ID=${accId} for user ${user_id}`);
     return accId;
   } catch (error) {
@@ -174,7 +174,7 @@ export async function createAccount(
 export async function getAccounts(user_id: number) {
   const sql = `SELECT * FROM accounts WHERE user_id = $1;`;
   try {
-    const res = await pool.query(sql, [ user_id ]);
+    const res = await pool.query(sql, [user_id]);
     return res.rows;
   } catch (error) {
     logger.error(`[TransactionService] Error fetching accounts for user ${user_id}:`, error);
@@ -249,7 +249,7 @@ export async function getAccountById(account_id: number) {
 export async function getTransactionByAccount(account_id: number) {
   const sql = `SELECT * FROM transactions WHERE account_id = $1 ORDER BY transaction_date DESC;`;
   try {
-    const res = await pool.query(sql, [ account_id ]);
+    const res = await pool.query(sql, [account_id]);
     return res.rows;
   } catch (error) {
     logger.error(`[TransactionService] Error fetching transactions for account ${account_id}:`, error);
@@ -260,7 +260,7 @@ export async function getTransactionByAccount(account_id: number) {
 export async function getTransactionByCategory(category_id: number) {
   const sql = `SELECT * FROM transactions WHERE category_id = $1 ORDER BY transaction_date DESC;`;
   try {
-    const res = await pool.query(sql, [ category_id ]);
+    const res = await pool.query(sql, [category_id]);
     return res.rows;
   } catch (error) {
     logger.error(`[TransactionService] Error fetching transactions for category ${category_id}:`, error);
@@ -298,8 +298,8 @@ export async function getTotalSpentPerCategory(user_id: number) {
 export async function getCategoryNameByID(categoryID: number) {
   const sql = `SELECT category_name FROM categories WHERE category_id = $1;`;
   try {
-    const res = await pool.query(sql, [ categoryID ]);
-    return res.rows[ 0 ]?.category_name || null;
+    const res = await pool.query(sql, [categoryID]);
+    return res.rows[0]?.category_name || null;
   } catch (error) {
     logger.error(`[TransactionService] Error fetching category name for ID ${categoryID}:`, error);
     throw error;
@@ -322,7 +322,7 @@ export async function updateAccountName(account_id: number, account_name: string
 export async function deleteAccount(account_id: number, user_id: number) {
   const sql = `DELETE FROM accounts WHERE account_id = $1 AND user_id = $2;`;
   try {
-    await pool.query(sql, [ account_id, user_id ]);
+    await pool.query(sql, [account_id, user_id]);
     logger.info(`[TransactionService] Deleted account ID=${account_id} for user ${user_id}`);
   } catch (error) {
     logger.error(`[TransactionService] Error deleting account ID=${account_id}:`, error);
@@ -333,8 +333,8 @@ export async function deleteAccount(account_id: number, user_id: number) {
 export async function getTransaction(id: number) {
   const sql = `SELECT * FROM transactions WHERE transaction_id = $1;`;
   try {
-    const res = await pool.query(sql, [ id ]);
-    return res.rows[ 0 ];
+    const res = await pool.query(sql, [id]);
+    return res.rows[0];
   } catch (error) {
     logger.error(`[TransactionService] Error fetching transaction ${id}:`, error);
     throw error;
@@ -359,7 +359,7 @@ export async function getUserTransactions(user_id: number) {
     ORDER BY t.transaction_date DESC;
   `;
   try {
-    const res = await pool.query(sql, [ user_id ]);
+    const res = await pool.query(sql, [user_id]);
     return res.rows;
   } catch (error) {
     logger.error(`[TransactionService] Error fetching transactions for user ${user_id}:`, error);
@@ -371,7 +371,7 @@ export async function getUserTransactions(user_id: number) {
 export async function deleteTransaction(id: number) {
   const sql = `DELETE FROM transactions WHERE transaction_id = $1;`;
   try {
-    await pool.query(sql, [ id ]);
+    await pool.query(sql, [id]);
     logger.info(`[TransactionService] Deleted transaction ID=${id}`);
   } catch (error) {
     logger.error(`[TransactionService] Error deleting transaction ${id}:`, error);
@@ -387,8 +387,8 @@ export async function getBalance(user_id: number) { // adapt to account_balance
     WHERE a.user_id = $1;
   `;
   try {
-    const res = await pool.query(sql, [ user_id ]);
-    return Number(res.rows[ 0 ].balance);
+    const res = await pool.query(sql, [user_id]);
+    return Number(res.rows[0].balance);
   } catch (error) {
     logger.error(`[TransactionService] Error fetching balance for user ${user_id}:`, error);
     throw error;
@@ -398,7 +398,7 @@ export async function getBalance(user_id: number) { // adapt to account_balance
 export async function getTransactionByType(transaction_type: string) {
   const sql = `SELECT * FROM transactions WHERE transaction_type = $1 ORDER BY transaction_date DESC;`;
   try {
-    const res = await pool.query(sql, [ transaction_type ]);
+    const res = await pool.query(sql, [transaction_type]);
     return res.rows;
   } catch (error) {
     logger.error(`[TransactionService] Error fetching transactions of type ${transaction_type}:`, error);
@@ -420,8 +420,8 @@ export async function getExpenseTotalByRange(
       AND t.transaction_date BETWEEN $2 AND $3;
   `;
   try {
-    const res = await pool.query(sql, [ user_id, startDate, endDate ]);
-    return Number(res.rows[ 0 ].total_expense);
+    const res = await pool.query(sql, [user_id, startDate, endDate]);
+    return Number(res.rows[0].total_expense);
   } catch (error) {
     logger.error(`[TransactionService] Error fetching total expenses for user ${user_id} between ${startDate} and ${endDate}:`, error);
     throw error;
@@ -464,7 +464,7 @@ export async function createBudget(
       period_start,
       period_end
     ]);
-    const budgetId = res.rows[ 0 ].budget_id;
+    const budgetId = res.rows[0].budget_id;
 
     const insertAllocSql = `
       INSERT INTO budget_categories
@@ -499,7 +499,7 @@ export async function getBudget(user_id: number) {
     WHERE b.user_id = $1;
   `;
   try {
-    const res = await pool.query(sql, [ user_id ]);
+    const res = await pool.query(sql, [user_id]);
     return res.rows;
   } catch (error) {
     logger.error(`[TransactionService] Error fetching budget for user ${user_id}:`, error);
@@ -510,7 +510,7 @@ export async function getBudget(user_id: number) {
 export async function deleteBudget(budget_id: number, user_id: number) {
   const sql = `DELETE FROM budgets WHERE budget_id = $1 AND user_id = $2;`;
   try {
-    await pool.query(sql, [ budget_id, user_id ]);
+    await pool.query(sql, [budget_id, user_id]);
     logger.info(`[TransactionService] Deleted budget ID=${budget_id} for user ${user_id}`);
   } catch (error) {
     logger.error(`[TransactionService] Error deleting budget ${budget_id}:`, error);
@@ -525,7 +525,7 @@ export async function makeBudgetProgress(budget_id: number, amount: number) {
     WHERE budget_id = $2;
   `;
   try {
-    await pool.query(sql, [ amount, budget_id ]);
+    await pool.query(sql, [amount, budget_id]);
     logger.info(`[TransactionService] Updated budget ID=${budget_id} with progress of ${amount}`);
   } catch (error) {
     logger.error(`[TransactionService] Error updating budget progress for ID=${budget_id}:`, error);
@@ -541,7 +541,7 @@ export async function updateBudget(
   const sets: string[] = [];
   const vals: any[] = [];
   let idx = 1;
-  for (const [ key, value ] of Object.entries(fields)) {
+  for (const [key, value] of Object.entries(fields)) {
     sets.push(`${key} = $${idx}`);
     vals.push(value);
     idx++;
@@ -552,7 +552,7 @@ export async function updateBudget(
     UPDATE budgets SET ${sets.join(', ')} WHERE budget_id = $${idx};
   `;
   try {
-    await pool.query(sql, [ ...vals, budget_id ]);
+    await pool.query(sql, [...vals, budget_id]);
     logger.info(`[TransactionService] Updated budget ID=${budget_id}`);
 
 
@@ -562,20 +562,135 @@ export async function updateBudget(
   }
 }
 
-export async function getBudgetsSummary(user_id: number) {
+/* export async function getBudgetsSummary(user_id: number) {
   const sql = `
-    SELECT b.budget_id, b.budget_name, b.current_amount,  b.period_start, b.period_end,
-           COALESCE(SUM(bc.target_amount), 0) AS total_target
-    FROM budgets b
-    LEFT JOIN budget_categories bc ON b.budget_id = bc.budget_id
-    WHERE b.user_id = $1
-    GROUP BY b.budget_id;
-  `;
+  SELECT b.budget_id, b.budget_name, b.period_start, b.period_end,
+         COALESCE(SUM(bc.target_amount), 0) AS total_target
+  FROM budgets b
+  LEFT JOIN budget_categories bc ON b.budget_id = bc.budget_id
+  WHERE b.user_id = $1
+  GROUP BY b.budget_id;
+`;
   try {
-    const res = await pool.query(sql, [ user_id ]);
+    const res = await pool.query(sql, [user_id]);
     return res.rows;
   } catch (error) {
     logger.error(`[TransactionService] Error fetching budgets for user ${user_id}:`, error);
+    throw error;
+  }
+} 
+*/
+
+export async function getBudgetsSummary(user_id: number) {
+  const sql = `
+SELECT 
+  b.budget_id, 
+  b.budget_name, 
+  b.period_start, 
+  b.period_end,
+  COALESCE(SUM(bc.target_amount), 0) AS total_target,
+  COALESCE((
+    SELECT SUM(t.transaction_amount)
+    FROM transactions t
+    WHERE t.budget_id = b.budget_id
+  ), 0) AS used
+FROM budgets b
+LEFT JOIN budget_categories bc ON b.budget_id = bc.budget_id
+WHERE b.user_id = $1
+GROUP BY b.budget_id;
+  `;
+  try {
+    const res = await pool.query(sql, [user_id]);
+    return res.rows;
+  } catch (error) {
+    logger.error(`[TransactionService] Error fetching budgets for user ${user_id}:`, error);
+    throw error;
+  }
+}
+
+export async function createBudgetWithCategoryName(
+  user_id: number,
+  category_id: number,
+  allocations: Array<{ category_id: number; target_amount: number }>
+): Promise<number> {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const { rows } = await client.query(
+      'SELECT category_name FROM categories WHERE category_id = $1',
+      [category_id]
+    );
+    const budget_name = rows[0]?.category_name;
+    if (!budget_name) {
+      throw new Error('Category not found for the given category_id');
+    }
+
+    const today = new Date();
+    const start = today.toISOString().split('T')[0];
+    const nextMonth = new Date(today);
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+    nextMonth.setDate(nextMonth.getDate() - 1);
+    const end = nextMonth.toISOString().split('T')[0];
+
+    const insertBudget = `
+      INSERT INTO budgets (user_id, budget_name, period_start, period_end)
+      VALUES ($1, $2, $3, $4)
+      RETURNING budget_id;
+    `;
+    const result = await client.query(insertBudget, [user_id, budget_name, start, end]);
+    const budget_id = result.rows[0].budget_id;
+
+    const insertAlloc = `
+      INSERT INTO budget_categories (budget_id, category_id, target_amount)
+      VALUES ($1, $2, $3);
+    `;
+    for (const alloc of allocations) {
+      await client.query(insertAlloc, [budget_id, alloc.category_id, alloc.target_amount]);
+    }
+
+    await client.query('COMMIT');
+    logger.info(`[BudgetService] Created budget ID=${budget_id} for user ${user_id}`);
+    return budget_id;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    logger.error('[BudgetService] Failed to create budget:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+export async function getBudgetsByUser(user_id: number) {
+  const sql = `
+    SELECT
+      b.budget_id,
+      b.budget_name
+    FROM budgets b
+    WHERE b.user_id = $1
+  `;
+
+  try {
+    const res = await pool.query(sql, [user_id]);
+    return res.rows;
+  } catch (error) {
+    logger.error(`[BudgetService] Error fetching budgets for user ${user_id}:`, error);
+    throw error;
+  }
+}
+
+//===========================================
+
+export async function updateBudgetName(budget_id: number, budget_name: string, user_id: number) {
+  const sql = `UPDATE budgets SET budget_name = $1 WHERE budget_id = $2 AND user_id = $3;`;
+  try {
+    const result = await pool.query(sql, [budget_name, budget_id, user_id]);
+    if (result.rowCount === 0) {
+      throw new Error('Budget not found or unauthorized');
+    }
+    logger.info(`[TransactionService] Updated budget name for budget ID=${budget_id}`);
+  } catch (error) {
+    logger.error(`[TransactionService] Error updating budget name for ID=${budget_id}:`, error);
     throw error;
   }
 }

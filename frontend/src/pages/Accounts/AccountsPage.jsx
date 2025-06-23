@@ -24,8 +24,7 @@ const AccountsPage = () => {
   // Helper function to get category name by ID
   const getCategoryName = (categoryId, customCategoryId) => {
     if (customCategoryId) {
-      // For custom categories, you might need another endpoint
-      // For now, return a placeholder
+
       return `Custom Category ${customCategoryId}`;
     }
     
