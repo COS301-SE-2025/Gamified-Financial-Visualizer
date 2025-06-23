@@ -579,6 +579,15 @@ CREATE TABLE lessons (
     UNIQUE (module_id, lesson_number)
 );
 
+
+-- LESSON PROGRESS
+CREATE TABLE user_lessons (
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    lesson_id INT NOT NULL REFERENCES lessons(lesson_id) ON DELETE CASCADE,
+    completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, lesson_id)
+);
+
 -- QUIZZES
 CREATE TABLE quizzes (
     quiz_id SERIAL PRIMARY KEY,

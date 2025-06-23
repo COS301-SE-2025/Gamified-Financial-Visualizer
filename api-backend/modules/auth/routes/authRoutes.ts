@@ -7,6 +7,8 @@ import { V3 }                from 'paseto';
 import { logger } from '../../../config/logger';
 import * as userService from '../services/auth.service';
 
+import { getProfileTopBar } from '../services/auth.service';
+
 const localKey = Buffer.from(process.env.PASETO_LOCAL_KEY!, 'hex');
 const TOKEN_TTL = Number(process.env.TOKEN_TTL_SECONDS || 86400);
 
@@ -246,6 +248,32 @@ router.put('/:userId/update-profile', async (req: Request, res: Response): Promi
     res.status(500).json({
       status: 'error',
       message: 'Internal server error while updating user profile.',
+    });
+  }
+});
+
+
+// Profile Specific Routes
+
+/**
+ * @route GET /api/auth/top-bar/:userId
+ * @desc Returns username, avatar, banner, and join date for the profile top bar
+ */
+router.get('/top-bar/:userId', async (req: Request, res: Response) => {
+  const userId = Number(req.params.userId);
+
+  try {
+    const data = await getProfileTopBar(userId);
+    res.status(200).json({
+      status: 'success',
+      message: 'Profile top bar data loaded.',
+      data,
+    });
+  } catch (error) {
+    logger.error(`[Auth] Failed to fetch top bar for user ID ${userId}:`, error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to load profile top bar data.',
     });
   }
 });
