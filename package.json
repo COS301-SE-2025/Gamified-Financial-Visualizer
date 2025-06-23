@@ -22,7 +22,8 @@
   },
   "scripts": {
     "format": "prettier . --write",
-    "dev": "concurrently \"npx ts-node api-backend/server.ts\" \"npm start --prefix frontend\""
+    "dev": "concurrently \"npx ts-node api-backend/server.ts\" \"npm start --prefix frontend\"",
+     "build": "npm run build --workspace=frontend"
   },
   "devDependencies": {
     "@types/cors": "^2.8.18",
