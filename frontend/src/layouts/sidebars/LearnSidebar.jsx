@@ -7,6 +7,7 @@ import {
   FaCheck,
   FaHourglassHalf,
   FaBullseye,
+  FaBolt
 } from 'react-icons/fa';
 
 const LearnSidebar = () => {

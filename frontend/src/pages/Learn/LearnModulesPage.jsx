@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { FaSearch } from 'react-icons/fa';
+import { FaSearch} from 'react-icons/fa';
 
 import LearnLayout from '../../pages/Learn/LearnLayout';
 import CourseCard from '../../components/cards/CoursesCard';

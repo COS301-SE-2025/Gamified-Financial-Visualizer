@@ -24,12 +24,13 @@
   },
   "scripts": {
     "format": "prettier . --write",
-    "dev": "concurrently \"npx ts-node api-backend/server.ts\" \"cd api-backend/modules/classifier && uvicorn app.server:app --host 0.0.0.0 --port 6000\"  \"npm start --prefix frontend\"",
+    "dev": "concurrently \"npx ts-node api-backend/server.ts\"  \"npm start --prefix frontend\"",
     "test": "jest",
     "test:int": "jest integration",
     "test:services": "jest services",
     "test:watch": "jest --watch",
-    "test:cov": "jest --coverage"
+    "test:cov": "jest --coverage",
+    "build": "npm run build --workspace=frontend"
   },
  "jest": {
     "preset": "ts-jest/presets/default-esm",

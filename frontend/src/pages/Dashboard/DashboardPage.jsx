@@ -9,9 +9,8 @@ import {
 import { motion} from 'framer-motion';
 
 const DashboardPage = () => {
-  const user = localStorage.getItem('user');
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user'));
+  const user = localStorage.getItem('user');
   const [darkMode] = useState(false);
   const [userData, setUserData] = useState({
     level: 5,
