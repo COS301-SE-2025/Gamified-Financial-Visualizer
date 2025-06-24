@@ -25,7 +25,7 @@ jobs:
       - name: Install root + workspace dependencies
         run: npm install
 
-      - name: 🛠️ Build frontend workspace
+      - name: Build frontend workspace
         run: CI=false npm run build --workspace=frontend
 
       - name: Build finished
