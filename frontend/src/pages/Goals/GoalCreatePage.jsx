@@ -24,7 +24,7 @@ const [categories, setCategories] = useState([]);
 useEffect(() => {
   const fetchCategories = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/transaction/categories');
+      const res = await fetch('http://localhost:5000/api/transactions/categories');
       const data = await res.json();
       setCategories(data.data || []);
     } catch (err) {

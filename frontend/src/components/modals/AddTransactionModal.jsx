@@ -19,12 +19,14 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [budgets, setBudgets] = useState([]);
+  const [goals, setGoals] = useState([]);
 
   // Fetch categories from API
   useEffect(() => {
     if (isOpen) {
       fetchCategories();
       fetchBudgets();
+      fetchGoals();
     }
   }, [isOpen]);
 
@@ -33,7 +35,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
     if (!user?.id) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/budget/${user.id}`);
+      const res = await fetch(`http://localhost:5000/api/budget/user/${user.id}`);
       const data = await res.json();
       setBudgets(data.data || []);
     } catch (err) {
@@ -50,19 +52,24 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
       setCategories(data.data || []);
     } catch (err) {
       console.error('Error fetching categories:', err);
-      // Fallback to hardcoded categories if API fails
-      setCategories([
-        { category_id: 1, category_name: 'Food' },
-        { category_id: 2, category_name: 'Transport' },
-        { category_id: 3, category_name: 'Fuel' },
-        { category_id: 4, category_name: 'Health' },
-        { category_id: 5, category_name: 'Entertainment' },
-        { category_id: 6, category_name: 'Personal' }
-      ]);
+ 
     }
   };
 
 
+  const fetchGoals = async () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user?.id) return;
+    try {
+      const response = await fetch(`http://localhost:5000/api/goal/user/${user.id}`);
+      if (!response.ok) throw new Error('Failed to fetch goals');
+      const data = await response.json();
+      setGoals(data.data || []);
+    } catch (err) {
+      console.error('Error fetching goals:', err);
+      setGoals([]);
+    }
+  }
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -303,8 +310,11 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
             <label className="text-gray-600 mb-1">Goals</label>
             <select name="goals" value={form.goals} onChange={handleChange} className="border p-2 rounded">
               <option value="">Select goal</option>
-              <option value="1">Goal 1</option>
-              <option value="2">Goal 2</option>
+              {goals.map(g => (
+                <option key={g.goal_id} value={g.goal_id}>
+                  {g.goal_name}
+                </option>
+              ))}
             </select>
           </div>
 

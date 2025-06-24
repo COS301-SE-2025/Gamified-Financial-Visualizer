@@ -240,7 +240,7 @@ const AccountsSidebar = () => {
       {/* Overall Performance */}
       <div className="bg-white rounded-2xl p-4 shadow text-center">
         <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-3 py-1 rounded-full inline-block mb-2">
-          Overall Performance
+          Account Performance
         </p>
 
         {/* Progress Circle */}
