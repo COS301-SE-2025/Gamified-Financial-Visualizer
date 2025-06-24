@@ -3,14 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import {
   FaWallet, FaBullseye, FaUsers, FaGraduationCap, FaMedal,
   FaUserAlt, FaQuestionCircle, FaGamepad, FaCoins,
-  FaGem, FaTrophy, FaChartLine, FaBookOpen, FaChevronRight,
-  FaBell, FaCog, FaSearch, FaCalendarAlt, FaArrowUp, FaArrowDown, FaFire
+  FaGem, FaTrophy, FaBookOpen, FaChevronRight,
+ FaCalendarAlt, FaFire
 } from 'react-icons/fa';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion} from 'framer-motion';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
-  const [darkMode, setDarkMode] = useState(false);
+  const user = localStorage.getItem('user');
+  const [darkMode] = useState(false);
   const [userData, setUserData] = useState({
     level: 5,
     xp: 680,
@@ -22,16 +23,13 @@ const DashboardPage = () => {
     debtReduction: 18,
     dailyTasks: [false, false, false]
   });
-  const [activeItem, setActiveItem] = useState(null);
-  const [notifications, setNotifications] = useState([
+
+  const [setNotifications] = useState([
     { id: 1, text: "Daily login bonus! +50 coins", read: false, time: "2 min ago" },
     { id: 2, text: "New achievement unlocked: Financial Wizard", read: false, time: "1 hour ago" },
     { id: 3, text: "Your investment grew by 3.2%", read: false, time: "5 hours ago" }
   ]);
-  const [showLevelUp, setShowLevelUp] = useState(false);
-  const [isHovered, setIsHovered] = useState(null);
-  const [showNotificationPanel, setShowNotificationPanel] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [setShowLevelUp] = useState(false);
 
   // Color scheme based on dark mode
   const colors = {
@@ -132,8 +130,6 @@ const DashboardPage = () => {
     { id: 3, name: 'Gym Membership', amount: 29.99, due: 'Jul 1', paid: false }
   ];
 
-  const xpPercentage = Math.min((userData.xp / (userData.level * 200)) * 100, 100);
-
   // Level up effect
   useEffect(() => {
     if (userData.xp >= userData.level * 200) {
@@ -173,12 +169,6 @@ const DashboardPage = () => {
     ]);
   };
 
-  const markNotificationAsRead = (id) => {
-    setNotifications(prev =>
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
-    );
-  };
-
   const handleItemClick = (item) => {
     setUserData(prev => ({
       ...prev,
@@ -208,36 +198,17 @@ const DashboardPage = () => {
     }
   };
 
-  const LevelUpCelebration = () => (
-    <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-      <motion.div
-        className="text-center"
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        exit={{ scale: 0 }}
-        transition={{ type: 'spring', stiffness: 500 }}
-      >
-        <div className="text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-red-500 mb-4">
-          LEVEL UP!
-        </div>
-        <div className="text-4xl animate-bounce">
-          🎉
-        </div>
-        <div className="text-xl mt-4 text-white">
-          You're now level {userData.level}
-        </div>
-      </motion.div>
-    </div>
-  );
-
   return (
+    
     <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-slate-900' : 'bg-slate-50'} p-4 md:p-6 relative`}>
       {/* Header - welcome banner*/}
       <div className="relative overflow-hidden mb-4 bg-gradient-to-r from-[#B1E1FF] via-[#AAD977] to-[#FFD18C] p-6 rounded-3xl shadow-lg">
         <div className="absolute inset-0 opacity-20 bg-gray-700"></div>
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
+
           <h2 className="text-xl md:text-2xl font-bold text-white mb-2">
-            Welcome Back satoshi_nak!
+            Welcome Back {user ? JSON.parse(user).username : 'Adventurer'}!
+
           </h2>
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-1">
@@ -267,7 +238,7 @@ const DashboardPage = () => {
             onClick={() => handleItemClick(item)}
             className={`cursor-pointer rounded-xl ${darkMode ? 'bg-slate-800 hover:bg-slate-700' : 'bg-white hover:bg-gray-50'} 
               shadow-sm p-4 flex flex-col items-center gap-2 text-center transition-all duration-200
-              ${item.isSpecial ? 'border-2 border-[#FFD18C]' : ''}`}
+              ${item.isSpecial ? 'border-2 border-[#FFFFFF]' : ''}`}
           >
             <div
               className={`text-3xl p-3 rounded-full ${darkMode ? 'bg-slate-700' : 'bg-gray-100'}`}

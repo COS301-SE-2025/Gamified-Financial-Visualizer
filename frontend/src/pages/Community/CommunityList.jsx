@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
-import { FaEye, FaTrophy } from 'react-icons/fa';
+import { FaEye, FaSearch } from 'react-icons/fa';
 import CommunityLayout from '../../pages/Community/CommunityLayout';
 import CommunityHeader from '../../layouts/headers/CommunityHeader';
 
@@ -87,10 +87,8 @@ const handleDelete = (itemName) => {
   ), { duration: 10000, position: 'top-center' });
 };
 
-
 const CommunityList = () => {
     return (
-        
         <CommunityLayout>
               <Toaster position="top-right" />
             <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
@@ -102,6 +100,15 @@ const CommunityList = () => {
                         </button>
                     </Link>
                 </div>
+
+                <div className="flex items-center w-full max-w-6xl -ml-[8px] px-4 py-2 rounded-3xl border-2 border-[#E5794B] bg-white shadow-sm">
+                          <FaSearch className="text-[#E5794B] mr-2" />
+                          <input
+                            type="text"
+                            placeholder="Search your communities..."
+                            className="w-full outline-none bg-transparent text-sm text-[#E5794B] placeholder-[#E5794B]/70"
+                          />
+                        </div>
 
                 {communities.map((community, i) => (
                     <div

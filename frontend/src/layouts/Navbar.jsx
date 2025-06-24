@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import {
   FaHome, FaCalculator, FaBullseye, FaUsers, FaGraduationCap, FaMedal,
-  FaQuestionCircle, FaBell, FaUser, FaSignOutAlt
+  FaQuestionCircle, FaBell, FaSignOutAlt
 } from 'react-icons/fa';
 
 import Logo from '../assets/Images/Logo.png';
@@ -12,7 +12,7 @@ import NotificationsPanel from '../components/notifications/NotificationsPanel';
 const Navbar = () => {
   const [user, setUser] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,7 +40,13 @@ const Navbar = () => {
       <nav className="bg-white h-20 px-6 flex items-center justify-between border-b-2 border-[#83AB55] shadow-sm">
         {/* Left: User Info */}
         <div className="flex items-center space-x-4">
-          <img src={User} alt="User" className="w-12 h-12 rounded-full object-cover" />
+          <NavLink to="/profile">
+            <img
+              src={User}
+              alt="User"
+              className="w-12 h-12 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+            />
+          </NavLink>
           <div>
             <p className="text-sm font-semibold text-gray-900">{user ? user.username : "Guest"}</p>
             <p className="text-xs text-gray-400">Silver</p>
@@ -56,7 +62,7 @@ const Navbar = () => {
           <NavLink to="/learn" className={navClasses}><FaGraduationCap /> <span>Learn</span></NavLink>
           <NavLink to="/achievements" className={navClasses}><FaMedal /> <span>Achievements</span></NavLink>
           <NavLink to="/support" className={navClasses}><FaQuestionCircle /> <span>Support</span></NavLink>
-          <NavLink to="/profile" className={navClasses}><FaUser /> <span>Profile</span></NavLink>
+          {/* <NavLink to="/profile" className={navClasses}><FaUser /> <span>Profile</span></NavLink> */}
         </div>
 
         {/* Right: Icons + Logout */}
@@ -70,27 +76,16 @@ const Navbar = () => {
             <span className="absolute -top-2 -right-2 bg-[#FB7272] text-white text-xs rounded-full px-1">5</span>
           </div>
 
-          {/* Dark Mode Toggle */}
-          <div
-            onClick={() => setDarkMode(!darkMode)}
-            className={`w-12 h-6 flex items-center rounded-full p-1 cursor-pointer transition-colors duration-300 ${darkMode ? 'bg-[#83AB55]' : 'bg-gray-300'
-              }`}
-          >
-            <div
-              className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 ${darkMode ? 'translate-x-6' : 'translate-x-0'
-                }`}
-            />
-          </div>
-
-
           {/* Logout */}
           {user ? (
             <button
               onClick={handleLogout}
-              className="w-10 h-10 flex items-center justify-center bg-white rounded-full shadow hover:bg-[#F0F0F0] transition"
+              className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow hover:bg-[#F0F0F0] transition"
             >
-              <FaSignOutAlt className="text-[#83AB55] text-2xl" />
+              <FaSignOutAlt className="text-[#83AB55] text-xl" />
+              <span className="text-sm font-medium text-[#83AB55]">Logout</span>
             </button>
+
           ) : (
             <NavLink to="/landing" className="bg-[#83AB55] text-white px-4 py-1 rounded-full shadow">
               Login

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import avatar from '../../assets/Images/avatars/totoroAvatar.jpeg';
 import {
+
   FaBolt,
   FaChartBar,
   FaHourglassHalf,
@@ -38,6 +39,7 @@ import {
   FaCoins,
   FaExchangeAlt,
   FaSpinner
+
 } from 'react-icons/fa';
 
 // Category icons mapping

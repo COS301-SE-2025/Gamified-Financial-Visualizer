@@ -1,0 +1,32 @@
+name: Building
+
+on:
+  push:
+    branches: [main, development]
+  pull_request:
+    branches: [main, development]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install root + workspace dependencies
+        run: npm install
+
+      - name: Build frontend workspace
+        run: CI=false npm run build --workspace=frontend
+
+      - name: Build finished
+        run: echo " Codebase build completed"
