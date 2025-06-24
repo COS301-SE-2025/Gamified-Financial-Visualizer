@@ -333,32 +333,57 @@ export async function getTransactionByCategory(category_id: number) {
     throw error;
   }
 }
-
 export async function getTotalSpentPerCategory(user_id: number) {
   const sql = `
-    SELECT 
+  WITH user_categories AS (
+    -- Get all categories ever used by this user (including zero-spent ones)
+    SELECT DISTINCT COALESCE(c.category_name, cc.custom_category_name) AS category
+    FROM transactions t
+    JOIN accounts a ON t.account_id = a.account_id
+    LEFT JOIN categories c ON t.category_id = c.category_id
+    LEFT JOIN custom_categories cc ON t.custom_category_id = cc.custom_category_id
+    WHERE a.user_id = $1
+  ),
+  top_spending AS (
+    -- Get top spending categories for the last month
+    SELECT  
       COALESCE(c.category_name, cc.custom_category_name) AS category,
       SUM(t.transaction_amount) AS total_spent
     FROM transactions t
     JOIN accounts a ON t.account_id = a.account_id
     LEFT JOIN categories c ON t.category_id = c.category_id
     LEFT JOIN custom_categories cc ON t.custom_category_id = cc.custom_category_id
-    WHERE 
+    WHERE  
       a.user_id = $1
-      AND t.transaction_type = 'expense'
+      AND (t.transaction_type = 'expense' OR t.transaction_type = 'fee' OR t.transaction_type = 'withdrawal')
       AND t.transaction_date >= (CURRENT_DATE - INTERVAL '1 month')
     GROUP BY category
-    ORDER BY total_spent DESC;
-  `;
+    ORDER BY total_spent DESC
+  ),
+  combined_results AS (
+    -- Combine top spending with all available categories
+    SELECT 
+      ts.category,
+      COALESCE(ts.total_spent, 0) AS total_spent,
+      CASE WHEN ts.total_spent IS NULL THEN false ELSE true END AS had_spending
+    FROM user_categories uc
+    LEFT JOIN top_spending ts ON uc.category = ts.category
+    ORDER BY had_spending DESC, total_spent DESC, uc.category ASC
+    LIMIT 6
+  )
+  SELECT 
+    category,
+    total_spent
+  FROM combined_results;`;
+  
   try {
-    const res = await pool.query(sql, [ user_id ]);
+    const res = await pool.query(sql, [user_id]);
     return res.rows;
   } catch (error) {
     logger.error(`[TransactionService] Error fetching last month's spending by category for user ${user_id}:`, error);
     throw error;
   }
 }
-
 
 
 export async function getCategoryNameByID(categoryID: number) {

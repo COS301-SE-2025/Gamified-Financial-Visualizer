@@ -66,6 +66,11 @@ const categoryIcons = {
   default: <FaMoneyBillWave />
 };
 
+function getRandomColor() {
+  return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+}
+
+const randomColor = getRandomColor(); // Example output: "#3A7B42"
 // Category colors mapping
 const categoryColors = {
   groceries: '#FF8A8A',
@@ -88,7 +93,7 @@ const categoryColors = {
   personal: '#7FDD53',
   gifts: '#68D391',
   charity: '#48BB78',
-  default: '#FF7F9E'
+  default: randomColor
 };
 
 const AccountsSidebar = () => {
