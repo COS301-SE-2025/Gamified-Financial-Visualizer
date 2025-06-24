@@ -12,6 +12,10 @@ import { getUserSidebarStats } from '../services/auth.service';
 import { getCurrentUserGoals } from '../services/auth.service';
 import { getUserPerformanceStats } from '../services/auth.service';
 import { getRecentAchievements } from '../services/auth.service';
+import { getUserCommunities } from '../services/auth.service';
+import { getUserPerformanceSummary } from '../services/auth.service';
+import { getUserLevelProgress } from '../services/auth.service';
+
 
 const localKey = Buffer.from(process.env.PASETO_LOCAL_KEY!, 'hex');
 const TOKEN_TTL = Number(process.env.TOKEN_TTL_SECONDS || 86400);
@@ -375,6 +379,76 @@ router.get('/profile/recent-achievements/:userId', async (req: Request, res: Res
   }
 });
 
+/**
+ * @route GET /api/auth/profile/communities/:userId
+ * @desc Returns all communities the user is a member of
+ */
+router.get('/profile/communities/:userId', async (req: Request, res: Response) => {
+  const userId = Number(req.params.userId);
+
+  try {
+    const communities = await getUserCommunities(userId);
+    res.status(200).json({
+      status: 'success',
+      message: 'User communities fetched successfully.',
+      data: communities,
+    });
+  } catch (error) {
+    logger.error(`[Auth] Failed to fetch communities for user ID ${userId}:`, error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Could not load user communities.',
+    });
+  }
+});
+
+
+/**
+ * @route GET /api/auth/profile/performance-summary/:userId
+ * @desc Returns performance score, label, avatar, level, and tier
+ */
+router.get('/profile/performance-summary/:userId', async (req: Request, res: Response) => {
+  const userId = Number(req.params.userId);
+
+  try {
+    const summary = await getUserPerformanceSummary(userId);
+    res.status(200).json({
+      status: 'success',
+      message: 'Performance summary retrieved successfully.',
+      data: summary,
+    });
+  } catch (error) {
+    logger.error(`[Auth] Failed to fetch performance summary for user ID ${userId}:`, error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Could not fetch performance summary.',
+    });
+  }
+});
+
+
+/**
+ * @route GET /api/auth/profile/level-progress/:userId
+ * @desc Returns level progress including XP, level, tier, and points to next tier
+ */
+router.get('/profile/level-progress/:userId', async (req: Request, res: Response) => {
+  const userId = Number(req.params.userId);
+
+  try {
+    const progress = await getUserLevelProgress(userId);
+    res.status(200).json({
+      status: 'success',
+      message: 'Level progress retrieved successfully.',
+      data: progress,
+    });
+  } catch (error) {
+    logger.error(`[Auth] Failed to fetch level progress for user ID ${userId}:`, error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Could not load level progress.',
+    });
+  }
+});
 
 
 

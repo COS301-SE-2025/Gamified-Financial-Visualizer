@@ -652,8 +652,9 @@ CREATE TABLE user_points (
     user_id INT PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
     total_points INT NOT NULL DEFAULT 0,
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    tier_status VARCHAR(20) NOT NULL DEFAULT 'wood' CHECK (
-    tier_status IN ('wood', 'bronze', 'silver', 'gold', 'platinum', 'diamond'))
+    tier_status VARCHAR(20) NOT NULL CHECK (
+        tier_status IN ('Wood', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond')
+    )
 );
 
 -- USER POINTS HISTORY
@@ -695,6 +696,29 @@ BEGIN
     END;
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
+
+
+
+CREATE OR REPLACE FUNCTION update_tier_status()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.tier_status := CASE
+    WHEN NEW.total_points >= 15000 THEN 'Diamond'
+    WHEN NEW.total_points >= 10000 THEN 'Platinum'
+    WHEN NEW.total_points >= 6000 THEN 'Gold'
+    WHEN NEW.total_points >= 3000 THEN 'Silver'
+    WHEN NEW.total_points >= 1000 THEN 'Bronze'
+    ELSE 'Wood'
+  END;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER trg_update_tier_status
+BEFORE INSERT OR UPDATE ON user_points
+FOR EACH ROW
+EXECUTE FUNCTION update_tier_status();
 
 
 
@@ -775,3 +799,8 @@ CREATE INDEX idx_achievements_trigger_condition ON achievements USING GIN (trigg
 
 -- JSONB field: AR customizations in user preferences
 CREATE INDEX idx_user_preferences_ar_customizations ON user_preferences USING GIN (ar_customizations_jsonb);
+
+-- Tier-based performance dashboards
+CREATE INDEX idx_user_points_tier_points
+ON user_points(tier_status, total_points DESC);
+

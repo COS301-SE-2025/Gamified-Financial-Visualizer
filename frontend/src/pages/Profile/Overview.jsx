@@ -12,19 +12,8 @@ import comm2 from '../../assets/Images/banners/pixelGirlAlly.gif';
 import comm3 from '../../assets/Images/banners/pixelStudents.jpeg';
 import comm4 from '../../assets/Images/banners/pixelWindow.gif';
 
-// Avatar images
-import avatar1 from '../../assets/Images/avatars/catAvatar.jpeg';
-import avatar2 from '../../assets/Images/avatars/crossiontAvatar.jpeg';
-import avatar3 from '../../assets/Images/avatars/butterflyAvatar.jpeg';
 import avatar4 from '../../assets/Images/avatars/totoroAvatar.jpeg';
-import avatar5 from '../../assets/Images/avatars/pinkskyAvatar.jpeg';
-import avatar6 from '../../assets/Images/avatars/boatAvatar.jpeg';
-import avatar7 from '../../assets/Images/avatars/ghostAvatar.jpeg';
-import avatar8 from '../../assets/Images/avatars/boatAvatar.jpeg';
-import avatar9 from '../../assets/Images/avatars/totoroAvatar.jpeg';
-import avatar10 from '../../assets/Images/avatars/ladyAvatar.jpeg';
-import avatar11 from '../../assets/Images/avatars/carAvatar.jpeg';
-import avatar12 from '../../assets/Images/avatars/butterflyAvatar.jpeg';
+
 
 // Format amount cleanly (e.g., 7500 or 7500.14)
 const formatAmount = (amount) => {
@@ -40,6 +29,8 @@ const Overview = () => {
   const [goals, setGoals] = useState([]);
   const [performanceStats, setPerformanceStats] = useState(null);
   const [recentAchievements, setRecentAchievements] = useState([]);
+  const [communityData, setCommunityData] = useState([]);
+  const [levelProgress, setLevelProgress] = useState(null);
 
   useEffect(() => {
   const user = JSON.parse(localStorage.getItem('user'));
@@ -68,6 +59,18 @@ const Overview = () => {
     .then(res => res.json())
     .then(res => setRecentAchievements(res.data))
     .catch(err => console.error('Failed to load achievements:', err));
+
+  // Fetch communities
+  fetch(`http://localhost:5000/api/auth/profile/communities/${user.id}`)
+    .then(res => res.json())
+    .then(res => setCommunityData(res.data))
+    .catch(err => console.error('Failed to load communities:', err));
+
+  // Fetch level progress
+  fetch(`http://localhost:5000/api/auth/profile/level-progress/${user.id}`)
+    .then(res => res.json())
+    .then(res => setLevelProgress(res.data))
+    .catch(err => console.error('Failed to load level progress:', err));
 }, []);
 
   // Mock user data
@@ -101,46 +104,6 @@ const Overview = () => {
     { id: 5, image: profileBanner },
     { id: 6, image: comm2 },
     { id: 7, image: comm1 },
-  ];
-
-  // Active community data
-  const communityData = [
-    {
-      id: 'Happy Savers',
-      name: 'Happy Savers',
-      image: comm1,
-      members: 8,
-      goals: 9,
-      xp: 4504,
-      avatars: [avatar1, avatar2, avatar3]
-    },
-    {
-      id: 'Happy Savers',
-      name: 'Money Makers',
-      image: comm2,
-      members: 8,
-      goals: 9,
-      xp: 4504,
-      avatars: [avatar4, avatar5, avatar6]
-    },
-    {
-      id: 'Happy Savers',
-      name: 'Heists 101',
-      image: comm3,
-      members: 8,
-      goals: 9,
-      xp: 4504,
-      avatars: [avatar7, avatar8, avatar9]
-    },
-    {
-      id: 'Happy Savers',
-      name: 'The Investors',
-      image: comm4,
-      members: 8,
-      goals: 9,
-      xp: 4504,
-      avatars: [avatar10, avatar11, avatar12]
-    }
   ];
 
   return (
@@ -377,21 +340,21 @@ const Overview = () => {
               {/* Left side */}
               <div className="flex items-center gap-4">
                 <img
-                  src={community.image}
-                  alt={community.name}
+                  src={`/assets/Images/${community.banner}`}
+                  alt={community.community_name}
                   className="w-16 h-16 rounded-full object-cover shadow"
                 />
                 <div>
-                  <p className="text-lg font-medium text-gray-800">{community.name}</p>
+                  <p className="text-lg font-medium text-gray-800">{community.community_name}</p>
                   <div className="flex gap-2 mt-1">
                     <span className="bg-[#E0F2FE] text-[#72C1F5] text-xs font-medium px-3 py-1 rounded-full">
-                      {community.members} Members
+                      {community.member_count} Members
                     </span>
                     <span className="bg-[#E0F2FE] text-[#72C1F5] text-xs font-medium px-3 py-1 rounded-full">
-                      {community.goals} Goals
+                      {community.challenge_count} Challenges
                     </span>
                     <span className="bg-[#FEF9C3] text-yellow-500 text-xs font-medium px-3 py-1 rounded-full">
-                      {community.xp} XP
+                      {Math.round(community.xp_total)} XP
                     </span>
                   </div>
                 </div>
@@ -399,12 +362,12 @@ const Overview = () => {
 
               {/* Right side */}
               <div className="flex items-center gap-4">
-                {/* Avatars */}
+                {/* Avatars with fallback */}
                 <div className="flex -space-x-2">
-                  {community.avatars.map((src, index) => (
+                  {(community.preview_avatars || []).map((path, index) => (
                     <img
                       key={index}
-                      src={src}
+                      src={`/assets/Images/${path}`}
                       alt="avatar"
                       className="w-8 h-8 rounded-full border-2 border-white"
                     />
@@ -413,7 +376,7 @@ const Overview = () => {
 
                 {/* View Button */}
                 <button
-                  onClick={() => navigate(`/community/details/${community.id}`)}
+                  onClick={() => navigate(`/community/details/${community.community_id}`)}
                   className="flex items-center gap-2 bg-[#AAD977] text-white font-medium text-sm px-4 py-1.5 rounded-full hover:bg-[#83AB55] transition-all"
                 >
                   <FaEye /> View
@@ -424,7 +387,6 @@ const Overview = () => {
         </div>
       </motion.div>
 
-      {/* Bottom Grid – User Posts */}
       {/* Bottom Grid – User Posts */}
       <div className="bg-white p-6 rounded-3xl shadow-md">
         <h2 className="text-lg font-bold text-[#1f2937] mb-4">My Posts</h2>
