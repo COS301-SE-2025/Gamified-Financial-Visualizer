@@ -10,6 +10,9 @@ import { registerAuthModule }        from './modules/auth';
 import { registerTransactionModule } from './modules/transactions';
 import { registerGoalModule }        from './modules/goals';
 import { registerLearningModule }    from './modules/learning'; // Learning module
+import { registerClassifierModule } from './modules/classifier';
+
+
 // …add others as they migrate
 
 dotenv.config();
@@ -30,7 +33,12 @@ app.use(express.json());
 registerAuthModule(app);
 registerTransactionModule(app);
 registerGoalModule(app);
+
 registerLearningModule(app);
+
+registerClassifierModule(app);
+
+
 
 // ...
 
