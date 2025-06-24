@@ -42,7 +42,7 @@ router.post('/', async (req: Request, res: Response) => {
 
   try {
     // If user provides a custom category
-    if (!category_id && custom_category_name) {
+    if (!category_id && custom_category_name ) {
       // Check if it already exists or create it
       const result = await pool.query(
         'INSERT INTO custom_categories (user_id, name) VALUES ($1, $2) ON CONFLICT (user_id, name) DO UPDATE SET name = EXCLUDED.name RETURNING custom_category_id',
@@ -52,10 +52,10 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     // Enforce the category constraint
-    if ((resolvedCategoryId && resolvedCustomCategoryId) || (!resolvedCategoryId && !resolvedCustomCategoryId)) {
+    if ((resolvedCategoryId && resolvedCustomCategoryId) || (!resolvedCategoryId && !resolvedCustomCategoryId) || target_amount < 0) {
        res.status(400).json({
         status: 'error',
-        message: 'Exactly one of category_id or custom_category_name must be provided.',
+        message: 'Exactly one of category_id or custom_category_name must be provided.  or target_amount must be a positive number.',
       });
       return;
     }
