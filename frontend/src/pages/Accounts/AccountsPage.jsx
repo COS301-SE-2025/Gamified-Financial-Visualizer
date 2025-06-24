@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { FaPlus } from 'react-icons/fa';
+import { FaPlus, FaSearch } from 'react-icons/fa';
 import AccountCard from '../../components/cards/AccountCard';
 import AddAccountModal from '../../components/modals/AddAccountModal';
 import EditAccountModal from '../../components/modals/EditAccountModal';
@@ -125,6 +125,15 @@ const AccountsPage = () => {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="flex items-center w-full max-w-9xl -ml-[8px] px-4 py-2 rounded-3xl border-2 border-[#E5794B] bg-white shadow-sm">
+        <FaSearch className="text-[#E5794B] mr-2" />
+        <input
+          type="text"
+          placeholder="Search your transactions..."
+          className="w-full outline-none bg-transparent text-sm text-[#E5794B] placeholder-[#E5794B]/70"
+        />
       </div>
 
       <div ref={transactionsRef}>

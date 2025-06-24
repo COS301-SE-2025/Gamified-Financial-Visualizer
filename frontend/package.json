@@ -21,7 +21,7 @@
   "scripts": {
     "dev": "react-scripts start",
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "CI=false react-scripts build",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx",

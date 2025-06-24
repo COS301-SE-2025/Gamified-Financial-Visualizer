@@ -18,9 +18,9 @@ import {
 
 const AccountsSidebar = () => {
   return (
-    <aside className="space-y-6 w-full min-w-[350px] max-w-[400px] mx-auto md:mx-0">
+    <aside className="space-y-6">
       {/* Goal Performance */}
-      <div className="bg-white rounded-3xl px-6 py-6 shadow text-center">
+      <div className="bg-white rounded-2xl p-4 shadow text-center">
         <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-4 py-1 rounded-full inline-block mb-4">
           Overall Performance
         </p>
@@ -73,12 +73,12 @@ const AccountsSidebar = () => {
       </div>
 
      {/* Overall Statistics */}
-        <div className="bg-white rounded-3xl px-6 py-6 shadow">
+        <div className="bg-white rounded-2xl p-4 shadow text-center">
           <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-4 py-1 rounded-full inline-block mb-4">
             Overall Statistics
           </p>
 
-          <div className="grid grid-cols-2 gap-4 min-w-[300px]">
+          <div className="grid grid-cols-2 gap-4">
             {[
               { 
                 value: '55', 

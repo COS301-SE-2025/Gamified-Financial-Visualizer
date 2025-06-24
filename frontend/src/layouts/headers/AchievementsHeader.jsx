@@ -1,12 +1,12 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FaSearch, FaTrophy, FaListAlt, FaCheckCircle } from 'react-icons/fa';
+import { FaTrophy, FaListAlt, FaCheckCircle } from 'react-icons/fa';
 
 const AchievementsHeader = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
-  // Button configuration for achievements
+  // Button configuration for achievements 
   const tabs = [
     {
       path: '/achievements',
@@ -36,14 +36,7 @@ const AchievementsHeader = () => {
   return (
     <div className="flex justify-between items-center px-6 py-4 bg-white border-b shadow rounded-xl">
       {/* Search Input */}
-      <div className="flex items-center w-full max-w-4xl px-4 py-2 rounded-3xl border-4 border-[#E5794B] bg-white shadow-sm">
-        <FaSearch className="text-[#E5794B] mr-2" />
-        <input
-          type="text"
-          placeholder="Search achievements..."
-          className="w-full outline-none bg-transparent text-sm text-[#E5794B] placeholder-[#E5794B]/70"
-        />
-      </div>
+      {/* Removed this functionality for the time being */}
 
       {/* Action Buttons */}
       <div className="flex space-x-2 ml-4">

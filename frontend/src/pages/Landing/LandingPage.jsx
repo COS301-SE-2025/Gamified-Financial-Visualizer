@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef} from 'react';
 import { Button } from '../../components/ui/Button';
 import { motion } from "framer-motion";
 import { FaTrophy, FaUserFriends, FaChartLine, FaArrowUp, FaArrowDown, FaRocket, FaCoins, FaShieldAlt, FaArrowRight, FaMedal } from "react-icons/fa";
@@ -121,7 +121,7 @@ const ScrollNavigation = ({ sections }) => {
 };
 
 export default function LandingPage() {
-    const [activeTestimonial, setActiveTestimonial] = useState(0);
+    const [activeTestimonial, setActiveTestimonial] = React.useState(0);
 
     //Team members 
     const team = [
@@ -183,6 +183,14 @@ export default function LandingPage() {
             avatar: avatar3
         }
     ];
+
+    React.useEffect(() => {
+        const interval = setInterval(() => {
+            setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
+        }, 5000); // Change testimonial every 5 seconds
+
+        return () => clearInterval(interval); // cleanup on unmount
+    }, [testimonials.length]);
 
     // scrol referncess for each section
     const heroRef = useRef(null);
@@ -294,7 +302,7 @@ export default function LandingPage() {
                     >
                         <Button
                             className="bg-gradient-to-r from-[#4B6343] to-[#AAD977] hover:from-[#4B6343] hover:to-[#AAD977] text-white px-8 py-4 text-lg font-bold shadow-lg hover:shadow-xl transition-all group"
-                            onClick={() => window.location.href = '/login'}
+                            onClick={() => window.location.href = '/register'}
                         >
                             <span className="flex items-center gap-2">
                                 Start Your Quest <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
@@ -822,7 +830,7 @@ export default function LandingPage() {
                                 className={`absolute inset-0 bg-white p-8 rounded-xl border-2 border-gray-200 shadow-lg flex flex-col items-center text-center ${activeTestimonial === i ? 'z-10 opacity-100' : 'z-0 opacity-0'}`}
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: activeTestimonial === i ? 1 : 0 }}
-                                transition={{ duration: 0.5 }}
+                                transition={{ duration: 0.1 }}
                             >
                                 <div className="relative">
                                     <img src={testimonial.avatar} alt={testimonial.name} className="w-20 h-20 rounded-full mb-4 object-cover border-4 border-lime-400" />
