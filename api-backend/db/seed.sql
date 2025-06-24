@@ -4072,25 +4072,25 @@ INSERT INTO user_achievements (user_id, achievement_id, awarded_at, achievement_
 
 
 INSERT INTO user_points (user_id, total_points, tier_status, last_updated)
-VALUES (1, 780, 'gold', CURRENT_TIMESTAMP);
+VALUES (1, 780, 'Wood', CURRENT_TIMESTAMP);
 INSERT INTO user_points (user_id, total_points, tier_status, last_updated)
-VALUES (2, 430, 'silver', CURRENT_TIMESTAMP);
+VALUES (2, 430, 'Wood', CURRENT_TIMESTAMP);
 INSERT INTO user_points (user_id, total_points, tier_status, last_updated)
-VALUES (3, 1020, 'platinum', CURRENT_TIMESTAMP);
+VALUES (3, 1020, 'Bronze', CURRENT_TIMESTAMP);
 INSERT INTO user_points (user_id, total_points, tier_status, last_updated)
-VALUES (4, 265, 'bronze', CURRENT_TIMESTAMP);
+VALUES (4, 265, 'Wood', CURRENT_TIMESTAMP);
 INSERT INTO user_points (user_id, total_points, tier_status, last_updated)
-VALUES (5, 1350, 'diamond', CURRENT_TIMESTAMP);
+VALUES (5, 1350, 'Bronze', CURRENT_TIMESTAMP);
 INSERT INTO user_points (user_id, total_points, tier_status, last_updated)
-VALUES (6, 120, 'wood', CURRENT_TIMESTAMP);
+VALUES (6, 120, 'Wood', CURRENT_TIMESTAMP);
 INSERT INTO user_points (user_id, total_points, tier_status, last_updated)
-VALUES (7, 560, 'silver', CURRENT_TIMESTAMP);
+VALUES (7, 560, 'Wood', CURRENT_TIMESTAMP);
 INSERT INTO user_points (user_id, total_points, tier_status, last_updated)
-VALUES (8, 880, 'gold', CURRENT_TIMESTAMP);
+VALUES (8, 880, 'Wood', CURRENT_TIMESTAMP);
 INSERT INTO user_points (user_id, total_points, tier_status, last_updated)
-VALUES (9, 190, 'bronze', CURRENT_TIMESTAMP);
+VALUES (9, 190, 'Wood', CURRENT_TIMESTAMP);
 INSERT INTO user_points (user_id, total_points, tier_status, last_updated)
-VALUES (10, 970, 'platinum', CURRENT_TIMESTAMP);
+VALUES (10, 970, 'Wood', CURRENT_TIMESTAMP);
 
 INSERT INTO point_rules (action_type, base_points)
 VALUES ('transaction', 10);

@@ -15,6 +15,7 @@ DROP FUNCTION IF EXISTS update_goal_current_amount() CASCADE;
 DROP FUNCTION IF EXISTS update_goal_updated_at_column() CASCADE;
 DROP FUNCTION IF EXISTS update_updated_at_column() CASCADE;
 DROP FUNCTION IF EXISTS calculate_goal_xp() CASCADE;
+DROP FUNCTION IF EXISTS update_tier_status() CASCADE;
 EOF
 
 echo "🗑️ Dropping all existing tables..."

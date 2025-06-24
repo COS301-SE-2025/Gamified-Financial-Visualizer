@@ -381,8 +381,11 @@ export async function updateUserSettings(user_id: number, updates: {
 
 
 
-// ------------ Profile Specific Functions ------------- //
-
+/**                                                      
+ * 
+ * ------------ Profile Specific Functions ------------- 
+ * 
+ */
 
 export async function getProfileTopBar(user_id: number) {
   const query = `
@@ -542,8 +545,211 @@ export async function getRecentAchievements(user_id: number) {
   return result.rows;
 }
 
+export async function getUserCommunities(user_id: number) {
+  const query = `
+    SELECT
+      c.community_id,
+      c.community_name,
+      b.banner_image_path AS banner,
+      
+      -- Total XP from challenge_progress for that community
+      COALESCE((
+        SELECT SUM(cp.progress_amount)
+        FROM challenges ch
+        JOIN challenge_progress cp ON ch.challenge_id = cp.challenge_id
+        WHERE ch.community_id = c.community_id
+          AND cp.participation_status = 'joined'
+      ), 0) AS xp_total,
 
+      -- Total accepted members
+      (
+        SELECT COUNT(*) FROM community_members cm
+        WHERE cm.community_id = c.community_id
+          AND cm.membership_status = 'accepted'
+      ) AS member_count,
 
+      -- Total goals (linked by user_id to community members)
+      (
+        SELECT COUNT(*) FROM goals g
+        WHERE g.user_id IN (
+          SELECT cm.user_id FROM community_members cm
+          WHERE cm.community_id = c.community_id AND cm.membership_status = 'accepted'
+        )
+      ) AS challenge_count,
 
+      -- Preview avatars of up to 5 accepted members
+      (
+        SELECT json_agg(ai.avatar_image_path)
+        FROM (
+          SELECT a.avatar_image_path
+          FROM community_members cm
+          JOIN user_preferences up ON cm.user_id = up.user_id
+          JOIN avatar_images a ON up.avatar_id = a.avatar_id
+          WHERE cm.community_id = c.community_id
+            AND cm.membership_status = 'accepted'
+          LIMIT 5
+        ) AS ai
+      ) AS preview_avatars
 
+    FROM communities c
+    INNER JOIN community_members m ON c.community_id = m.community_id
+    JOIN banner_images b ON c.banner_id = b.banner_id
+    WHERE m.user_id = $1
+      AND m.membership_status = 'accepted'
+    ORDER BY c.created_at DESC;
+  `;
 
+  try {
+    const result = await pool.query(query, [user_id]);
+    return result.rows;
+  } catch (err) {
+    logger.error(`[AuthService] Failed to fetch communities for user ID ${user_id}:`, err);
+    throw err;
+  }
+}
+
+export async function getUserPerformanceSummary(user_id: number) {
+  try {
+    await pool.query(`
+      INSERT INTO user_points (user_id, total_points)
+      VALUES ($1, 0)
+      ON CONFLICT (user_id) DO NOTHING
+    `, [user_id]);
+
+    const query = `
+      SELECT
+        ai.avatar_image_path,
+        up.total_points,
+        up.tier_status,
+
+        COALESCE((
+          SELECT ROUND(COUNT(*) FILTER (WHERE passed) * 100.0 / NULLIF(COUNT(*), 0), 0)
+          FROM quiz_attempts
+          WHERE user_id = $1
+        ), 0) AS accuracy,
+
+        COALESCE((
+          SELECT 100 - ROUND(ranking * 100.0 / NULLIF(total_rows, 1))
+          FROM (
+            SELECT ranking, COUNT(*) OVER() AS total_rows
+            FROM leaderboard_entries
+            WHERE user_id = $1
+            ORDER BY created_at DESC LIMIT 1
+          ) t
+        ), 0) AS leaderboard,
+
+        COALESCE((SELECT COUNT(*) FROM challenge_progress WHERE user_id = $1 AND participation_status = 'joined'), 0) AS challenges,
+
+        COALESCE((
+          SELECT ROUND(COUNT(*) FILTER (WHERE goal_status = 'completed') * 100.0 / NULLIF(COUNT(*), 0), 0)
+          FROM goals WHERE user_id = $1
+        ), 0) AS goals,
+
+        COALESCE((
+          SELECT COUNT(*) FROM transactions t
+          JOIN accounts a ON t.account_id = a.account_id
+          WHERE a.user_id = $1
+        ), 0) AS transactions,
+
+        COALESCE((SELECT COUNT(*) FROM budgets WHERE user_id = $1), 0) AS budgets
+
+      FROM user_points up
+      JOIN user_preferences pref ON pref.user_id = up.user_id
+      JOIN avatar_images ai ON pref.avatar_id = ai.avatar_id
+      WHERE up.user_id = $1;
+    `;
+
+    const { rows } = await pool.query(query, [user_id]);
+    const d = rows[0];
+
+    if (!d) throw new Error("No data found for user.");
+
+    const xp = d.total_points;
+
+    const score = (
+      (d.accuracy * 2) +
+      (d.leaderboard * 1.5) +
+      (Math.min(d.challenges, 50) * 3) +
+      (d.goals * 2) +
+      (Math.min(d.transactions, 100) * 1.5) +
+      (Math.min(d.budgets, 50) * 3)
+    );
+
+    const performance_score = Math.min(Math.round(score), 1000);
+
+    let performance_label = 'Poor';
+    if (performance_score >= 800) performance_label = 'Excellent';
+    else if (performance_score >= 600) performance_label = 'Good';
+    else if (performance_score >= 400) performance_label = 'Average';
+    else if (performance_score >= 200) performance_label = 'Fair';
+
+    const tier_level = d.tier_status;
+    const level_number = Math.floor(xp / 2000) + 1;
+
+    return {
+      avatar_image_path: d.avatar_image_path,
+      tier_level,
+      level_number,
+      performance_score,
+      performance_label
+    };
+  } catch (err: any) {
+    logger.error(`[AuthService] Failed to fetch performance summary for user ID ${user_id}:`, err.message || err);
+    throw new Error("Could not fetch performance summary.");
+  }
+}
+
+export async function getUserLevelProgress(user_id: number) {
+  const query = `
+    SELECT total_points, tier_status
+    FROM user_points
+    WHERE user_id = $1;
+  `;
+
+  const { rows } = await pool.query(query, [user_id]);
+  if (rows.length === 0) {
+    throw new Error("User not found in user_points");
+  }
+
+  const { total_points, tier_status } = rows[0];
+  const xp = total_points ?? 0;
+
+  const tierThresholds = {
+    Wood: 0,
+    Bronze: 1000,
+    Silver: 3000,
+    Gold: 6000,
+    Platinum: 10000,
+    Diamond: 15000,
+  } as const;
+
+  const nextThresholds = {
+    Wood: 1000,
+    Bronze: 3000,
+    Silver: 6000,
+    Gold: 10000,
+    Platinum: 15000,
+    Diamond: 50000, // Arbitrary high cap
+  } as const;
+
+  type Tier = keyof typeof tierThresholds;
+
+  const tier = (tier_status ?? 'Wood') as Tier;
+
+  const currentThreshold = tierThresholds[tier];
+  const nextThreshold = nextThresholds[tier];
+  const currentTierXP = xp - currentThreshold;
+  const tierXPRequired = nextThreshold - currentThreshold;
+  const levelNumber = Math.floor(xp / 2000) + 1;
+  const nextLevel = levelNumber + 1;
+  const pointsToNextTier = Math.max(0, nextThreshold - xp);
+
+  return {
+    level_number: levelNumber,
+    tier_status: tier,
+    next_level: nextLevel,
+    current_tier_xp: currentTierXP,
+    tier_xp_required: tierXPRequired,
+    points_to_next_tier: pointsToNextTier,
+  };
+}
