@@ -33,7 +33,7 @@ const GoalsSidebar = () => {
         const performanceData = await performanceRes.json();
 
         setGoalStats(summaryData.data);
-        setPerformanceScore(performanceData.score || 0);
+        setPerformanceScore(performanceData.data || 0);
       } catch (err) {
         console.error('Failed to fetch goal data:', err);
       }

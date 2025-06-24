@@ -19,8 +19,8 @@ export function registerTransactionModule(app: Application) {
   eventBus.on('transaction.created', async (tx) => {
     try {
       // Here you can handle any logic related to transaction creation
-      await makeBudgetProgress(tx.id, tx.amount); // check that budget is linked to transaction id
-      logger.info('[Transaction] Created:', tx);
+      // await makeBudgetProgress(tx.id, tx.amount); // check that budget is linked to transaction id
+     // logger.info('[Transaction] Created:', tx);
     } catch (err) {
       logger.error('[Transaction] Event handling failed:', err);
     }

@@ -220,14 +220,15 @@ export async function getLearningPeformance(user_id: number) {
   `;
   const accuracy = await pool.query(query, [user_id]);
 
-  const pointsQuery = `
-    SELECT total_points
-    FROM user_points
-    WHERE user_id = $1;
+  // Fetch points earned through quizzes only
+  const quizPointsQuery = `
+    SELECT COALESCE(SUM(CASE WHEN passed THEN 10 ELSE 0 END), 0) AS quiz_points
+    FROM quiz_attempts
+    WHERE user_id = $1
   `;
-  const pointsResult = await pool.query(pointsQuery, [user_id]);
+  const quizPointsResult = await pool.query(quizPointsQuery, [user_id]);
+  const totalPoints = parseInt(quizPointsResult.rows[0].quiz_points) || 0;
 
-  const totalPoints = pointsResult.rows[0]?.total_points || 0;
 
   // Stubbed view count for now
   const viewCount = 1;
@@ -238,7 +239,7 @@ export async function getLearningPeformance(user_id: number) {
   const score = averageScore * 0.5 + totalPoints * 0.5 + viewCount * 0.1 + total_attempts * 0.4 + total_passed * 0.7;
 
   const scaledScore = Math.round(
-    (score / 206) * (850 - 300) + 300
+    (score / 206) * (850 - 300) + 320
   );
 
   return scaledScore;

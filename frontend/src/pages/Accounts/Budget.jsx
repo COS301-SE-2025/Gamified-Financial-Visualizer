@@ -65,6 +65,7 @@ const categoryIcons = {
   default: <FaMoneyBillWave />
 };
 
+
 const BudgetForm = ({ 
   initialData = { budget_name: '', category_id: '', target_amount: 0 }, 
   onSave, 
@@ -230,8 +231,9 @@ const BudgetPage = () => {
   const [error, setError] = useState(null);
   
   // Replace with actual user ID from your auth context
-  const userId = 1; // This should come from your authentication system
-  
+  const user = localStorage.getItem('user');
+  const userId = user ? JSON.parse(user).id : null;  
+
   useEffect(() => {
     fetchBudgets();
     fetchCategories();
@@ -287,7 +289,7 @@ const BudgetPage = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/budget/${id}`, {
+      const response = await fetch(`http://localhost:5000/api/budget/user/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
