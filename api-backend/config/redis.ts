@@ -1,6 +1,5 @@
 // redis.ts
 // Shared Redis connection configuration for BullMQ queues and workers
-
 import { RedisOptions } from 'bullmq';
 import { createClient } from 'redis';
 

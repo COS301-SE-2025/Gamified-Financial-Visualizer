@@ -1,15 +1,17 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import AchievementsLayout from '../../pages/Achievements/AchievementsLayout';
-import badge1 from '../../assets/Images/badges/CoinStack.png';
-import badge2 from '../../assets/Images/badges/notesIcon.png';
-import badge3 from '../../assets/Images/badges/targetIcon.png';
-import badge4 from '../../assets/Images/badges/plantIocn.png';
-import badge5 from '../../assets/Images/badges/highFiveIcon.png';
-import badge6 from '../../assets/Images/badges/moneyBagIcon.png';
-import badge7 from '../../assets/Images/badges/moneyGrowIcon.png';
-import badge8 from '../../assets/Images/badges/mountainIcon.png';
-import badge9 from '../../assets/Images/badges/awardIcon.png';
+
+import badge1 from '../../assets/Images/badges/coin.png';
+import badge2 from '../../assets/Images/badges/banknote.png';
+import badge3 from '../../assets/Images/badges/target.png';
+import badge4 from '../../assets/Images/badges/growth.png';
+import badge5 from '../../assets/Images/badges/hi5.png';
+import badge6 from '../../assets/Images/badges/money-bag.png';
+import badge7 from '../../assets/Images/badges/investment.png';
+import badge8 from '../../assets/Images/badges/goal.png';
+import badge9 from '../../assets/Images/badges/trophy.png';
+import badge10 from '../../assets/Images/badges/bank.png';
 
 const achievements = [
   {
@@ -57,7 +59,7 @@ const achievements = [
     reward: 900,
     progress: 3,
     total: 5,
-    image: '/images/achievements/banker.png',
+    image: badge10,
     color: 'from-[#5FBFFF] to-[#5FBFFF]',
     border: 'border-[#5FBFFF]',
     text: 'text-[#5FBFFF]'
@@ -113,18 +115,6 @@ const achievements = [
     text: 'text-[#ED5E52]'
   }
 ];
-
-const ProgressBar = ({ percentage }) => (
-  <div className="w-full p-4 bg-white rounded-xl border border-yellow-300">
-    <div className="relative w-full bg-white border border-yellow-300 rounded-full h-6 flex items-center px-2">
-      <div className="absolute h-6 left-0 rounded-full bg-gradient-to-r from-[#FFC857] to-[#F5A623]"
-        style={{ width: `${percentage}%` }}></div>
-      <div className="w-full flex justify-between text-[12px] font-semibold text-[#ED5E52] relative z-10">
-        <span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span>
-      </div>
-    </div>
-  </div>
-);
 
 const AchievementCard = ({ title, reward, progress, total, image, color, border, text }) => {
   const navigate = useNavigate();

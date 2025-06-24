@@ -9,7 +9,7 @@ import {
   getQuizByModuleId,
   submitQuizAttempt,
   getLearningSummary,
-  getLearningPeformance
+  getLearningPerformance
 } from '../services/learning.service';
 import { logger } from '../../../config/logger';
 const router = Router();
@@ -252,7 +252,7 @@ router.get('/summary/:userId', async (req: Request, res: Response) => {
 router.get('/score/:userId', async (req: Request, res: Response) => {
   const userId = Number(req.params.userId);
   try {
-    const performance = await getLearningPeformance(userId);
+    const performance = await getLearningPerformance(userId);
     if (!performance) {
       res.status(404).json({
         status: 'error',
