@@ -11,7 +11,7 @@ export interface Transaction {
   custom_category_id?: number;  // Optional if using category_id
   transaction_amount: number;
   transaction_type: 'expense' | 'income' | 'transfer' | 'fee' | 'withdrawal' | 'deposit';
-  description: string;
+  transaction_name: string;  // Name or description of the transaction
   transaction_date: string;  // ISO date string format (YYYY-MM-DD)
   is_recurring?: boolean;
   linked_goal_id?: number;
@@ -28,9 +28,10 @@ export async function createTransaction(txn: Transaction) {
   const {
     account_id,
     category_id,
+    custom_category_id,
     transaction_amount,
     transaction_type,
-    description,
+    transaction_name,
     transaction_date,
     is_recurring = false,
     linked_goal_id,
@@ -43,21 +44,38 @@ export async function createTransaction(txn: Transaction) {
   try {
     await client.query('BEGIN');
 
+    const { rows } = await client.query(
+      `SELECT account_balance, user_id FROM accounts WHERE account_id = $1`,
+      [ account_id ]
+    );
+    const currentBalance = Number(rows[ 0 ]?.account_balance ?? 0);
+    const user_id = rows[ 0 ]?.user_id;
+
+    let balanceDelta = Math.abs(transaction_amount);
+    const deducting = [ 'expense', 'withdrawal', 'fee' ].includes(transaction_type);
+    if (deducting) {
+      if (transaction_amount > currentBalance) {
+        throw new Error("Insufficient funds for this transaction.");
+      }
+      balanceDelta *= -1;
+    }
+
     const insertTxnSql = `
-      INSERT INTO transactions
-        (account_id, category_id, transaction_amount, transaction_type,
-         transaction_name, transaction_date, is_recurring,
-         linked_goal_id, linked_challenge_id, budget_id, points_awarded)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      INSERT INTO transactions (
+        account_id, category_id, custom_category_id, transaction_amount, transaction_type,
+        transaction_name, transaction_date, is_recurring,
+        linked_goal_id, linked_challenge_id, budget_id, points_awarded
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       RETURNING transaction_id;
     `;
-
     const txnRes = await client.query(insertTxnSql, [
       account_id,
-      category_id,
+      category_id || null,
+      custom_category_id || null,
       transaction_amount,
       transaction_type,
-      description,
+      transaction_name,
       transaction_date,
       is_recurring,
       linked_goal_id || null,
@@ -65,37 +83,99 @@ export async function createTransaction(txn: Transaction) {
       budget_id || null,
       points_awarded
     ]);
+    const transaction_id = txnRes.rows[ 0 ].transaction_id;
 
-    const transaction_id = txnRes.rows[0].transaction_id;
+    const updateBalanceSql = `
+      UPDATE accounts
+      SET account_balance = account_balance + $1
+      WHERE account_id = $2
+      RETURNING account_balance;
+    `;
+    const balanceRes = await client.query(updateBalanceSql, [ balanceDelta, account_id ]);
+    const updatedBalance = balanceRes.rows[ 0 ].account_balance;
 
-    if (linked_goal_id) {
-      const getUserSql = `SELECT user_id FROM accounts WHERE account_id = $1`;
-      const { rows } = await client.query(getUserSql, [account_id]);
-      const user_id = rows[0]?.user_id;
+    if (linked_goal_id && user_id) {
+      // Check if a progress entry already exists for this goal and user
+      const progressCheck = await client.query(
+        `SELECT amount_added FROM goal_progress WHERE goal_id = $1 AND contributor_id = $2`,
+        [ linked_goal_id, user_id ]
+      );
 
-      if (!user_id) throw new Error("User not found for goal contribution.");
+      if (progressCheck.rowCount === 0) {
+        // First log of progress: create a new entry
+        await client.query(
+          `INSERT INTO goal_progress (goal_id, contributor_id, amount_added)
+           VALUES ($1, $2, $3)`,
+          [ linked_goal_id, user_id, transaction_amount ]
+        );
+      } else {
+        // Update the existing entry by adding to amount_added
+        await client.query(
+          `UPDATE goal_progress
+           SET amount_added = amount_added + $1
+           WHERE goal_id = $2 AND contributor_id = $3`,
+          [ transaction_amount, linked_goal_id, user_id ]
+        );
+      }
 
-      const insertGoalProgress = `
-        INSERT INTO goal_progress (goal_id, contributor_id, amount_added)
-        VALUES ($1, $2, $3)
+      // Update the user's points if points were awarded
+      // Award points based on the amount added to the goal (e.g., 1 point per 10 units)
+      const pointsPerUnit = 10;
+      const calculatedPoints = Math.floor(transaction_amount / pointsPerUnit);
+
+      if (calculatedPoints > 0) {
+        await client.query(
+          `UPDATE user_points SET total_points = total_points + $1 WHERE user_id = $2`,
+          [ calculatedPoints, user_id ]
+        );
+      }
+    }
+
+
+    if (budget_id && deducting) {
+      await client.query(
+        `UPDATE budget_categories
+        SET current_amount = current_amount + $1
+        WHERE budget_id = $2
+          AND (
+            (category_id = $3 AND $3 IS NOT NULL AND custom_category_id IS NULL)
+            OR (custom_category_id = $4 AND $4 IS NOT NULL AND category_id IS NULL)
+          )`,
+        [ transaction_amount, budget_id, category_id, custom_category_id ]
+      );
+
+      const budgetCheckSql = `
+        SELECT current_amount, target_amount
+        FROM budget_categories
+        WHERE budget_id = $1;
       `;
-      await client.query(insertGoalProgress, [
-        linked_goal_id,
-        user_id,
-        transaction_amount
-      ]);
-      logger.info(`[TransactionService] Linked to goal_id=${linked_goal_id}`);
+      const budgetCheckRes = await client.query(budgetCheckSql, [ budget_id ]);
+      const { current_amount, target_amount } = budgetCheckRes.rows[ 0 ];
+
+      if (current_amount >= target_amount) {
+        // Calculate how much over budget the user is
+        const overAmount = current_amount - target_amount;
+        // Ratio: e.g., 1 point penalty per 10 units over budget (customize as needed)
+        const penaltyRatio = 10;
+        const penaltyPoints = Math.ceil(overAmount / penaltyRatio);
+
+        // if budget is provided, and is at 100%, penalized the user
+        await client.query(
+          `UPDATE user_points SET total_points = GREATEST(total_points - $1, 0) WHERE user_id = $2`,
+          [ penaltyPoints, user_id ]
+        );
+        logger.warn(`[TransactionService] User ${user_id} penalized by ${penaltyPoints} points for exceeding budget ${budget_id}`);
+      }
     }
 
     if (is_recurring) {
-      const insertRecSql = `
-        INSERT INTO recurring_transactions
-          (transaction_id, frequency, next_occurrence)
-        VALUES ($1, 'monthly', $2)
-        ON CONFLICT (transaction_id) DO NOTHING;
-      `;
-      await client.query(insertRecSql, [transaction_id, transaction_date]);
-      logger.info(`[TransactionService] Marked transaction ID=${transaction_id} as recurring.`);
+      await client.query(
+        `INSERT INTO recurring_transactions
+         (transaction_id, frequency, next_occurrence)
+         VALUES ($1, 'monthly', $2)
+         ON CONFLICT (transaction_id) DO NOTHING`,
+        [ transaction_id, transaction_date ]
+      );
     }
 
     await client.query('COMMIT');
@@ -109,7 +189,7 @@ export async function createTransaction(txn: Transaction) {
       timestamp: transaction_date
     });
 
-    return transaction_id;
+    return { transaction_id, updated_balance: updatedBalance };
   } catch (error) {
     await client.query('ROLLBACK');
     logger.error(`[TransactionService] Error creating transaction:`, error);
@@ -118,6 +198,7 @@ export async function createTransaction(txn: Transaction) {
     client.release();
   }
 }
+
 
 
 /**
@@ -129,12 +210,12 @@ export async function createAccount(
   account_name: string,
   account_type: string,
   currency: string,
-  account_number?: string
+  account_balance?: number // Optional, can be null
 ) {
   const insertAccSql = `
     INSERT INTO accounts
-      (user_id, bank_name, account_name, account_type, currency, account_number)
-    VALUES ($1, $2, $3, $4, $5, COALESCE($6, CONCAT('GFV-', $1, '-', nextval('accounts_account_id_seq'))))
+      (user_id, bank_name, account_name, account_type, currency, account_balance)
+    VALUES ($1, $2, $3, $4, $5, $6)
     RETURNING account_id;
   `;
 
@@ -145,7 +226,7 @@ export async function createAccount(
       account_name,
       account_type,
       currency,
-      account_number || null
+      account_balance || 0, // Default to 0 if not provided
     ]);
     const accId = res.rows[ 0 ].account_id;
     logger.info(`[TransactionService] Created account ID=${accId} for user ${user_id}`);
@@ -166,6 +247,70 @@ export async function getAccounts(user_id: number) {
     throw error;
   }
 }
+
+/**
+ * Update a transaction's details (name, date, amount, category).
+ */
+export async function updateTransactionDetails(
+  transaction_id: number,
+  updates: Partial<{
+    transaction_name: string;
+    transaction_date: string;
+    transaction_amount: number;
+    category_id: number;
+    custom_category_id: number;
+  }>
+) {
+  const fields: string[] = [];
+  const values: any[] = [];
+  let idx = 1;
+
+  for (const [ key, value ] of Object.entries(updates)) {
+    if (value !== undefined && value !== null) {
+      fields.push(`${key} = $${idx}`);
+      values.push(value);
+      idx++;
+    }
+  }
+
+  if (fields.length === 0) {
+    throw new Error("No valid fields provided for update.");
+  }
+
+  const sql = `
+    UPDATE transactions
+    SET ${fields.join(', ')}
+    WHERE transaction_id = $${idx}
+    RETURNING *;
+  `;
+
+  values.push(transaction_id);
+
+  try {
+    const res = await pool.query(sql, values);
+    logger.info(`[TransactionService] Updated transaction ID=${transaction_id}`);
+    return res.rows[ 0 ];
+  } catch (error) {
+    logger.error(`[TransactionService] Error updating transaction ${transaction_id}:`, error);
+    throw error;
+  }
+}
+
+
+/**
+ * Fetch a specific account by account_id
+ */
+export async function getAccountById(account_id: number) {
+  const sql = 'SELECT * FROM accounts WHERE account_id = $1';
+  try {
+    const result = await pool.query(sql, [ account_id ]);
+    return result.rows[ 0 ] || null;
+  } catch (error) {
+    logger.error(`[TransactionService] Error fetching account ID ${account_id}:`, error);
+    throw error;
+  }
+}
+
 
 export async function getTransactionByAccount(account_id: number) {
   const sql = `SELECT * FROM transactions WHERE account_id = $1 ORDER BY transaction_date DESC;`;
@@ -188,31 +333,58 @@ export async function getTransactionByCategory(category_id: number) {
     throw error;
   }
 }
-
 export async function getTotalSpentPerCategory(user_id: number) {
   const sql = `
-    SELECT 
+  WITH user_categories AS (
+    -- Get all categories ever used by this user (including zero-spent ones)
+    SELECT DISTINCT COALESCE(c.category_name, cc.custom_category_name) AS category
+    FROM transactions t
+    JOIN accounts a ON t.account_id = a.account_id
+    LEFT JOIN categories c ON t.category_id = c.category_id
+    LEFT JOIN custom_categories cc ON t.custom_category_id = cc.custom_category_id
+    WHERE a.user_id = $1
+  ),
+  top_spending AS (
+    -- Get top spending categories for the last month
+    SELECT  
       COALESCE(c.category_name, cc.custom_category_name) AS category,
       SUM(t.transaction_amount) AS total_spent
     FROM transactions t
     JOIN accounts a ON t.account_id = a.account_id
     LEFT JOIN categories c ON t.category_id = c.category_id
     LEFT JOIN custom_categories cc ON t.custom_category_id = cc.custom_category_id
-    WHERE 
+    WHERE  
       a.user_id = $1
-      AND t.transaction_type = 'expense'
+      AND (t.transaction_type = 'expense' OR t.transaction_type = 'fee' OR t.transaction_type = 'withdrawal')
       AND t.transaction_date >= (CURRENT_DATE - INTERVAL '1 month')
     GROUP BY category
-    ORDER BY total_spent DESC;
-  `;
+    ORDER BY total_spent DESC
+  ),
+  combined_results AS (
+    -- Combine top spending with all available categories
+    SELECT 
+      ts.category,
+      COALESCE(ts.total_spent, 0) AS total_spent,
+      CASE WHEN ts.total_spent IS NULL THEN false ELSE true END AS had_spending
+    FROM user_categories uc
+    LEFT JOIN top_spending ts ON uc.category = ts.category
+    ORDER BY had_spending DESC, total_spent DESC, uc.category ASC
+    LIMIT 6
+  )
+  SELECT 
+    category,
+    total_spent
+  FROM combined_results;`;
+  
   try {
-    const res = await pool.query(sql, [ user_id ]);
+    const res = await pool.query(sql, [user_id]);
     return res.rows;
   } catch (error) {
     logger.error(`[TransactionService] Error fetching last month's spending by category for user ${user_id}:`, error);
     throw error;
   }
 }
+
 
 export async function getCategoryNameByID(categoryID: number) {
   const sql = `SELECT category_name FROM categories WHERE category_id = $1;`;
@@ -225,6 +397,19 @@ export async function getCategoryNameByID(categoryID: number) {
   }
 
 }
+
+export async function updateAccountName(account_id: number, account_name: string) {
+  const sql = `UPDATE accounts SET account_name = $1 WHERE account_id = $2`;
+  try {
+    await pool.query(sql, [ account_name, account_id ]);
+    logger.info(`[TransactionService] Updated account name for account ID=${account_id}`);
+  } catch (error) {
+    logger.error(`[TransactionService] Failed to update account name for ID=${account_id}:`, error);
+    throw error;
+  }
+}
+
+
 export async function deleteAccount(account_id: number, user_id: number) {
   const sql = `DELETE FROM accounts WHERE account_id = $1 AND user_id = $2;`;
   try {
@@ -253,13 +438,14 @@ export async function getUserTransactions(user_id: number) {
       t.transaction_id,
       t.transaction_amount,
       t.transaction_type,
+      a.account_id,
       a.account_name,
-      t.description,
+      t.transaction_name,
       t.transaction_date,
       c.category_name
     FROM transactions t
     JOIN accounts a ON t.account_id = a.account_id
-    JOIN categories c ON t.category_id = c.category_id
+    LEFT JOIN categories c ON t.category_id = c.category_id
     WHERE a.user_id = $1
     ORDER BY t.transaction_date DESC;
   `;
@@ -267,7 +453,7 @@ export async function getUserTransactions(user_id: number) {
     const res = await pool.query(sql, [ user_id ]);
     return res.rows;
   } catch (error) {
-    logger.error(`[TransactionService] Error fetching user ${user_id} transactions:`, error);
+    logger.error(`[TransactionService] Error fetching transactions for user ${user_id}:`, error);
     throw error;
   }
 }
@@ -275,8 +461,19 @@ export async function getUserTransactions(user_id: number) {
 export async function deleteTransaction(id: number) {
   const sql = `DELETE FROM transactions WHERE transaction_id = $1;`;
   try {
+    // restore the account balance
+    const balanceSql = `
+      UPDATE accounts
+      SET account_balance = account_balance + (
+        SELECT transaction_amount FROM transactions WHERE transaction_id = $1
+      )
+      WHERE account_id = (
+        SELECT account_id FROM transactions WHERE transaction_id = $1
+      );
+    `;
+
+    await pool.query(balanceSql, [ id ]);
     await pool.query(sql, [ id ]);
-    logger.info(`[TransactionService] Deleted transaction ID=${id}`);
   } catch (error) {
     logger.error(`[TransactionService] Error deleting transaction ${id}:`, error);
     throw error;
@@ -424,7 +621,7 @@ export async function deleteBudget(budget_id: number, user_id: number) {
 
 export async function makeBudgetProgress(budget_id: number, amount: number) {
   const sql = `
-    UPDATE budgets
+    UPDATE budget_categories
     SET current_amount = COALESCE(current_amount, 0) + $1
     WHERE budget_id = $2;
   `;
@@ -466,20 +663,135 @@ export async function updateBudget(
   }
 }
 
+/* export async function getBudgetsSummary(user_id: number) {
+  const sql = `
+  SELECT b.budget_id, b.budget_name, b.period_start, b.period_end,
+         COALESCE(SUM(bc.target_amount), 0) AS total_target
+  FROM budgets b
+  LEFT JOIN budget_categories bc ON b.budget_id = bc.budget_id
+  WHERE b.user_id = $1
+  GROUP BY b.budget_id;
+`;
+  try {
+    const res = await pool.query(sql, [user_id]);
+    return res.rows;
+  } catch (error) {
+    logger.error(`[TransactionService] Error fetching budgets for user ${user_id}:`, error);
+    throw error;
+  }
+} 
+*/
+
 export async function getBudgetsSummary(user_id: number) {
   const sql = `
-    SELECT b.budget_id, b.budget_name, b.current_amount,  b.period_start, b.period_end,
-           COALESCE(SUM(bc.target_amount), 0) AS total_target
-    FROM budgets b
-    LEFT JOIN budget_categories bc ON b.budget_id = bc.budget_id
-    WHERE b.user_id = $1
-    GROUP BY b.budget_id;
+SELECT 
+  b.budget_id, 
+  b.budget_name, 
+  b.period_start, 
+  b.period_end,
+  COALESCE(SUM(bc.target_amount), 0) AS total_target,
+  COALESCE((
+    SELECT SUM(t.transaction_amount)
+    FROM transactions t
+    WHERE t.budget_id = b.budget_id
+  ), 0) AS used
+FROM budgets b
+LEFT JOIN budget_categories bc ON b.budget_id = bc.budget_id
+WHERE b.user_id = $1
+GROUP BY b.budget_id;
   `;
   try {
     const res = await pool.query(sql, [ user_id ]);
     return res.rows;
   } catch (error) {
     logger.error(`[TransactionService] Error fetching budgets for user ${user_id}:`, error);
+    throw error;
+  }
+}
+
+export async function createBudgetWithCategoryName(
+  user_id: number,
+  category_id: number,
+  allocations: Array<{ category_id: number; target_amount: number }>
+): Promise<number> {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const { rows } = await client.query(
+      'SELECT category_name FROM categories WHERE category_id = $1',
+      [ category_id ]
+    );
+    const budget_name = rows[ 0 ]?.category_name;
+    if (!budget_name) {
+      throw new Error('Category not found for the given category_id');
+    }
+
+    const today = new Date();
+    const start = today.toISOString().split('T')[ 0 ];
+    const nextMonth = new Date(today);
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+    nextMonth.setDate(nextMonth.getDate() - 1);
+    const end = nextMonth.toISOString().split('T')[ 0 ];
+
+    const insertBudget = `
+      INSERT INTO budgets (user_id, budget_name, period_start, period_end)
+      VALUES ($1, $2, $3, $4)
+      RETURNING budget_id;
+    `;
+    const result = await client.query(insertBudget, [ user_id, budget_name, start, end ]);
+    const budget_id = result.rows[ 0 ].budget_id;
+
+    const insertAlloc = `
+      INSERT INTO budget_categories (budget_id, category_id, target_amount)
+      VALUES ($1, $2, $3);
+    `;
+    for (const alloc of allocations) {
+      await client.query(insertAlloc, [ budget_id, alloc.category_id, alloc.target_amount ]);
+    }
+
+    await client.query('COMMIT');
+    logger.info(`[BudgetService] Created budget ID=${budget_id} for user ${user_id}`);
+    return budget_id;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    logger.error('[BudgetService] Failed to create budget:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+export async function getBudgetsByUser(user_id: number) {
+  const sql = `
+    SELECT
+      b.budget_id,
+      b.budget_name
+    FROM budgets b
+    WHERE b.user_id = $1
+  `;
+
+  try {
+    const res = await pool.query(sql, [ user_id ]);
+    return res.rows;
+  } catch (error) {
+    logger.error(`[BudgetService] Error fetching budgets for user ${user_id}:`, error);
+    throw error;
+  }
+}
+
+//===========================================
+
+export async function updateBudgetName(budget_id: number, budget_name: string, user_id: number) {
+  const sql = `UPDATE budgets SET budget_name = $1 WHERE budget_id = $2 AND user_id = $3;`;
+  try {
+    const result = await pool.query(sql, [ budget_name, budget_id, user_id ]);
+    if (result.rowCount === 0) {
+      throw new Error('Budget not found or unauthorized');
+    }
+    logger.info(`[TransactionService] Updated budget name for budget ID=${budget_id}`);
+  } catch (error) {
+    logger.error(`[TransactionService] Error updating budget name for ID=${budget_id}:`, error);
     throw error;
   }
 }
