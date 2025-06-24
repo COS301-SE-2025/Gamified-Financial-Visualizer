@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaCrown, FaChartLine, FaEye, FaMedal, FaFire, FaTrophy, FaStar } from 'react-icons/fa';
+import { FaCrown, FaChartLine, FaEye, FaTrophy, FaStar } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
 // Profile banner
@@ -73,28 +73,6 @@ const Overview = () => {
     .catch(err => console.error('Failed to load level progress:', err));
 }, []);
 
-  // Mock user data
-  const userStats = {
-    xp: 350,
-    level: 2,
-    nextLevelXp: 500,
-    portfolioValue: 200000,
-    username: "Satoshi_nak",
-    tier: "Silver",
-    achievements: [
-      { id: 1, name: 'Silver Rank', icon: <FaMedal />, earned: true },
-      { id: 2, name: 'Hot Streak', icon: <FaFire />, earned: true },
-      { id: 3, name: 'Sharpshooter', icon: <FaStar />, earned: false }
-    ],
-    stats: {
-      accuracy: 83,
-      leaderboardRank: 2,
-      outzoneChallenges: 55,
-      goalsCompleted: 8,
-      goalsTotal: 14
-    }
-  };
-
   // Community posts
   const userPosts = [
     { id: 1, image: comm1 },
@@ -147,39 +125,55 @@ const Overview = () => {
       <div className="h-4" />
 
       {/* Level Progress Card */}
-      <div className="bg-white p-6 rounded-3xl shadow flex flex-col gap-4">
-        {/* Header Row */}
-        <div className="flex items-center justify-between">
-          {/* Current Level Circle */}
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full border-4 border-yellow-400 text-yellow-600 font-bold flex items-center justify-center shadow-sm">
-              {userStats.level}
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-gray-800">Lv {userStats.tier}</p>
-              <p className="text-sm text-gray-500">500 Points to next level</p>
-            </div>
-          </div>
-
-          {/* Target Level Circle */}
-          <div className="w-10 h-10 rounded-full bg-[#f8e5b5] text-yellow-600 font-bold flex items-center justify-center shadow-sm">
-            4
-          </div>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="relative mt-2">
-          <div className="w-full h-6 bg-yellow-100 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-yellow-400 to-[#FFCE51] rounded-full"
-              style={{ width: `${(userStats.xp / 6000) * 100}%` }}
-            />
-          </div>
-          <div className="absolute inset-0 flex justify-center items-center text-sm font-semibold text-yellow-700">
-            {userStats.xp}<span className="text-yellow-500">/6000</span>
-          </div>
-        </div>
+<div className="bg-white p-6 rounded-3xl shadow flex flex-col gap-4">
+  {/* Header Row */}
+  <div className="flex items-center justify-between">
+    {/* Current Level Circle */}
+    <div className="flex items-center gap-4">
+      <div className="w-10 h-10 rounded-full border-4 border-yellow-400 text-yellow-600 font-bold flex items-center justify-center shadow-sm">
+        {levelProgress?.level_number ?? '—'}
       </div>
+      <div>
+        <p className="text-sm font-semibold text-gray-800">
+          Lv {levelProgress?.tier_status ?? '—'}
+        </p>
+        <p className="text-sm text-gray-500">
+          {levelProgress
+            ? `${levelProgress.points_to_next_tier} points to next tier`
+            : 'Loading...'}
+        </p>
+      </div>
+    </div>
+
+    {/* Target Level Circle */}
+    <div className="w-10 h-10 rounded-full bg-[#f8e5b5] text-yellow-600 font-bold flex items-center justify-center shadow-sm">
+      {levelProgress?.next_level ?? '—'}
+    </div>
+  </div>
+
+  {/* Progress Bar */}
+  <div className="relative mt-2">
+    <div className="w-full h-6 bg-yellow-100 rounded-full overflow-hidden">
+      <div
+        className="h-full bg-gradient-to-r from-yellow-400 to-[#FFCE51] rounded-full"
+        style={{
+          width: levelProgress
+            ? `${Math.min(
+                (levelProgress.current_tier_xp / levelProgress.tier_xp_required) * 100,
+                100
+              ).toFixed(1)}%`
+            : '0%'
+        }}
+      />
+    </div>
+    <div className="absolute inset-0 flex justify-center items-center text-sm font-semibold text-yellow-700">
+      {levelProgress
+        ? `${levelProgress.current_tier_xp}/${levelProgress.tier_xp_required}`
+        : '...'}
+    </div>
+  </div>
+</div>
+
 
 
       {/* Middle Row - Two Columns */}
