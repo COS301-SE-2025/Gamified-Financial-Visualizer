@@ -1,12 +1,12 @@
 import request from 'supertest';
 import express from 'express';
 import bodyParser from 'body-parser';
+import learningRouter from '../../modules/learning/routes/learningRoutes';
+import * as learningService from '../../modules/learning/services/learning.service';
 import { logger } from '../../config/logger';
-import * as goalService from '../../modules/goals/services/goals.service';
-import goalsRouter from '../../modules/goals/routes/goalRoutes';
+import { Pool } from 'pg';
 
-// Mock the goals service and logger
-jest.mock('../../modules/goals/services/goals.service');
+jest.mock('../../modules/learning/services/learning.service');
 jest.mock('../../config/logger', () => ({
   logger: {
     info: jest.fn(),
@@ -15,419 +15,189 @@ jest.mock('../../config/logger', () => ({
   },
 }));
 
-// Setup test app
 const app = express();
 app.use(bodyParser.json());
-app.use('/api/goals', goalsRouter);
+app.use('/api/learning', learningRouter);
 
-describe('Goals API Integration Tests', () => {
-  const testGoal = {
-    goal_id: 1,
-    user_id: 1,
-    goal_name: 'Test Goal',
-    goal_type: 'savings',
-    target_amount: 1000,
-    current_amount: 500,
-    start_date: '2023-01-01',
-    target_date: '2023-12-31',
-    goal_status: 'in-progress',
+describe('Learning Routes Integration Tests', () => {
+  const mockModule = {
+    module_id: 1,
+    title: 'Budgeting Basics',
+    difficulty: 'beginner',
+    lesson_count: 5
+  };
+
+  const mockLesson = {
+    lesson_id: 1,
+    module_id: 1,
+    title: 'Budgeting Basics',
+    content: 'Learn more about budgeting basics for your finances',
+    lesson_number: 1
+  };
+
+  const mockQuiz = {
+    quiz_id: 1,
+    module_id: 1,
+    questions: []
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset all mock implementations
+    (learningService as any).getAllModules.mockReset();
+    (learningService as any).getCompletedModules.mockReset();
   });
 
-  describe('POST /api/goals', () => {
-    const validPayload = {
-      user_id: 1,
-      goal_name: 'Test Goal',
-      goal_type: 'savings',
-      target_amount: 1000,
-      start_date: '2023-01-01',
-      target_date: '2023-12-31',
-      banner_id: 1,
-      category_id: 1,
-    };
+  describe('GET /api/learning', () => {
+    it('should return modules with lesson counts', async () => {
+      (learningService.getAllModules as jest.Mock).mockResolvedValue([
+        { ...mockModule, lesson_count: 5 }
+      ]);
 
-    it('should create a new goal with valid data', async () => {
-      (goalService.createGoal as jest.Mock).mockResolvedValueOnce(1);
-
-      const response = await request(app)
-        .post('/api/goals')
-        .send(validPayload);
-
-      expect(response.status).toBe(201);
-      expect(response.body).toEqual({
-        status: 'success',
-        data: { goal_name: 'Test Goal' },
-      });
-      expect(goalService.createGoal).toHaveBeenCalledWith({
-        user_id: 1,
-        goal_name: 'Test Goal',
-        goal_type: 'savings',
-        target_amount: 1000,
-        start_date: '2023-01-01',
-        target_date: '2023-12-31',
-        banner_id: 1,
-        category_id: 1,
-        custom_category_id: undefined,
-        goal_status: 'in-progress',
-      });
-    });
-
-    it('should handle custom categories', async () => {
-      (goalService.createGoal as jest.Mock).mockResolvedValueOnce(2);
+      const response = await request(app).get('/api/learning');
       
-      const response = await request(app)
-        .post('/api/goals')
-        .send({
-          ...validPayload,
-          category_id: undefined,
-          custom_category_name: 'Custom Category'
-        });
-
-      expect(response.status).toBe(201);
-      // Note: The actual custom category handling would need more detailed testing
-      // with a mock database in an integration test
-    });
-
-    it('should return 400 for invalid goal data', async () => {
-      const invalidPayload = {
-        ...validPayload,
-        goal_name: '', // Empty name
-        target_amount: -100, // Negative amount
-      };
-
-      const response = await request(app)
-        .post('/api/goals')
-        .send(invalidPayload);
-
-      expect(response.status).toBe(500); // Note: Currently the route doesn't have validation
-      // In a real app, you'd want proper validation middleware
-    });
-
-    it('should return 500 when creation fails', async () => {
-      (goalService.createGoal as jest.Mock).mockRejectedValueOnce(new Error('DB Error'));
-
-      const response = await request(app)
-        .post('/api/goals')
-        .send(validPayload);
-
-      expect(response.status).toBe(500);
-      expect(logger.error).toHaveBeenCalledWith(
-        '[GoalRoutes] Failed to create goal',
-        expect.any(Error)
-      );
+      expect(response.status).toBe(200);
+      expect(response.body.data[0]).toHaveProperty('lesson_count');
+      expect(learningService.getAllModules).toHaveBeenCalled();
     });
   });
 
-  describe('GET /api/goals/:goalId', () => {
-    it('should return a goal by ID', async () => {
-      (goalService.getGoal as jest.Mock).mockResolvedValueOnce(testGoal);
+  describe('Completed/Uncompleted Modules', () => {
+    it('should return completed modules with proper structure', async () => {
+      (learningService.getCompletedModules as jest.Mock).mockResolvedValue([
+        { ...mockModule, lesson_count: 2 }
+      ]);
 
-      const response = await request(app)
-        .get('/api/goals/1');
-
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual({
-        status: 'success',
-        data: testGoal,
+      const response = await request(app).get('/api/learning/completed/1');
+      
+      expect(response.body.data[0]).toMatchObject({
+        module_id: expect.any(Number),
+        lesson_count: expect.any(Number)
       });
     });
 
-    it('should return 404 for non-existent goal', async () => {
-      (goalService.getGoal as jest.Mock).mockResolvedValueOnce(null);
+    it('should return empty array when no completed modules exist', async () => {
+      (learningService.getCompletedModules as jest.Mock).mockResolvedValue([]);
 
-      const response = await request(app)
-        .get('/api/goals/999');
-
-      expect(response.status).toBe(404);
-      expect(response.body).toEqual({
-        status: 'error',
-        message: 'Goal not found',
-      });
-    });
-  });
-
-  describe('GET /api/goals/user/:userId', () => {
-    it('should return all goals for a user', async () => {
-      const mockGoals = [testGoal, { ...testGoal, goal_id: 2 }];
-      (goalService.getUserGoals as jest.Mock).mockResolvedValueOnce(mockGoals);
-
-      const response = await request(app)
-        .get('/api/goals/user/1');
-
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual({
-        status: 'success',
-        data: mockGoals,
-      });
-    });
-
-    it('should return empty array if no goals exist', async () => {
-      (goalService.getUserGoals as jest.Mock).mockResolvedValueOnce([]);
-
-      const response = await request(app)
-        .get('/api/goals/user/1');
-
+      const response = await request(app).get('/api/learning/completed/1');
+      
       expect(response.status).toBe(200);
       expect(response.body.data).toEqual([]);
     });
+
+    it('should return uncompleted modules with proper filtering', async () => {
+      (learningService.getUncompletedModules as jest.Mock).mockResolvedValue([
+        { ...mockModule, lesson_count: 3 }
+      ]);
+
+      const response = await request(app).get('/api/learning/uncompleted/1');
+      
+      expect(response.body.data[0]).toHaveProperty('module_id');
+    });
   });
 
-  describe('GET /api/goals/:userId/summary', () => {
-    it('should return goal summary statistics', async () => {
-      const mockSummary = {
-        total_goals: 5,
-        completed_goals: 2,
-        in_progress_goals: 2,
-        paused_goals: 1,
-      };
-      (goalService.getGoalsSummary as jest.Mock).mockResolvedValueOnce(mockSummary);
+  describe('Quiz Submission', () => {
+    it('should handle quiz submission with points calculation', async () => {
+      // Mock the entire quiz submission flow
+      (learningService.submitQuizAttempt as jest.Mock).mockImplementation(async (userId, quizId, score, passed) => {
+        return {
+          attempt_id: 1,
+          user_id: userId,
+          quiz_id: quizId,
+          attempt_score: score,
+          passed
+        };
+      });
 
       const response = await request(app)
-        .get('/api/goals/1/summary');
+        .post('/api/learning/quizzes/1/submit')
+        .send({
+          userId: 1,
+          quiz_id: 1,
+          attempt_score: 85,
+          passed: true,
+          answers: []
+        });
 
       expect(response.status).toBe(200);
-      expect(response.body).toEqual({
-        status: 'success',
-        data: mockSummary,
+      expect(response.body.data.passed).toBe(true);
+    });
+
+    it('should handle failed quiz attempts', async () => {
+      (learningService.submitQuizAttempt as jest.Mock).mockResolvedValue({
+        attempt_id: 1,
+        passed: false
+      });
+
+      const response = await request(app)
+        .post('/api/learning/quizzes/1/submit')
+        .send({
+          userId: 1,
+          quiz_id: 1,
+          attempt_score: 50,
+          passed: false,
+          answers: []
+        });
+
+      expect(response.body.data.passed).toBe(false);
+    });
+  });
+
+  describe('Learning Performance', () => {
+    it('should return properly scaled performance score', async () => {
+      (learningService.getLearningPerformance as jest.Mock).mockImplementation(async (userId) => {
+        // Mock the complex calculation
+        return Math.round((850 - 300) * 0.7 + 300); // Example score
+      });
+
+      const response = await request(app).get('/api/learning/score/1');
+      
+      expect(response.body.data).toBeGreaterThanOrEqual(300);
+      expect(response.body.data).toBeLessThanOrEqual(850);
+    });
+  });
+
+  describe('Learning Summary', () => {
+    it('should return comprehensive summary data', async () => {
+      (learningService.getLearningSummary as jest.Mock).mockResolvedValue({
+        modules: 5,
+        points: 100,
+        total_attempts: 10,
+        total_quizzes_left: 2,
+        score: 650,
+        percent: "60.00"
+      });
+
+      const response = await request(app).get('/api/learning/summary/1');
+      
+      expect(response.body.data).toEqual({
+        modules: expect.any(Number),
+        points: expect.any(Number),
+        total_attempts: expect.any(Number),
+        total_quizzes_left: expect.any(Number),
+        score: expect.any(Number),
+        percent: expect.stringMatching(/\d+\.\d{2}/)
       });
     });
   });
 
-  describe('GET /api/goals/:userId/category-summary', () => {
-    it('should return goal counts by category', async () => {
-      const mockCategories = [
-        { goal_type: 'savings', count: 3 },
-        { goal_type: 'investment', count: 2 },
-      ];
-      (goalService.getGoalCategorySummary as jest.Mock).mockResolvedValueOnce(mockCategories);
+  // Add tests for error scenarios
+  describe('Error Handling', () => {
+    it('should handle database errors in getModuleById', async () => {
+      (learningService.getModuleById as jest.Mock).mockRejectedValue(new Error('DB Error'));
 
-      const response = await request(app)
-        .get('/api/goals/1/category-summary');
-
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual({
-        status: 'success',
-        data: mockCategories,
-      });
-    });
-  });
-
-  describe('DELETE /api/goals/:goalId', () => {
-    it('should delete a goal by ID', async () => {
-      (goalService.deleteGoal as jest.Mock).mockResolvedValueOnce(undefined);
-
-      const response = await request(app)
-        .delete('/api/goals/1');
-
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual({
-        status: 'success',
-        message: 'Goal deleted successfully',
-      });
-    });
-
-    it('should return 500 when deletion fails', async () => {
-      (goalService.deleteGoal as jest.Mock).mockRejectedValueOnce(new Error('DB Error'));
-
-      const response = await request(app)
-        .delete('/api/goals/1');
-
+      const response = await request(app).get('/api/learning/1');
+      
       expect(response.status).toBe(500);
-      expect(logger.error).toHaveBeenCalledWith(
-        '[GoalRoutes] Error deleting goal',
-        expect.any(Error)
-      );
-    });
-  });
-
-  describe('POST /api/goals/:goalId/progress', () => {
-    const validPayload = {
-      contributor_id: 1,
-      amount_added: 100,
-    };
-
-    it('should add progress to a goal', async () => {
-      (goalService.addGoalProgress as jest.Mock).mockResolvedValueOnce(101);
-
-      const response = await request(app)
-        .post('/api/goals/1/progress')
-        .send(validPayload);
-
-      expect(response.status).toBe(201);
-      expect(response.body).toEqual({
-        status: 'success',
-        data: { progress_id: 101 },
-      });
+      expect(logger.error).toHaveBeenCalled();
     });
 
-    it('should return 400 for missing fields', async () => {
-      const response = await request(app)
-        .post('/api/goals/1/progress')
-        .send({ contributor_id: 1 }); // Missing amount_added
+    it('should return 404 for non-existent lesson', async () => {
+      (learningService.getLessonById as jest.Mock).mockResolvedValue(null);
 
-      expect(response.status).toBe(400);
-      expect(response.body).toEqual({
-        status: 'error',
-        message: 'contributor_id and amount_added are required',
-      });
-    });
-  });
-
-  describe('GET /api/goals/user/:userId/upcoming', () => {
-    it('should return upcoming goals', async () => {
-      const mockGoals = [testGoal, { ...testGoal, goal_id: 2 }];
-      (goalService.getUpcomingGoals as jest.Mock).mockResolvedValueOnce(mockGoals);
-
-      const response = await request(app)
-        .get('/api/goals/user/1/upcoming');
-
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual({
-        status: 'success',
-        data: mockGoals,
-      });
-    });
-  });
-
-  describe('GET /api/goals/user/:userId/total-value', () => {
-    it('should return total goal value for user', async () => {
-      (goalService.getTotalGoalValue as jest.Mock).mockResolvedValueOnce(5000);
-
-      const response = await request(app)
-        .get('/api/goals/user/1/total-value');
-
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual({
-        status: 'success',
-        data: { total_goal_value: 5000 },
-      });
-    });
-  });
-
-  describe('GET /api/goals/:userId/progress-frequency', () => {
-    it('should return weekly progress frequency', async () => {
-      const mockFrequency = [
-        { day: 'Mon', count: 2 },
-        { day: 'Wed', count: 1 },
-      ];
-      (goalService.getWeeklyGoalCompletions as jest.Mock).mockResolvedValueOnce(mockFrequency);
-
-      const response = await request(app)
-        .get('/api/goals/1/progress-frequency');
-
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual({
-        status: 'success',
-        data: mockFrequency,
-      });
-    });
-  });
-
-  describe('POST /api/goals/:goalId/complete', () => {
-    it('should mark a goal as completed', async () => {
-      (goalService.completeGoal as jest.Mock).mockResolvedValueOnce(undefined);
-
-      const response = await request(app)
-        .post('/api/goals/1/complete');
-
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual({
-        status: 'success',
-        message: 'Goal marked as completed',
-      });
-    });
-  });
-
-  describe('POST /api/goals/:goalId/reduce', () => {
-    it('should reduce goal progress', async () => {
-      (goalService.reduceGoalProgress as jest.Mock).mockResolvedValueOnce(undefined);
-
-      const response = await request(app)
-        .post('/api/goals/1/reduce')
-        .send({ amount: 100 });
-
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual({
-        status: 'success',
-        message: 'Progress reduced',
-      });
-    });
-
-    it('should return 400 for missing amount', async () => {
-      const response = await request(app)
-        .post('/api/goals/1/reduce')
-        .send({});
-
-      expect(response.status).toBe(400);
-      expect(response.body).toEqual({
-        status: 'error',
-        message: 'amount is required',
-      });
-    });
-  });
-
-  describe('GET /api/goals', () => {
-    it('should return all goals', async () => {
-      const mockGoals = [testGoal, { ...testGoal, goal_id: 2 }];
-      (goalService.getAllGoals as jest.Mock).mockResolvedValueOnce(mockGoals);
-
-      const response = await request(app)
-        .get('/api/goals');
-
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual({
-        status: 'success',
-        data: mockGoals,
-      });
-    });
-  });
-
-  describe('GET /api/goals/user/:user_id/stats', () => {
-    it('should return user goal statistics', async () => {
-      const mockStats = {
-        total_goals: 3,
-        completed_goals: 1,
-        total_saved: 2500,
-      };
-      (goalService.getUserGoalStats as jest.Mock).mockResolvedValueOnce(mockStats);
-
-      const response = await request(app)
-        .get('/api/goals/user/1/stats');
-
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual({
-        status: 'success',
-        data: mockStats,
-      });
-    });
-
-    it('should return 400 for invalid user ID', async () => {
-      const response = await request(app)
-        .get('/api/goals/user/invalid/stats');
-
-      expect(response.status).toBe(400);
-      expect(response.body).toEqual({
-        status: 'error',
-        message: 'Invalid user_id',
-      });
-    });
-  });
-
-  describe('GET /api/goals/:userId/performance', () => {
-    it('should calculate goal performance score', async () => {
-      (goalService.calculateGoalPerformance as jest.Mock).mockResolvedValueOnce(85);
-
-      const response = await request(app)
-        .get('/api/goals/1/performance');
-
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual({
-        status: 'success',
-        data: 85,
-      });
+      const response = await request(app).get('/api/learning/lessons/999');
+      
+      expect(response.status).toBe(404);
     });
   });
 });

@@ -18,6 +18,7 @@ export async function getAllModules() {
 
 export async function getCompletedModules(user_id: number) {
   try {
+    // if user does not exist, return error
     const query = `
       SELECT 
         lm.*,
@@ -128,7 +129,7 @@ export async function submitQuizAttempt(
     LIMIT 1;
   `;
   const difficultyResult = await pool.query(moduleDifficultyQuery, [quiz_id]);
-  const difficulty = difficultyResult.rows[0]?.difficulty || 'easy';
+  const difficulty = difficultyResult.rows[0]?.difficulty || 'beginner';
 
   // Assign points based on difficulty
   let pointsToAdd = 10;
@@ -156,6 +157,9 @@ export async function submitQuizAttempt(
       LIMIT 1;
     `;
     const passedResult = await pool.query(checkPassedQuery, [user_id, quiz_id]);
+    if (!passedResult?.rows) {
+      throw new Error('Failed to check previous attempts');
+    }
     alreadyPassed = passedResult.rows.length > 0;
   }
   
@@ -182,6 +186,7 @@ export async function submitQuizAttempt(
       logger.info(`[LearningService] Added ${pointsToAdd} points for user ${user_id}`);
     }
   }
+
   await pool.query(
     `UPDATE user_points
     SET tier_status = CASE
@@ -196,9 +201,12 @@ export async function submitQuizAttempt(
     [user_id]
   );
 
-  const result = await pool.query(attemptQuery, [ user_id, quiz_id, attempt_score, passed ]);
-  logger.info(`[LearningService] Submitted quiz attempt for user ${user_id}, quiz ${quiz_id}`);
-  return result.rows[ 0 ];
+  const result = await pool.query(attemptQuery, [user_id, quiz_id, attempt_score, passed]);
+  if (!result?.rows?.[0]) {  // More comprehensive check
+    logger.error(`[LearningService] Failed to submit quiz attempt for user ${user_id} on quiz ${quiz_id}`);
+    throw new Error('Failed to submit quiz attempt');
+  }
+  return result.rows[0];
 }
 
 // 📈 Get all quiz attempts by user
@@ -224,7 +232,7 @@ export async function getUserQuizAttemptsForQuiz(user_id: number, quiz_id: numbe
 }
 
 
-export async function getLearningPeformance(user_id: number) {
+export async function getLearningPerformance(user_id: number) {
  const query = `
     SELECT
       SUM(CASE WHEN passed THEN 1 ELSE 0 END) AS total_passed,
@@ -260,7 +268,7 @@ export async function getLearningPeformance(user_id: number) {
 }
 
 export async function getLearningSummary(user_id: number) {
-  const performance = await getLearningPeformance(user_id);
+  const performance = await getLearningPerformance(user_id);
   // The credit score is scaled between 300 and 850, so get percentage relative to this range
   const minScore = 300;
   const maxScore = 850;
@@ -295,9 +303,10 @@ export async function getLearningSummary(user_id: number) {
     SELECT COUNT(*) AS total_modules
     FROM learning_modules;
   `;
-  const modulesResult = await pool.query(modulesQuery);
-  const totalModules = parseInt(modulesResult.rows[0].total_modules) || 0;
 
+  const modulesResult = await pool.query(modulesQuery);
+  const totalModules = modulesResult.rows[0] ? parseInt(modulesResult.rows[0].total_modules) : 0;
+  
   // get percent of quizzes completed
   const completedQuizzesQuery = `
     SELECT COUNT(DISTINCT quiz_id) AS completed_quizzes

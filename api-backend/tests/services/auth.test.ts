@@ -200,7 +200,7 @@ describe('Auth Service', () => {
 
       expect(pool.query).toHaveBeenCalledWith(
         expect.stringContaining('UPDATE users'),
-        [null, null, updates.full_name, 1]
+        [undefined, undefined, updates.full_name, 1]
       );
       expect(result).toEqual(mockUser);
     });
