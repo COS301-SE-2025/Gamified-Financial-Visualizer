@@ -11,7 +11,7 @@ import badge5 from '../../assets/Images/badges/moneyGrowIcon.png';
 import badge6 from '../../assets/Images/badges/mountainIcon.png';
 import badge7 from '../../assets/Images/badges/notesIcon.png';
 import badge8 from '../../assets/Images/badges/scaleIcon.png';
-import badge9 from '../../assets/Images/badges/plantIocn.png';
+import badge9 from '../../assets/Images/badges/plantIcon.png';
 import badge10 from '../../assets/Images/badges/targetIcon.png';
 
 const achievements = [

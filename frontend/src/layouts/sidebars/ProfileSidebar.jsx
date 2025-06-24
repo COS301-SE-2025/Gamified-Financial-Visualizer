@@ -1,5 +1,7 @@
-import React from 'react';
+// import React from 'react';
 import avatar from '../../assets/Images/avatars/totoroAvatar.jpeg';
+
+import React, { useEffect, useState } from 'react';
 
 import {
   FaBolt,
@@ -11,6 +13,19 @@ import {
 } from 'react-icons/fa';
 
 const ProfileSidebar = () => {
+
+  const [sidebarStats, setSidebarStats] = useState(null);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user?.id) return;
+
+    fetch(`http://localhost:5000/api/auth/sidebar/${user.id}`)
+      .then(res => res.json())
+      .then(data => setSidebarStats(data.data))
+      .catch(err => console.error('Sidebar stats error:', err));
+  }, []);
+
   return (
     <aside className="space-y-6">
       {/* Goal Performance */}
@@ -80,12 +95,12 @@ const ProfileSidebar = () => {
 
         <div className="grid grid-cols-2 gap-4">
           {[
-            { value: '14', label: 'Goals', icon: <FaBolt />, color: '#FF8A8A' },
-            { value: '83%', label: 'Ahievements', icon: <FaCheck />, color: '#7FDD53' },
-            { value: '12', label: 'Accounts', icon: <FaChartBar />, color: '#5FBFFF' },
-            { value: '14', label: 'Recent Transactions', icon: <FaHourglassHalf />, color: '#FFC541' },
-            { value: '56%', label: 'Lessons', icon: <FaTimes />, color: '#F68D2B' },
-            { value: '7', label: 'Communities', icon: <FaBan />, color: '#FF7F9E' },
+            { value: sidebarStats?.total_goals ?? '...', label: 'Goals', icon: <FaBolt />, color: '#FF8A8A' },
+            { value: `${sidebarStats?.achievement_percentage ?? '...'}%`, label: 'Achievements', icon: <FaCheck />, color: '#7FDD53' },
+            { value: sidebarStats?.total_accounts ?? '...', label: 'Accounts', icon: <FaChartBar />, color: '#5FBFFF' },
+            { value: sidebarStats?.recent_transactions ?? '...', label: 'Recent Transactions', icon: <FaHourglassHalf />, color: '#FFC541' },
+            { value: `${sidebarStats?.lessons_completed_percentage ?? '...'}%`, label: 'Lessons', icon: <FaTimes />, color: '#F68D2B' },
+            { value: sidebarStats?.total_communities ?? '...', label: 'Communities', icon: <FaBan />, color: '#FF7F9E' },
           ].map(({ value, label, icon, color }, i) => (
             <div key={i} className="relative bg-white rounded-xl shadow-md p-3 flex items-center justify-between">
               {/* Icon Bubble */}

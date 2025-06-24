@@ -6,11 +6,6 @@ import { motion } from 'framer-motion';
 // Profile banner
 import profileBanner from '../../assets/Images/banners/pixelStore.gif';
 
-// Badges Images      // Top-left icon
-import silverMedal from '../../assets/Images/badges/plantIocn.png';      // For "Silver"
-import fireStreak from '../../assets/Images/badges/notesIcon.png';        // For "Streak"
-import accuracyTarget from '../../assets/Images/badges/CoinStack.png'; // For "Accuracy"
-
 // Community banner images
 import comm1 from '../../assets/Images/banners/pixelApartment.gif';
 import comm2 from '../../assets/Images/banners/pixelGirlAlly.gif';
@@ -31,22 +26,49 @@ import avatar10 from '../../assets/Images/avatars/ladyAvatar.jpeg';
 import avatar11 from '../../assets/Images/avatars/carAvatar.jpeg';
 import avatar12 from '../../assets/Images/avatars/butterflyAvatar.jpeg';
 
+// Format amount cleanly (e.g., 7500 or 7500.14)
+const formatAmount = (amount) => {
+  const num = Number(amount);
+  return num % 1 === 0 ? num.toString() : num.toFixed(2);
+};
 
 const Overview = () => {
-  const [setShowXpAnimation] = useState(false);
+  const [showXpAnimation, setShowXpAnimation] = useState(false);
   const navigate = useNavigate();
 
   const [profileData, setProfileData] = useState(null);
+  const [goals, setGoals] = useState([]);
+  const [performanceStats, setPerformanceStats] = useState(null);
+  const [recentAchievements, setRecentAchievements] = useState([]);
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user')); // assuming you store { id, username } here
-    if (!user?.id) return;
+  const user = JSON.parse(localStorage.getItem('user'));
+  if (!user?.id) return;
 
-    fetch(`http://localhost:5000/api/auth/top-bar/${user.id}`)
-      .then(res => res.json())
-      .then(res => setProfileData(res.data))
-      .catch(err => console.error('Failed to load profile bar:', err));
-  }, []);
+  // Fetch profile data
+  fetch(`http://localhost:5000/api/auth/top-bar/${user.id}`)
+    .then(res => res.json())
+    .then(res => setProfileData(res.data))
+    .catch(err => console.error('Failed to load profile bar:', err));
+
+  // Fetch current goals
+  fetch(`http://localhost:5000/api/auth/profile/current-goals/${user.id}`)
+    .then(res => res.json())
+    .then(res => setGoals(res.data))
+    .catch(err => console.error('Failed to load goals:', err));
+
+  // Fetch performance stats
+  fetch(`http://localhost:5000/api/auth/profile/performance-stats/${user.id}`)
+    .then(res => res.json())
+    .then(res => setPerformanceStats(res.data))
+    .catch(err => console.error('Failed to load performance stats:', err));
+
+  // Fetch recent achievements
+  fetch(`http://localhost:5000/api/auth/profile/recent-achievements/${user.id}`)
+    .then(res => res.json())
+    .then(res => setRecentAchievements(res.data))
+    .catch(err => console.error('Failed to load achievements:', err));
+}, []);
 
   // Mock user data
   const userStats = {
@@ -203,7 +225,7 @@ const Overview = () => {
         <div className="space-y-5">
           <motion.div
             whileHover={{ y: -5 }}
-            className="bg-[#ffffff] p-6 rounded-2xl shadow-sm  hover:border-[#4d7c0f] transition-all relative overflow-hidden group"
+            className="bg-[#ffffff] p-6 rounded-2xl shadow-sm hover:border-[#4d7c0f] transition-all relative overflow-hidden group"
           >
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-[#88BC46] group-hover:text-[#88BC46] transition-colors">
@@ -211,22 +233,37 @@ const Overview = () => {
               </div>
               <div className="text-left">
                 <p className="text-lg font-semibold text-[#1f2937]">Performance Stats</p>
-                <p className="text-sm text-[#4b5563]">Your trading metrics</p>
+                <p className="text-sm text-[#4b5563]">Your gamified metrics</p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4 mt-4">
-              {[
-                { value: `${userStats.stats.accuracy}%`, label: 'Accuracy', color: 'text-[#88BC46]' },
-                { value: `#${userStats.stats.leaderboardRank}`, label: 'Leaderboard', color: 'text-[#72C1F5]' },
-                { value: userStats.stats.outzoneChallenges, label: 'Challenges', color: 'text-[#FF4080]' },
-                { value: `${userStats.stats.goalsCompleted}/${userStats.stats.goalsTotal}`, label: 'Goals', color: 'text-yellow-600' }
-              ].map((stat, i) => (
-                <div key={i} className="bg-gray-50 rounded-xl p-3 text-center hover:bg-gray-100 transition-colors">
-                  <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
-                  <div className="text-xs text-gray-500 mt-1">{stat.label}</div>
+              <div className="bg-gray-50 rounded-xl p-3 text-center hover:bg-gray-100 transition-colors">
+                <div className="text-2xl font-bold text-[#88BC46]">
+                  {performanceStats ? `${performanceStats.accuracy}%` : '—'}
                 </div>
-              ))}
+                <div className="text-xs text-gray-500 mt-1">Accuracy</div>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-3 text-center hover:bg-gray-100 transition-colors">
+                <div className="text-2xl font-bold text-[#72C1F5]">
+                  {performanceStats ? `#${performanceStats.leaderboard_rank}` : '—'}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">Leaderboard</div>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-3 text-center hover:bg-gray-100 transition-colors">
+                <div className="text-2xl font-bold text-[#FF4080]">
+                  {performanceStats ? performanceStats.challenges_joined : '—'}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">Challenges</div>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-3 text-center hover:bg-gray-100 transition-colors">
+                <div className="text-2xl font-bold text-yellow-600">
+                  {performanceStats
+                    ? `${performanceStats.goals_completed}/${performanceStats.goals_total}`
+                    : '—'}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">Goals</div>
+              </div>
             </div>
           </motion.div>
 
@@ -246,58 +283,30 @@ const Overview = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
-              {[
-                {
-                  icon: silverMedal,
-                  title: 'Silver',
-                  xp: '+200 XP',
-                  earned: true
-                },
-                {
-                  icon: fireStreak,
-                  title: 'Streak',
-                  xp: '+50 XP',
-                  earned: true
-                },
-                {
-                  icon: accuracyTarget,
-                  title: 'Accuracy',
-                  xp: '+150 XP',
-                  earned: true
-                }
-              ].map((a, i) => (
-                <motion.div
-                  key={i}
-                  whileHover={{ scale: 1.05 }}
-                  className={`rounded-xl p-4 text-center border-2 transition-all ${a.earned
-                    ? 'bg-white border-[#AAD977] shadow-sm'
-                    : 'bg-gray-50 border-gray-200'
-                    }`}
-                >
-                  <div className="h-20 w-20 rounded-full">
-                    <img
-                      src={a.icon}
-                      alt={a.title}
-                      width={32}
-                      height={32}
-                      className={`object-contain h-full w-auto ${!a.earned && 'opacity-40 grayscale'
-                        }`}
-                    />
-                  </div>
-                  <p
-                    className={`text-sm font-semibold ${a.earned ? 'text-gray-800' : 'text-gray-400'
-                      }`}
+            <div className="grid grid-cols-3 gap-4"> 
+              {recentAchievements.length === 0 ? (
+                <p className="text-sm text-gray-500 italic text-center">No achievements yet.</p>
+              ) : (
+                recentAchievements.map((a, i) => (
+                  <motion.div
+                    key={i}
+                    whileHover={{ scale: 1.05 }}
+                    className="rounded-xl p-4 text-center border-2 bg-white border-[#AAD977] shadow-sm"
                   >
-                    {a.title}
-                  </p>
-                  {a.earned && (
+                    <div className="h-20 w-20 rounded-full mx-auto">
+                      <img
+                        src={`/assets/Images/${a.icon_image_path}`}
+                        alt={a.achievement_title}
+                        className="object-contain h-full w-auto"
+                      />
+                    </div>
+                    <p className="text-sm font-semibold text-gray-800 mt-2">{a.achievement_title}</p>
                     <p className="text-xs text-yellow-600 font-medium mt-2 bg-yellow-100/50 px-2 py-1 rounded-full inline-block">
-                      {a.xp}
+                      +{a.xp_reward} XP
                     </p>
-                  )}
-                </motion.div>
-              ))}
+                  </motion.div>
+                ))
+              )}
             </div>
           </motion.div>
         </div>
@@ -314,34 +323,34 @@ const Overview = () => {
           </h2>
 
           <div className="space-y-4">
-            {[
-              { title: "Complete 5 trades", progress: 3, target: 5, xp: 50 },
-              { title: "Reach Gold Tier", progress: 350, target: 1000, xp: 200 },
-              { title: "7-day streak", progress: 5, target: 7, xp: 100 }
-            ].map((goal, i) => (
-              <div key={i} className="bg-[#fef9c3]/30 p-4 rounded-xl border border-[#fef08a]">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-medium text-gray-800">{goal.title}</h3>
-                  <span className="text-xs bg-[#fef9c3] text-[#92400e] px-2 py-1 rounded-full border border-[#fde047]">
-                    +{goal.xp} XP
-                  </span>
+            {goals.length > 0 ? (
+              goals.map((goal, i) => (
+                <div key={i} className="bg-[#fef9c3]/30 p-4 rounded-xl border border-[#fef08a]">
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="font-medium text-gray-800">{goal.goal_name}</h3>
+                    <span className="text-xs bg-[#fef9c3] text-[#92400e] px-2 py-1 rounded-full border border-[#fde047]">
+                      +{goal.xp_reward} XP
+                    </span>
+                  </div>
+                  <div className="w-full bg-[#f3f4f6] rounded-full h-2">
+                    <div
+                      className="bg-gradient-to-r from-[#facc15] to-[#fb923c] h-2 rounded-full"
+                      style={{ width: `${goal.progress_percentage}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1 text-right">
+                    {formatAmount(goal.current_amount)}/{formatAmount(goal.target_amount)} ({goal.progress_percentage}%)
+                  </p>
                 </div>
-                <div className="w-full bg-[#f3f4f6] rounded-full h-2">
-                  <div
-                    className="bg-gradient-to-r from-[#facc15] to-[#fb923c] h-2 rounded-full"
-                    style={{ width: `${(goal.progress / goal.target) * 100}%` }}
-                  ></div>
-                </div>
-                <p className="text-xs text-gray-500 mt-1 text-right">
-                  {goal.progress}/{goal.target} ({Math.round((goal.progress / goal.target) * 100)}%)
-                </p>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-sm text-gray-500 italic text-center">You currently have no active goals.</p>
+            )}
           </div>
 
           <button
             className="mt-6 w-full px-4 py-2 bg-gradient-to-r from-[#FFBF1A] to-[#FFD18C] hover:from-[#f59e0b] hover:to-[#fbbf24] text-white font-medium rounded-full shadow transition-all"
-            onClick={() => setShowXpAnimation(true)}
+            onClick={() => navigate('/goals')}
           >
             View All Goals
           </button>
