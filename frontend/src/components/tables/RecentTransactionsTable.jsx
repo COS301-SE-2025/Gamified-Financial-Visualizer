@@ -141,7 +141,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
 
       // Call the parent's onDelete function
       onDelete(index);
-      
+
       // Refresh the transactions list
       if (onRefresh) {
         await onRefresh(account?.account_id);
@@ -215,7 +215,6 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
         </div>
       )}
 
-      {/* Transactions Table */}
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm text-left text-gray-700">
           <thead className="border-b">
@@ -244,7 +243,17 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
                   <td className="px-4 py-2">{txn.name}</td>
                   <td className="px-4 py-2">{txn.date}</td>
                   <td className="px-4 py-2">{txn.category}</td>
-                  <td className="px-4 py-2">{txn.amount}</td>
+                  <td
+                    className={`px-4 py-2 font-semibold ${
+                      (txn.transaction_type === 'expense' || txn.transaction_type === 'withdrawal' || txn.transaction_type === 'fee')
+                        ? 'text-red-500'
+                        : (txn.transaction_type === 'income' || txn.transaction_type === 'transfer' || txn.transaction_type === 'deposit')
+                        ? 'text-lime-600'
+                        : ''
+                    }`}
+                  >
+                    {txn.amount}
+                  </td>
                   <td className="px-4 py-2 flex gap-2">
                     <button
                       className="text-sm text-blue-500 hover:text-blue-600 disabled:opacity-50"
@@ -278,7 +287,6 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
         </div>
       )}
 
-      {/* Add Modal */}
       <AddTransactionModal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
@@ -286,7 +294,6 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
         activeAccount={account}
       />
 
-      {/* Edit Modal */}
       {editTxnData && (
         <EditTransactionModal
           isOpen={!!editTxnData}

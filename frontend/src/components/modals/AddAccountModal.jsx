@@ -60,7 +60,6 @@ const AddAccountModal = ({ isOpen, onClose, onAdd }) => {
           {[
             { label: 'Bank Name', name: 'bankName', placeholder: 'FNB' },
             { label: 'Account Name', name: 'accountName', placeholder: 'Private Account' },
-            { label: 'Account Type', name: 'accountType', placeholder: 'Savings' },
             { label: 'Available Amount', name: 'available', placeholder: '10000' },
             //{ label: 'Balance', name: 'balance', placeholder: '500' },
           ].map((field) => (
@@ -90,6 +89,33 @@ const AddAccountModal = ({ isOpen, onClose, onAdd }) => {
               <option value="USD">USD ($)</option>
               <option value="EUR">EUR (€)</option>
               <option value="GBP">GBP (£)</option>
+            </select>
+          </div>
+
+          {/* Account Type Dropdown */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Account Type</label>
+            <select
+              name="accountType"
+              value={formData.accountType}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded-md text-sm"
+              required
+            >
+              <option value="">Select type</option>
+              <option value="current">Current</option>
+              <option value="cheque">Cheque</option>
+              <option value="savings">Savings</option>
+              <option value="investment">Investment</option>
+              <option value="credit">Credit</option>
+              <option value="fixed deposit">Fixed Deposit</option>
+              <option value="business">Business</option>
+              <option value="transmission">Transmission</option>
+              <option value="tax-free savings">Tax-Free Savings</option>
+              <option value="trust">Trust</option>
+              <option value="corporate trading">Corporate Trading</option>
+              <option value="crypto">Crypto</option>
+              <option value="forex">Forex</option>
             </select>
           </div>
         </div>

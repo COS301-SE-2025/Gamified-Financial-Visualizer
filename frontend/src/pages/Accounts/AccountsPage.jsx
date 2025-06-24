@@ -142,13 +142,15 @@ const AccountsPage = () => {
         date: new Date(txn.transaction_date).toLocaleDateString(),
         // Fix: Use proper category resolution
         category: getCategoryName(txn.category_id, txn.custom_category_id),
-        amount: `${txn.transaction_amount >= 0 ? '' : '-'}${activeAccount?.currency || 'ZAR'}${Math.abs(txn.transaction_amount).toFixed(2)}`,
+        amount: `${txn.transaction_amount >= 0 ? '' : '-'}${activeAccount?.currency + ' ' || 'ZAR'}${Math.abs(txn.transaction_amount).toFixed(2)}`,
         account_id: txn.account_id,
         transaction_id: txn.transaction_id,
         transaction_type: txn.transaction_type,
         original_amount: txn.transaction_amount, // Keep original for calculations
         category_id: txn.category_id, // Keep for editing
         custom_category_id: txn.custom_category_id, // Keep for editing
+        // Add color property based on transaction type
+        amountColor: (txn.transaction_type === 'income' || txn.transaction_type === 'transfer' || txn.transaction_type === 'deposit') ? 'bg-green-400' : (txn.transaction_type === 'expense' || txn.transaction_type === 'withdrawal' || txn.transaction_type === 'fee') ? 'bg-red-400' : 'bg-gray-400',
       }));
 
       setTransactions(mapped);
