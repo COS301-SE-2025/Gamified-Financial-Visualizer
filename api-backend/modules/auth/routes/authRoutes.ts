@@ -8,6 +8,10 @@ import { logger } from '../../../config/logger';
 import * as userService from '../services/auth.service';
 
 import { getProfileTopBar } from '../services/auth.service';
+import { getUserSidebarStats } from '../services/auth.service';
+import { getCurrentUserGoals } from '../services/auth.service';
+import { getUserPerformanceStats } from '../services/auth.service';
+import { getRecentAchievements } from '../services/auth.service';
 
 const localKey = Buffer.from(process.env.PASETO_LOCAL_KEY!, 'hex');
 const TOKEN_TTL = Number(process.env.TOKEN_TTL_SECONDS || 86400);
@@ -253,7 +257,7 @@ router.put('/:userId/update-profile', async (req: Request, res: Response): Promi
 });
 
 
-// Profile Specific Routes
+// ------------ Profile Specific Functions ------------- //
 
 /**
  * @route GET /api/auth/top-bar/:userId
@@ -277,6 +281,102 @@ router.get('/top-bar/:userId', async (req: Request, res: Response) => {
     });
   }
 });
+
+/**
+ * @route GET /api/auth/sidebar/:userId
+ * @desc Returns sidebar stats: goals, achievements, accounts, transactions, communities, lessons
+ */
+router.get('/sidebar/:userId', async (req: Request, res: Response) => {
+  const userId = Number(req.params.userId);
+
+  try {
+    const stats = await getUserSidebarStats(userId);
+    res.status(200).json({
+      status: 'success',
+      message: 'Sidebar statistics loaded.',
+      data: stats
+    });
+  } catch (error) {
+    logger.error(`[Auth] Failed to fetch sidebar stats for user ID ${userId}:`, error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to load sidebar stats.'
+    });
+  }
+});
+
+/**
+ * @route GET /api/auth/profile/current-goals/:userId
+ * @desc Returns current goals for the user
+ */
+router.get('/profile/current-goals/:userId', async (req: Request, res: Response) => {
+  const userId = Number(req.params.userId);
+
+  try {
+    const goals = await getCurrentUserGoals(userId);
+    res.status(200).json({
+      status: 'success',
+      message: 'Current goals fetched successfully.',
+      data: goals,
+    });
+  } catch (error) {
+    logger.error(`[Auth] Failed to fetch current goals for user ID ${userId}:`, error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Could not load current goals.',
+    });
+  }
+});
+
+
+/**
+ * @route GET /api/auth/profile/performance-stats/:userId
+ * @desc Returns performance stats (accuracy, rank, challenges, goals)
+ */
+router.get('/profile/performance-stats/:userId', async (req: Request, res: Response) => {
+  const userId = Number(req.params.userId);
+
+  try {
+    const stats = await getUserPerformanceStats(userId);
+    res.status(200).json({
+      status: 'success',
+      message: 'Performance stats fetched successfully.',
+      data: stats,
+    });
+  } catch (error) {
+    logger.error(`[Auth] Failed to fetch performance stats for user ID ${userId}:`, error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Could not load performance stats.',
+    });
+  }
+});
+
+/**
+ * @route GET /api/auth/profile/recent-achievements/:userId
+ * @desc Returns top 3 most recent achievements for a user
+ */
+router.get('/profile/recent-achievements/:userId', async (req: Request, res: Response) => {
+  const userId = Number(req.params.userId);
+
+  try {
+    const achievements = await getRecentAchievements(userId);
+    res.status(200).json({
+      status: 'success',
+      message: 'Recent achievements fetched successfully.',
+      data: achievements,
+    });
+  } catch (error) {
+    logger.error(`[Auth] Failed to fetch recent achievements for user ID ${userId}:`, error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Could not load recent achievements.',
+    });
+  }
+});
+
+
+
 
 
 /**

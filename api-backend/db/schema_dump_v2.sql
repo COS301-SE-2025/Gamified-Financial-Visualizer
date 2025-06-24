@@ -679,6 +679,26 @@ CREATE TABLE point_rules (
 
 
 
+CREATE OR REPLACE FUNCTION calculate_goal_xp(goal_type TEXT, target NUMERIC, current NUMERIC)
+RETURNS INT AS $$
+DECLARE
+  base_points INT := 75;  -- fixed for goal_completed
+BEGIN
+  RETURN base_points +
+    CASE
+      WHEN goal_type = 'savings' THEN FLOOR(current / 1000) * 1
+      WHEN goal_type = 'debt' THEN FLOOR(current / 500) * 2
+      WHEN goal_type = 'investment' THEN FLOOR(current / 1000) * 3
+      WHEN goal_type = 'spending limit' THEN FLOOR(target / 1000) * 1
+      WHEN goal_type = 'donation' THEN FLOOR(current / 100) * 1
+      ELSE 0
+    END;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+
+
+
 -- ========================================
 -- INDEXES
 -- ========================================

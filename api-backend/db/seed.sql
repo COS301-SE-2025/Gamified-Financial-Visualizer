@@ -69,17 +69,21 @@ INSERT INTO banner_images (banner_image_path) VALUES ('banners/pixelStudents.jpe
 INSERT INTO banner_images (banner_image_path) VALUES ('banners/pixelWindow.gif');
 INSERT INTO banner_images (banner_image_path) VALUES ('banners/pixelWoodShop.gif');
 
+INSERT INTO badges (badge_title, image_path, rarity) VALUES
+  ('Award', 'badges/awardIcon.png', 'Uncommon'),
+  ('Bronze Medal', 'badges/bronzeMedal.png', 'Common'),
+  ('Coin Stack', 'badges/CoinStack.png', 'Legendary'),
+  ('Gold Medal', 'badges/goldMedal.png', 'Epic'),
+  ('Highfive', 'badges/highFiveIcon.png', 'Obsidian'),
+  ('Money Bag', 'badges/moneyBagIcon.png', 'Obsidian'),
+  ('Money Grow', 'badges/moneyGrowIcon.png', 'Epic'),
+  ('Mountain', 'badges/mountainIcon.png', 'Epic'),
+  ('Notes', 'badges/notesIcon.png', 'Rare'),
+  ('Plant', 'badges/plantIcon.png', 'Legendary'),
+  ('Scale', 'badges/scaleIcon.png', 'Common'),
+  ('Silver Medal', 'badges/silverMedal.png', 'Uncommon'),
+  ('Target', 'badges/targetIcon.png', 'Common');
 
-INSERT INTO badges (badge_title, image_path, rarity) VALUES ('Award', 'badges/awardIcon.png', 'Uncommon');
-INSERT INTO badges (badge_title, image_path, rarity) VALUES ('Coin Stack', 'badges/CoinStack.png', 'Legendary');
-INSERT INTO badges (badge_title, image_path, rarity) VALUES ('Highfive', 'badges/highFiveIcon.png', 'Obsidian');
-INSERT INTO badges (badge_title, image_path, rarity) VALUES ('Money Bag', 'badges/moneyBagIcon.png', 'Obsidian');
-INSERT INTO badges (badge_title, image_path, rarity) VALUES ('Money Grow', 'badges/moneyGrowIcon.png', 'Epic');
-INSERT INTO badges (badge_title, image_path, rarity) VALUES ('Mountain', 'badges/mountainIcon.png', 'Epic');
-INSERT INTO badges (badge_title, image_path, rarity) VALUES ('Notes', 'badges/notesIcon.png', 'Rare');
-INSERT INTO badges (badge_title, image_path, rarity) VALUES ('Plant', 'badges/plantIcon.png', 'Legendary');
-INSERT INTO badges (badge_title, image_path, rarity) VALUES ('Scale', 'badges/scaleIcon.png', 'Common');
-INSERT INTO badges (badge_title, image_path, rarity) VALUES ('Target', 'badges/targetIcon.png', 'Common');
 
 -- ================================
 -- Seed Script for User Preferences
@@ -5416,3 +5420,62 @@ VALUES
 (10, 20, '2025-06-16 19:00:00'),
 (10, 25, '2025-06-17 20:00:00');
 
+-- Quiz IDs assumed: 1 = Budgeting Basics, 2 = Investment, 3 = Credit, 4 = FOMO, 5 = Retrenchment
+
+INSERT INTO quiz_attempts (user_id, quiz_id, attempt_score, passed, attempt_number) VALUES
+-- User 1
+(1, 1, 1, FALSE, 1),
+(1, 1, 1, FALSE, 2),
+(1, 1, 2, FALSE, 3),
+(1, 1, 3, TRUE, 4),
+(1, 2, 3, TRUE, 1),
+(1, 3, 4, TRUE, 1),
+
+-- User 2
+(2, 1, 3, TRUE, 1),
+(2, 2, 5, TRUE, 1),
+(2, 4, 2, FALSE, 1),
+
+-- User 3
+(3, 2, 2, FALSE, 1),
+(3, 2, 4, TRUE, 2),
+(3, 4, 5, TRUE, 1),
+(3, 5, 1, FALSE, 1),
+
+-- User 4
+(4, 1, 5, TRUE, 1),
+(4, 3, 2, FALSE, 1),
+(4, 3, 5, TRUE, 2),
+
+-- User 5
+(5, 5, 4, TRUE, 1),
+(5, 5, 2, FALSE, 2),
+(5, 4, 3, TRUE, 1),
+
+-- User 6
+(6, 1, 5, TRUE, 1),
+(6, 2, 5, TRUE, 1),
+(6, 3, 5, TRUE, 1),
+(6, 4, 3, TRUE, 1),
+
+-- User 7
+(7, 2, 1, FALSE, 1),
+(7, 2, 5, TRUE, 2),
+(7, 3, 2, FALSE, 1),
+
+-- User 8
+(8, 4, 3, TRUE, 1),
+(8, 5, 3, TRUE, 1),
+
+-- User 9
+(9, 1, 4, TRUE, 1),
+(9, 2, 2, FALSE, 1),
+(9, 2, 3, TRUE, 2),
+(9, 3, 1, FALSE, 1),
+(9, 5, 5, TRUE, 1),
+
+-- User 10
+(10, 1, 2, FALSE, 1),
+(10, 3, 2, FALSE, 1),
+(10, 4, 2, FALSE, 1),
+(10, 4, 4, TRUE, 2);

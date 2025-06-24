@@ -409,7 +409,6 @@ export async function getProfileTopBar(user_id: number) {
   }
 }
 
-
 export async function getUserSidebarStats(user_id: number) {
   const query = `
     SELECT
@@ -431,14 +430,25 @@ export async function getUserSidebarStats(user_id: number) {
       (
         SELECT COUNT(*) FROM transactions
         WHERE account_id IN (SELECT account_id FROM accounts WHERE user_id = $1)
-        AND transaction_date >= NOW() - INTERVAL '30 days'
+        AND transaction_date >= NOW() - INTERVAL '7 days'
       ) AS recent_transactions,
 
       -- Total joined communities
       (
         SELECT COUNT(*) FROM community_members
         WHERE user_id = $1 AND membership_status = 'accepted'
-      ) AS total_communities
+      ) AS total_communities,
+
+      -- Total lessons completed
+      (
+        SELECT 
+          ROUND(
+            COUNT(*) * 100.0 / NULLIF(
+              (SELECT COUNT(*) FROM lessons), 0
+            ), 0
+          )
+        FROM user_lessons WHERE user_id = $1
+      ) AS lessons_completed_percentage
   `;
 
   try {
@@ -449,3 +459,91 @@ export async function getUserSidebarStats(user_id: number) {
     throw err;
   }
 }
+
+export async function getCurrentUserGoals(user_id: number) {
+  const query = `
+    SELECT 
+      g.goal_id,
+      g.goal_name,
+      g.goal_type,
+      g.current_amount,
+      g.target_amount,
+      ROUND((g.current_amount / g.target_amount) * 100) AS progress_percentage,
+      calculate_goal_xp(g.goal_type, g.target_amount, g.current_amount) AS xp_reward
+    FROM goals g
+    WHERE g.user_id = $1 AND g.goal_status = 'in-progress'
+    ORDER BY g.target_date ASC
+    LIMIT 4;
+  `;
+
+  const result = await pool.query(query, [user_id]);
+  return result.rows;
+}
+
+export async function getUserPerformanceStats(user_id: number) {
+  const query = `
+    SELECT
+      -- Accuracy: % of passed quizzes
+      COALESCE((
+        SELECT ROUND(COUNT(*) FILTER (WHERE passed) * 100.0 / NULLIF(COUNT(*), 0), 0)
+        FROM quiz_attempts
+        WHERE user_id = $1
+      ), 0) AS accuracy,
+
+      -- Leaderboard Rank (lower rank is better)
+      COALESCE((
+        SELECT ranking FROM leaderboard_entries
+        WHERE user_id = $1
+        ORDER BY created_at DESC LIMIT 1
+      ), 0) AS leaderboard_rank,
+
+      -- Total joined challenges
+      COALESCE((
+        SELECT COUNT(*) FROM challenge_progress
+        WHERE user_id = $1 AND participation_status = 'joined'
+      ), 0) AS challenges_joined,
+
+      -- Goals completed / total
+      COALESCE((
+        SELECT COUNT(*) FROM goals WHERE user_id = $1 AND goal_status = 'completed'
+      ), 0) AS goals_completed,
+
+      COALESCE((
+        SELECT COUNT(*) FROM goals WHERE user_id = $1
+      ), 0) AS goals_total
+  `;
+
+  try {
+    const result = await pool.query(query, [user_id]);
+    return result.rows[0];
+  } catch (err) {
+    logger.error(`[AuthService] Failed to fetch performance stats for user ID ${user_id}:`, err);
+    throw err;
+  }
+}
+
+export async function getRecentAchievements(user_id: number) {
+  const query = `
+    SELECT 
+      a.achievement_id,
+      a.achievement_title,
+      a.points_awarded AS xp_reward,
+      b.image_path AS icon_image_path,
+      ua.awarded_at
+    FROM user_achievements ua
+    JOIN achievements a ON ua.achievement_id = a.achievement_id
+    JOIN badges b ON a.badge_id = b.badge_id
+    WHERE ua.user_id = $1 AND ua.achievement_status = 'complete'
+    ORDER BY ua.awarded_at DESC
+    LIMIT 3;
+  `;
+
+  const result = await pool.query(query, [user_id]);
+  return result.rows;
+}
+
+
+
+
+
+

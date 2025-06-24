@@ -16,7 +16,7 @@ import comm3 from '../../assets/Images/banners/pixelStudents.jpeg';
 // badges
 import streakIcon from '../../assets/Images/badges/CoinStack.png';
 import budgetIcon from '../../assets/Images/badges/moneyGrowIcon.png';
-import explorerIcon from '../../assets/Images/badges/plantIocn.png';
+import explorerIcon from '../../assets/Images/badges/plantIcon.png';
 
 const mockMember = {
   username: 'beached_in',
