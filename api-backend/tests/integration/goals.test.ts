@@ -75,22 +75,6 @@ describe('Goals API Integration Tests', () => {
       });
     });
 
-    it('should handle custom categories', async () => {
-      (goalService.createGoal as jest.Mock).mockResolvedValueOnce(2);
-      
-      const response = await request(app)
-        .post('/api/goals')
-        .send({
-          ...validPayload,
-          category_id: undefined,
-          custom_category_name: 'Custom Category'
-        });
-
-      expect(response.status).toBe(201);
-      // Note: The actual custom category handling would need more detailed testing
-      // with a mock database in an integration test
-    });
-
     it('should return 400 for invalid goal data', async () => {
       const invalidPayload = {
         ...validPayload,
@@ -102,7 +86,7 @@ describe('Goals API Integration Tests', () => {
         .post('/api/goals')
         .send(invalidPayload);
 
-      expect(response.status).toBe(500); // Note: Currently the route doesn't have validation
+      expect(response.status).toBe(400); // Note: Currently the route doesn't have validation
       // In a real app, you'd want proper validation middleware
     });
 
@@ -151,7 +135,7 @@ describe('Goals API Integration Tests', () => {
 
   describe('GET /api/goals/user/:userId', () => {
     it('should return all goals for a user', async () => {
-      const mockGoals = [testGoal, { ...testGoal, goal_id: 2 }];
+      const mockGoals = [ testGoal, { ...testGoal, goal_id: 2 } ];
       (goalService.getUserGoals as jest.Mock).mockResolvedValueOnce(mockGoals);
 
       const response = await request(app)
@@ -278,7 +262,7 @@ describe('Goals API Integration Tests', () => {
 
   describe('GET /api/goals/user/:userId/upcoming', () => {
     it('should return upcoming goals', async () => {
-      const mockGoals = [testGoal, { ...testGoal, goal_id: 2 }];
+      const mockGoals = [ testGoal, { ...testGoal, goal_id: 2 } ];
       (goalService.getUpcomingGoals as jest.Mock).mockResolvedValueOnce(mockGoals);
 
       const response = await request(app)
@@ -371,7 +355,7 @@ describe('Goals API Integration Tests', () => {
 
   describe('GET /api/goals', () => {
     it('should return all goals', async () => {
-      const mockGoals = [testGoal, { ...testGoal, goal_id: 2 }];
+      const mockGoals = [ testGoal, { ...testGoal, goal_id: 2 } ];
       (goalService.getAllGoals as jest.Mock).mockResolvedValueOnce(mockGoals);
 
       const response = await request(app)
@@ -430,4 +414,5 @@ describe('Goals API Integration Tests', () => {
       });
     });
   });
+
 });

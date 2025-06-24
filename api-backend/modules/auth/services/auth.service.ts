@@ -65,6 +65,10 @@ export async function authenticateUser(username: string, hashedPassword: string)
   const query = 'SELECT * FROM users WHERE username = $1 AND hashed_password = $2';
   try {
     const result = await pool.query(query, [username, hashedPassword]);
+    if (result.rows.length === 0) {
+      logger.warn(`[AuthService] Authentication failed for user ${username}: Invalid credentials`);
+      throw new Error('Invalid credentials');
+    }
     return result.rows[0];
   } catch (err) {
     logger.error(`[AuthService] Authentication failed for user ${username}:`, err);

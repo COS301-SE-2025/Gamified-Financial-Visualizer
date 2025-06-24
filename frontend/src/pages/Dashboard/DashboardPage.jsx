@@ -9,6 +9,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 const DashboardPage = () => {
+  const user = localStorage.getItem('user');
   const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(false);
   const [userData, setUserData] = useState({
@@ -237,7 +238,7 @@ const DashboardPage = () => {
         <div className="absolute inset-0 opacity-20 bg-gray-700"></div>
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
           <h2 className="text-xl md:text-2xl font-bold text-white mb-2">
-            Welcome Back satoshi_nak!
+            Welcome Back {user ? JSON.parse(user).username : 'Adventurer'}!
           </h2>
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-1">

@@ -7,8 +7,8 @@ import * as userService from '../../modules/auth/services/auth.service';
 import authRouter from '../../modules/auth/routes/authRoutes';
 
 // Mock the auth service and logger
-jest.mock('../services/auth.service');
-jest.mock('../../../config/logger', () => ({
+jest.mock('../../modules/auth/services/auth.service');
+jest.mock('../../config/logger', () => ({
   logger: {
     info: jest.fn(),
     error: jest.fn(),
@@ -78,7 +78,9 @@ describe('Auth API Integration Tests', () => {
             email: 'test@example.com',
           },
         },
+         timestamp: expect.any(String)
       });
+
       expect(userService.createUser).toHaveBeenCalledWith({
         full_name: 'Test User',
         username: 'testuser',
