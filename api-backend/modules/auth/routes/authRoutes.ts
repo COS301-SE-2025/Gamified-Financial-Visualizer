@@ -7,16 +7,6 @@ import { V3 }                from 'paseto';
 import { logger } from '../../../config/logger';
 import * as userService from '../services/auth.service';
 
-import { getProfileTopBar } from '../services/auth.service';
-import { getUserSidebarStats } from '../services/auth.service';
-import { getCurrentUserGoals } from '../services/auth.service';
-import { getUserPerformanceStats } from '../services/auth.service';
-import { getRecentAchievements } from '../services/auth.service';
-import { getUserCommunities } from '../services/auth.service';
-import { getUserPerformanceSummary } from '../services/auth.service';
-import { getUserLevelProgress } from '../services/auth.service';
-
-
 const localKey = Buffer.from(process.env.PASETO_LOCAL_KEY!, 'hex');
 const TOKEN_TTL = Number(process.env.TOKEN_TTL_SECONDS || 86400);
 
@@ -261,7 +251,8 @@ router.put('/:userId/update-profile', async (req: Request, res: Response): Promi
 });
 
 
-// ------------ Profile Specific Functions ------------- //
+
+// =============== Profile Page Specific Functions ============== //
 
 /**
  * @route GET /api/auth/top-bar/:userId
@@ -271,7 +262,7 @@ router.get('/top-bar/:userId', async (req: Request, res: Response) => {
   const userId = Number(req.params.userId);
 
   try {
-    const data = await getProfileTopBar(userId);
+    const data = await userService.getProfileTopBar(userId);
     res.status(200).json({
       status: 'success',
       message: 'Profile top bar data loaded.',
@@ -294,7 +285,7 @@ router.get('/sidebar/:userId', async (req: Request, res: Response) => {
   const userId = Number(req.params.userId);
 
   try {
-    const stats = await getUserSidebarStats(userId);
+    const stats = await userService.getUserSidebarStats(userId);
     res.status(200).json({
       status: 'success',
       message: 'Sidebar statistics loaded.',
@@ -317,7 +308,7 @@ router.get('/profile/current-goals/:userId', async (req: Request, res: Response)
   const userId = Number(req.params.userId);
 
   try {
-    const goals = await getCurrentUserGoals(userId);
+    const goals = await userService.getCurrentUserGoals(userId);
     res.status(200).json({
       status: 'success',
       message: 'Current goals fetched successfully.',
@@ -332,7 +323,6 @@ router.get('/profile/current-goals/:userId', async (req: Request, res: Response)
   }
 });
 
-
 /**
  * @route GET /api/auth/profile/performance-stats/:userId
  * @desc Returns performance stats (accuracy, rank, challenges, goals)
@@ -341,7 +331,7 @@ router.get('/profile/performance-stats/:userId', async (req: Request, res: Respo
   const userId = Number(req.params.userId);
 
   try {
-    const stats = await getUserPerformanceStats(userId);
+    const stats = await userService.getUserPerformanceStats(userId);
     res.status(200).json({
       status: 'success',
       message: 'Performance stats fetched successfully.',
@@ -364,7 +354,7 @@ router.get('/profile/recent-achievements/:userId', async (req: Request, res: Res
   const userId = Number(req.params.userId);
 
   try {
-    const achievements = await getRecentAchievements(userId);
+    const achievements = await userService.getRecentAchievements(userId);
     res.status(200).json({
       status: 'success',
       message: 'Recent achievements fetched successfully.',
@@ -387,7 +377,7 @@ router.get('/profile/communities/:userId', async (req: Request, res: Response) =
   const userId = Number(req.params.userId);
 
   try {
-    const communities = await getUserCommunities(userId);
+    const communities = await userService.getUserCommunities(userId);
     res.status(200).json({
       status: 'success',
       message: 'User communities fetched successfully.',
@@ -402,7 +392,6 @@ router.get('/profile/communities/:userId', async (req: Request, res: Response) =
   }
 });
 
-
 /**
  * @route GET /api/auth/profile/performance-summary/:userId
  * @desc Returns performance score, label, avatar, level, and tier
@@ -411,7 +400,7 @@ router.get('/profile/performance-summary/:userId', async (req: Request, res: Res
   const userId = Number(req.params.userId);
 
   try {
-    const summary = await getUserPerformanceSummary(userId);
+    const summary = await userService.getUserPerformanceSummary(userId);
     res.status(200).json({
       status: 'success',
       message: 'Performance summary retrieved successfully.',
@@ -426,7 +415,6 @@ router.get('/profile/performance-summary/:userId', async (req: Request, res: Res
   }
 });
 
-
 /**
  * @route GET /api/auth/profile/level-progress/:userId
  * @desc Returns level progress including XP, level, tier, and points to next tier
@@ -435,7 +423,7 @@ router.get('/profile/level-progress/:userId', async (req: Request, res: Response
   const userId = Number(req.params.userId);
 
   try {
-    const progress = await getUserLevelProgress(userId);
+    const progress = await userService.getUserLevelProgress(userId);
     res.status(200).json({
       status: 'success',
       message: 'Level progress retrieved successfully.',
@@ -449,7 +437,6 @@ router.get('/profile/level-progress/:userId', async (req: Request, res: Response
     });
   }
 });
-
 
 
 

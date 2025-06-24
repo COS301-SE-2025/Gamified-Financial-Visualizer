@@ -381,11 +381,7 @@ export async function updateUserSettings(user_id: number, updates: {
 
 
 
-/**                                                      
- * 
- * ------------ Profile Specific Functions ------------- 
- * 
- */
+// =============== Profile Page Specific Functions ============== //
 
 export async function getProfileTopBar(user_id: number) {
   const query = `
