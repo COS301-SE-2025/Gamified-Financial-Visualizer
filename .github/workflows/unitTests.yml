@@ -20,6 +20,7 @@ jobs:
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       DB_PORT: ${{ secrets.DB_PORT }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      PASETO_LOCAL_KEY: ${{ secrets.PASETO_LOCAL_KEY }}
       NODE_ENV: test
 
     steps:
