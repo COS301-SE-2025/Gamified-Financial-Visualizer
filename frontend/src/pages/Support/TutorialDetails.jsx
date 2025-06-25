@@ -16,11 +16,13 @@ const tutorials = [
     lightColor: '#e2f0d5',
     description: 'Learn how to create and track your financial goals step-by-step.',
     steps: [
-      { image: '/images/tutorials/goal1.png', caption: 'Go to the Goals page.' },
-      { image: '/images/tutorials/goal2.png', caption: 'Click “Create Goal”.' },
-      { image: '/images/tutorials/goal3.png', caption: 'Fill out and save your goal.' }
+      { image: require('../../assets/Tutorials/goals/goal1.png'), caption: 'Go to the Goals page.' },
+      { image: require('../../assets/Tutorials/goals/goal2.png'), caption: 'Click “Create Goal”.' },
+      { image: require('../../assets/Tutorials/goals/goal3.png'), caption: 'Fill out your goal information.' },
+      { image: require('../../assets/Tutorials/goals/goal4.png'), caption: 'Click confirm.' },
+      { image: require('../../assets/Tutorials/goals/goal5.png'), caption: 'Goal details appear as first goal.' }
     ],
-    video: '/videos/goals.mp4',
+    video: require('../../assets/Videos/goals/goals.mp4'),
     xp: 20,
     badge: <FaBullseye className="text-[#66BB6A]" />,
     name: 'Goal Setter'
