@@ -5,10 +5,10 @@ const ProfileHeader = ({ tab, setTab }) => {
   return (
     <div className="flex justify-between rounded-xl items-center px-6 py-4 bg-[#ffffff] border-b shadow">
       {/* Empty div to take up left space and keep actions right-aligned */}
-      <div className="w-full"></div>
+      
 
       {/* 🧭 Action Buttons: Main | Settings */}
-      <div className="flex space-x-2">
+      <div className="flex space-x-2 ml-4">
         <button
           onClick={() => setTab('main')} 
           className={`px-4 py-2 border rounded-xl shadow flex items-center gap-2 transition-all duration-200 ${
