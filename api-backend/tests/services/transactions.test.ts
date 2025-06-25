@@ -75,4 +75,71 @@ describe('transaction.service (pure unit tests)', () => {
     });
   });
 
+  describe('updateAccountName', () => {
+    it('should update account name', async () => {
+      (pool.query as jest.Mock).mockResolvedValueOnce({});
+      await service.updateAccountName(1, 'New Name');
+      expect(pool.query).toHaveBeenCalled();
+    });
+  });
+
+  describe('deleteAccount', () => {
+    it('should delete account', async () => {
+      (pool.query as jest.Mock).mockResolvedValueOnce({});
+      await service.deleteAccount(1, 1);
+      expect(pool.query).toHaveBeenCalled();
+    });
+  });
+
+  describe('createTransaction', () => {
+    it('should create a transaction and update balance', async () => {
+      mockQuery
+        .mockResolvedValueOnce({}) // BEGIN
+        .mockResolvedValueOnce({ rows: [{ account_balance: 1000, user_id: 1 }] }) // balance check
+        .mockResolvedValueOnce({ rows: [{ transaction_id: 1 }] }) // insert txn
+        .mockResolvedValueOnce({ rows: [{ account_balance: 900 }] }) // update balance
+        .mockResolvedValueOnce({}); // COMMIT
+
+      const res = await service.createTransaction({
+        account_id: 1,
+        transaction_amount: 100,
+        transaction_type: 'expense',
+        transaction_name: 'Groceries',
+        transaction_date: '2023-01-01',
+      });
+      expect(res.transaction_id).toBe(1);
+      expect(res.updated_balance).toBe(900);
+    });
+
+    it('should throw if insufficient funds', async () => {
+      mockQuery
+        .mockResolvedValueOnce({}) // BEGIN
+        .mockResolvedValueOnce({ rows: [{ account_balance: 10, user_id: 1 }] }); // balance check
+      
+      await expect(service.createTransaction({
+        account_id: 1,
+        transaction_amount: 100,
+        transaction_type: 'expense',
+        transaction_name: 'Fail',
+        transaction_date: '2023-01-01',
+      })).rejects.toThrow('Insufficient funds');
+    });
+  });
+
+  describe('getTransactionByAccount', () => {
+    it('should return transactions', async () => {
+      (pool.query as jest.Mock).mockResolvedValueOnce({ rows: [{ transaction_id: 1 }] });
+      const res = await service.getTransactionByAccount(1);
+      expect(res).toEqual([{ transaction_id: 1 }]);
+    });
+  });
+
+  describe('getTransactionByCategory', () => {
+    it('should return transactions', async () => {
+      (pool.query as jest.Mock).mockResolvedValueOnce({ rows: [{ transaction_id: 1 }] });
+      const res = await service.getTransactionByCategory(1);
+      expect(res).toEqual([{ transaction_id: 1 }]);
+    });
+  });
+
 });
