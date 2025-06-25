@@ -333,6 +333,7 @@ export async function getTransactionByCategory(category_id: number) {
     throw error;
   }
 }
+
 export async function getTotalSpentPerCategory(user_id: number) {
   const sql = `
   WITH user_categories AS (
@@ -663,25 +664,6 @@ export async function updateBudget(
   }
 }
 
-/* export async function getBudgetsSummary(user_id: number) {
-  const sql = `
-  SELECT b.budget_id, b.budget_name, b.period_start, b.period_end,
-         COALESCE(SUM(bc.target_amount), 0) AS total_target
-  FROM budgets b
-  LEFT JOIN budget_categories bc ON b.budget_id = bc.budget_id
-  WHERE b.user_id = $1
-  GROUP BY b.budget_id;
-`;
-  try {
-    const res = await pool.query(sql, [user_id]);
-    return res.rows;
-  } catch (error) {
-    logger.error(`[TransactionService] Error fetching budgets for user ${user_id}:`, error);
-    throw error;
-  }
-} 
-*/
-
 export async function getBudgetsSummary(user_id: number) {
   const sql = `
 SELECT 
@@ -779,8 +761,6 @@ export async function getBudgetsByUser(user_id: number) {
     throw error;
   }
 }
-
-//===========================================
 
 export async function updateBudgetName(budget_id: number, budget_name: string, user_id: number) {
   const sql = `UPDATE budgets SET budget_name = $1 WHERE budget_id = $2 AND user_id = $3;`;
