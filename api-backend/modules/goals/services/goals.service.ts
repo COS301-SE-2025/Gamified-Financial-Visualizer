@@ -141,7 +141,15 @@ export async function getGoalsSummary(user_id: number) {
   `;
   try {
     const res = await pool.query(sql, [ user_id ]);
-    return res.rows[ 0 ];
+    if (!res.rows || res.rows.length === 0) {
+      return {
+        total_goals: 0,
+        completed_goals: 0,
+        in_progress_goals: 0,
+        overdue_goals: 0
+      };
+    }
+    return res.rows[0];
   } catch (error) {
     logger.error(`[GoalService] Error fetching goals summary for user ${user_id}:`, error);
     throw error;

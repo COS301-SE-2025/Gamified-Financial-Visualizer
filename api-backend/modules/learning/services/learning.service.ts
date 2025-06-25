@@ -233,39 +233,54 @@ export async function getUserQuizAttemptsForQuiz(user_id: number, quiz_id: numbe
 
 
 export async function getLearningPerformance(user_id: number) {
- const query = `
-    SELECT
-      SUM(CASE WHEN passed THEN 1 ELSE 0 END) AS total_passed,
-      COUNT(*) AS total_attempts,
-      AVG(attempt_score) AS average_score
-    FROM quiz_attempts
-    WHERE user_id = $1;
-  `;
-  const accuracy = await pool.query(query, [user_id]);
+    try {
+    // Get accuracy metrics
+    const accuracyQuery = `
+      SELECT
+        COALESCE(SUM(CASE WHEN passed THEN 1 ELSE 0 END), 0) AS total_passed,
+        COALESCE(COUNT(*), 0) AS total_attempts,
+        COALESCE(AVG(attempt_score), 0) AS average_score
+      FROM quiz_attempts
+      WHERE user_id = $1;
+    `;
+    const accuracy = await pool.query(accuracyQuery, [user_id]);
+    
+    // Get quiz points with proper null handling
+    const quizPointsQuery = `
+      SELECT COALESCE(SUM(CASE WHEN passed THEN 10 ELSE 0 END), 0) AS quiz_points
+      FROM quiz_attempts
+      WHERE user_id = $1;
+    `;
+    const quizPointsResult = await pool.query(quizPointsQuery, [user_id]);
+    const totalPoints = quizPointsResult.rows[0]?.quiz_points 
+      ? parseInt(quizPointsResult.rows[0].quiz_points) 
+      : 0;
 
-  // Fetch points earned through quizzes only
-  const quizPointsQuery = `
-    SELECT COALESCE(SUM(CASE WHEN passed THEN 10 ELSE 0 END), 0) AS quiz_points
-    FROM quiz_attempts
-    WHERE user_id = $1
-  `;
-  const quizPointsResult = await pool.query(quizPointsQuery, [user_id]);
-  const totalPoints = parseInt(quizPointsResult.rows[0].quiz_points) || 0;
+    // Stubbed view count
+    const viewCount = 1;
 
+    // Safely parse all metrics with defaults
+    const averageScore = parseFloat(accuracy.rows[0]?.average_score) || 0;
+    const total_attempts = parseInt(accuracy.rows[0]?.total_attempts) || 0;
+    const total_passed = parseInt(accuracy.rows[0]?.total_passed) || 0;
 
-  // Stubbed view count for now
-  const viewCount = 1;
+    // Calculate composite score
+    const score = averageScore * 0.5 + 
+                 totalPoints * 0.5 + 
+                 viewCount * 0.1 + 
+                 total_attempts * 0.4 + 
+                 total_passed * 0.7;
 
-  const averageScore = parseFloat(accuracy.rows[0].average_score) || 0;
-  const total_attempts = parseInt(accuracy.rows[0].total_attempts) || 0;
-  const total_passed = parseInt(accuracy.rows[0].total_passed) || 0;
-  const score = averageScore * 0.5 + totalPoints * 0.5 + viewCount * 0.1 + total_attempts * 0.4 + total_passed * 0.7;
+    // Scale score to range (300-850)
+    const scaledScore = Math.round(
+      (score / 206) * (850 - 300) + 320
+    );
 
-  const scaledScore = Math.round(
-    (score / 206) * (850 - 300) + 320
-  );
-
-  return scaledScore;
+    return Math.min(Math.max(scaledScore, 300), 850); // Ensure within bounds
+  } catch (error) {
+    console.error(`Error calculating performance for user ${user_id}:`, error);
+    return 300; // Minimum score on error
+  }
 }
 
 export async function getLearningSummary(user_id: number) {
