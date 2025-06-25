@@ -6,4 +6,4 @@ export function normalizeQuery(query: string): string {
     .replace(/\s*\)\s*/g, ')')
     .replace(/\s*,\s*/g, ',') // Normalize spaces around commas
     .trim();
-}
+} 

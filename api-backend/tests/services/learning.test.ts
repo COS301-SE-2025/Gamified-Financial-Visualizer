@@ -313,32 +313,60 @@ describe('Learning Service', () => {
   });
 
   describe('getLearningPerformance', () => {
-    it('should return a number for the learning performance score', async () => {
-      (pool.query as jest.Mock)
-        .mockResolvedValueOnce({
-          rows: [ {
-            total_passed: 5,
-            total_attempts: 10,
-            average_score: 75
-          } ]
-        })
-        .mockResolvedValueOnce({
-          rows: [ { total_points: 100 } ]
-        });
-
-      const result = await learning.getLearningPerformance(1);
-
-      expect(typeof result).toBe('number');
+    beforeEach(() => {
+      jest.clearAllMocks();
     });
 
     it('should return a number even with missing data', async () => {
+      // Mock empty results for all queries
       (pool.query as jest.Mock)
-        .mockResolvedValueOnce({ rows: [ {} ] })
-        .mockResolvedValueOnce({ rows: [] });
+        .mockResolvedValueOnce({ rows: [ {} ] }) // accuracy query
+        .mockResolvedValueOnce({ rows: [ {} ] }); // points query
 
       const result = await learning.getLearningPerformance(1);
 
       expect(typeof result).toBe('number');
+      expect(result).toBeGreaterThanOrEqual(300);
+      expect(result).toBeLessThanOrEqual(850);
+    });
+
+    it('should return minimum score for new users', async () => {
+      (pool.query as jest.Mock)
+        .mockResolvedValueOnce({
+          rows: [ {
+            total_passed: 0,
+            total_attempts: 0,
+            average_score: 0
+          } ]
+        })
+        .mockResolvedValueOnce({
+          rows: [ {
+            quiz_points: 0
+          } ]
+        });
+
+      const result = await learning.getLearningPerformance(1);
+      expect(result).toBe(320); // Minimum score
+    });
+
+    it('should calculate proper score with data', async () => {
+      (pool.query as jest.Mock)
+        .mockResolvedValueOnce({
+          rows: [ {
+            total_passed: 8,
+            total_attempts: 10,
+            average_score: 85.5
+          } ]
+        })
+        .mockResolvedValueOnce({
+          rows: [ {
+            quiz_points: 80
+          } ]
+        });
+
+      const result = await learning.getLearningPerformance(1);
+      expect(result).toBeGreaterThan(300);
+      expect(result).toBeLessThanOrEqual(850);
     });
   });
 

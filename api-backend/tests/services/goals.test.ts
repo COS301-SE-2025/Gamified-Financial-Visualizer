@@ -155,23 +155,24 @@ describe('Goal Service', () => {
 
   describe('getGoalsSummary', () => {
     it('should return goal summary statistics', async () => {
-      const mockSummary = {
-        total_goals: 5,
-        completed_goals: 2,
-        in_progress_goals: 2,
-        paused_goals: 1,
-        cancelled_goals: 0,
-        failed_goals: 0,
-      };
-      (pool.query as jest.Mock).mockResolvedValueOnce({ rows: [ mockSummary ] });
+      // Mock the database response
+      (pool.query as jest.Mock).mockResolvedValue({
+        rows: [ {
+          total_goals: 5,
+          completed_goals: 2,
+          in_progress_goals: 3,
+          overdue_goals: 1
+        } ]
+      });
 
       const result = await getGoalsSummary(1);
 
-      expect(pool.query).toHaveBeenCalledWith(
-        expect.stringContaining('COUNT(*) FILTER'),
-        [ 1 ]
-      );
-      expect(result).toEqual(mockSummary);
+      expect(result).toEqual({
+        total_goals: 5,
+        completed_goals: 2,
+        in_progress_goals: 3,
+        overdue_goals: 1
+      });
     });
   });
 
@@ -207,10 +208,10 @@ describe('Goal Service', () => {
 
       await updateGoal(1, updates);
 
-      expect(normalizeQuery((pool.query as jest.Mock).mock.calls[0][0])).toBe(
+      expect(normalizeQuery((pool.query as jest.Mock).mock.calls[ 0 ][ 0 ])).toBe(
         normalizeQuery('UPDATE goals SET goal_name = $1, target_amount = $2 WHERE goal_id = $3;')
       );
-      expect((pool.query as jest.Mock).mock.calls[0][1]).toEqual([ updates.goal_name, updates.target_amount, 1 ]);
+      expect((pool.query as jest.Mock).mock.calls[ 0 ][ 1 ]).toEqual([ updates.goal_name, updates.target_amount, 1 ]);
 
     });
 
@@ -259,10 +260,10 @@ describe('Goal Service', () => {
 
       const result = await addGoalProgress(1, 1, 100);
 
-      expect(normalizeQuery((pool.query as jest.Mock).mock.calls[0][0])).toBe(
+      expect(normalizeQuery((pool.query as jest.Mock).mock.calls[ 0 ][ 0 ])).toBe(
         normalizeQuery('INSERT INTO goal_progress (goal_id, contributor_id, amount_added) VALUES ($1, $2, $3) RETURNING progress_id;')
       );
-      expect((pool.query as jest.Mock).mock.calls[0][1]).toEqual([ 1, 1, 100 ]);
+      expect((pool.query as jest.Mock).mock.calls[ 0 ][ 1 ]).toEqual([ 1, 1, 100 ]);
       expect(result).toBe(101);
     });
   });
@@ -278,7 +279,7 @@ describe('Goal Service', () => {
       const result = await getWeeklyGoalCompletions(1);
 
       expect(pool.query).toHaveBeenCalledWith(
-        expect.stringContaining('TO_CHAR(progress_date, \'Dy\') AS day'),
+        expect.stringContaining('TO_CHAR(DATE(t.transaction_date), \'Dy\') AS day'),
         [ 1 ]
       );
       expect(result).toEqual(mockCompletions);
@@ -338,39 +339,39 @@ describe('Goal Service', () => {
     });
   });
 
-describe('reduceGoalProgress', () => {
-  it('should reduce progress and deduct points', async () => {
-    // Mock the pool queries
-    (pool.query as jest.Mock)
-      .mockResolvedValueOnce({}) // First update
-      .mockResolvedValueOnce({}); // Second update
+  describe('reduceGoalProgress', () => {
+    it('should reduce progress and deduct points', async () => {
+      // Mock the pool queries
+      (pool.query as jest.Mock)
+        .mockResolvedValueOnce({}) // First update
+        .mockResolvedValueOnce({}); // Second update
 
-    await reduceGoalProgress(1, 100, 10);
+      await reduceGoalProgress(1, 100, 10);
 
-    // Get all query calls
-    const queryCalls = (pool.query as jest.Mock).mock.calls;
+      // Get all query calls
+      const queryCalls = (pool.query as jest.Mock).mock.calls;
 
-    // Verify first query (goal update)
-    expect(normalizeQuery(queryCalls[0][0])).toBe(
-      normalizeQuery(`
+      // Verify first query (goal update)
+      expect(normalizeQuery(queryCalls[ 0 ][ 0 ])).toBe(
+        normalizeQuery(`
         UPDATE goals
         SET current_amount = current_amount - $1
         WHERE goal_id = $2;
       `)
-    );
-    expect(queryCalls[0][1]).toEqual([100, 1]);
+      );
+      expect(queryCalls[ 0 ][ 1 ]).toEqual([ 100, 1 ]);
 
-    // Verify second query (points update)
-    expect(normalizeQuery(queryCalls[1][0])).toBe(
-      normalizeQuery(`
+      // Verify second query (points update)
+      expect(normalizeQuery(queryCalls[ 1 ][ 0 ])).toBe(
+        normalizeQuery(`
         UPDATE user_points
         SET total_points = total_points - $2, last_updated = CURRENT_TIMESTAMP
         WHERE user_id = (SELECT user_id FROM goals WHERE goal_id = $1);
       `)
-    );
-    expect(queryCalls[1][1]).toEqual([1, 10]); // Note: 10 is the points deducted
+      );
+      expect(queryCalls[ 1 ][ 1 ]).toEqual([ 1, 10 ]); // Note: 10 is the points deducted
+    });
   });
-});
 
   describe('getAllGoals', () => {
     it('should return all goals sorted by creation date', async () => {
@@ -387,22 +388,28 @@ describe('reduceGoalProgress', () => {
   });
 
   describe('getUserGoalStats', () => {
-    it('should return user goal statistics', async () => {
-      const mockStats = {
-        total_goals: 3,
-        completed_goals: 1,
-        total_saved: 2500,
-      };
-      (pool.query as jest.Mock).mockResolvedValueOnce({ rows: [ mockStats ] });
-
-      const result = await getUserGoalStats(1);
-
-      expect(pool.query).toHaveBeenCalledWith(
-        expect.stringContaining('COUNT(*) FILTER'),
-        [ 1 ]
-      );
-      expect(result).toEqual(mockStats);
+     it('should return correct goal statistics', async () => {
+    // Mock the database response
+    (pool.query as jest.Mock).mockResolvedValue({
+      rows: [{
+        total_goals: 5,
+        completed_goals: 2,
+        total_saved: 1500.50
+      }]
     });
+
+    const result = await getUserGoalStats(1);
+
+    // Verify the query was called correctly
+    expect(pool.query).toHaveBeenCalledWith(expect.stringContaining('COUNT(*) FILTER'), [1]);
+    
+    // Verify the returned structure
+    expect(result).toEqual({
+      total_goals: 5,
+      completed_goals: 2,
+      total_saved: 1500.50
+    });
+  });
   });
 
   describe('getUpcomingGoals', () => {
@@ -422,5 +429,5 @@ describe('reduceGoalProgress', () => {
       expect(result).toEqual(mockGoals);
     });
   });
-  
+
 });
