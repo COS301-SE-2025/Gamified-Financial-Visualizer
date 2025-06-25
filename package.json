@@ -26,7 +26,7 @@
   "scripts": {
     "format": "prettier . --write",
     "dev": "concurrently \"redis-server\" \"npx ts-node api-backend/server.ts\" \"npm start --prefix frontend\"",
-    "test": "jest --setupFilesAfterEnv=./api-backend/tests/jest-setup.ts",
+    "test": "jest --setupFilesAfterEnv=./api-backend/tests/jest-setup.ts",  
     "test:int": "jest integration --setupFilesAfterEnv=./api-backend/tests/jest-setup.ts",
     "test:services": "jest services --setupFilesAfterEnv=./api-backend/tests/jest-setup.ts",
     "test:watch": "jest --watch --setupFilesAfterEnv=./api-backend/tests/jest-setup.ts",
