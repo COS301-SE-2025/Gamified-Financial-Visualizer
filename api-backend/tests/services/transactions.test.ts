@@ -276,4 +276,59 @@ describe('transaction.service (pure unit tests)', () => {
     });
   });
 
+  describe('getBudgetsSummary', () => {
+    it('should return summary', async () => {
+      (pool.query as jest.Mock).mockResolvedValueOnce({ rows: [{ budget_id: 1 }] });
+      const res = await service.getBudgetsSummary(1);
+      expect(res).toEqual([{ budget_id: 1 }]);
+    });
+  });
+
+  describe('createBudgetWithCategoryName', () => {
+    it('should create budget with name from category', async () => {
+      mockQuery
+        .mockResolvedValueOnce({}) // BEGIN
+        .mockResolvedValueOnce({ rows: [{ category_name: 'Food' }] }) // get category name
+        .mockResolvedValueOnce({ rows: [{ budget_id: 5 }] }) // insert budget
+        .mockResolvedValueOnce({}) // insert allocation
+        .mockResolvedValueOnce({}); // COMMIT
+      
+      const res = await service.createBudgetWithCategoryName(1, 1, [
+        { category_id: 1, target_amount: 100 }
+      ]);
+      expect(res).toBe(5);
+    });
+
+    it('should throw if category not found', async () => {
+      mockQuery
+        .mockResolvedValueOnce({}) // BEGIN
+        .mockResolvedValueOnce({ rows: [] }); // empty result for category
+      
+      await expect(
+        service.createBudgetWithCategoryName(1, 999, [])
+      ).rejects.toThrow('Category not found');
+    });
+  });
+
+  describe('getBudgetsByUser', () => {
+    it('should return user budgets', async () => {
+      (pool.query as jest.Mock).mockResolvedValueOnce({ rows: [{ budget_id: 1 }] });
+      const res = await service.getBudgetsByUser(1);
+      expect(res).toEqual([{ budget_id: 1 }]);
+    });
+  });
+
+  describe('updateBudgetName', () => {
+    it('should update budget name', async () => {
+      (pool.query as jest.Mock).mockResolvedValueOnce({ rowCount: 1 });
+      await service.updateBudgetName(1, 'New Name', 1);
+    });
+
+    it('should throw if budget not found', async () => {
+      (pool.query as jest.Mock).mockResolvedValueOnce({ rowCount: 0 });
+      await expect(
+        service.updateBudgetName(999, 'New Name', 1)
+      ).rejects.toThrow('Budget not found or unauthorized');
+    });
+  });
 });
