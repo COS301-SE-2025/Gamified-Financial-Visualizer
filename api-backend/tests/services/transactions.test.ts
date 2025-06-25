@@ -247,4 +247,33 @@ describe('transaction.service (pure unit tests)', () => {
     });
   });
 
+  describe('getBudget', () => {
+    it('should return budgets', async () => {
+      (pool.query as jest.Mock).mockResolvedValueOnce({ rows: [{ budget_id: 1 }] });
+      const res = await service.getBudget(1);
+      expect(res).toEqual([{ budget_id: 1 }]);
+    });
+  });
+
+  describe('deleteBudget', () => {
+    it('should delete budget', async () => {
+      (pool.query as jest.Mock).mockResolvedValue({});
+      await service.deleteBudget(1, 1);
+    });
+  });
+
+  describe('makeBudgetProgress', () => {
+    it('should update budget progress', async () => {
+      (pool.query as jest.Mock).mockResolvedValue({});
+      await service.makeBudgetProgress(1, 100);
+    });
+  });
+
+  describe('updateBudget', () => {
+    it('should update budget fields', async () => {
+      (pool.query as jest.Mock).mockResolvedValue({});
+      await service.updateBudget(1, { budget_name: 'Updated' });
+    });
+  });
+
 });
