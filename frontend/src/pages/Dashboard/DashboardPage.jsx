@@ -10,7 +10,7 @@ import { motion} from 'framer-motion';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user'));
+  const user = localStorage.getItem('user');
   const [darkMode] = useState(false);
   const [userData, setUserData] = useState({
     level: 5,
@@ -205,8 +205,10 @@ const DashboardPage = () => {
       <div className="relative overflow-hidden mb-4 bg-gradient-to-r from-[#B1E1FF] via-[#AAD977] to-[#FFD18C] p-6 rounded-3xl shadow-lg">
         <div className="absolute inset-0 opacity-20 bg-gray-700"></div>
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
-          <h2 className="text-xl md:text-2xl font-bold text-white mb-2 pt-">
-            Welcome Back {user ? user.username : "Guest"}
+
+          <h2 className="text-xl md:text-2xl font-bold text-white mb-2">
+            Welcome Back {user ? JSON.parse(user).username : 'Adventurer'}!
+
           </h2>
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-1">
