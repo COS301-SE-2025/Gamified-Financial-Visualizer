@@ -142,4 +142,109 @@ describe('transaction.service (pure unit tests)', () => {
     });
   });
 
+  describe('getTotalSpentPerCategory', () => {
+    it('should return total spent data', async () => {
+      (pool.query as jest.Mock).mockResolvedValueOnce({ rows: [{ category: 'Food', total_spent: 200 }] });
+      const res = await service.getTotalSpentPerCategory(1);
+      expect(res).toEqual([{ category: 'Food', total_spent: 200 }]);
+    });
+  });
+
+  describe('getCategoryNameByID', () => {
+    it('should return category name', async () => {
+      (pool.query as jest.Mock).mockResolvedValueOnce({ rows: [{ category_name: 'Utilities' }] });
+      const res = await service.getCategoryNameByID(1);
+      expect(res).toBe('Utilities');
+    });
+
+    it('should return null if not found', async () => {
+      (pool.query as jest.Mock).mockResolvedValueOnce({ rows: [] });
+      const res = await service.getCategoryNameByID(99);
+      expect(res).toBeNull();
+    });
+  });
+
+  describe('updateTransactionDetails', () => {
+    it('should update a transaction', async () => {
+      (pool.query as jest.Mock).mockResolvedValueOnce({ rows: [{ transaction_id: 1 }] });
+      const res = await service.updateTransactionDetails(1, { transaction_name: 'Updated' });
+      expect(res.transaction_id).toBe(1);
+    });
+
+    it('should throw if no fields', async () => {
+      await expect(service.updateTransactionDetails(1, {})).rejects.toThrow();
+    });
+  });
+
+  describe('getTransaction', () => {
+    it('should return transaction', async () => {
+      (pool.query as jest.Mock).mockResolvedValueOnce({ rows: [{ transaction_id: 1 }] });
+      const res = await service.getTransaction(1);
+      expect(res.transaction_id).toBe(1);
+    });
+  });
+
+  describe('getUserTransactions', () => {
+    it('should return transactions', async () => {
+      (pool.query as jest.Mock).mockResolvedValueOnce({ rows: [{ transaction_id: 1 }] });
+      const res = await service.getUserTransactions(1);
+      expect(res).toEqual([{ transaction_id: 1 }]);
+    });
+  });
+
+  describe('deleteTransaction', () => {
+    it('should delete transaction and restore balance', async () => {
+      (pool.query as jest.Mock).mockResolvedValue({});
+      await service.deleteTransaction(1);
+      expect(pool.query).toHaveBeenCalled();
+    });
+  });
+
+  describe('getBalance', () => {
+    it('should return user balance', async () => {
+      (pool.query as jest.Mock).mockResolvedValueOnce({ rows: [{ balance: '500' }] });
+      const res = await service.getBalance(1);
+      expect(res).toBe(500);
+    });
+  });
+
+  describe('getTransactionByType', () => {
+    it('should return transactions by type', async () => {
+      (pool.query as jest.Mock).mockResolvedValueOnce({ rows: [{ transaction_type: 'income' }] });
+      const res = await service.getTransactionByType('income');
+      expect(res).toEqual([{ transaction_type: 'income' }]);
+    });
+  });
+
+  describe('getExpenseTotalByRange', () => {
+    it('should return total expense in range', async () => {
+      (pool.query as jest.Mock).mockResolvedValueOnce({ rows: [{ total_expense: '150' }] });
+      const res = await service.getExpenseTotalByRange(1, '2023-01-01', '2023-01-31');
+      expect(res).toBe(150);
+    });
+  });
+
+  describe('getCategories', () => {
+    it('should return categories', async () => {
+      (pool.query as jest.Mock).mockResolvedValueOnce({ rows: [{ category_id: 1 }] });
+      const res = await service.getCategories();
+      expect(res).toEqual([{ category_id: 1 }]);
+    });
+  });
+
+  describe('createBudget', () => {
+    it('should create budget and allocations', async () => {
+      mockQuery
+        .mockResolvedValueOnce({}) // BEGIN
+        .mockResolvedValueOnce({ rows: [{ budget_id: 123 }] }) // insert budget
+        .mockResolvedValueOnce({}) // insert allocation
+        .mockResolvedValueOnce({}); // COMMIT
+      
+      const res = await service.createBudget(1, 'My Budget', '2023-01-01', '2023-01-31', [
+        { category_id: 1, target_amount: 500 }
+      ]);
+      expect(res).toBe(123);
+    });
+  });
+
 });
