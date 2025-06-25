@@ -5,6 +5,18 @@ import { logger } from '../../config/logger';
 import * as goalService from '../../modules/goals/services/goals.service';
 import goalsRouter from '../../modules/goals/routes/goalRoutes';
 
+// In your test setup file or at the top of your test file
+jest.mock('@redis/client', () => ({
+  createClient: jest.fn(() => ({
+    connect: jest.fn().mockResolvedValue(undefined),
+    disconnect: jest.fn().mockResolvedValue(undefined),
+    get: jest.fn().mockResolvedValue(null),
+    set: jest.fn().mockResolvedValue('OK'),
+    on: jest.fn(),
+    isOpen: true
+  }))
+}));
+
 // Mock the goals service and logger
 jest.mock('../../modules/goals/services/goals.service');
 jest.mock('../../config/logger', () => ({

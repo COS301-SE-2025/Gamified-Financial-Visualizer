@@ -2,6 +2,8 @@
 import { Logger } from "winston";
 import pool from "../../../config/db";
 import { logger } from "../../../config/logger";
+import { redisClient } from '../../../config/redis';
+
 
 // 🧠 Get all learning modules
 export async function getAllModules() {
@@ -31,8 +33,23 @@ export async function getCompletedModules(user_id: number) {
       GROUP BY lm.module_id
       ORDER BY lm.module_id ASC;
     `;
-    const result = await pool.query(query, [user_id]);
 
+    // check redis
+    const cacheKey = `completed_modules:${user_id}`;
+    const cachedModules = await redisClient.get(cacheKey);
+    if (cachedModules) {
+      logger.info(`[LearningService] Cache hit for completed modules for user ${user_id}`);
+      return JSON.parse(cachedModules);
+    }
+    const result = await pool.query(query, [user_id]);
+    if (result.rows.length > 0) {
+      // Store in cache for 1 hour
+      await redisClient.set(cacheKey, JSON.stringify(result.rows), {
+        EX: 3600 // 1 hour expiration
+      });
+    } else {
+      logger.info(`[LearningService] No completed modules found for user ${user_id}`);
+    }
     return result.rows
   } catch (error) {
     logger.error('Error fetching completed modules:', error);
@@ -62,8 +79,24 @@ export async function getUncompletedModules(user_id: number) {
       GROUP BY lm.module_id
       ORDER BY lm.module_id ASC;
     `;
+    // check redis
+    const cacheKey = `uncompleted_modules:${user_id}`;
+    const cachedModules = await redisClient.get(cacheKey);
+    if (cachedModules) {
+      logger.info(`[LearningService] Cache hit for uncompleted modules for user ${user_id}`);
+      return JSON.parse(cachedModules);
+    }
     
     const result = await pool.query(query, [user_id]);
+
+    if (result.rows.length > 0) {
+      // Store in cache for 1 hour
+      await redisClient.set(cacheKey, JSON.stringify(result.rows), {
+        EX: 3600 // 1 hour expiration
+      });
+    } else {
+      logger.info(`[LearningService] No uncompleted modules found for user ${user_id}`);
+    }
     return result.rows;
   } catch (error) {
     logger.error('Error fetching uncompleted modules:', error);
@@ -284,6 +317,14 @@ export async function getLearningPerformance(user_id: number) {
 }
 
 export async function getLearningSummary(user_id: number) {
+  // Try to get summary from Redis cache first
+  const cacheKey = `learning_summary:${user_id}`;
+  const cached = await redisClient.get(cacheKey);
+  if (cached) {
+    logger.info(`[LearningService] Cache hit for learning summary for user ${user_id}`);
+    return JSON.parse(cached);
+  }
+
   const performance = await getLearningPerformance(user_id);
   // The credit score is scaled between 300 and 850, so get percentage relative to this range
   const minScore = 300;
@@ -343,6 +384,9 @@ export async function getLearningSummary(user_id: number) {
     score: performance,
     percent: percentCompleted.toFixed(2)
   };
+
+  // Store summary in Redis for 1 hour
+  await redisClient.set(cacheKey, JSON.stringify(summary), { EX: 3600 });
 
   return summary;
 }
