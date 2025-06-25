@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 import CommunityLayout from '../../pages/Community/CommunityLayout';
 import CommunityHeader from '../../layouts/headers/CommunityHeader';
-import { FaSearch, FaFire, FaCheckCircle, FaClock, FaCoins, FaUsers } from 'react-icons/fa';
+import { FaSearch, FaFire, FaCheckCircle, FaClock, FaCoins, FaUsers, FaTrophy } from 'react-icons/fa';
 
 // 🖼 Image import
 import challengeImg from '../../assets/Images/banners/pixelStore.gif';
@@ -198,11 +198,11 @@ const ChallengesPage = () => {
             <h2 className="text-2xl font-bold text-gray-600">Community Challenges</h2>
             <p className="text-gray-400">Join challenges to earn XP and level up!</p>
           </div>
-          {/* <Link to="/community/challenges/create">
+          <Link to="/community/challenges/create">
             <button className="flex items-center gap-2 bg-gradient-to-r from-[#72C1F5] to-[#B1E1FF] text-white px-4 py-2 rounded-full text-sm font-medium shadow hover:shadow-md transition">
               <FaTrophy /> Create Challenge
             </button>
-          </Link> */}
+          </Link>
 
         </div>
 
