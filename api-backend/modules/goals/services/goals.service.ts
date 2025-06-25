@@ -1,11 +1,10 @@
 // goal.service.ts
 // Handles operations for personal and community goals
-
 import dotenv from 'dotenv';
 dotenv.config();
 import { logger } from '../../../config/logger';
 import pool from '../../../config/db';
-
+import { redisClient } from '../../../config/redis';
 
 /**
  * Represents a financial goal personal (user_id) .
@@ -99,7 +98,19 @@ export async function getGoal(goal_id: number): Promise<Goal | null> {
 export async function getUserGoals(user_id: number): Promise<Goal[]> {
   const sql = `SELECT * FROM goals WHERE user_id = $1 ORDER BY created_at DESC;`;
   try {
+    // check cache
+    const cacheKey = `user_goals:${user_id}`;
+    const cachedGoals = await redisClient.get(cacheKey);
+    if (cachedGoals) {
+      return JSON.parse(cachedGoals) as Goal[];
+    }
+
     const res = await pool.query(sql, [ user_id ]);
+    // cache the result
+    await redisClient.set(cacheKey, JSON.stringify(res.rows), {
+      EX: 60 * 60 // cache for 1 hour
+    });
+
     if (res.rows.length === 0) {
       logger.info(`[GoalService] No goals found for user ${user_id}`);
     }
@@ -111,7 +122,6 @@ export async function getUserGoals(user_id: number): Promise<Goal[]> {
 }
 
 export async function getGoalsSummary(user_id: number) {
-    // first check if goal status needs to be updated
   const updateStatusSql = `
     UPDATE goals
     SET goal_status = CASE
@@ -279,7 +289,24 @@ export async function getWeeklyGoalCompletions(userId: number) {
     ORDER BY MIN(DATE(t.transaction_date));
   `;
   try {
+    // Check cache first
+    const cacheKey = `weekly_goal_completions:${userId}`;
+    const cachedData = await redisClient.get(cacheKey);
+    if (cachedData) {
+      return JSON.parse(cachedData);
+    }
+
     const result = await pool.query(sql, [ userId ]);
+    // Cache the result for 1 hour
+    await redisClient.set(cacheKey, JSON.stringify(result.rows), {
+      EX: 60 * 60 // 1 hour
+    });
+
+    if (result.rows.length === 0) {
+      logger.info(`[GoalService] No weekly completions found for user ${userId}`);
+      return [];
+    }
+
     return result.rows; // e.g., [{ day: 'Mon', count: 2 }, ...]
   } catch (err) {
     console.error('[GoalService] Error fetching goal progress frequency', err);
@@ -374,7 +401,17 @@ export async function reduceGoalProgress(goal_id: number, amount: number, points
 export async function getAllGoals(): Promise<Goal[]> { // delete
   const sql = `SELECT * FROM goals ORDER BY created_at DESC;`;
   try {
+    // Check cache first
+    const cacheKey = 'all_goals';
+    const cachedGoals = await redisClient.get(cacheKey);
+    if (cachedGoals) {
+      return JSON.parse(cachedGoals) as Goal[];
+    }
     const res = await pool.query(sql);
+    // Cache the result for 1 hour
+    await redisClient.set(cacheKey, JSON.stringify(res.rows), {
+      EX: 60 * 60 // cache for 1 hour
+    });
     return res.rows;
   } catch (error) {
     logger.error(`[GoalService] Error fetching all goals:`, error);
@@ -393,7 +430,19 @@ export async function getUserGoalStats(user_id: number) {
     FROM goals
     WHERE user_id = $1;
   `;
+
+  // Check cache first
+  const cacheKey = `user_goal_stats:${user_id}`;
+  const cachedStats = await redisClient.get(cacheKey);
+  if (cachedStats) {
+    return JSON.parse(cachedStats);
+  }
+
   const result = await pool.query(sql, [ user_id ]);
+  // cache the result for 1 hour
+  await redisClient.set(cacheKey, JSON.stringify(result.rows[0]), {
+    EX: 60 * 60 // cache for 1 hour
+  });
   return result.rows[ 0 ];
 }
 
@@ -413,7 +462,17 @@ export async function getUpcomingGoals(user_id: number) {
   `;
 
   try {
+    // Check cache first
+    const cacheKey = `upcoming_goals:${user_id}`;
+    const cachedGoals = await redisClient.get(cacheKey);
+    if (cachedGoals) {
+      return JSON.parse(cachedGoals);
+    }
     const result = await pool.query(query, [ user_id ]);
+    // Cache the result for 1 hour
+    await redisClient.set(cacheKey, JSON.stringify(result.rows), {
+      EX: 60 * 60 // cache for 1 hour
+    });
     return result.rows;
   } catch (err) {
     logger.error(`[GoalService] Failed to fetch upcoming goals for user ID ${user_id}:`, err);
