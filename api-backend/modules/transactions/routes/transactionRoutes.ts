@@ -4,7 +4,10 @@ import {
   getUserTransactions,
   getTotalSpentPerCategory,
   getCategoryNameByID,
-  getCategories
+  getCategories,
+  getTransactionByAccount,
+  deleteTransaction,
+  updateTransactionDetails
 } from '../services/transaction.service';
 import { logger } from '../../../config/logger';
 
@@ -18,55 +21,96 @@ router.post('/', async (req: Request, res: Response) => {
   const {
     account_id,
     category_id,
+    custom_category_id,
+    budget_id,
     transaction_amount,
     transaction_type,
     transaction_date,
-    description,
-    is_recurring
+    transaction_name,
+    is_recurring,
+    linked_goal_id,
+    linked_challenge_id,
+    points_awarded
   } = req.body;
 
-  if (!account_id || !transaction_amount || !transaction_type || !description) {
-    res.status(400).json({
+  // Validation: Check required fields
+  if (!account_id || !transaction_amount || !transaction_type || !transaction_name) {
+     res.status(400).json({
       status: 'error',
-      message: 'Required fields: account_id, transaction_amount, transaction_type, description'
+      message: 'Missing required fields: account_id, transaction_amount, transaction_type, transaction_name'
     });
-    return;
+  }
+
+  // Validation: Check that transaction_amount is a valid number
+  const amount = parseFloat(transaction_amount);
+  if (isNaN(amount) || amount <= 0) {
+     res.status(400).json({
+      status: 'error',
+      message: 'transaction_amount must be a valid positive number'
+    });
+  }
+
+  // Validation: Check category conflict
+  if (category_id && custom_category_id) {
+     res.status(400).json({
+      status: 'error',
+      message: 'Only one of category_id or custom_category_id may be provided'
+    });
   }
 
   try {
     const tx = await createTransaction({
       account_id,
       category_id,
-      transaction_amount,
+      custom_category_id,
+      budget_id,
+      transaction_amount: amount, // Use the parsed amount
       transaction_type,
       transaction_date,
-      description,
-      is_recurring
+      transaction_name,
+      is_recurring,
+      linked_goal_id,
+      linked_challenge_id,
+      points_awarded
     });
-    res.status(201).json({
+
+     res.status(201).json({
       status: 'success',
       message: 'Transaction created successfully',
-      data: tx
+      data: {
+        transaction_id: tx.transaction_id,
+        updated_balance: tx.updated_balance
+      }
     });
   } catch (error: any) {
-    logger.error('[Transaction] Create failed', error);
-    res.status(500).json({ status: 'error', message: error.message || 'Internal server error' });
+    logger.error('[Transaction] Create failed', error.message || error);
+     res.status(500).json({ 
+      status: 'error', 
+      message: error.message || 'Internal server error' 
+    });
   }
 });
 
+
 /**
  * @route GET /api/transactions/user/:userId
- * @desc Get all transactions for a specific user
+ * @desc Get all transactions for a specific user (across all accounts)
  */
 router.get('/user/:userId', async (req: Request, res: Response) => {
+  const userId = parseInt(req.params.userId, 10);
+  if (isNaN(userId)) {
+     res.status(400).json({ status: 'error', message: 'Invalid user ID' });
+  }
+
   try {
-    const list = await getUserTransactions(Number(req.params.userId));
-    res.status(200).json({ status: 'success', data: list });
+    const transactions = await getUserTransactions(userId);
+    res.status(200).json({ status: 'success', data: transactions });
   } catch (error) {
-    logger.error('[Transaction] Fetch failed', error);
+    logger.error('[Transaction] Fetch all for user failed:', error);
     res.status(500).json({ status: 'error', message: 'Internal server error' });
   }
 });
+
 
 /**
  * @route GET /api/transactions/user/:userId/summary
@@ -124,5 +168,90 @@ router.get('/categories/:category_id', async (req: Request, res: Response) => {
       .json({ status: 'error', message: error.message || 'Internal server error' });
   }
 });
+
+/**
+ * @route GET /api/transaction/accounts/:account_id
+ * @desc Fetch all transactions for a specific account
+ */
+router.get('/accounts/:account_id', async (req: Request, res: Response) => {
+  const account_id = parseInt(req.params.account_id, 10);
+
+  if (isNaN(account_id)) {
+   res.status(400).json({ status: 'error', message: 'Invalid account ID' });
+  }
+
+  try {
+    const transactions = await getTransactionByAccount(account_id);
+    res.status(200).json({ status: 'success', data: transactions });
+  } catch (error: any) {
+    logger.error('[Transaction] Fetch by account failed:', error);
+    res.status(500).json({ status: 'error', message: error.message || 'Internal server error' });
+  }
+});
+
+/**
+ * @route DELETE /api/transactions/:transaction_id
+ * @desc Delete a specific transaction by its ID
+ */
+router.delete('/:transaction_id', async (req: Request, res: Response) => {
+  const transaction_id = parseInt(req.params.transaction_id, 10);
+
+  if (isNaN(transaction_id)) {
+     res.status(400).json({ status: 'error', message: 'Invalid transaction ID' });
+  }
+
+  try {
+    await deleteTransaction(transaction_id);
+    res.status(200).json({
+      status: 'success',
+      message: `Transaction ID ${transaction_id} deleted successfully`,
+    });
+  } catch (error: any) {
+    logger.error('[Transaction] Delete failed:', error);
+    res.status(500).json({
+      status: 'error',
+      message: error.message || 'Internal server error',
+    });
+  }
+});
+
+
+/**
+ * @route PUT /api/transactions/:transaction_id
+ * @desc Update a transaction's name, date, category, or amount
+ */
+router.put('/:transaction_id', async (req: Request, res: Response) => {
+  const transaction_id = parseInt(req.params.transaction_id, 10);
+  const { transaction_name, transaction_date, category_id, custom_category_id, transaction_amount } = req.body;
+
+  if (isNaN(transaction_id)) {
+     res.status(400).json({ status: 'error', message: 'Invalid transaction ID' });
+  }
+
+  if (!transaction_name && !transaction_date && !category_id && !custom_category_id && !transaction_amount) {
+     res.status(400).json({ status: 'error', message: 'No update fields provided' });
+  }
+
+  if (category_id && custom_category_id) {
+     res.status(400).json({ status: 'error', message: 'Provide only one category type' });
+  }
+
+  try {
+    const result = await updateTransactionDetails(transaction_id, {
+      transaction_name,
+      transaction_date,
+      category_id,
+      custom_category_id,
+      transaction_amount
+    });
+
+    res.status(200).json({ status: 'success', message: 'Transaction updated', data: result });
+  } catch (error: any) {
+    logger.error('[Transaction] Update failed:', error);
+    res.status(500).json({ status: 'error', message: error.message || 'Internal server error' });
+  }
+});
+
+
 
 export default router;

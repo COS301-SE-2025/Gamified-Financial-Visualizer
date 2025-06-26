@@ -3,16 +3,27 @@ import { FaArrowLeft, FaCoins, FaTrophy, FaChartLine, FaUsers, FaBullseye } from
 import { useNavigate } from "react-router-dom";
 
 // badge icons
-import badge1 from '../../assets/Images/badges/CoinStack.png';
-import badge2 from '../../assets/Images/badges/awardIcon.png';
-import badge3 from '../../assets/Images/badges/highFiveIcon.png';
-import badge4 from '../../assets/Images/badges/moneyBagIcon.png';
-import badge5 from '../../assets/Images/badges/moneyGrowIcon.png';
+import badge1 from '../../assets/Images/badges/coin.png';
+import badge2 from '../../assets/Images/badges/trophy.png';
+import badge3 from '../../assets/Images/badges/hi5.png';
+import badge4 from '../../assets/Images/badges/investment.png';
+import badge5 from '../../assets/Images/badges/money-bag.png';
 import badge6 from '../../assets/Images/badges/mountainIcon.png';
-import badge7 from '../../assets/Images/badges/notesIcon.png';
-import badge8 from '../../assets/Images/badges/scaleIcon.png';
-import badge9 from '../../assets/Images/badges/plantIcon.png';
-import badge10 from '../../assets/Images/badges/targetIcon.png';
+import badge7 from '../../assets/Images/badges/banknote.png';
+import badge8 from '../../assets/Images/badges/balance-scale.png';
+import badge9 from '../../assets/Images/badges/growth.png';
+import badge10 from '../../assets/Images/badges/target.png';
+import badge11 from '../../assets/Images/badges/accepted.png';
+import badge12 from '../../assets/Images/badges/brainstorming.png';
+import badge13 from '../../assets/Images/badges/customer.png';
+import badge14 from '../../assets/Images/badges/discussion.png';
+import badge15 from '../../assets/Images/badges/expense.png';
+import badge16 from '../../assets/Images/badges/idea.png';
+import badge17 from '../../assets/Images/badges/lighthouse.png';
+import badge18 from '../../assets/Images/badges/meeting.png';
+import badge19 from '../../assets/Images/badges/profit.png';
+import badge20 from '../../assets/Images/badges//bank.png';
+
 
 const achievements = [
     {
@@ -128,7 +139,7 @@ const achievements = [
     {
         title: "Treasure Keeper",
         reward: 500,
-        image: badge1,
+        image: badge11,
         color: "bg-[#88BC46]",
         border: "border-[#88BC46]",
         text: "text-[#88BC46]",
@@ -139,7 +150,7 @@ const achievements = [
     {
         title: "Goal Crusher",
         reward: 600,
-        image: badge2,
+        image: badge12,
         color: "bg-[#ED5E52]",
         border: "border-[#ED5E52]",
         text: "text-[#ED5E52]",
@@ -150,7 +161,7 @@ const achievements = [
     {
         title: "Green Thumb",
         reward: 450,
-        image: badge3,
+        image: badge13,
         color: "bg-[#FFC857]",
         border: "border-[#FFC857]",
         text: "text-[#88BC46]",
@@ -161,7 +172,7 @@ const achievements = [
     {
         title: "Finance Wizard",
         reward: 50,
-        image: badge4,
+        image: badge14,
         color: "bg-[#5FBFFF]",
         border: "border-[#5FBFFF]",
         text: "text-[#5FBFFF]",
@@ -172,7 +183,7 @@ const achievements = [
     {
         title: "Vault Guardian",
         reward: 900,
-        image: badge5,
+        image: badge15,
         color: "bg-[#88BC46]",
         border: "border-[#5FBFFF]",
         text: "text-[#5FBFFF]",
@@ -183,7 +194,7 @@ const achievements = [
     {
         title: "Pile Maker",
         reward: 650,
-        image: badge6,
+        image: badge16,
         color: "bg-[#ED5E52]",
         border: "border-[#ED5E52]",
         text: "text-[#ED5E52]",
@@ -194,7 +205,7 @@ const achievements = [
     {
         title: "Team Player",
         reward: 150,
-        image: badge7,
+        image: badge17,
         color: "bg-[#FFC857]",
         border: "border-[#ED5E52]",
         text: "text-[#ED5E52]",
@@ -205,7 +216,7 @@ const achievements = [
     {
         title: "Bullseye Master",
         reward: 5000,
-        image: badge8,
+        image: badge18,
         color: "bg-[#5FBFFF]",
         border: "border-[#5FBFFF]",
         text: "text-[#5FBFFF]",
@@ -216,7 +227,7 @@ const achievements = [
     {
         title: "Fortune Architect",
         reward: 30,
-        image: badge9,
+        image: badge19,
         color: "bg-[#88BC46]",
         border: "border-[#88BC46]",
         text: "text-[#88BC46]",
@@ -227,7 +238,7 @@ const achievements = [
     {
         title: "Market Leader",
         reward: 850,
-        image: badge10,
+        image: badge20,
         color: "bg-[#ED5E52]",
         border: "border-[#ED5E52]",
         text: "text-[#ED5E52]",
@@ -371,7 +382,7 @@ const AchievementCard = ({ title, reward, image, color, text, icon, unlockCondit
                     <img
                         src={image}
                         alt={title}
-                        className="relative w-24 h-24 object-contain rounded-full z-10"
+                        className="relative w-24 h-24 object-contain z-10"
                     />
                 </div>
 

@@ -1,6 +1,9 @@
 // pages/GoalsPage.tsx
 import React, { useEffect, useState } from 'react';
 import GoalsViewLayout from './GoalsViewLayout';
+
+import { FaSearch } from 'react-icons/fa';
+
 import GoalOverviewCards from '../../components/cards/GoalOverviewCards';
 import GoalCard from '../../components/cards/GoalCard';
 import DonutChart from '../../components/charts/DonutChart';
@@ -43,10 +46,20 @@ const GoalsPage = () => {
           </div>
           <div className="col-span-4">
             <BarChart />
-          </div> 
+          </div>
           <div className="col-span-3">
             <DonutChart />
           </div>
+        </div>
+
+        {/*Search Input */}
+        <div className="flex items-center w-full max-w-3xl -ml-[8px] px-4 py-2 rounded-3xl border-2 border-[#E5794B] bg-white shadow-sm">
+          <FaSearch className="text-[#E5794B] mr-2" />
+          <input
+            type="text"
+            placeholder="Search your goals..."
+            className="w-full outline-none bg-transparent text-sm text-[#E5794B] placeholder-[#E5794B]/70"
+          />
         </div>
 
         {/* Goal Cards */}

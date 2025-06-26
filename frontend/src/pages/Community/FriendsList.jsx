@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
-import { FaUserPlus, FaEye, FaUserMinus, FaPaperPlane } from 'react-icons/fa';
+import { FaSearch, FaEye, FaUserMinus, FaPaperPlane } from 'react-icons/fa';
 import CommunityLayout from '../../pages/Community/CommunityLayout';
 import CommunityHeader from '../../layouts/headers/CommunityHeader';
 
@@ -78,6 +78,15 @@ const FriendsList = () => {
       <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
          <CommunityHeader />
         <Toaster position="top-right" />
+
+        <div className="flex items-center w-full max-w-4xl -ml-[8px] px-4 py-2 rounded-3xl border-2 border-[#E5794B] bg-white shadow-sm">
+          <FaSearch className="text-[#E5794B] mr-2" />
+          <input
+            type="text"
+            placeholder="Search your friends..."
+            className="w-full outline-none bg-transparent text-sm text-[#E5794B] placeholder-[#E5794B]/70"
+          />
+        </div>
 
         {/* Your Friends */}
         <div>
