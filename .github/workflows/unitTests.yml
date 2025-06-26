@@ -1,0 +1,48 @@
+name: Backend Unit Tests with Coverage
+
+on:
+  push:
+    branches: [main, development]
+  pull_request:
+    branches: [main, development]
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+
+    env:
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      PASETO_LOCAL_KEY: ${{ secrets.PASETO_LOCAL_KEY }}
+      NODE_ENV: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run all unit tests with coverage
+        run: npm run test:cov
+
+      - name: Upload Jest coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: jest-coverage-report
+          path: coverage/
+
+      - name: Tests complete
+        run: echo "Tests and coverage report generated"
