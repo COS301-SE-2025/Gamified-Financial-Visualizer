@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaSave, FaTimes } from 'react-icons/fa';
 
-const AddTransactionModal = ({ isOpen, onClose, onAdd }) => {
+
+const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
   const [form, setForm] = useState({
     type: '',
     name: '',
@@ -14,34 +15,172 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd }) => {
     recurring: '',
     budget: '',
   });
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [budgets, setBudgets] = useState([]);
+  const [goals, setGoals] = useState([]);
+
+  // Fetch categories from API
+  useEffect(() => {
+    if (isOpen) {
+      fetchCategories();
+      fetchBudgets();
+      fetchGoals();
+    }
+  }, [isOpen]);
+
+  const fetchBudgets = async () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user?.id) return;
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/budget/user/${user.id}`);
+      const data = await res.json();
+      setBudgets(data.data || []);
+    } catch (err) {
+      console.error('Failed to fetch budgets:', err);
+      setBudgets([]);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/transactions/categories');
+      if (!response.ok) throw new Error('Failed to fetch categories');
+      const data = await response.json();
+      setCategories(data.data || []);
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+ 
+    }
+  };
+
+
+  const fetchGoals = async () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user?.id) return;
+    try {
+      const response = await fetch(`http://localhost:5000/api/goal/user/${user.id}`);
+      if (!response.ok) throw new Error('Failed to fetch goals');
+      const data = await response.json();
+      setGoals(data.data || []);
+    } catch (err) {
+      console.error('Error fetching goals:', err);
+      setGoals([]);
+    }
+  }
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setError(''); // Clear error when user types
   };
 
-  const handleSubmit = () => {
-    // Validation: allow only one category method
-    if (form.categories && form.newCategories) {
-      alert("Please select a category OR type a new one — not both.");
-      return;
+  const handleSubmit = async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      // Validation: allow only one category method
+      if (form.categories && form.newCategories) {
+        setError("Please select a category OR type a new one — not both.");
+        setLoading(false);
+        return;
+      }
+
+      // Validate required fields
+      if (!form.name || !form.amount || !form.type) {
+        setError("Please fill in all required fields (name, amount, type).");
+        setLoading(false);
+        return;
+      }
+
+      if (!activeAccount?.account_id) {
+        setError("No active account selected.");
+        setLoading(false);
+        return;
+      }
+
+      // Prepare transaction data for API
+      const transactionData = {
+        account_id: activeAccount.account_id,
+        transaction_name: form.name,
+        transaction_amount: parseFloat(form.amount),
+        transaction_type: form.type,
+        transaction_date: form.date || new Date().toISOString().split('T')[0],
+        category_id: form.categories ? parseInt(form.categories) : null,
+        custom_category_id: null, // You'll need to handle custom categories separately
+        budget_id: form.budget ? parseInt(form.budget) : null,
+        is_recurring: form.recurring ? true : false,
+        linked_goal_id: form.goals ? parseInt(form.goals) : null,
+        linked_challenge_id: form.challenges ? parseInt(form.challenges) : null,
+        points_awarded: 0 // Default value
+      };
+
+      // If user entered a new category, we need to handle it
+      if (form.newCategories && !form.categories) {
+        // For now, we'll pass it as transaction_name with a note
+        // You might want to create a custom category endpoint
+        transactionData.transaction_name = `${form.name} (${form.newCategories})`;
+      }
+
+      // Make API call
+      const response = await fetch('http://localhost:5000/api/transactions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(transactionData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create transaction');
+      }
+
+      const result = await response.json();
+
+      // Create the transaction object in the format your UI expects
+      const newTransaction = {
+        name: form.name,
+        type: form.type,
+        date: form.date || new Date().toISOString().split('T')[0],
+        category: form.categories ?
+          categories.find(cat => cat.category_id === parseInt(form.categories))?.category_name || 'Unknown' :
+          form.newCategories || 'Uncategorized',
+        amount: `${activeAccount.currency || 'ZAR'}${form.amount}`,
+        recurring: form.recurring,
+        goals: form.goals,
+        challenges: form.challenges,
+        budget: form.budget,
+        account_id: activeAccount.account_id,
+        transaction_id: result.data.transaction_id,
+      };
+
+      // Call the parent's onAdd function
+      onAdd(newTransaction);
+
+      // Reset form and close modal
+      setForm({
+        type: '',
+        name: '',
+        date: '',
+        categories: '',
+        newCategories: '',
+        amount: '',
+        goals: '',
+        challenges: '',
+        recurring: '',
+        budget: '',
+      });
+      onClose();
+
+    } catch (err) {
+      console.error('Error creating transaction:', err);
+      setError(err.message || 'Failed to create transaction');
+    } finally {
+      setLoading(false);
     }
-
-    const finalCategory = form.categories || form.newCategories || 'Uncategorized';
-
-    const newTransaction = {
-      name: form.name,
-      type: form.type,
-      date: form.date,
-      category: finalCategory, // ✅ unified field name
-      amount: `R${form.amount}`,
-      recurring: form.recurring,
-      goals: form.goals,
-      challenges: form.challenges,
-      budget: form.budget,
-    };
-
-    onAdd(newTransaction);
-    onClose();
   };
 
   if (!isOpen) return null;
@@ -51,14 +190,24 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd }) => {
       <div className="bg-white p-6 rounded-xl shadow-xl w-[500px] relative">
         <h3 className="text-lg font-bold mb-4 text-center">Add New Transaction</h3>
 
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded p-3 mb-4 text-red-700 text-sm">
+            {error}
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-4 text-sm">
           {/* Transaction Type */}
           <div className="flex flex-col">
-            <label className="text-gray-600 mb-1">Transaction type</label>
+            <label className="text-gray-600 mb-1">Transaction type </label>
             <select name="type" value={form.type} onChange={handleChange} className="border p-2 rounded">
               <option value="">Select type</option>
               <option value="expense">Expense</option>
               <option value="income">Income</option>
+              <option value="transfer">Transfer</option>
+              <option value="fee">Fee</option>
+              <option value="withdrawal">Withdrawal</option>
+              <option value="deposit">Deposit</option>
             </select>
           </div>
 
@@ -74,75 +223,86 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd }) => {
             </select>
           </div>
 
-        {/* Transaction Name */}
-            <div className="flex flex-col">
-              <label className="text-gray-600 mb-1">Transaction name</label>
-              <input
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                className="border p-2 rounded"
-              />
-            </div>
+          {/* Transaction Name */}
+          <div className="flex flex-col">
+            <label className="text-gray-600 mb-1">Transaction name </label>
+            <input
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              className="border p-2 rounded"
+              placeholder="Enter transaction name"
+            />
+          </div>
 
-            {/* Amount */}
-            <div className="flex flex-col">
-              <label className="text-gray-600 mb-1">Amount</label>
-              <input
-                name="amount"
-                type="number"
-                min="0"
-                value={form.amount}
-                onChange={handleChange}
-                className="border p-2 rounded"
-              />
-            </div>
+          {/* Amount */}
+          <div className="flex flex-col">
+            <label className="text-gray-600 mb-1">Amount </label>
+            <input
+              name="amount"
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.amount}
+              onChange={handleChange}
+              className="border p-2 rounded"
+              placeholder="0.00"
+            />
+          </div>
 
-            {/* Date */}
-            <div className="flex flex-col">
-              <label className="text-gray-600 mb-1">Date</label>
-              <input
-                name="date"
-                type="date"
-                value={form.date}
-                onChange={handleChange}
-                className="border p-2 rounded"
-              />
-            </div>
+          {/* Date */}
+          <div className="flex flex-col">
+            <label className="text-gray-600 mb-1">Date</label>
+            <input
+              name="date"
+              type="date"
+              value={form.date}
+              onChange={handleChange}
+              className="border p-2 rounded"
+            />
+          </div>
 
-            {/* Budget */}
-            <div className="flex flex-col">
-              <label className="text-gray-600 mb-1">Budget</label>
-              <select
-                name="budget"
-                value={form.budget}
-                onChange={handleChange}
-                className="border p-2 rounded"
-              >
-                <option value="">Select budget</option>
-                <option value="budget1">Budget 1</option>
-                <option value="budget2">Budget 2</option>
-              </select>
-            </div>
+          {/* Budget */}
+          <div className="flex flex-col">
+            <label className="text-gray-600 mb-1">Budget</label>
+            <select
+              name="budget"
+              value={form.budget}
+              onChange={handleChange}
+              className="border p-2 rounded"
+            >
+              <option value="">Select budget</option>
+              {budgets.map(b => (
+                <option key={b.budget_id} value={b.budget_id}>
+                  {b.budget_name}
+                </option>
+              ))}
+            </select>
+          </div>
 
           {/* Categories (dropdown) */}
           <div className="flex flex-col">
             <label className="text-gray-600 mb-1">Categories</label>
             <select name="categories" value={form.categories} onChange={handleChange} className="border p-2 rounded">
               <option value="">Select category</option>
-              <option value="Food">Food</option>
-              <option value="Transport">Transport</option>
-              <option value="Fuel">Fuel</option>
-              <option value="Health">Health</option>
-              <option value="Entertainment">Entertainment</option>
-              <option value="Personal">Personal</option>
+              {categories.map(category => (
+                <option key={category.category_id} value={category.category_id}>
+                  {category.category_name}
+                </option>
+              ))}
             </select>
           </div>
 
           {/* New Category (alternative input) */}
           <div className="flex flex-col">
             <label className="text-gray-600 mb-1">New Category</label>
-            <input name="newCategories" value={form.newCategories} onChange={handleChange} className="border p-2 rounded" />
+            <input
+              name="newCategories"
+              value={form.newCategories}
+              onChange={handleChange}
+              className="border p-2 rounded"
+              placeholder="Enter new category"
+            />
           </div>
 
           {/* Goals Dropdown */}
@@ -150,8 +310,11 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd }) => {
             <label className="text-gray-600 mb-1">Goals</label>
             <select name="goals" value={form.goals} onChange={handleChange} className="border p-2 rounded">
               <option value="">Select goal</option>
-              <option value="goal1">Goal 1</option>
-              <option value="goal2">Goal 2</option>
+              {goals.map(g => (
+                <option key={g.goal_id} value={g.goal_id}>
+                  {g.goal_name}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -160,26 +323,27 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd }) => {
             <label className="text-gray-600 mb-1">Challenges</label>
             <select name="challenges" value={form.challenges} onChange={handleChange} className="border p-2 rounded">
               <option value="">Select challenge</option>
-              <option value="challenge1">Challenge 1</option>
-              <option value="challenge2">Challenge 2</option>
+              <option value="1">Challenge 1</option>
+              <option value="2">Challenge 2</option>
             </select>
           </div>
-         
         </div>
 
         {/* Buttons */}
         <div className="flex justify-center mt-6 gap-4">
           <button
             onClick={onClose}
-            className="flex items-center gap-2 bg-red-200 text-red-600 px-4 py-2 rounded-full"
+            disabled={loading}
+            className="flex items-center gap-2 bg-red-200 text-red-600 px-4 py-2 rounded-full disabled:opacity-50"
           >
             <FaTimes /> Cancel
           </button>
           <button
             onClick={handleSubmit}
-            className="flex items-center gap-2 bg-green-200 text-green-700 px-4 py-2 rounded-full"
+            disabled={loading}
+            className="flex items-center gap-2 bg-green-200 text-green-700 px-4 py-2 rounded-full disabled:opacity-50"
           >
-            <FaSave /> Save
+            <FaSave /> {loading ? 'Saving...' : 'Save'}
           </button>
         </div>
       </div>

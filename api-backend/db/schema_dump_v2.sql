@@ -479,6 +479,7 @@ CREATE TABLE budget_categories (
     budget_id INT NOT NULL REFERENCES budgets(budget_id) ON DELETE CASCADE,
     category_id INT REFERENCES categories(category_id),
     custom_category_id INT REFERENCES custom_categories(custom_category_id),
+    current_amount NUMERIC(12, 2) DEFAULT 0 CHECK (current_amount >= 0),
     target_amount NUMERIC(12, 2) NOT NULL CHECK (target_amount >= 0),
     CHECK (
         (category_id IS NOT NULL AND custom_category_id IS NULL)
@@ -608,7 +609,7 @@ CREATE TABLE quizzes (
 CREATE TABLE quiz_attempts (
     attempt_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    quiz_id INT NOT NULL REFERENCES quizzes(quiz_id),
+    quiz_id INT NOT NULL REFERENCES quizzes(quiz_id) ON DELETE CASCADE,
     attempt_score INT NOT NULL,
     passed BOOLEAN,
     attempt_number INT NOT NULL,

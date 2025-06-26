@@ -21,13 +21,28 @@ export async function createUser(user: UserRecord) {
     RETURNING *;
   `;
   try {
+    // Check if username already exists
+    const usernameCheckQuery = 'SELECT * FROM users WHERE username = $1';
+    const usernameCheckResult = await pool.query(usernameCheckQuery, [user.username]);
+    if (usernameCheckResult.rows.length > 0) {
+      logger.warn(`[AuthService] Registration failed: Username ${user.username} already exists`);
+      throw new Error(`Username '${user.username}' is already taken.`);
+    }
+
+    // Check if email already exists
+    const emailCheckQuery = 'SELECT * FROM users WHERE email = $1';
+    const emailCheckResult = await pool.query(emailCheckQuery, [user.email]);
+    if (emailCheckResult.rows.length > 0) {
+      logger.warn(`[AuthService] Registration failed: Email ${user.email} already exists`);
+      throw new Error(`Email '${user.email}' is already registered.`);
+    }
+
     const result = await pool.query(query, [
       user.email,
       user.username,
       user.full_name,
       user.hashed_password,
     ]);
-    logger.info(`[AuthService] User registered: ${user.username}`);
     return result.rows[0];
   } catch (err) {
     logger.error('[AuthService] Registration failed:', err);
@@ -37,7 +52,6 @@ export async function createUser(user: UserRecord) {
 
 /* one live token per user; UX-friendly for SPAs */
 export async function upsertToken(user_id: number, token: string, expires_at: Date) {
-
   await pool.query('DELETE FROM user_tokens WHERE user_id = $1', [user_id]);
   await pool.query(
     'INSERT INTO user_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)',
@@ -51,6 +65,10 @@ export async function authenticateUser(username: string, hashedPassword: string)
   const query = 'SELECT * FROM users WHERE username = $1 AND hashed_password = $2';
   try {
     const result = await pool.query(query, [username, hashedPassword]);
+    if (result.rows.length === 0) {
+      logger.warn(`[AuthService] Authentication failed for user ${username}: Invalid credentials`);
+      throw new Error('Invalid credentials');
+    }
     return result.rows[0];
   } catch (err) {
     logger.error(`[AuthService] Authentication failed for user ${username}:`, err);

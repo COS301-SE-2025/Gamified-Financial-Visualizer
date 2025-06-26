@@ -1,6 +1,6 @@
 import React, { useState, useEffect, use } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaChevronDown, FaChevronUp, FaCheckCircle, FaTrophy } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaCheckCircle, FaTrophy} from 'react-icons/fa';
 import LearnLayout from './LearnLayout';
 
 const colorMap = {

@@ -1,23 +1,16 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FaSearch, FaSlidersH, FaChartLine, FaFileImport, FaChartBar } from 'react-icons/fa';
+import { FaSlidersH, FaChartLine, FaFileImport, FaChartBar } from 'react-icons/fa';
 
 const AccountsHeader = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const path = location.pathname;
+  const path = location.pathname; 
 
   return (
     <div className="flex justify-between items-center px-6 py-4 bg-white border-b shadow rounded-xl">
       {/* Search Input */}
-      <div className="flex items-center w-full max-w-4xl px-4 py-2 rounded-3xl border-4 border-[#E5794B] bg-white shadow-sm">
-        <FaSearch className="text-[#E5794B] mr-2" />
-        <input
-          type="text"
-          placeholder="Search..."
-          className="w-full outline-none bg-transparent text-sm text-[#E5794B] placeholder-[#E5794B]/70"
-        />
-      </div>
+      {/* Removed this functionality for the time being */}
 
       {/* Action Buttons */}
       <div className="flex space-x-2 ml-4">

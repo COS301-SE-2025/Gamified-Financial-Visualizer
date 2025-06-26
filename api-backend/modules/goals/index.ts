@@ -15,8 +15,8 @@ export function registerGoalModule(app: Application) {
     // Listen for transaction events
   eventBus.on('transaction.created', async (tx) => {
     try {
-      await addGoalProgress(tx.id, tx.account_id, tx.amount); // tx needs link to goal ID
-      console.log('[Goal] Progress updated for user:', tx.user_id);
+      // await addGoalProgress(tx.id, tx.account_id, tx.amount); // tx needs link to goal ID
+      // console.log('[Goal] Progress updated for user:', tx.user_id);
     } catch (err) {
       console.error('[Goal] Failed to update progress:', err);
     }
