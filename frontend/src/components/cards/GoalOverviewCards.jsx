@@ -4,7 +4,7 @@ import { FaCoins } from 'react-icons/fa';
 
 const GoalOverviewCards = () => {
   const [user, setUser] = useState(null);
-  const [data, setData] = useState({ total_goal_value: 0 });
+  const [data, setData] = useState([]);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('user'));
@@ -13,9 +13,9 @@ const GoalOverviewCards = () => {
     if (storedUser?.id) {
       const fetchData = async () => {
         try {
-          const res = await fetch(`http://localhost:5000/api/goal/${storedUser.id}/total-value`);
+          const res = await fetch(`http://localhost:5000/api/goal/user/${storedUser.id}/total-value`);
           const result = await res.json();
-          setData(result);
+          setData(result.data);
         } catch (error) {
           console.error('Error fetching goal value:', error);
         }

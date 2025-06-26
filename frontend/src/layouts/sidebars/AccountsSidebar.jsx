@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import avatar from '../../assets/Images/avatars/totoroAvatar.jpeg';
 import {
+
   FaBolt,
   FaChartBar,
   FaHourglassHalf,
@@ -36,24 +37,10 @@ import {
   FaTools,
   FaWallet,
   FaCoins,
-  FaExchangeAlt
-} from 'react-icons/fa';
+  FaExchangeAlt,
+  FaSpinner
 
-// Mock transaction data
-const mockTransactions = [
-  { category: 'Groceries', amount: 'R1200', date: '2023-05-15', name: 'Supermarket' },
-  { category: 'Groceries', amount: 'R850', date: '2023-05-20', name: 'Local Market' },
-  { category: 'Entertainment', amount: 'R500', date: '2023-05-10', name: 'Movie Tickets' },
-  { category: 'Entertainment', amount: 'R350', date: '2023-05-18', name: 'Concert' },
-  { category: 'Health', amount: 'R1200', date: '2023-05-05', name: 'Gym Membership' },
-  { category: 'Health', amount: 'R450', date: '2023-05-12', name: 'Vitamins' },
-  { category: 'Personal', amount: 'R2800', date: '2023-05-01', name: 'Clothing' },
-  { category: 'Personal', amount: 'R1500', date: '2023-05-08', name: 'Electronics' },
-  { category: 'Fuel', amount: 'R800', date: '2023-05-03', name: 'Gas Station' },
-  { category: 'Fuel', amount: 'R750', date: '2023-05-17', name: 'Gas Station' },
-  { category: 'Transport', amount: 'R500', date: '2023-05-07', name: 'Bus Pass' },
-  
-];
+} from 'react-icons/fa';
 
 // Category icons mapping
 const categoryIcons = {
@@ -81,6 +68,11 @@ const categoryIcons = {
   default: <FaMoneyBillWave />
 };
 
+function getRandomColor() {
+  return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+}
+
+const randomColor = getRandomColor(); // Example output: "#3A7B42"
 // Category colors mapping
 const categoryColors = {
   groceries: '#FF8A8A',
@@ -103,39 +95,159 @@ const categoryColors = {
   personal: '#7FDD53',
   gifts: '#68D391',
   charity: '#48BB78',
-  default: '##FF7F9E'
+  default: randomColor
 };
 
 const AccountsSidebar = () => {
-  // Calculate category totals from mock data
-  const categoryTotals = useMemo(() => {
-    const totals = {};
-    
-    mockTransactions.forEach(txn => {
-      const amountValue = parseFloat(txn.amount.replace(/[^0-9.-]+/g, ''));
-      const categoryKey = txn.category.toLowerCase();
-      
-      if (totals[categoryKey]) {
-        totals[categoryKey].total += amountValue;
-      } else {
-        totals[categoryKey] = {
-          total: amountValue,
-          name: txn.category,
-          icon: categoryIcons[categoryKey] || categoryIcons.default,
-          color: categoryColors[categoryKey] || categoryColors.default
-        };
+  const [categorySummary, setCategorySummary] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [userId, setUserId] = useState(null);
+
+  // Get user ID from localStorage
+  useEffect(() => {
+    const getUserFromStorage = () => {
+      try {
+        // Try different possible keys for user data in localStorage
+        const userData = localStorage.getItem('user') || 
+                        localStorage.getItem('currentUser') || 
+                        localStorage.getItem('userData') ||
+                        localStorage.getItem('authUser');
+        
+        if (userData) {
+          const parsedUser = JSON.parse(userData);
+          // Handle different possible user object structures
+          const id = parsedUser.id || parsedUser.user_id || parsedUser.userId;
+          setUserId(id);
+        } else {
+          setError('User not found in localStorage');
+        }
+      } catch (err) {
+        console.error('Error reading user from localStorage:', err);
+        setError('Failed to get user information');
       }
-    });
-    
-    return Object.values(totals);
+    };
+
+    getUserFromStorage();
   }, []);
+
+  // Fetch category summary data from API
+  useEffect(() => {
+    const fetchCategorySummary = async () => {
+      if (!userId) {
+        if (userId === null) {
+          // Still loading user ID
+          return;
+        }
+        setError('User ID is required');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch(`http://localhost:5000/api/transactions/user/${userId}/summary`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+          setCategorySummary(result.data || []);
+        } else {
+          throw new Error(result.message || 'Failed to fetch category summary');
+        }
+      } catch (err) {
+        console.error('Error fetching category summary:', err);
+        setError(err.message || 'Failed to load category data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategorySummary();
+  }, [userId]);
+
+  // Debug logging to help troubleshoot
+  useEffect(() => {
+    console.log('AccountsSidebar Debug:', {
+      userId,
+      categorySummary,
+      loading,
+      error
+    });
+  }, [userId, categorySummary, loading, error]);
+
+  // Process category data for display
+  const categoryTotals = useMemo(() => {
+    if (!categorySummary || categorySummary.length === 0) {
+      return [];
+    }
+
+    return categorySummary.map(category => {
+      // Fix: Use 'category' instead of 'category_name' to match API response
+      const categoryKey = category.category?.toLowerCase() || 'default';
+      
+      return {
+        total: parseFloat(category.total_spent) || 0,
+        name: category.category || 'Unknown', // Fix: Use 'category' instead of 'category_name'
+        icon: categoryIcons[categoryKey] || categoryIcons.default,
+        color: categoryColors[categoryKey] || categoryColors.default,
+        transactionCount: category.transaction_count || 0
+      };
+    }).sort((a, b) => b.total - a.total); // Sort by highest spending first
+  }, [categorySummary]);
+
+  // Calculate total spending across all categories
+  const totalSpending = useMemo(() => {
+    return categoryTotals.reduce((sum, category) => sum + category.total, 0);
+  }, [categoryTotals]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <aside className="space-y-6">
+        <div className="bg-white rounded-2xl p-4 shadow text-center">
+          <div className="flex items-center justify-center space-x-2">
+            <FaSpinner className="animate-spin text-blue-500" />
+            <span className="text-gray-600">Loading categories...</span>
+          </div>
+        </div>
+      </aside>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <aside className="space-y-6">
+        <div className="bg-white rounded-2xl p-4 shadow text-center">
+          <div className="text-red-500 mb-2">
+            <FaTimes className="mx-auto text-2xl mb-2" />
+            <p className="text-sm">Error loading categories</p>
+            <p className="text-xs text-gray-500 mt-1">{error}</p>
+          </div>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="text-blue-500 text-sm hover:underline"
+          >
+            Try again
+          </button>
+        </div>
+      </aside>
+    );
+  }
 
   return (
     <aside className="space-y-6">
       {/* Overall Performance */}
       <div className="bg-white rounded-2xl p-4 shadow text-center">
         <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-3 py-1 rounded-full inline-block mb-2">
-          Overall Performance
+          Account Performance
         </p>
 
         {/* Progress Circle */}
@@ -163,7 +275,7 @@ const AccountsSidebar = () => {
           </svg>
 
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <p className="text-[24px] font-bold text-[#2D3748]">350</p>
+            <p className="text-[24px] font-bold text-[#2D3748]">150</p>
             <p className="text-sm text-[#718096]">Excellent</p>
             <img
               src={avatar}
@@ -181,34 +293,56 @@ const AccountsSidebar = () => {
 
       {/* Categories Summaries */}
       <div className="bg-white rounded-2xl p-4 shadow">
-        <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-4 py-1 rounded-full inline-block mb-4">
-          Categories
-        </p>
-
-        <div className="grid grid-cols-2 gap-4">
-          {categoryTotals.map((category, i) => (
-            <div key={i} className="relative bg-white rounded-xl shadow-md p-3 flex items-center justify-between">
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: `${category.color}20` }}
-              >
-                <div style={{ color: category.color }}>
-                  {category.icon}
-                </div>
-              </div>
-
-              <div className="text-right">
-                <p className="text-lg font-bold text-gray-900">R{category.total.toFixed(2)}</p>
-                <p className="text-sm text-gray-500">{category.name}</p>
-              </div>
-
-              <div
-                className="absolute bottom-0 left-0 h-[5px] w-full rounded-b-xl"
-                style={{ backgroundColor: category.color }}
-              />
-            </div>
-          ))}
+        <div className="flex justify-between items-center mb-4">
+          <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-4 py-1 rounded-full inline-block">
+            Categories
+          </p>
+          {totalSpending > 0 && (
+            <p className="text-xs text-gray-500">
+              {/* Total: R{totalSpending.toFixed(2)} */}
+            </p>
+          )}
         </div>
+
+        {categoryTotals.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <FaChartBar className="mx-auto text-3xl mb-2 opacity-50" />
+            <p className="text-sm">No spending data available</p>
+            <p className="text-xs mt-1">Start making transactions to see your categories</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4">
+            {categoryTotals.map((category, i) => (
+              <div key={i} className="relative bg-white rounded-xl shadow-md p-3 flex items-center justify-between hover:shadow-lg transition-shadow">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: `${category.color}20` }}
+                >
+                  <div style={{ color: category.color }}>
+                    {category.icon}
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <p className="text-lg font-bold text-gray-900">
+                    R{category.total.toFixed(2)}
+                  </p>
+                  <p className="text-sm text-gray-500">{category.name}</p>
+                  {category.transactionCount > 0 && (
+                    <p className="text-xs text-gray-400">
+                      {category.transactionCount} transaction{category.transactionCount !== 1 ? 's' : ''}
+                    </p>
+                  )}
+                </div>
+
+                <div
+                  className="absolute bottom-0 left-0 h-[5px] w-full rounded-b-xl"
+                  style={{ backgroundColor: category.color }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </aside>
   );

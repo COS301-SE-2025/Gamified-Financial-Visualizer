@@ -24,7 +24,7 @@ const [categories, setCategories] = useState([]);
 useEffect(() => {
   const fetchCategories = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/transaction/categories');
+      const res = await fetch('http://localhost:5000/api/transactions/categories');
       const data = await res.json();
       setCategories(data.data || []);
     } catch (err) {
@@ -96,7 +96,7 @@ const handleSubmit = async (e) => {
       <form onSubmit={handleSubmit} className="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow space-y-6">
         {/* Basic Information Section */}
         <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-gray-800">Basic Information</h3>
+          <h3 className="text-lg font-semibold text-gray-800">Create a Goal</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Goal Name</label>
@@ -117,6 +117,7 @@ const handleSubmit = async (e) => {
                 placeholder="e.g. 15000"
                 value={form.amount}
                 onChange={handleChange}
+                min="0"
                 className="rounded-xl px-4 py-2 border shadow w-full"
               />
             </div>

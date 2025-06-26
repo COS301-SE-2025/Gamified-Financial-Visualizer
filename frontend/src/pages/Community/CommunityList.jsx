@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
-import { FaEye, FaTrophy } from 'react-icons/fa';
+import { FaEye, FaSearch } from 'react-icons/fa';
 import CommunityLayout from '../../pages/Community/CommunityLayout';
 import CommunityHeader from '../../layouts/headers/CommunityHeader';
 
@@ -59,42 +59,41 @@ const communities = [
 ];
 
 const handleDelete = (itemName) => {
-  toast.custom((t) => (
-    <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-lg max-w-sm w-full space-y-3">
-      <p className="text-sm font-semibold text-gray-800">
-        Delete <span className="text-[#ED5E52]">"{itemName}"</span> community?
-      </p>
-      <div className="flex gap-2 justify-end">
-        <button
-          onClick={() => {
-            toast.dismiss(t.id);
-            toast.success(`Deleted "${itemName}"`);
-            // TODO: Actual deletion logic here
-            console.log(`Deleted ${itemName}`);
-          }}
-          className="bg-[#ED5E52] hover:bg-[#FE9B90] text-white px-4 py-1.5 text-sm rounded-full font-medium"
-        >
-          Confirm
-        </button>
-        <button
-          onClick={() => toast.dismiss(t.id)}
-          className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-1.5 text-sm rounded-full font-medium"
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  ), { duration: 10000, position: 'top-center' });
+    toast.custom((t) => (
+        <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-lg max-w-sm w-full space-y-3">
+            <p className="text-sm font-semibold text-gray-800">
+                Delete <span className="text-[#ED5E52]">"{itemName}"</span> community?
+            </p>
+            <div className="flex gap-2 justify-end">
+                <button
+                    onClick={() => {
+                        toast.dismiss(t.id);
+                        toast.success(`Deleted "${itemName}"`);
+                        // TODO: Actual deletion logic here
+                        console.log(`Deleted ${itemName}`);
+                    }}
+                    className="bg-[#ED5E52] hover:bg-[#FE9B90] text-white px-4 py-1.5 text-sm rounded-full font-medium"
+                >
+                    Confirm
+                </button>
+                <button
+                    onClick={() => toast.dismiss(t.id)}
+                    className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-1.5 text-sm rounded-full font-medium"
+                >
+                    Cancel
+                </button>
+            </div>
+        </div>
+    ), { duration: 10000, position: 'top-center' });
 };
-
 
 const CommunityList = () => {
     return (
-        
         <CommunityLayout>
-              <Toaster position="top-right" />
+            <Toaster position="top-right" />
             <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
                 <CommunityHeader />
+                {/* Create community button */}
                 <div className="flex justify-end mb-4">
                     <Link to="/community/create">
                         <button className="flex items-center gap-2 bg-gradient-to-r from-[#AAD977] to-[#83AB55] text-white px-4 py-2 rounded-full text-sm font-medium shadow hover:shadow-md transition">
@@ -103,6 +102,17 @@ const CommunityList = () => {
                     </Link>
                 </div>
 
+                {/* Search bar login */}
+                <div className="flex items-center w-full max-w-6xl -ml-[8px] px-4 py-2 rounded-3xl border-2 border-[#E5794B] bg-white shadow-sm">
+                    <FaSearch className="text-[#E5794B] mr-2" />
+                    <input
+                        type="text"
+                        placeholder="Search your communities..."
+                        className="w-full outline-none bg-transparent text-sm text-[#E5794B] placeholder-[#E5794B]/70"
+                    />
+                </div>
+
+                {/* Layout for community list */}
                 {communities.map((community, i) => (
                     <div
                         key={i}
