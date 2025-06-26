@@ -92,6 +92,29 @@ router.get('/leaderboard', async (_req: Request, res: Response) => {
 
 
 /**
+ * @route DELETE /api/community/friends
+ * @desc Deletes a friendship between two users
+ * @body { user_id, friend_id }
+ */
+router.delete('/friends', async (req: Request, res: Response) => {
+  const { user_id, friend_id } = req.body;
+
+  if (!user_id || !friend_id) {
+    res.status(400).json({ status: 'error', message: 'Missing user ID or friend ID.' });
+    return;
+  }
+
+  try {
+    const deleted = await communityService.deleteFriend(user_id, friend_id);
+    res.status(200).json({ status: 'success', message: 'Friend deleted.', data: deleted });
+  } catch (err) {
+    logger.error(`[Community] Failed to delete friendship:`, err);
+    res.status(500).json({ status: 'error', message: 'Could not delete friend.' });
+  }
+});
+
+
+/**
  * @route DELETE /api/community/:communityId
  * @desc Deletes a community and cascades its related data
  */
@@ -201,14 +224,177 @@ router.get('/friends/:userId', async (req, res) => {
 });
 
 
+/**
+ * @route GET /api/community/friends/recommendations/:userId
+ * @desc Get recommended friends based on mutuals and tier
+ */
+router.get('/friends/recommendations/:userId', async (req, res) => {
+  const userId = Number(req.params.userId);
+
+  if (isNaN(userId)) {
+    res.status(400).json({ status: 'error', message: 'Invalid user ID' });
+    return;
+  }
+
+  try {
+    const recommendations = await communityService.getFriendRecommendations(userId);
+    res.status(200).json({ status: 'success', data: recommendations });
+  } catch (err) {
+    res.status(500).json({ status: 'error', message: 'Could not fetch recommendations' });
+  }
+});
 
 
+/**
+ * @route POST /api/community/friends/request
+ * @desc Sends a friend request from one user to another
+ * @body { sender_id, receiver_id }
+ */
+router.post('/friends/request', async (req: Request, res: Response) => {
+  const { sender_id, receiver_id } = req.body;
+
+  if (!sender_id || !receiver_id) {
+    res.status(400).json({ status: 'error', message: 'Missing sender or receiver ID.' });
+    return;
+  }
+
+  try {
+    const request = await communityService.sendFriendRequest(sender_id, receiver_id);
+    res.status(200).json({ status: 'success', message: 'Friend request sent.', data: request });
+  } catch (err) {
+    logger.error(`[Community] Failed to send friend request:`, err);
+    res.status(500).json({ status: 'error', message: 'Could not send friend request.' });
+  }
+});
 
 
+/**
+ * @route GET /api/community/challenges/user/:userId
+ * @desc Fetch challenges joined by a specific user, categorized into active, upcoming, and completed
+ */
+router.get('/challenges/user/:userId', async (req, res) => {
+  const userId = Number(req.params.userId);
+
+  if (isNaN(userId)) {
+    res.status(400).json({
+      status: 'error',
+      message: 'Invalid user ID.',
+    });
+    return;
+  }
+
+  try {
+    const data = await communityService.getChallengesByUserCategorized(userId);
+    res.status(200).json({
+      status: 'success',
+      message: 'Challenges fetched and categorized successfully.',
+      data,
+    });
+  } catch (err) {
+    logger.error(`[Route] Failed to fetch categorized challenges for user ID ${userId}:`, err);
+    res.status(500).json({
+      status: 'error',
+      message: 'Could not fetch categorized challenges.',
+    });
+  }
+});
 
 
+/**
+ * @route POST /api/community/challenges
+ * @desc Creates a new community challenge
+ */
+router.post('/challenges', async (req: Request, res: Response) => {
+  const {
+    creator_id,
+    community_id,
+    challenge_title,
+    challenge_type,
+    measurement_type,
+    target_amount,
+    start_date,
+    target_date,
+    category_id,
+    custom_category_id,
+    banner_id,
+    difficulty,
+  } = req.body;
 
+  if (
+    !creator_id || !community_id || !challenge_title || !challenge_type ||
+    !measurement_type || !target_amount || !start_date || !target_date
+  ) {
+    res.status(400).json({
+      status: 'error',
+      message: 'Missing required challenge fields.',
+    });
+    return;
+  }
 
+  try {
+    const createdChallenge = await communityService.createChallenge({
+      creator_id,
+      community_id,
+      challenge_title,
+      challenge_type,
+      measurement_type,
+      target_amount,
+      start_date,
+      target_date,
+      category_id,
+      custom_category_id,
+      banner_id,
+      difficulty,
+    });
+
+    res.status(201).json({
+      status: 'success',
+      message: 'Challenge created successfully.',
+      data: createdChallenge,
+    });
+    return;
+  } catch (err) {
+    logger.error('[Community] Failed to create challenge:', err);
+
+    res.status(500).json({
+      status: 'error',
+      message: 'Could not create challenge.',
+    });
+    return;
+  }
+});
+
+/**
+ * @route GET /api/community/categories/:userId
+ * @desc Returns global and user-specific custom categories
+ */
+router.get('/categories/:userId', async (req, res) => {
+  const userId = Number(req.params.userId);
+  
+  if (isNaN(userId)) {
+    res.status(400).json({ status: 'error', message: 'Invalid user ID.' });
+    return;
+  }
+
+  try {
+    const categories = await communityService.getCategoriesWithCustom(userId);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Fetched all categories.',
+      data: categories,
+    });
+    return;
+  } catch (err) {
+    logger.error('[Community] Failed to fetch categories:', err);
+
+    res.status(500).json({
+      status: 'error',
+      message: 'Could not load categories.',
+    });
+    return;
+  }
+});
 
 
 
