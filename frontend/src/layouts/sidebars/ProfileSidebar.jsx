@@ -81,10 +81,10 @@ const ProfileSidebar = () => {
           {/* Center Content */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <p className="text-[24px] font-bold text-[#2D3748]">
-              {performanceSummary?.performance_score ?? '...'}
+              {performanceSummary?.performance_score ?? '0'}
             </p>
             <p className="text-sm text-[#718096]">
-              {performanceSummary?.performance_label ?? '...'}
+              {performanceSummary?.performance_label ?? '0'}
             </p>
             <img
               src={
@@ -105,7 +105,7 @@ const ProfileSidebar = () => {
 
           {/* Level and Tier */}
           <p className="text-sm text-[#F56565] mt-2 font-medium">
-            Lv {performanceSummary?.level_number ?? '?'}: {performanceSummary?.tier_level ?? '...'}
+            Lv {performanceSummary?.level_number ?? '?'}: {performanceSummary?.tier_level ?? '0'}
           </p>
       </div>
 
