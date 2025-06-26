@@ -357,45 +357,66 @@ INSERT INTO goal_progress (goal_id, contributor_id, progress_date, amount_added)
     -- Jessica (22)
     (22, 10, '2025-02-01', 5000.00), (22, 10, '2025-04-01', 5000.00);
 
-INSERT INTO challenges (community_id, creator_id, challenge_title, challenge_type, target_amount, current_amount, start_date, target_date, end_date, banner_id, category_id, custom_category_id, measurement_type, challenge_status) VALUES
-    -- Money Masters (Community 1)
-    (1, 1, 'No Spend June', 'spending limit', 5000.00, 2000.00, '2025-06-01', '2025-06-30', NULL, 1, 17, NULL, 'spending_within_limit', 'active'),
+INSERT INTO challenges (community_id, creator_id, challenge_title, challenge_type, target_amount, current_amount, start_date, target_date, end_date, banner_id, category_id, custom_category_id, measurement_type, difficulty, challenge_status) VALUES
+  -- In Progress
+  (1, 1, 'No Spend June', 'spending limit', 5000.00, 2000.00, '2025-06-01', '2025-06-30', '2025-06-30', 1, 17, NULL, 'spending_within_limit', 'medium', 'active'),
+  (3, 4, 'Declutter Donation Drive', 'donation', 3000.00, 1800.00, '2025-05-01', '2025-06-30', '2025-06-30', 3, 20, NULL, 'amount_donated', 'easy', 'active'),
+  (5, 9, 'Q2 Growth Investment', 'investment', 15000.00, 9000.00, '2025-04-01', '2025-06-30', '2025-06-30', 5, 23, NULL, 'amount_invested', 'hard', 'active'),
+  (2, 3, 'Bonus Blitz', 'savings', 10000.00, 4000.00, '2025-06-15', '2025-07-15', '2025-07-15', 2, 22, NULL, 'amount_saved', 'medium', 'active'),
+  (4, 8, 'Altcoin Marathon', 'investment', 25000.00, 6000.00, '2025-05-01', '2025-08-01', '2025-08-01', 4, 23, NULL, 'amount_invested', 'hard', 'active'),
 
-    -- Crypto Crusaders (Community 2)
-    (2, 3, 'Altcoin Fundraiser', 'investment', 20000.00, 20000.00, '2025-03-01', '2025-04-15', '2025-04-10', 2, 23, NULL, 'amount_invested', 'completed'),
+  -- Upcoming
+  (1, 2, 'July Grocery Cap', 'spending limit', 2500.00, 0.00, '2025-07-01', '2025-07-31', '2025-07-31', 1, 1, NULL, 'spending_within_limit', 'easy', 'active'),
 
-    -- Frugal & Free (Community 3)
-    (3, 4, 'Declutter Donation Drive', 'donation', 3000.00, 1800.00, '2025-05-01', '2025-06-15', NULL, 3, 20, NULL, 'amount_donated', 'active'),
-
-    -- Side Hustlers United (Community 4)
-    (4, 7, 'Side Gig Savings', 'savings', 8000.00, 8000.00, '2025-02-01', '2025-05-01', '2025-04-30', 4, 22, NULL, 'amount_saved', 'completed'),
-
-    -- Invest Buds (Community 5)
-    (5, 9, 'Q2 Growth Investment', 'investment', 15000.00, 9000.00, '2025-04-01', '2025-06-30', NULL, 5, 23, NULL, 'amount_invested', 'active');
+  -- Completed
+  (2, 3, 'Altcoin Fundraiser', 'investment', 20000.00, 20000.00, '2025-03-01', '2025-04-15', '2025-04-10', 2, 23, NULL, 'amount_invested', 'hard', 'completed'),
+  (4, 7, 'Side Gig Savings', 'savings', 8000.00, 8000.00, '2025-02-01', '2025-05-01', '2025-04-30', 4, 22, NULL, 'amount_saved', 'medium', 'completed'),
+  (3, 6, 'Charity Challenge', 'donation', 5000.00, 5000.00, '2025-04-01', '2025-05-01', '2025-04-30', 3, 20, NULL, 'amount_donated', 'medium', 'completed'),
+  (5, 9, 'Freelance Frenzy', 'savings', 7000.00, 7000.00, '2025-01-01', '2025-03-01', '2025-02-28', 5, 22, NULL, 'amount_saved', 'extreme', 'completed');
 
 INSERT INTO challenge_progress (challenge_id, user_id, participation_status, progress_amount) VALUES
-    -- Challenge 1: No Spend June (Community 1)
-    (1, 1, 'joined', 1000.00),
-    (1, 2, 'joined', 1000.00),
-    (1, 5, 'invited', 0.00),
+  -- Challenge 1: No Spend June (In Progress)
+  (1, 1, 'joined', 1000.00),
+  (1, 2, 'joined', 1000.00),
+  (1, 5, 'invited', 0.00),
 
-    -- Challenge 2: Altcoin Fundraiser (Community 2)
-    (2, 3, 'joined', 10000.00),
-    (2, 7, 'joined', 5000.00),
-    (2, 9, 'joined', 5000.00),
+  -- Challenge 2: Altcoin Fundraiser (Completed)
+  (2, 3, 'joined', 10000.00),
+  (2, 7, 'joined', 5000.00),
+  (2, 9, 'joined', 5000.00),
 
-    -- Challenge 3: Donation Drive (Community 3)
-    (3, 4, 'joined', 800.00),
-    (3, 2, 'joined', 1000.00),
+  -- Challenge 3: Donation Drive (In Progress)
+  (3, 4, 'joined', 800.00),
+  (3, 2, 'joined', 1000.00),
 
-    -- Challenge 4: Side Gig Savings (Community 4)
-    (4, 7, 'joined', 3000.00),
-    (4, 5, 'joined', 5000.00),
+  -- Challenge 4: Side Gig Savings (Completed)
+  (4, 7, 'joined', 3000.00),
+  (4, 5, 'joined', 5000.00),
 
-    -- Challenge 5: Q2 Growth (Community 5)
-    (5, 9, 'joined', 6000.00),
-    (5, 3, 'joined', 3000.00),
-    (5, 10, 'invited', 0.00);
+  -- Challenge 5: Q2 Growth (In Progress)
+  (5, 9, 'joined', 6000.00),
+  (5, 3, 'joined', 3000.00),
+  (5, 10, 'invited', 0.00),
+
+  -- Challenge 6: July Grocery Cap (Upcoming)
+  (6, 1, 'joined', 0.00),
+  (6, 4, 'joined', 0.00),
+
+  -- Challenge 7: Bonus Blitz (In Progress)
+  (7, 3, 'joined', 1500.00),
+  (7, 6, 'joined', 2500.00),
+
+  -- Challenge 8: Charity Challenge (Completed)
+  (8, 6, 'joined', 2500.00),
+  (8, 4, 'joined', 2500.00),
+
+  -- Challenge 9: Altcoin Marathon (In Progress)
+  (9, 8, 'joined', 3500.00),
+  (9, 9, 'joined', 2500.00),
+
+  -- Challenge 10: Freelance Frenzy (Completed)
+  (10, 9, 'joined', 4000.00),
+  (10, 7, 'joined', 3000.00);
 
 INSERT INTO budgets (user_id, budget_name, period_start, period_end) VALUES
     -- Michael Thompson

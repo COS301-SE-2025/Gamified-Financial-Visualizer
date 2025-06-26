@@ -8,9 +8,9 @@ import bronzeMedal from '../../assets/Images/badges/bronzeMedal.png';
 
 // Utility for top 3 medals
 const getMedalIcon = (rank) => {
-  if (rank === 1) return goldMedal;
-  if (rank === 2) return silverMedal;
-  if (rank === 3) return bronzeMedal;
+  if (rank === 0) return goldMedal;
+  if (rank === 1) return silverMedal;
+  if (rank === 2) return bronzeMedal;
   return null;
 };
 
