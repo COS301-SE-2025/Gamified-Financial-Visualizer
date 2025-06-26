@@ -210,45 +210,86 @@ router.delete('/:userId', async (req: Request, res: Response) => {
   }
 });
 
-/**
- * @route PUT /api/auth/:userId/update-profile
- * @brief Allows a user to update their full name and username
- */
-router.put('/:userId/update-profile', async (req: Request, res: Response): Promise<void> => {
-  const { userId } = req.params;
-  const { username, full_name } = req.body;
 
-  if (!username && !full_name) {
+/**
+ * @route PUT /api/auth/:userId/settings
+ * @desc Updates user settings including username, theme, avatar, preferences, 2FA
+ */
+router.put('/:userId/settings', async (req: Request, res: Response) => {
+  const { userId } = req.params;
+  const updates = req.body;
+
+  if (!userId || Object.keys(updates).length === 0) {
     res.status(400).json({
       status: 'error',
-      message: 'At least one of username or full_name must be provided.',
+      message: 'Missing user ID or updates in request body.',
     });
+    return;
   }
 
   try {
-    const updatedUser = await userService.updateUserProfile(Number(userId), {
-      username,
-      full_name
-    });
-
-    logger.info(`[Auth] Updated profile for user ID ${userId}`);
+    await userService.updateUserSettings(Number(userId), updates);
+    logger.info(`[Auth] Settings updated for user ID ${userId}`);
     res.status(200).json({
       status: 'success',
-      message: 'User profile updated successfully.',
-      data: {
-        id: updatedUser.user_id,
-        username: updatedUser.username,
-        full_name: updatedUser.full_name,
-      },
+      message: 'User settings updated successfully.',
     });
-  } catch (error) {
-    logger.error(`[Auth] Failed to update profile for user ID ${userId}:`, error);
+  } catch (error: any) {
+    logger.error(`[Auth] Failed to update settings for user ID ${userId}:`, error);
+
+    if (error.message === 'Username already taken') {
+      res.status(409).json({
+        status: 'error',
+        message: 'That username is already in use.',
+      });
+      return;
+    }
+
     res.status(500).json({
       status: 'error',
-      message: 'Internal server error while updating user profile.',
+      message: 'Internal server error while updating user settings.',
     });
+    return;
   }
 });
+
+/**
+ * @route PUT /api/auth/:userId/change-password
+ * @desc Changes the user's password with validation
+ */
+router.put(
+  '/:userId/change-password',
+  [
+    body('currentPassword').notEmpty().withMessage('Current password required'),
+    body('newPassword')
+      .isLength({ min: 8 }).withMessage('New password must be at least 8 characters')
+      .matches(/[a-z]/).withMessage('Include lowercase')
+      .matches(/[A-Z]/).withMessage('Include uppercase')
+      .matches(/\d/).withMessage('Include a number')
+      .matches(/[\W_]/).withMessage('Include a special character'),
+    body('confirmPassword').custom((value, { req }) => {
+      if (value !== req.body.newPassword) throw new Error('Passwords do not match');
+      return true;
+    })
+  ],
+  async (req: Request, res: Response): Promise<void> => {
+    const { userId } = req.params;
+    const { currentPassword, newPassword } = req.body;
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      res.status(400).json({ status: 'error', errors: errors.array() });
+      return;
+    }
+
+    try {
+      await userService.changeUserPassword(Number(userId), currentPassword, newPassword);
+      res.status(200).json({ status: 'success', message: 'Password updated successfully.' });
+    } catch (err: any) {
+      res.status(400).json({ status: 'error', message: err.message || 'Password change failed.' });
+    }
+  }
+);
 
 
 

@@ -1,8 +1,11 @@
 #!/bin/bash
+
+# Load environment variables (e.g., DB_NAME from .env)
 set -a
 source "$(dirname "$0")/../.env"
 set +a
 
+# Drop custom functions first to avoid dependency errors
 echo "🧹 Dropping existing functions..."
 sudo -u postgres psql -d "$DB_NAME" <<EOF
 DROP FUNCTION IF EXISTS adjust_goal_on_progress_update() CASCADE;
@@ -18,6 +21,7 @@ DROP FUNCTION IF EXISTS calculate_goal_xp() CASCADE;
 DROP FUNCTION IF EXISTS update_tier_status() CASCADE;
 EOF
 
+# Drop all tables in the public schema
 echo "🗑️ Dropping all existing tables..."
 sudo -u postgres psql -d "$DB_NAME" <<EOF
 DO \$\$
@@ -33,21 +37,23 @@ END
 \$\$;
 EOF
 
-echo "📥 Loading new schema..."
+# Apply schema
+echo "📥 Loading new schema from schema_dump_v2.sql..."
 sudo -u postgres psql -d "$DB_NAME" -1 -f "$(dirname "$0")/../db/schema_dump_v2.sql"
 
+# Grant permissions to devuser
 echo "🔐 Setting permissions for devuser..."
 sudo -u postgres psql -d "$DB_NAME" <<EOF
--- Grant usage on the schema
+-- Grant usage on schema
 GRANT USAGE ON SCHEMA public TO devuser;
 
--- Grant privileges on existing tables
+-- Grant access to all tables
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO devuser;
 
--- Grant privileges on sequences (for SERIAL primary keys)
+-- Grant access to all sequences
 GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO devuser;
 
--- Automatically grant privileges on new tables/sequences/functions
+-- Automatically grant on future tables/sequences/functions
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO devuser;
 
@@ -55,4 +61,4 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public
 GRANT USAGE, SELECT, UPDATE ON SEQUENCES TO devuser;
 EOF
 
-echo "✅ Schema loaded and permissions granted."
+echo "✅ Database reset complete with schema and permissions loaded."
