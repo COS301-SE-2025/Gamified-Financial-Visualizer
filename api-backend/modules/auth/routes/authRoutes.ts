@@ -207,45 +207,275 @@ router.delete('/:userId', async (req: Request, res: Response) => {
   }
 });
 
-/**
- * @route PUT /api/auth/:userId/update-profile
- * @brief Allows a user to update their full name and username
- */
-router.put('/:userId/update-profile', async (req: Request, res: Response): Promise<void> => {
-  const { userId } = req.params;
-  const { username, full_name } = req.body;
 
-  if (!username && !full_name) {
+/**
+ * @route PUT /api/auth/:userId/settings
+ * @desc Updates user settings including username, theme, avatar, preferences, 2FA
+ */
+router.put('/:userId/settings', async (req: Request, res: Response) => {
+  const { userId } = req.params;
+  const updates = req.body;
+
+  if (!userId || Object.keys(updates).length === 0) {
     res.status(400).json({
       status: 'error',
-      message: 'At least one of username or full_name must be provided.',
+      message: 'Missing user ID or updates in request body.',
     });
+    return;
   }
 
   try {
-    const updatedUser = await userService.updateUserProfile(Number(userId), {
-      username,
-      full_name
-    });
-
-    logger.info(`[Auth] Updated profile for user ID ${userId}`);
+    await userService.updateUserSettings(Number(userId), updates);
+    logger.info(`[Auth] Settings updated for user ID ${userId}`);
     res.status(200).json({
       status: 'success',
-      message: 'User profile updated successfully.',
-      data: {
-        id: updatedUser.user_id,
-        username: updatedUser.username,
-        full_name: updatedUser.full_name,
-      },
+      message: 'User settings updated successfully.',
     });
-  } catch (error) {
-    logger.error(`[Auth] Failed to update profile for user ID ${userId}:`, error);
+  } catch (error: any) {
+    logger.error(`[Auth] Failed to update settings for user ID ${userId}:`, error);
+
+    if (error.message === 'Username already taken') {
+      res.status(409).json({
+        status: 'error',
+        message: 'That username is already in use.',
+      });
+      return;
+    }
+
     res.status(500).json({
       status: 'error',
-      message: 'Internal server error while updating user profile.',
+      message: 'Internal server error while updating user settings.',
+    });
+    return;
+  }
+});
+
+/**
+ * @route PUT /api/auth/:userId/change-password
+ * @desc Changes the user's password with validation
+ */
+router.put(
+  '/:userId/change-password',
+  [
+    body('currentPassword').notEmpty().withMessage('Current password required'),
+    body('newPassword')
+      .isLength({ min: 8 }).withMessage('New password must be at least 8 characters')
+      .matches(/[a-z]/).withMessage('Include lowercase')
+      .matches(/[A-Z]/).withMessage('Include uppercase')
+      .matches(/\d/).withMessage('Include a number')
+      .matches(/[\W_]/).withMessage('Include a special character'),
+    body('confirmPassword').custom((value, { req }) => {
+      if (value !== req.body.newPassword) throw new Error('Passwords do not match');
+      return true;
+    })
+  ],
+  async (req: Request, res: Response): Promise<void> => {
+    const { userId } = req.params;
+    const { currentPassword, newPassword } = req.body;
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      res.status(400).json({ status: 'error', errors: errors.array() });
+      return;
+    }
+
+    try {
+      await userService.changeUserPassword(Number(userId), currentPassword, newPassword);
+      res.status(200).json({ status: 'success', message: 'Password updated successfully.' });
+    } catch (err: any) {
+      res.status(400).json({ status: 'error', message: err.message || 'Password change failed.' });
+    }
+  }
+);
+
+
+
+// =============== Profile Page Specific Functions ============== //
+
+/**
+ * @route GET /api/auth/top-bar/:userId
+ * @desc Returns username, avatar, banner, and join date for the profile top bar
+ */
+router.get('/top-bar/:userId', async (req: Request, res: Response) => {
+  const userId = Number(req.params.userId);
+
+  try {
+    const data = await userService.getProfileTopBar(userId);
+    res.status(200).json({
+      status: 'success',
+      message: 'Profile top bar data loaded.',
+      data,
+    });
+  } catch (error) {
+    logger.error(`[Auth] Failed to fetch top bar for user ID ${userId}:`, error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to load profile top bar data.',
     });
   }
 });
+
+/**
+ * @route GET /api/auth/sidebar/:userId
+ * @desc Returns sidebar stats: goals, achievements, accounts, transactions, communities, lessons
+ */
+router.get('/sidebar/:userId', async (req: Request, res: Response) => {
+  const userId = Number(req.params.userId);
+
+  try {
+    const stats = await userService.getUserSidebarStats(userId);
+    res.status(200).json({
+      status: 'success',
+      message: 'Sidebar statistics loaded.',
+      data: stats
+    });
+  } catch (error) {
+    logger.error(`[Auth] Failed to fetch sidebar stats for user ID ${userId}:`, error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to load sidebar stats.'
+    });
+  }
+});
+
+/**
+ * @route GET /api/auth/profile/current-goals/:userId
+ * @desc Returns current goals for the user
+ */
+router.get('/profile/current-goals/:userId', async (req: Request, res: Response) => {
+  const userId = Number(req.params.userId);
+
+  try {
+    const goals = await userService.getCurrentUserGoals(userId);
+    res.status(200).json({
+      status: 'success',
+      message: 'Current goals fetched successfully.',
+      data: goals,
+    });
+  } catch (error) {
+    logger.error(`[Auth] Failed to fetch current goals for user ID ${userId}:`, error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Could not load current goals.',
+    });
+  }
+});
+
+/**
+ * @route GET /api/auth/profile/performance-stats/:userId
+ * @desc Returns performance stats (accuracy, rank, challenges, goals)
+ */
+router.get('/profile/performance-stats/:userId', async (req: Request, res: Response) => {
+  const userId = Number(req.params.userId);
+
+  try {
+    const stats = await userService.getUserPerformanceStats(userId);
+    res.status(200).json({
+      status: 'success',
+      message: 'Performance stats fetched successfully.',
+      data: stats,
+    });
+  } catch (error) {
+    logger.error(`[Auth] Failed to fetch performance stats for user ID ${userId}:`, error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Could not load performance stats.',
+    });
+  }
+});
+
+/**
+ * @route GET /api/auth/profile/recent-achievements/:userId
+ * @desc Returns top 3 most recent achievements for a user
+ */
+router.get('/profile/recent-achievements/:userId', async (req: Request, res: Response) => {
+  const userId = Number(req.params.userId);
+
+  try {
+    const achievements = await userService.getRecentAchievements(userId);
+    res.status(200).json({
+      status: 'success',
+      message: 'Recent achievements fetched successfully.',
+      data: achievements,
+    });
+  } catch (error) {
+    logger.error(`[Auth] Failed to fetch recent achievements for user ID ${userId}:`, error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Could not load recent achievements.',
+    });
+  }
+});
+
+/**
+ * @route GET /api/auth/profile/communities/:userId
+ * @desc Returns all communities the user is a member of
+ */
+router.get('/profile/communities/:userId', async (req: Request, res: Response) => {
+  const userId = Number(req.params.userId);
+
+  try {
+    const communities = await userService.getUserCommunities(userId);
+    res.status(200).json({
+      status: 'success',
+      message: 'User communities fetched successfully.',
+      data: communities,
+    });
+  } catch (error) {
+    logger.error(`[Auth] Failed to fetch communities for user ID ${userId}:`, error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Could not load user communities.',
+    });
+  }
+});
+
+/**
+ * @route GET /api/auth/profile/performance-summary/:userId
+ * @desc Returns performance score, label, avatar, level, and tier
+ */
+router.get('/profile/performance-summary/:userId', async (req: Request, res: Response) => {
+  const userId = Number(req.params.userId);
+
+  try {
+    const summary = await userService.getUserPerformanceSummary(userId);
+    res.status(200).json({
+      status: 'success',
+      message: 'Performance summary retrieved successfully.',
+      data: summary,
+    });
+  } catch (error) {
+    logger.error(`[Auth] Failed to fetch performance summary for user ID ${userId}:`, error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Could not fetch performance summary.',
+    });
+  }
+});
+
+/**
+ * @route GET /api/auth/profile/level-progress/:userId
+ * @desc Returns level progress including XP, level, tier, and points to next tier
+ */
+router.get('/profile/level-progress/:userId', async (req: Request, res: Response) => {
+  const userId = Number(req.params.userId);
+
+  try {
+    const progress = await userService.getUserLevelProgress(userId);
+    res.status(200).json({
+      status: 'success',
+      message: 'Level progress retrieved successfully.',
+      data: progress,
+    });
+  } catch (error) {
+    logger.error(`[Auth] Failed to fetch level progress for user ID ${userId}:`, error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Could not load level progress.',
+    });
+  }
+});
+
 
 
 /**

@@ -490,21 +490,29 @@ CREATE TABLE budget_categories (
 -- TRANSACTIONS
 CREATE TABLE transactions (
     transaction_id SERIAL PRIMARY KEY,
+    
     account_id INT NOT NULL REFERENCES accounts(account_id) ON DELETE CASCADE,
-    category_id INT REFERENCES categories(category_id),
-    custom_category_id INT REFERENCES custom_categories(custom_category_id),
+    
+    category_id INT REFERENCES categories(category_id) ON DELETE SET NULL,
+    custom_category_id INT REFERENCES custom_categories(custom_category_id) ON DELETE SET NULL,
     budget_id INT REFERENCES budgets(budget_id) ON DELETE SET NULL,
+    
     transaction_amount NUMERIC(12, 2) NOT NULL CHECK (transaction_amount != 0),
+    
     transaction_type VARCHAR(20) NOT NULL CHECK (
         transaction_type IN ('expense', 'income', 'transfer', 'fee', 'withdrawal', 'deposit')
     ),
+    
     transaction_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     transaction_name TEXT NOT NULL DEFAULT '',
     is_recurring BOOLEAN NOT NULL DEFAULT FALSE,
+
     linked_goal_id INT REFERENCES goals(goal_id) ON DELETE SET NULL,
     linked_challenge_id INT REFERENCES challenges(challenge_id) ON DELETE SET NULL,
+
     points_awarded INT DEFAULT 0 CHECK (points_awarded >= 0),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
     CHECK (
         (category_id IS NULL AND custom_category_id IS NOT NULL)
         OR
@@ -531,7 +539,6 @@ CREATE TRIGGER check_duplicate_global_category
 BEFORE INSERT OR UPDATE ON custom_categories
 FOR EACH ROW
 EXECUTE FUNCTION prevent_duplicate_category();
-
 
 
 
@@ -578,6 +585,15 @@ CREATE TABLE lessons (
     content TEXT NOT NULL,
     estimated_duration INT, -- in minutes (optional)
     UNIQUE (module_id, lesson_number)
+);
+
+
+-- LESSON PROGRESS
+CREATE TABLE user_lessons (
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    lesson_id INT NOT NULL REFERENCES lessons(lesson_id) ON DELETE CASCADE,
+    completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, lesson_id)
 );
 
 -- QUIZZES
@@ -644,8 +660,9 @@ CREATE TABLE user_points (
     user_id INT PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
     total_points INT NOT NULL DEFAULT 0,
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    tier_status VARCHAR(20) NOT NULL DEFAULT 'wood' CHECK (
-    tier_status IN ('wood', 'bronze', 'silver', 'gold', 'platinum', 'diamond'))
+    tier_status VARCHAR(20) NOT NULL CHECK (
+        tier_status IN ('Wood', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond')
+    )
 );
 
 -- USER POINTS HISTORY
@@ -668,6 +685,49 @@ CREATE TABLE point_rules (
     ),
     base_points INT NOT NULL CHECK (base_points >= 0)
 );
+
+
+
+CREATE OR REPLACE FUNCTION calculate_goal_xp(goal_type TEXT, target NUMERIC, current NUMERIC)
+RETURNS INT AS $$
+DECLARE
+  base_points INT := 75;  -- fixed for goal_completed
+BEGIN
+  RETURN base_points +
+    CASE
+      WHEN goal_type = 'savings' THEN FLOOR(current / 1000) * 1
+      WHEN goal_type = 'debt' THEN FLOOR(current / 500) * 2
+      WHEN goal_type = 'investment' THEN FLOOR(current / 1000) * 3
+      WHEN goal_type = 'spending limit' THEN FLOOR(target / 1000) * 1
+      WHEN goal_type = 'donation' THEN FLOOR(current / 100) * 1
+      ELSE 0
+    END;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+
+
+CREATE OR REPLACE FUNCTION update_tier_status()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.tier_status := CASE
+    WHEN NEW.total_points >= 15000 THEN 'Diamond'
+    WHEN NEW.total_points >= 10000 THEN 'Platinum'
+    WHEN NEW.total_points >= 6000 THEN 'Gold'
+    WHEN NEW.total_points >= 3000 THEN 'Silver'
+    WHEN NEW.total_points >= 1000 THEN 'Bronze'
+    ELSE 'Wood'
+  END;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER trg_update_tier_status
+BEFORE INSERT OR UPDATE ON user_points
+FOR EACH ROW
+EXECUTE FUNCTION update_tier_status();
+
 
 
 
@@ -747,3 +807,8 @@ CREATE INDEX idx_achievements_trigger_condition ON achievements USING GIN (trigg
 
 -- JSONB field: AR customizations in user preferences
 CREATE INDEX idx_user_preferences_ar_customizations ON user_preferences USING GIN (ar_customizations_jsonb);
+
+-- Tier-based performance dashboards
+CREATE INDEX idx_user_points_tier_points
+ON user_points(tier_status, total_points DESC);
+
