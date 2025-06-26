@@ -47,7 +47,6 @@ export async function upsertToken(user_id: number, token: string, expires_at: Da
 
 }
 
-
 export async function authenticateUser(username: string, hashedPassword: string) {
   const query = 'SELECT * FROM users WHERE username = $1 AND hashed_password = $2';
   try {
@@ -124,25 +123,6 @@ export async function getUserByUsername(username: string) {
   }
 }
 
-export async function deleteUser(user_id: number): Promise<void> {
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
-
-    // All related records are set to cascade via foreign keys in your schema
-    await client.query('DELETE FROM users WHERE user_id = $1', [user_id]);
-
-    await client.query('COMMIT');
-    logger.info(`[AuthService] Deleted user ID ${user_id}`);
-  } catch (err) {
-    await client.query('ROLLBACK');
-    logger.error(`[AuthService] Failed to delete user ID ${user_id}:`, err);
-    throw err;
-  } finally {
-    client.release();
-  }
-}
-
 export async function updatePassword(user_id: number, newHashedPassword: string) {
   const query = 'UPDATE users SET hashed_password = $1, updated_at = CURRENT_TIMESTAMP WHERE user_id = $2';
   try {
@@ -150,17 +130,6 @@ export async function updatePassword(user_id: number, newHashedPassword: string)
     logger.info(`[AuthService] Password updated for user ID ${user_id}`);
   } catch (err) {
     logger.error(`[AuthService] Failed to update password for user ID ${user_id}:`, err);
-    throw err;
-  }
-}
-
-export async function getUserPreferences(user_id: number) {
-  const query = 'SELECT * FROM user_preferences WHERE user_id = $1';
-  try {
-    const result = await pool.query(query, [user_id]);
-    return result.rows[0];
-  } catch (err) {
-    logger.error(`[AuthService] Failed to fetch preferences for user ID ${user_id}:`, err);
     throw err;
   }
 }
@@ -248,157 +217,11 @@ export async function resetPassword(token: string, newHashedPassword: string) {
   }
 }
 
-export async function changePassword(user_id: number, oldHashedPassword: string, newHashedPassword: string) {
-  const user = await getUserById(user_id);
-  if (!user || user.hashed_password !== oldHashedPassword) {
-    throw new Error('Incorrect old password');
-  }
-  return updatePassword(user_id, newHashedPassword);
-}
-
-export async function updateUserSettings(user_id: number, updates: {
-  username?: string;
-  theme?: 'light' | 'dark';
-  avatar_id?: number;
-  inAppNotifications?: boolean;
-  outOfAppEnabled?: boolean;
-  twoFactorEnabled?: boolean;
-}) {
-  const client = await pool.connect();
-
-  try {
-    await client.query('BEGIN');
-
-    // === 1. Update username if provided
-    if (updates.username) {
-      try {
-        await client.query(
-          `
-          UPDATE users SET
-            username = $1,
-            updated_at = CURRENT_TIMESTAMP
-          WHERE user_id = $2
-        `,
-          [updates.username, user_id]
-        );
-      } catch (err: any) {
-        if (err.code === '23505') {
-          throw new Error('Username already taken');
-        }
-        throw err;
-      }
-    }
-
-    // === 2. Update user_preferences safely
-    const shouldUpdatePreferences =
-      typeof updates.theme !== 'undefined' ||
-      typeof updates.avatar_id !== 'undefined' ||
-      typeof updates.inAppNotifications !== 'undefined';
-
-    if (shouldUpdatePreferences) {
-      let currentAvatarId: number = 1;
-      let currentNotifications: boolean = true;
-
-      const prefResult = await client.query(
-        'SELECT avatar_id, in_app_notifications_enabled FROM user_preferences WHERE user_id = $1',
-        [user_id]
-      );
-
-      if (prefResult.rows.length > 0) {
-        currentAvatarId = prefResult.rows[0].avatar_id;
-        currentNotifications = prefResult.rows[0].in_app_notifications_enabled;
-      }
-
-      if (typeof updates.avatar_id !== 'undefined') {
-        if (!Number.isInteger(updates.avatar_id) || updates.avatar_id <= 0) {
-          throw new Error(`Invalid avatar_id: must be a positive integer.`);
-        }
-      }
-
-      await client.query(
-        `
-        INSERT INTO user_preferences (user_id, theme, avatar_id, in_app_notifications_enabled)
-        VALUES ($1, $2, $3, $4)
-        ON CONFLICT (user_id) DO UPDATE SET
-          theme = COALESCE(EXCLUDED.theme, user_preferences.theme),
-          avatar_id = COALESCE(EXCLUDED.avatar_id, user_preferences.avatar_id),
-          in_app_notifications_enabled = COALESCE(EXCLUDED.in_app_notifications_enabled, user_preferences.in_app_notifications_enabled),
-          updated_at = CURRENT_TIMESTAMP
-      `,
-        [
-          user_id,
-          updates.theme ?? null,
-          updates.avatar_id ?? currentAvatarId,
-          updates.inAppNotifications ?? currentNotifications,
-        ]
-      );
-    }
-
-    // === 3. Update out-of-app push settings
-    if (typeof updates.outOfAppEnabled !== 'undefined') {
-      const result = await client.query(
-        'UPDATE user_push_subscriptions SET enabled = $1 WHERE user_id = $2',
-        [updates.outOfAppEnabled, user_id]
-      );
-
-      if (result.rowCount === 0) {
-        logger.warn(`[AuthService] No push subscription found. Inserting default for user ID ${user_id}`);
-        await client.query(
-          `
-          INSERT INTO user_push_subscriptions (user_id, endpoint, p256dh, auth, enabled)
-          VALUES ($1, $2, $3, $4, $5)
-        `,
-          [
-            user_id,
-            'placeholder-endpoint',
-            'placeholder-p256dh',
-            'placeholder-auth',
-            updates.outOfAppEnabled,
-          ]
-        );
-        logger.info(`[AuthService] Default push subscription inserted for user ID ${user_id}`);
-      }
-    }
-
-    // === 4. Update 2FA
-    if (typeof updates.twoFactorEnabled !== 'undefined') {
-      await setTwoFactorEnabled(user_id, updates.twoFactorEnabled);
-    }
-
-    await client.query('COMMIT');
-    logger.info(`[AuthService] Updated settings for user ID ${user_id}`);
-  } catch (err) {
-    await client.query('ROLLBACK');
-    logger.error(`[AuthService] Failed to update settings for user ID ${user_id}:`, err);
-    throw err;
-  } finally {
-    client.release();
-  }
-}
-
-export async function changeUserPassword(user_id: number, currentPassword: string, newPassword: string): Promise<void> {
-  const client = await pool.connect();
-  try {
-    // 1. Get current hashed password
-    const { rows } = await client.query('SELECT hashed_password FROM users WHERE user_id = $1', [user_id]);
-    if (rows.length === 0) throw new Error('User not found');
-
-    const valid = await argon2.verify(rows[0].hashed_password, currentPassword);
-    if (!valid) throw new Error('Current password is incorrect');
-
-    // 2. Hash and update new password
-    const hashedNew = await argon2.hash(newPassword, { type: argon2.argon2id });
-    await client.query('UPDATE users SET hashed_password = $1, updated_at = CURRENT_TIMESTAMP WHERE user_id = $2', [hashedNew, user_id]);
-  } finally {
-    client.release();
-  }
-}
-
-
-
 
 
 // =============== Profile Page Specific Functions ============== //
+
+
 
 export async function getProfileTopBar(user_id: number) {
   const query = `
@@ -765,4 +588,203 @@ export async function getUserLevelProgress(user_id: number) {
     tier_xp_required: tierXPRequired,
     points_to_next_tier: pointsToNextTier,
   };
+}
+
+
+
+// =============== Settings Page Specific Functions ============== //
+
+export async function getUserSettings(user_id: number) {
+  const client = await pool.connect();
+  try {
+    // 1. Fetch core user info
+    const { rows: userRows } = await client.query(
+      `SELECT username, two_factor_enabled FROM users WHERE user_id = $1`,
+      [user_id]
+    );
+    if (userRows.length === 0) {
+      throw new Error('User not found');
+    }
+    const user = userRows[0];
+
+    // 2. Preferences
+    const { rows: prefRows } = await client.query(
+      `SELECT theme, avatar_id, in_app_notifications_enabled FROM user_preferences WHERE user_id = $1`,
+      [user_id]
+    );
+    const preferences = prefRows[0] || null;
+
+    // 3. Push notifications (out-of-app)
+    const { rows: pushRows } = await client.query(
+      `SELECT enabled FROM user_push_subscriptions WHERE user_id = $1`,
+      [user_id]
+    );
+    const outOfAppEnabled = pushRows[0]?.enabled ?? false;
+
+    return {
+      username: user.username,
+      preferences,
+      outOfAppEnabled,
+      twoFactorEnabled: user.two_factor_enabled
+    };
+  } finally {
+    client.release();
+  }
+}
+
+export async function updateUserSettings(user_id: number, updates: {
+  username?: string;
+  theme?: 'light' | 'dark';
+  avatar_id?: number;
+  inAppNotifications?: boolean;
+  outOfAppEnabled?: boolean;
+  twoFactorEnabled?: boolean;
+}) {
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    // === 1. Update username if provided
+    if (updates.username) {
+      try {
+        await client.query(
+          `
+          UPDATE users SET
+            username = $1,
+            updated_at = CURRENT_TIMESTAMP
+          WHERE user_id = $2
+        `,
+          [updates.username, user_id]
+        );
+      } catch (err: any) {
+        if (err.code === '23505') {
+          throw new Error('Username already taken');
+        }
+        throw err;
+      }
+    }
+
+    // === 2. Update user_preferences safely
+    const shouldUpdatePreferences =
+      typeof updates.theme !== 'undefined' ||
+      typeof updates.avatar_id !== 'undefined' ||
+      typeof updates.inAppNotifications !== 'undefined';
+
+    if (shouldUpdatePreferences) {
+      let currentAvatarId: number = 1;
+      let currentNotifications: boolean = true;
+
+      const prefResult = await client.query(
+        'SELECT avatar_id, in_app_notifications_enabled FROM user_preferences WHERE user_id = $1',
+        [user_id]
+      );
+
+      if (prefResult.rows.length > 0) {
+        currentAvatarId = prefResult.rows[0].avatar_id;
+        currentNotifications = prefResult.rows[0].in_app_notifications_enabled;
+      }
+
+      if (typeof updates.avatar_id !== 'undefined') {
+        if (!Number.isInteger(updates.avatar_id) || updates.avatar_id <= 0) {
+          throw new Error(`Invalid avatar_id: must be a positive integer.`);
+        }
+      }
+
+      await client.query(
+        `
+        INSERT INTO user_preferences (user_id, theme, avatar_id, in_app_notifications_enabled)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (user_id) DO UPDATE SET
+          theme = COALESCE(EXCLUDED.theme, user_preferences.theme),
+          avatar_id = COALESCE(EXCLUDED.avatar_id, user_preferences.avatar_id),
+          in_app_notifications_enabled = COALESCE(EXCLUDED.in_app_notifications_enabled, user_preferences.in_app_notifications_enabled),
+          updated_at = CURRENT_TIMESTAMP
+      `,
+        [
+          user_id,
+          updates.theme ?? null,
+          updates.avatar_id ?? currentAvatarId,
+          updates.inAppNotifications ?? currentNotifications,
+        ]
+      );
+    }
+
+    // === 3. Update out-of-app push settings
+    if (typeof updates.outOfAppEnabled !== 'undefined') {
+      const result = await client.query(
+        'UPDATE user_push_subscriptions SET enabled = $1 WHERE user_id = $2',
+        [updates.outOfAppEnabled, user_id]
+      );
+
+      if (result.rowCount === 0) {
+        logger.warn(`[AuthService] No push subscription found. Inserting default for user ID ${user_id}`);
+        await client.query(
+          `
+          INSERT INTO user_push_subscriptions (user_id, endpoint, p256dh, auth, enabled)
+          VALUES ($1, $2, $3, $4, $5)
+        `,
+          [
+            user_id,
+            'placeholder-endpoint',
+            'placeholder-p256dh',
+            'placeholder-auth',
+            updates.outOfAppEnabled,
+          ]
+        );
+        logger.info(`[AuthService] Default push subscription inserted for user ID ${user_id}`);
+      }
+    }
+
+    // === 4. Update 2FA
+    if (typeof updates.twoFactorEnabled !== 'undefined') {
+      await setTwoFactorEnabled(user_id, updates.twoFactorEnabled);
+    }
+
+    await client.query('COMMIT');
+    logger.info(`[AuthService] Updated settings for user ID ${user_id}`);
+  } catch (err) {
+    await client.query('ROLLBACK');
+    logger.error(`[AuthService] Failed to update settings for user ID ${user_id}:`, err);
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+export async function changeUserPassword(user_id: number, currentPassword: string, newPassword: string): Promise<void> {
+  const client = await pool.connect();
+  try {
+    // 1. Get current hashed password
+    const { rows } = await client.query('SELECT hashed_password FROM users WHERE user_id = $1', [user_id]);
+    if (rows.length === 0) throw new Error('User not found');
+
+    const valid = await argon2.verify(rows[0].hashed_password, currentPassword);
+    if (!valid) throw new Error('Current password is incorrect');
+
+    // 2. Hash and update new password
+    const hashedNew = await argon2.hash(newPassword, { type: argon2.argon2id });
+    await client.query('UPDATE users SET hashed_password = $1, updated_at = CURRENT_TIMESTAMP WHERE user_id = $2', [hashedNew, user_id]);
+  } finally {
+    client.release();
+  }
+}
+
+export async function deleteUser(user_id: number): Promise<void> {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // All related records are set to cascade via foreign keys in your schema
+    await client.query('DELETE FROM users WHERE user_id = $1', [user_id]);
+
+    await client.query('COMMIT');
+    logger.info(`[AuthService] Deleted user ID ${user_id}`);
+  } catch (err) {
+    await client.query('ROLLBACK');
+    logger.error(`[AuthService] Failed to delete user ID ${user_id}:`, err);
+    throw err;
+  } finally {
+    client.release();
+  }
 }

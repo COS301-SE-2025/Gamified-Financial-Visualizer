@@ -8,6 +8,7 @@
     "@types/node": "^16.18.126",
     "@types/react": "^19.1.4",
     "@types/react-dom": "^19.1.5",
+    "axios": "^1.10.0",
     "framer-motion": "^12.12.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
