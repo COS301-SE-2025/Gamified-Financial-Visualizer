@@ -5,7 +5,7 @@ import AchievementsLayout from '../../pages/Achievements/AchievementsLayout';
 import badge1 from '../../assets/Images/badges/CoinStack.png';
 import badge2 from '../../assets/Images/badges/notesIcon.png';
 import badge3 from '../../assets/Images/badges/targetIcon.png';
-import badge4 from '../../assets/Images/badges/plantIocn.png';
+import badge4 from '../../assets/Images/badges/plantIcon.png';
 import badge5 from '../../assets/Images/badges/highFiveIcon.png';
 import badge6 from '../../assets/Images/badges/moneyBagIcon.png';
 import badge7 from '../../assets/Images/badges/moneyGrowIcon.png';
