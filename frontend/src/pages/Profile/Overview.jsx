@@ -4,7 +4,7 @@ import { FaCrown, FaChartLine, FaEye, FaTrophy, FaStar } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
 // Profile banner
-import profileBanner from '../../assets/Images/banners/pixelStore.gif';
+import profileBanner from '../../assets/Images/banners/pixelCornerStore.gif';
 
 // Community banner images
 import comm1 from '../../assets/Images/banners/pixelApartment.gif';
@@ -173,7 +173,6 @@ const Overview = () => {
     </div>
   </div>
 </div>
-
 
 
       {/* Middle Row - Two Columns */}
@@ -401,8 +400,6 @@ const Overview = () => {
           ))}
         </div>
       </div>
-
-
     </div>
   );
 };

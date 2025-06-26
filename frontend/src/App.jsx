@@ -12,9 +12,13 @@ import LandingAchievements from './pages/Landing/LandingAchievements';
 import AboutPage from './pages/Landing/about';
 import ContactPage from './pages/Landing/contact';
 
-// The Profile Page Routes
-import ProfilePage from './pages/Profile/ProfilePage';
+// The Dashboard-home Routes
 import Dashboard from './pages/Dashboard/DashboardPage';
+
+// The Profile Page Routes
+import Overview from './pages/Profile/Overview';
+import Settings from './pages/Profile/Settings';
+import ProfileViewLayout from './pages/Profile/ProfileViewLayout'
 
 // The Goals Page Routes
 import GoalsPage from './pages/Goals/GoalsPage';
@@ -86,11 +90,11 @@ function App() {
           <Route path="/learn/incomplete" element={<IncompleteCourses />} />
           <Route path="/modules/:moduleId/lessons" element={<LessonsModulesDetailPage />} />
 
-          <Route path="/learn/complete" element={<CompleteCourses/>}/>
-          <Route path="/learn/incomplete" element={<IncompleteCourses/>}/>
-          <Route path="/modules/:moduleId/lessons" element={<LessonsModulesDetailPage/>} />
-          <Route path="/learning/:moduleSlug/:moduleId/lessons"   element={<LessonsModulesDetailPage />} />
-          
+          <Route path="/learn/complete" element={<CompleteCourses />} />
+          <Route path="/learn/incomplete" element={<IncompleteCourses />} />
+          <Route path="/modules/:moduleId/lessons" element={<LessonsModulesDetailPage />} />
+          <Route path="/learning/:moduleSlug/:moduleId/lessons" element={<LessonsModulesDetailPage />} />
+
           {/* Routes for the help page */}
           <Route path="/support" element={<HelpViewLayout />}>
             <Route index element={<HelpMain />} />
@@ -105,10 +109,8 @@ function App() {
           {/* Routes for the Achievements page */}
           <Route path="/achievements" element={<AchievementsPage />} />
           <Route path="/achievements/:id" element={<AchievementDetailPage />} />
-          <Route path="/achievements/complete" element={<CompleteAchievements/>}/>
-          <Route path="/achievements/incomplete" element={<IncompleteAchievements/>}/>
-          
-
+          <Route path="/achievements/complete" element={<CompleteAchievements />} />
+          <Route path="/achievements/incomplete" element={<IncompleteAchievements />} />
 
           {/* Routes for the Community pages */}
           <Route path="/community" element={<CommunityDashboard />} />
@@ -134,7 +136,10 @@ function App() {
           <Route path="/goals/details/:goalId" element={<GoalsDetailPage />} />
 
           {/* Routes for the profile page */}
-          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile" element={<ProfileViewLayout />}>
+            <Route index element={<Overview />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
         </Route>
       </Routes>
     </Router>
