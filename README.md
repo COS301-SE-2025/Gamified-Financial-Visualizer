@@ -88,10 +88,10 @@ This table provides quick access to the key documents and planning resources for
 
 | Resource Name | Description | Link |
 |---------------|-------------|------|
-| **System Requirements Specification (SRS)** | Outlines the functional and non-functional requirements of the system. | [View SRS](https://drive.google.com/drive/folders/1SNT8_zECcaguP18D0xsKKZDJcYN9H5AT?usp=sharing) |
-| **Architectural Requirements Specification (ARS)** | Describes system architecture, service design, and technology stack. | [View ARS](https://drive.google.com/drive/folders/1TEZrZn1mY-EfNBvy9Xi22u1kedBqHHuu?usp=sharing) |
-| **User Stories** | User-focused feature breakdown using Agile methodology. | [View User Stories](https://drive.google.com/drive/folders/1M-RTc8-XCj7hHo-bbrS_e_EQcpABaUmq?usp=sharing) |
-| **Use Cases** | Details of system interactions between users and core features. | [View Use Cases](https://drive.google.com/drive/folders/1lj8108uMSNYwX4NIk1CRfGE-tQDHA7yB?usp=sharing) |
+| **Software Requirements Specification (SRS)** | Outlines the functional and non-functional requirements of the system. | [View SRS](https://drive.google.com/file/d/1P-zHO8nlxd5WIi0egwTgvPa18IMBnqpN/view?usp=drive_link) |
+| **Architectural Requirements Specification (ARS)** | Describes system architecture, service design, and technology stack. | [View ARS](https://drive.google.com/file/d/1CMtMXzBY3NeMmU1tTGMOL_54sTObispc/view?usp=sharing) |
+| **User Stories** | User-focused feature breakdown using Agile methodology. | [View User Stories](https://drive.google.com/file/d/15W0QNBl9YfHC1M-liT4e9_xkXi2rQUrP/view?usp=drive_link) |
+| **Use Cases** | Details of system interactions between users and core features. | [View Use Cases](https://drive.google.com/file/d/1RYJx_-DA8SJ5KiFeP35hvWPykjhdn8F3/view?usp=drive_link) |
 | **Project Board & Sprint Tracker** | A live board displaying tasks, issues, and sprint progress. | [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/140) |
 | **Domain Model** | A visual representation of key entities and their relationships. | [View Domain Model](https://drive.google.com/drive/folders/1DQmIiDWRnHQmnQpzgAyw23VIWb4kCm4y?usp=sharing) |
 | **Project / Group Framework** | Overview of team structure, responsibilities, and collaboration tools. | [View Group Framework](https://www.notion.so/Gamified-Financial-Visualizer-1f842477e71680879e19d535dcb688dc?pvs=4) |
