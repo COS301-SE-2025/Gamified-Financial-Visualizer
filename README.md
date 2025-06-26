@@ -140,8 +140,8 @@ This table provides quick access to the key documents and planning resources for
 
 <h2 align="center">Meet the CodeBlooded Team</h2>
 
-<p align="center">
-  <img src="./assests/codeBloodeTeam.jpg" alt="Team Photo" width="100%"/>
+<p align="center" style="height: 300px;">
+  <img src="./assets/codeBloodeTeam.jpg" alt="Team Photo" style="width: 100%; height: auto; object-fit: contain;"/>
 </p>
 
 | Photo | Name | About | Role | Links |
