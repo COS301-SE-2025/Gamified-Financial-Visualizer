@@ -172,7 +172,7 @@ export async function getChallengesByUserCategorized(user_id: number): Promise<{
       ch.challenge_type,
       ch.category_id,
       ch.target_amount,
-      cp.progress_amount AS current_value,
+      COALESCE(cp.progress_amount, 0) AS current_value,
       cp.join_date AS actual_start,
       cp.last_updated AS actual_end,
       ch.difficulty,
@@ -180,16 +180,19 @@ export async function getChallengesByUserCategorized(user_id: number): Promise<{
       c.community_name,
       b.banner_image_path,
       (
-        SELECT COUNT(*) FROM challenge_progress cp2
-        WHERE cp2.challenge_id = ch.challenge_id
-          AND cp2.participation_status = 'joined'
+        SELECT COUNT(*) FROM community_members cm
+        WHERE cm.community_id = ch.community_id
+          AND cm.membership_status = 'accepted'
       ) AS participants
-    FROM challenge_progress cp
-    JOIN challenges ch ON ch.challenge_id = cp.challenge_id
+    FROM challenges ch
     JOIN communities c ON c.community_id = ch.community_id
     LEFT JOIN banner_images b ON b.banner_id = c.banner_id
-    WHERE cp.user_id = $1
-    ORDER BY ch.challenge_status, cp.join_date DESC;
+    LEFT JOIN challenge_progress cp ON cp.challenge_id = ch.challenge_id AND cp.user_id = $1
+    WHERE ch.community_id IN (
+      SELECT community_id FROM community_members
+      WHERE user_id = $1 AND membership_status = 'accepted'
+    )
+    ORDER BY ch.challenge_status, COALESCE(cp.join_date, ch.start_date) DESC;
   `;
 
   const { rows } = await pool.query(query, [user_id]);
