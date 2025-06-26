@@ -24,6 +24,7 @@ import badge18 from '../../assets/Images/badges/meeting.png';
 import badge19 from '../../assets/Images/badges/profit.png';
 import badge20 from '../../assets/Images/badges//bank.png';
 
+
 const achievements = [
     {
         title: "Cash Hoarder",

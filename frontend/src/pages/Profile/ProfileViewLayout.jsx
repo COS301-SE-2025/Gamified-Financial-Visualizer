@@ -1,21 +1,27 @@
-// ProfileViewLayout.jsx
 import React from 'react';
+import { Outlet } from 'react-router-dom';
 import ProfileHeader from '../../layouts/headers/ProfileHeader';
 import ProfileSidebar from '../../layouts/sidebars/ProfileSidebar';
 
-const ProfileViewLayout = ({ children, tab, setTab }) => {
+const ProfileViewLayout = () => {
   return (
-    <div className="h-screen bg-gray-50">
+    <div className="h-screen bg-gray-50 overflow-hidden">
       <div className="flex h-full">
-        <div className="w-1/4 pl-6 pt-6 pb-6"> 
+        {/* Sidebar */}
+        <div className="w-1/4 pl-6 pt-6 pb-6 overflow-y-auto">
           <ProfileSidebar />
         </div>
-        <div className="flex-1 flex flex-col h-full pr-6">
-          <div className="p-6">
-            <ProfileHeader tab={tab} setTab={setTab} />
+
+        {/* Main Section */}
+        <div className="flex-1 flex flex-col pr-6">
+          {/* Header (static) */}
+          <div className="p-6 shrink-0">
+            <ProfileHeader />
           </div>
-          <div className="flex-1 overflow-y-auto px-6 pb-6">
-            {children}
+
+          {/* Scrollable content */}
+          <div className="flex-1 overflow-y-auto px-6 pb-6 min-h-0">
+            <Outlet />
           </div>
         </div>
       </div>

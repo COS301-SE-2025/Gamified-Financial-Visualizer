@@ -2,6 +2,8 @@
 import { Logger } from "winston";
 import pool from "../../../config/db";
 import { logger } from "../../../config/logger";
+import { redisClient } from '../../../config/redis';
+
 
 // 🧠 Get all learning modules
 export async function getAllModules() {
@@ -31,8 +33,23 @@ export async function getCompletedModules(user_id: number) {
       GROUP BY lm.module_id
       ORDER BY lm.module_id ASC;
     `;
-    const result = await pool.query(query, [user_id]);
 
+    // check redis
+    const cacheKey = `completed_modules:${user_id}`;
+    const cachedModules = await redisClient.get(cacheKey);
+    if (cachedModules) {
+      logger.info(`[LearningService] Cache hit for completed modules for user ${user_id}`);
+      return JSON.parse(cachedModules);
+    }
+    const result = await pool.query(query, [user_id]);
+    if (result.rows.length > 0) {
+      // Store in cache for 1 hour
+      await redisClient.set(cacheKey, JSON.stringify(result.rows), {
+        EX: 3600 // 1 hour expiration
+      });
+    } else {
+      logger.info(`[LearningService] No completed modules found for user ${user_id}`);
+    }
     return result.rows
   } catch (error) {
     logger.error('Error fetching completed modules:', error);
@@ -62,8 +79,24 @@ export async function getUncompletedModules(user_id: number) {
       GROUP BY lm.module_id
       ORDER BY lm.module_id ASC;
     `;
+    // check redis
+    const cacheKey = `uncompleted_modules:${user_id}`;
+    const cachedModules = await redisClient.get(cacheKey);
+    if (cachedModules) {
+      logger.info(`[LearningService] Cache hit for uncompleted modules for user ${user_id}`);
+      return JSON.parse(cachedModules);
+    }
     
     const result = await pool.query(query, [user_id]);
+
+    if (result.rows.length > 0) {
+      // Store in cache for 1 hour
+      await redisClient.set(cacheKey, JSON.stringify(result.rows), {
+        EX: 3600 // 1 hour expiration
+      });
+    } else {
+      logger.info(`[LearningService] No uncompleted modules found for user ${user_id}`);
+    }
     return result.rows;
   } catch (error) {
     logger.error('Error fetching uncompleted modules:', error);
@@ -233,42 +266,65 @@ export async function getUserQuizAttemptsForQuiz(user_id: number, quiz_id: numbe
 
 
 export async function getLearningPerformance(user_id: number) {
- const query = `
-    SELECT
-      SUM(CASE WHEN passed THEN 1 ELSE 0 END) AS total_passed,
-      COUNT(*) AS total_attempts,
-      AVG(attempt_score) AS average_score
-    FROM quiz_attempts
-    WHERE user_id = $1;
-  `;
-  const accuracy = await pool.query(query, [user_id]);
+    try {
+    // Get accuracy metrics
+    const accuracyQuery = `
+      SELECT
+        COALESCE(SUM(CASE WHEN passed THEN 1 ELSE 0 END), 0) AS total_passed,
+        COALESCE(COUNT(*), 0) AS total_attempts,
+        COALESCE(AVG(attempt_score), 0) AS average_score
+      FROM quiz_attempts
+      WHERE user_id = $1;
+    `;
+    const accuracy = await pool.query(accuracyQuery, [user_id]);
+    
+    // Get quiz points with proper null handling
+    const quizPointsQuery = `
+      SELECT COALESCE(SUM(CASE WHEN passed THEN 10 ELSE 0 END), 0) AS quiz_points
+      FROM quiz_attempts
+      WHERE user_id = $1;
+    `;
+    const quizPointsResult = await pool.query(quizPointsQuery, [user_id]);
+    const totalPoints = quizPointsResult.rows[0]?.quiz_points 
+      ? parseInt(quizPointsResult.rows[0].quiz_points) 
+      : 0;
 
-  // Fetch points earned through quizzes only
-  const quizPointsQuery = `
-    SELECT COALESCE(SUM(CASE WHEN passed THEN 10 ELSE 0 END), 0) AS quiz_points
-    FROM quiz_attempts
-    WHERE user_id = $1
-  `;
-  const quizPointsResult = await pool.query(quizPointsQuery, [user_id]);
-  const totalPoints = parseInt(quizPointsResult.rows[0].quiz_points) || 0;
+    // Stubbed view count
+    const viewCount = 1;
 
+    // Safely parse all metrics with defaults
+    const averageScore = parseFloat(accuracy.rows[0]?.average_score) || 0;
+    const total_attempts = parseInt(accuracy.rows[0]?.total_attempts) || 0;
+    const total_passed = parseInt(accuracy.rows[0]?.total_passed) || 0;
 
-  // Stubbed view count for now
-  const viewCount = 1;
+    // Calculate composite score
+    const score = averageScore * 0.5 + 
+                 totalPoints * 0.5 + 
+                 viewCount * 0.1 + 
+                 total_attempts * 0.4 + 
+                 total_passed * 0.7;
 
-  const averageScore = parseFloat(accuracy.rows[0].average_score) || 0;
-  const total_attempts = parseInt(accuracy.rows[0].total_attempts) || 0;
-  const total_passed = parseInt(accuracy.rows[0].total_passed) || 0;
-  const score = averageScore * 0.5 + totalPoints * 0.5 + viewCount * 0.1 + total_attempts * 0.4 + total_passed * 0.7;
+    // Scale score to range (300-850)
+    const scaledScore = Math.round(
+      (score / 206) * (850 - 300) + 320
+    );
 
-  const scaledScore = Math.round(
-    (score / 206) * (850 - 300) + 320
-  );
-
-  return scaledScore;
+    return Math.min(Math.max(scaledScore, 300), 850); // Ensure within bounds
+  } catch (error) {
+    console.error(`Error calculating performance for user ${user_id}:`, error);
+    return 300; // Minimum score on error
+  }
 }
 
 export async function getLearningSummary(user_id: number) {
+  // Try to get summary from Redis cache first
+  const cacheKey = `learning_summary:${user_id}`;
+  const cached = await redisClient.get(cacheKey);
+  if (cached) {
+    logger.info(`[LearningService] Cache hit for learning summary for user ${user_id}`);
+    return JSON.parse(cached);
+  }
+
   const performance = await getLearningPerformance(user_id);
   // The credit score is scaled between 300 and 850, so get percentage relative to this range
   const minScore = 300;
@@ -328,6 +384,9 @@ export async function getLearningSummary(user_id: number) {
     score: performance,
     percent: percentCompleted.toFixed(2)
   };
+
+  // Store summary in Redis for 1 hour
+  await redisClient.set(cacheKey, JSON.stringify(summary), { EX: 3600 });
 
   return summary;
 }

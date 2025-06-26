@@ -1,4 +1,4 @@
-// src/pages/Profile/Settings.jsx
+// Settings.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -6,39 +6,29 @@ const Settings = () => {
   const [theme, setTheme] = useState(true);
   const [notifications, setNotifications] = useState(true);
   const [verified, setVerified] = useState(false);
-  const [username, setUsername] = useState(''); // Add username state
-  const [isEditingUsername, setIsEditingUsername] = useState(false); // Add editing state
+  const [username, setUsername] = useState('');
+  const [isEditingUsername, setIsEditingUsername] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState(0);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const navigate = useNavigate();
 
-  // Change avatar configurations
-  // Avatar list (add at top or inside component)
   function importAll(r) {
     return r.keys().map(r);
   }
 
-  // Preload all avatars from folder
   const avatarImages = importAll(
     require.context('../../assets/Images/avatars', false, /\.(png|jpe?g|svg)$/)
   );
-
-  const avatarList = avatarImages.map((src, i) => ({
-    id: i,
-    src,
-  }));
-
-  const [selectedAvatar, setSelectedAvatar] = useState(0);
-  const navigate = useNavigate();
-  const [showConfirm, setShowConfirm] = useState(false);
+  const avatarList = avatarImages.map((src, i) => ({ id: i, src }));
 
   const handleUsernameChange = () => {
-    // Here you would typically make an API call to update the username
     console.log('Username changed to:', username);
     setIsEditingUsername(false);
-    // Reset the username field or update it with the new value from the server
   };
 
   return (
-    <div className="space-y-6">
-      {/* Username Change Section */}
+    <div className="max-w-6xl mx-auto px-2 pb-2 space-y-6 overflow-y-auto">
+      {/* Username */}
       <div className="bg-white shadow rounded-xl p-6">
         <h3 className="font-semibold text-[#88BC46] text-lg mb-4">Change Username</h3>
         {isEditingUsername ? (
@@ -78,30 +68,13 @@ const Settings = () => {
         )}
       </div>
 
-      {/* Toggle Settings Area */}
+      {/* Preferences */}
       <div className="bg-white shadow rounded-xl p-6">
         <h3 className="font-semibold text-[#88BC46] text-lg mb-4">Preferences</h3>
         {[
-          {
-            label: 'Dark Mode',
-            state: theme,
-            setter: setTheme,
-          },
-          {
-            label: 'Enable In-App Notifications',
-            state: notifications,
-            setter: setNotifications,
-          },
-          {
-            label: 'Enable Notifications',
-            state: notifications,
-            setter: setNotifications,
-          },
-          {
-            label: 'Two Factor Verification',
-            state: verified,
-            setter: setVerified,
-          },
+          { label: 'Dark Mode', state: theme, setter: setTheme },
+          { label: 'Enable In-App Notifications', state: notifications, setter: setNotifications },
+          { label: 'Two Factor Verification', state: verified, setter: setVerified },
         ].map(({ label, state, setter }, i) => (
           <div key={i} className="flex items-center justify-between mb-4">
             <p className="text-sm font-medium text-gray-700">{label}</p>
@@ -112,14 +85,14 @@ const Settings = () => {
                 onChange={() => setter(!state)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-200 peer-checked:bg-[#88BC46] rounded-full peer transition-all duration-300"></div>
+              <div className="w-11 h-6 bg-gray-200 peer-checked:bg-[#88BC46] rounded-full transition-all duration-300"></div>
               <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-md transform peer-checked:translate-x-5 transition-transform duration-300"></div>
             </label>
           </div>
         ))}
       </div>
 
-      {/* Password Change Section */}
+      {/* Password */}
       <div className="bg-white shadow rounded-xl p-6">
         <h3 className="font-semibold mb-4 text-[#88BC46]">Change Password</h3>
         <div className="grid gap-4">
@@ -129,7 +102,7 @@ const Settings = () => {
         </div>
       </div>
 
-      {/* Change Avatar Section */}
+      {/* Avatar */}
       <div className="bg-white shadow rounded-xl p-6">
         <h3 className="font-semibold mb-4 text-[#88BC46]">Change Avatar</h3>
         <div className="flex flex-wrap gap-3">
@@ -137,10 +110,7 @@ const Settings = () => {
             <button
               key={avatar.id}
               onClick={() => setSelectedAvatar(avatar.id)}
-              className={`rounded-full overflow-hidden border-4 ${selectedAvatar === avatar.id
-                ? 'border-[#88BC46]'
-                : 'border-transparent'
-                } transition-all duration-200`}
+              className={`rounded-full overflow-hidden border-4 ${selectedAvatar === avatar.id ? 'border-[#88BC46]' : 'border-transparent'} transition-all duration-200`}
             >
               <img
                 src={avatar.src}
@@ -152,7 +122,7 @@ const Settings = () => {
         </div>
       </div>
 
-      {/* Delete Account Section */}
+      {/* Danger Zone */}
       <div className="bg-white shadow rounded-xl p-6 border border-red-100">
         <h3 className="font-semibold text-red-500 mb-4">Danger Zone</h3>
         <p className="text-sm text-gray-600 mb-4">
@@ -166,13 +136,15 @@ const Settings = () => {
         </button>
       </div>
 
-      {/* Save and cancel buttons */}
-      <div className="bg-white shadow rounded-xl p-4 flex justify-end space-x-3">
+      {/* Save/Cancel */}
+      <div className="bg-white shadow rounded-xl p-4 flex justify-start space-x-3">
         <button className="bg-gray-200 px-4 py-2 rounded-md">Cancel</button>
         <button className="bg-[#AAD977] text-white px-4 py-2 rounded-md">Save</button>
       </div>
+
+      {/* Confirmation Modal */}
       {showConfirm && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 m-0 p-0">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm space-y-4">
             <h2 className="text-lg font-semibold text-red-500">Confirm Account Deletion</h2>
             <p className="text-sm text-gray-600">
