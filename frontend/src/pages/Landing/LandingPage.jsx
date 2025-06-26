@@ -787,7 +787,12 @@ export default function LandingPage() {
                             { name: "Notion", icon: "notion", description: "Project management" },
                             { name: "Vercel", icon: "vercel", description: "Deployment" },
                             { name: "Jest", icon: "jest", description: "Testing" },
-                            { name: "Cypress", icon: "cypress", description: "E2E testing" }
+                            { name: "Cypress", icon: "cypress", description: "E2E testing" },
+                            { name:"Pytorch" ,icon: "pytorch", description: "AI model"},
+                            {name:"Tensorflow",icon: "tensorflow", description:"AI model"},
+                            {name:"Supabase" , icon:"supabase", description:"Deployment"},
+                            {name:"Kafka" , icon:"kafka" , description:"Event Bus"},
+                            {name:"Redis", icon:"redis",description:"Caching"}
                         ].map((tech, i) => (
                             <motion.div
                                 key={i}
