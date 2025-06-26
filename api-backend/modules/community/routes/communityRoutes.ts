@@ -320,13 +320,26 @@ router.post('/challenges', async (req: Request, res: Response) => {
     difficulty,
   } = req.body;
 
-  if (
-    !creator_id || !community_id || !challenge_title || !challenge_type ||
-    !measurement_type || !target_amount || !start_date || !target_date
-  ) {
+  const requiredFields = {
+    creator_id,
+    community_id,
+    challenge_title,
+    challenge_type,
+    measurement_type,
+    target_amount,
+    start_date,
+    target_date,
+  };
+
+  const missingFields = Object.entries(requiredFields)
+    .filter(([_, value]) => !value)
+    .map(([key]) => key);
+
+  if (missingFields.length > 0) {
+    logger.debug(`[Community] Missing required challenge fields: ${missingFields.join(', ')}`);
     res.status(400).json({
       status: 'error',
-      message: 'Missing required challenge fields.',
+      message: `Missing required challenge fields: ${missingFields.join(', ')}`,
     });
     return;
   }
@@ -352,6 +365,7 @@ router.post('/challenges', async (req: Request, res: Response) => {
       message: 'Challenge created successfully.',
       data: createdChallenge,
     });
+    logger.info(`[Community] Challenge created successfully: ${createdChallenge.challenge_id}`);
     return;
   } catch (err) {
     logger.error('[Community] Failed to create challenge:', err);
