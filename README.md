@@ -89,6 +89,7 @@ This table provides quick access to the key documents and planning resources for
 | **Project Board & Sprint Tracker** | A live board displaying tasks, issues, and sprint progress. | [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/140) |
 | **Domain Model** | A visual representation of key entities and their relationships. | [View Domain Model](https://drive.google.com/file/d/172k-GoCfRzXFlRVkc58cxvUSWxHhIxoS/view?usp=drive_link) |
 | **Project / Group Framework** | Overview of team structure, responsibilities, and collaboration tools. | [View Group Framework](https://www.notion.so/Gamified-Financial-Visualizer-1f842477e71680879e19d535dcb688dc?pvs=4) |
+| **Coding Standards** | This document outlines the coding conventions and styles used across the project to promote uniformity, clarity, flexibility, reliability, and efficiency. | [documentation/Demo 2/documents/Coding_Standards.md](https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/blob/development/documentation/Demo%202/documents/Coding_Standards.md)) |
 
 <p align="center">
   <img src="./assests/greenBar.png" alt="divider" width="100%"/>
