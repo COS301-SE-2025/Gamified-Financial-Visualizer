@@ -11,39 +11,9 @@
 </h2>
 
 <p align="center">
-  <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/issues">
-    <img src="https://img.shields.io/github/issues/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Open Issues" />
-  </a>
-  &nbsp;
-  <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/pulls">
-    <img src="https://img.shields.io/github/issues-pr/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Open Pull Requests" />
-  </a>
-  &nbsp;
-  <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer">
-    <img src="https://img.shields.io/github/languages/count/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Languages Count" />
-  </a>
-  &nbsp;
-  <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/commits/main">
-    <img src="https://img.shields.io/github/last-commit/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Last Commit" />
-  </a>
-  &nbsp;
-  <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer">
-    <img src="https://img.shields.io/github/repo-size/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Repo Size" />
-  </a>
-  &nbsp;
-  <a href="https://libraries.io/github/COS301-SE-2025/Gamified-Financial-Visualizer">
-    <img src="https://img.shields.io/librariesio/github/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Dependencies Status" />
-  </a>
-  &nbsp;
-  <a href="#">
-    <img src="https://img.shields.io/badge/build-passing-green" alt="Build Status" />
-  </a>
-  &nbsp;
-  <a href="https://codecov.io/gh/COS301-SE-2025/Gamified-Financial-Visualizer">
-    <img src="https://codecov.io/gh/COS301-SE-2025/Gamified-Financial-Visualizer/branch/main/graph/badge.svg" alt="Codecov Coverage" />
-  </a>
-</p>
-</p>
+
+<h1 align="center">🚀 Project Badges</h1>
+<p align="center"> <!-- 🧪 CI/CD --> <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/actions/workflows/integration-test.yml"> <img src="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/actions/workflows/integration-test.yml/badge.svg" alt="Backend Integration Tests" /> </a> <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/actions/workflows/unitTests.yml"> <img src="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/actions/workflows/unitTests.yml/badge.svg" alt="Backend Unit Tests with Coverage" /> </a> <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/actions/workflows/building.yml"> <img src="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/actions/workflows/building.yml/badge.svg" alt="Build Status" /> </a> <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/actions/workflows/linting.yml"> <img src="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/actions/workflows/linting.yml/badge.svg" alt="Lint Frontend & API Modules" /> </a> <br/> <!-- 🗃️ Repo Info --> <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/issues"> <img src="https://img.shields.io/github/issues/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Open Issues" /> </a> <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/pulls"> <img src="https://img.shields.io/github/issues-pr/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Open Pull Requests" /> </a> <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer"> <img src="https://img.shields.io/github/languages/count/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Languages Count" /> <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer"> <img src="https://img.shields.io/github/repo-size/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Repo Size" /> </a> <a href="https://libraries.io/github/COS301-SE-2025/Gamified-Financial-Visualizer"> <img src="https://img.shields.io/librariesio/github/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Dependencies Status" /> </a> <br/>
 
 <p align="center">
   <img src="./assests/greenBar.png" alt="divider" width="100%"/>
@@ -113,12 +83,14 @@ This table provides quick access to the key documents and planning resources for
 | Resource Name | Description | Link |
 |---------------|-------------|------|
 | **Software Requirements Specification (SRS)** | Outlines the functional and non-functional requirements of the system. | [View SRS](https://drive.google.com/file/d/1P-zHO8nlxd5WIi0egwTgvPa18IMBnqpN/view?usp=drive_link) |
-| **Architectural Requirements Specification (ARS)** | Describes system architecture, service design, and technology stack. | [View ARS](https://drive.google.com/file/d/12cjEbAv0dVkkijhgKKI28h0UNA2BDMBG/view?usp=drive_link) |
+| **Architectural Requirements Specification (ARS)** | Describes system architecture, service design, and technology stack. | [View ARS](https://drive.google.com/file/d/18SeSOtxtNB3BYHp0IevVYLXO7PVNeODX/view?usp=drive_link) |
 | **User Stories** | User-focused feature breakdown using Agile methodology. | [View User Stories](https://drive.google.com/file/d/15W0QNBl9YfHC1M-liT4e9_xkXi2rQUrP/view?usp=drive_link) |
 | **Use Cases** | Details of system interactions between users and core features. | [View Use Cases](https://drive.google.com/file/d/1RYJx_-DA8SJ5KiFeP35hvWPykjhdn8F3/view?usp=drive_link) |
 | **Project Board & Sprint Tracker** | A live board displaying tasks, issues, and sprint progress. | [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/140) |
 | **Domain Model** | A visual representation of key entities and their relationships. | [View Domain Model](https://drive.google.com/file/d/172k-GoCfRzXFlRVkc58cxvUSWxHhIxoS/view?usp=drive_link) |
 | **Project / Group Framework** | Overview of team structure, responsibilities, and collaboration tools. | [View Group Framework](https://www.notion.so/Gamified-Financial-Visualizer-1f842477e71680879e19d535dcb688dc?pvs=4) |
+| **Coding Standards** | This document outlines the coding conventions and styles used across the project to promote uniformity, clarity, flexibility, reliability, and efficiency. | [View Coding Standards](https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/blob/development/documentation/Demo%202/documents/Coding_Standards.md) |
+| **Service Contract** |  It serves as a formal agreement between backend service providers and frontend/service consumers, ensuring that all endpoints, data formats, authentication mechanisms, and error responses are well-documented and traceable. | [View Service Contract](https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/blob/development/documentation/Demo%202/documents/API%20service%20contract%20v1.2.0.pdf) |
 
 <p align="center">
   <img src="./assests/greenBar.png" alt="divider" width="100%"/>
@@ -130,7 +102,7 @@ This table provides quick access to the key documents and planning resources for
 | Demo Video | Documentation |
 |------------|----------------|
 |[<img src="https://img.icons8.com/ios-filled/20/88BC46/play-button-circled.png"/> Demo 1 Video](https://drive.google.com/drive/u/0/folders/11WsEpVxedP9OobPVyirSWup9hacDLVAH) | [Demo 1 Documentation](https://drive.google.com/drive/u/0/folders/1oXzqPzukLE2dVK9OftUkWXMTAlR7tb4I) |
-|[<img src="https://img.icons8.com/ios-filled/20/88BC46/play-button-circled.png"/> Demo 2 Video](/////////////////////////) | [Demo 2 Documentation](https://drive.google.com/file/d/1AtsfSCTiknyl33-kCOrxDX3IxPY_VsbB/view?usp=drive_link) |
+|[<img src="https://img.icons8.com/ios-filled/20/88BC46/play-button-circled.png"/> Demo 2 Video](/////////////////////////) | [Demo 2 Documentation](https://drive.google.com/drive/u/2/folders/1qBoA2zMqF3u-Fo400Q0mdA1-wOFhmfVY) |
 
 </div>
 
@@ -140,17 +112,17 @@ This table provides quick access to the key documents and planning resources for
 
 <h2 align="center">Meet the CodeBlooded Team</h2>
 
-<p align="center" style="height: 300px;">
-  <img src="./assets/codeBloodeTeam.jpg" alt="Team Photo" style="width: 100%; height: auto; object-fit: contain;"/>
+<p align="center" style="height: 100px; width:100px;">
+  <img src="./assests/codeBloodeTeam.jpg" alt="Team Photo" style="width: 100%; height: auto; object-fit: contain;"/>
 </p>
 
 | Photo | Name | About | Role | Links |
 |-------|------|-------|------|-------|
-| <img src="./assests/Team Profiles/Malaika Profile.jpg" width="800" style="border-radius: 50%"/> | **Yohali Malaika Kumangu** | Experienced in Java development with a portfolio of diverse, hands-on projects leveraging the language. Proficient in backend technologies, particularly Node.js, with a strong background in financial management. Skilled in integration development with Python, MongoDB, and Node.js. | Project Manager, Data Engineer | [<img src="https://img.icons8.com/ios-glyphs/30/ffffff/github.png"/>](https://github.com/YourfavCompSciGirlie) <br> [<img src="https://img.shields.io/badge/LinkedIn-0A66C2?logo=linkedin&logoColor=white" height="30"/>](https://www.linkedin.com/in/ymkamangu/) |
-| <img src="./assests/Team Profiles/Lebo Profile.jpg" width="800" style="border-radius: 50%"/> | **Lebogang Masenya** | Possesses foundational experience in Data Science, having implemented small-scale machine learning models. Familiar with AI tools such as Hugging Face, applied in full-stack personal projects. | Systems Architect, Services Engineer | [<img src="https://img.icons8.com/ios-glyphs/30/ffffff/github.png"/>](https://github.com/B-WayneZA) <br> [<img src="https://img.shields.io/badge/LinkedIn-0A66C2?logo=linkedin&logoColor=white" height="30"/>](https://www.linkedin.com/in/lebogang-masenya/) |
-| <img src="./assests/Team Profiles/Mpho Profile.jpg" width="800" style="border-radius: 50%"/> | **Mpho Siminya** | A creative front-end developer with a strong ability to translate Figma wireframes into responsive web apps. Proficient in React and has explored 3D modeling in Blender for AR interfaces. | UI Engineer, UI/UX Designer | [<img src="https://img.icons8.com/ios-glyphs/30/ffffff/github.png"/>](https://github.com/MphoSiminya) <br> [<img src="https://img.shields.io/badge/LinkedIn-0A66C2?logo=linkedin&logoColor=white" height="30"/>](https://www.linkedin.com/in/mpho-siminya/) |
-| <img src="./assests/Team Profiles/Nobuhle Profile.jpg" width="800" style="border-radius: 50%"/> | **Nobuhle Mtshali** | Proficient in React and Java, with a strong foundation in UI/UX and responsive development. Passionate about immersive VR/AR solutions and driving financial literacy through engaging experiences. | DevOps, UI Engineer | [<img src="https://img.icons8.com/ios-glyphs/30/ffffff/github.png"/>](https://github.com/ReituTheCompSciGirlie) <br> [<img src="https://img.shields.io/badge/LinkedIn-0A66C2?logo=linkedin&logoColor=white" height="30"/>](https://www.linkedin.com/in/nobuhle-reitumetse-mtshali/) |
-| <img src="./assests/Team Profiles/Aundrea Profilejpg.jpg" width="800" style="border-radius: 50%"/> | **Aundrea Ncube** | Skilled in JavaScript, PHP, and Java. Strong in DBMS and API integration. Proficient in both frontend and backend development for seamless system integration. | Integration & Testing Engineer | [<img src="https://img.icons8.com/ios-glyphs/30/ffffff/github.png"/>](https://github.com/AundreaNcube) <br> [<img src="https://img.shields.io/badge/LinkedIn-0A66C2?logo=linkedin&logoColor=white" height="30"/>](http://www.linkedin.com/in/aundrea-ncube-1484a9356) |
+| <img src="./assests/Team Profiles/Malaika.png" width="800" style="border-radius: 50%"/> | **Yohali Malaika Kumangu** | Experienced in Java development with a portfolio of diverse, hands-on projects leveraging the language. Proficient in backend technologies, particularly Node.js, with a strong background in financial management. Skilled in integration development with Python, MongoDB, and Node.js. | Project Manager, Data Engineer | [<img src="https://img.icons8.com/ios-glyphs/30/ffffff/github.png"/>](https://github.com/YourfavCompSciGirlie) <br> [<img src="https://img.shields.io/badge/LinkedIn-0A66C2?logo=linkedin&logoColor=white" height="30"/>](https://www.linkedin.com/in/ymkamangu/) |
+| <img src="./assests/Team Profiles/Lebo.png" width="800" style="border-radius: 50%"/> | **Lebogang Masenya** | Possesses foundational experience in Data Science, having implemented small-scale machine learning models. Familiar with AI tools such as Hugging Face, applied in full-stack personal projects. | Systems Architect, Services Engineer | [<img src="https://img.icons8.com/ios-glyphs/30/ffffff/github.png"/>](https://github.com/B-WayneZA) <br> [<img src="https://img.shields.io/badge/LinkedIn-0A66C2?logo=linkedin&logoColor=white" height="30"/>](https://www.linkedin.com/in/lebogang-masenya/) |
+| <img src="./assests/Team Profiles/Mpho.png" width="800" style="border-radius: 50%"/> | **Mpho Siminya** | A creative front-end developer with a strong ability to translate Figma wireframes into responsive web apps. Proficient in React and has explored 3D modeling in Blender for AR interfaces. | UI Engineer, UI/UX Designer | [<img src="https://img.icons8.com/ios-glyphs/30/ffffff/github.png"/>](https://github.com/MphoSiminya) <br> [<img src="https://img.shields.io/badge/LinkedIn-0A66C2?logo=linkedin&logoColor=white" height="30"/>](https://www.linkedin.com/in/mpho-siminya/) |
+| <img src="./assests/Team Profiles/Nobuhle.png" width="800" style="border-radius: 50%"/> | **Nobuhle Mtshali** | Proficient in React and Java, with a strong foundation in UI/UX and responsive development. Passionate about immersive VR/AR solutions and driving financial literacy through engaging experiences. | DevOps, UI Engineer | [<img src="https://img.icons8.com/ios-glyphs/30/ffffff/github.png"/>](https://github.com/ReituTheCompSciGirlie) <br> [<img src="https://img.shields.io/badge/LinkedIn-0A66C2?logo=linkedin&logoColor=white" height="30"/>](https://www.linkedin.com/in/nobuhle-reitumetse-mtshali/) |
+| <img src="./assests/Team Profiles/Aundrea.png" width="800" style="border-radius: 50%"/> | **Aundrea Ncube** | Skilled in JavaScript, PHP, and Java. Strong in DBMS and API integration. Proficient in both frontend and backend development for seamless system integration. | Integration & Testing Engineer | [<img src="https://img.icons8.com/ios-glyphs/30/ffffff/github.png"/>](https://github.com/AundreaNcube) <br> [<img src="https://img.shields.io/badge/LinkedIn-0A66C2?logo=linkedin&logoColor=white" height="30"/>](http://www.linkedin.com/in/aundrea-ncube-1484a9356) |
 
 <p align="center">
   <img src="./assests/greenBar.png" alt="divider" width="100%"/>
