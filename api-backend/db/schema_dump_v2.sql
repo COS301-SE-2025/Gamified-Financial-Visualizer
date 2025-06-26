@@ -489,21 +489,29 @@ CREATE TABLE budget_categories (
 -- TRANSACTIONS
 CREATE TABLE transactions (
     transaction_id SERIAL PRIMARY KEY,
+    
     account_id INT NOT NULL REFERENCES accounts(account_id) ON DELETE CASCADE,
-    category_id INT REFERENCES categories(category_id),
-    custom_category_id INT REFERENCES custom_categories(custom_category_id),
+    
+    category_id INT REFERENCES categories(category_id) ON DELETE SET NULL,
+    custom_category_id INT REFERENCES custom_categories(custom_category_id) ON DELETE SET NULL,
     budget_id INT REFERENCES budgets(budget_id) ON DELETE SET NULL,
+    
     transaction_amount NUMERIC(12, 2) NOT NULL CHECK (transaction_amount != 0),
+    
     transaction_type VARCHAR(20) NOT NULL CHECK (
         transaction_type IN ('expense', 'income', 'transfer', 'fee', 'withdrawal', 'deposit')
     ),
+    
     transaction_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     transaction_name TEXT NOT NULL DEFAULT '',
     is_recurring BOOLEAN NOT NULL DEFAULT FALSE,
+
     linked_goal_id INT REFERENCES goals(goal_id) ON DELETE SET NULL,
     linked_challenge_id INT REFERENCES challenges(challenge_id) ON DELETE SET NULL,
+
     points_awarded INT DEFAULT 0 CHECK (points_awarded >= 0),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
     CHECK (
         (category_id IS NULL AND custom_category_id IS NOT NULL)
         OR
@@ -533,11 +541,10 @@ EXECUTE FUNCTION prevent_duplicate_category();
 
 
 
-
 -- RECURRING TRANSACTIONS
 CREATE TABLE recurring_transactions (
     recurring_id SERIAL PRIMARY KEY,
-    transaction_id INT UNIQUE REFERENCES transactions(transaction_id),
+    transaction_id INT UNIQUE REFERENCES transactions(transaction_id) ON DELETE CASCADE,
     frequency VARCHAR(50) NOT NULL CHECK (
         frequency IN ('daily', 'weekly', 'biweekly', 'monthly', 'quarterly', 'yearly')
     ),
