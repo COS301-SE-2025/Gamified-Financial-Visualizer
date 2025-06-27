@@ -11,6 +11,7 @@ logs
 /build
 /bin
 bin/
+.vscode
 
 # misc
 .DS_Store
