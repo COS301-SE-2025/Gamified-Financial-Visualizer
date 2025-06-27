@@ -613,10 +613,9 @@ export async function getUserLevelProgress(user_id: number) {
 // =============== Settings Page Specific Functions ============== //
 
 export async function getUserSettings(user_id: number) {
-  const client = await pool.connect();
   try {
     // 1. Fetch core user info
-    const { rows: userRows } = await client.query(
+    const { rows: userRows } = await pool.query(
       `SELECT username, two_factor_enabled FROM users WHERE user_id = $1`,
       [user_id]
     );
@@ -626,14 +625,14 @@ export async function getUserSettings(user_id: number) {
     const user = userRows[0];
 
     // 2. Preferences
-    const { rows: prefRows } = await client.query(
+    const { rows: prefRows } = await pool.query(
       `SELECT theme, avatar_id, in_app_notifications_enabled FROM user_preferences WHERE user_id = $1`,
       [user_id]
     );
     const preferences = prefRows[0] || null;
 
     // 3. Push notifications (out-of-app)
-    const { rows: pushRows } = await client.query(
+    const { rows: pushRows } = await pool.query(
       `SELECT enabled FROM user_push_subscriptions WHERE user_id = $1`,
       [user_id]
     );
@@ -645,8 +644,9 @@ export async function getUserSettings(user_id: number) {
       outOfAppEnabled,
       twoFactorEnabled: user.two_factor_enabled
     };
-  } finally {
-    client.release();
+  } catch (err) {
+    logger.error(`[AuthService] Failed to fetch user settings for user ID ${user_id}:`, err);
+    throw new Error('Could not fetch user settings');
   }
 }
 
@@ -658,15 +658,14 @@ export async function updateUserSettings(user_id: number, updates: {
   outOfAppEnabled?: boolean;
   twoFactorEnabled?: boolean;
 }) {
-  const client = await pool.connect();
 
   try {
-    await client.query('BEGIN');
+    await pool.query('BEGIN');
 
     // === 1. Update username if provided
     if (updates.username) {
       try {
-        await client.query(
+        await pool.query(
           `
           UPDATE users SET
             username = $1,
@@ -693,7 +692,7 @@ export async function updateUserSettings(user_id: number, updates: {
       let currentAvatarId: number = 1;
       let currentNotifications: boolean = true;
 
-      const prefResult = await client.query(
+      const prefResult = await pool.query(
         'SELECT avatar_id, in_app_notifications_enabled FROM user_preferences WHERE user_id = $1',
         [user_id]
       );
@@ -709,7 +708,7 @@ export async function updateUserSettings(user_id: number, updates: {
         }
       }
 
-      await client.query(
+      await pool.query(
         `
         INSERT INTO user_preferences (user_id, theme, avatar_id, in_app_notifications_enabled)
         VALUES ($1, $2, $3, $4)
@@ -730,14 +729,14 @@ export async function updateUserSettings(user_id: number, updates: {
 
     // === 3. Update out-of-app push settings
     if (typeof updates.outOfAppEnabled !== 'undefined') {
-      const result = await client.query(
+      const result = await pool.query(
         'UPDATE user_push_subscriptions SET enabled = $1 WHERE user_id = $2',
         [updates.outOfAppEnabled, user_id]
       );
 
       if (result.rowCount === 0) {
         logger.warn(`[AuthService] No push subscription found. Inserting default for user ID ${user_id}`);
-        await client.query(
+        await pool.query(
           `
           INSERT INTO user_push_subscriptions (user_id, endpoint, p256dh, auth, enabled)
           VALUES ($1, $2, $3, $4, $5)
@@ -759,15 +758,13 @@ export async function updateUserSettings(user_id: number, updates: {
       await setTwoFactorEnabled(user_id, updates.twoFactorEnabled);
     }
 
-    await client.query('COMMIT');
+    await pool.query('COMMIT');
     logger.info(`[AuthService] Updated settings for user ID ${user_id}`);
   } catch (err) {
-    await client.query('ROLLBACK');
+    await pool.query('ROLLBACK');
     logger.error(`[AuthService] Failed to update settings for user ID ${user_id}:`, err);
     throw err;
-  } finally {
-    client.release();
-  }
+  } 
 }
 
 export async function changeUserPassword(user_id: number, currentPassword: string, newPassword: string): Promise<void> {

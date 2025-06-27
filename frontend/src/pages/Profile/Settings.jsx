@@ -1,16 +1,22 @@
 // Settings.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Settings = () => {
+  const user = JSON.parse(localStorage.getItem('user'));
+
   const [theme, setTheme] = useState(true);
   const [notifications, setNotifications] = useState(true);
   const [verified, setVerified] = useState(false);
-  const [username, setUsername] = useState('');
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState(0);
   const [showConfirm, setShowConfirm] = useState(false);
   const navigate = useNavigate();
+  const [passwords, setPasswords] = useState({
+    current: '',
+    new: '',
+    confirm: ''
+  });
 
   function importAll(r) {
     return r.keys().map(r);
@@ -21,9 +27,91 @@ const Settings = () => {
   );
   const avatarList = avatarImages.map((src, i) => ({ id: i, src }));
 
-  const handleUsernameChange = () => {
-    console.log('Username changed to:', username);
-    setIsEditingUsername(false);
+  // Initialize state with user data
+  const [settings, setSettings] = useState({
+    username: user?.username || '',
+    theme: 'light', // default to light
+    notifications: true,
+    verified: false,
+    avatarId: user?.avatar_id || 1,
+    outOfAppNotifications: true
+  });
+
+
+  // Fetch current settings on mount
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/auth/${user.id}/settings`);
+        const data = await response.json();
+        if (response.ok) {
+          setSettings({
+            username: data.username || user.username,
+            theme: data.theme || 'light',
+            notifications: data.inAppNotifications !== false,
+            verified: data.twoFactorEnabled || false,
+            avatarId: data.avatar_id || 1,
+            outOfAppNotifications: data.outOfAppEnabled !== false
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch settings:', error);
+      }
+    };
+
+    if (user?.id) {
+      fetchSettings();
+    }
+  }, [user?.id,  user?.username]);
+
+  // Handle saving settings
+  const handleSaveSettings = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/auth/${user.id}/settings`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username: isEditingUsername ? settings.username : undefined,
+          theme: settings.theme === 'dark' ? 'dark' : 'light',
+          avatar_id: settings.avatarId,
+          inAppNotifications: settings.notifications,
+          outOfAppEnabled: settings.outOfAppNotifications,
+          twoFactorEnabled: settings.verified
+        })
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        // Update local user data
+        if (isEditingUsername) {
+          const updatedUser = { ...user, username: settings.username };
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+          setIsEditingUsername(false);
+        }
+      } else {
+        throw new Error(data.message || 'Failed to save settings');
+      }
+    } catch (error) {
+      console.error('Error saving settings:', error);
+    }
+  };
+
+  // Handle username change
+  const handleUsernameChange = (e) => {
+    const newUsername = e.target.value;
+    setSettings({ ...settings, username: newUsername });
+  };
+
+  // Handle toggle changes
+  const handleToggleChange = (field) => {
+    setSettings({ ...settings, [field]: !settings[field] });
+  };
+
+  // Handle avatar selection
+  const handleAvatarSelect = (id) => {
+    setSettings({ ...settings, avatarId: id });
   };
 
   return (
@@ -35,13 +123,16 @@ const Settings = () => {
           <div className="flex items-center gap-2">
             <input
               type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={settings.username}
+              onChange={handleUsernameChange}
               placeholder="Enter new username"
               className="input flex-1"
             />
             <button
-              onClick={handleUsernameChange}
+              onClick={() => {
+                handleSaveSettings();
+                setIsEditingUsername(true);
+              }}
               className="bg-[#AAD977] text-white px-4 py-2 rounded-md"
             >
               Save
@@ -56,7 +147,7 @@ const Settings = () => {
         ) : (
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-gray-700">
-              Current username: <span className="font-bold">{username || 'Not set'}</span>
+              Current username: <span className="font-bold">{user.username || 'Not set'}</span>
             </p>
             <button
               onClick={() => setIsEditingUsername(true)}
@@ -72,17 +163,32 @@ const Settings = () => {
       <div className="bg-white shadow rounded-xl p-6">
         <h3 className="font-semibold text-[#88BC46] text-lg mb-4">Preferences</h3>
         {[
-          { label: 'Dark Mode', state: theme, setter: setTheme },
-          { label: 'Enable In-App Notifications', state: notifications, setter: setNotifications },
-          { label: 'Two Factor Verification', state: verified, setter: setVerified },
-        ].map(({ label, state, setter }, i) => (
+          {
+            label: 'Dark Mode',
+            field: 'theme',
+            value: settings.theme === 'dark',
+            toggle: () => setSettings({ ...settings, theme: settings.theme === 'dark' ? 'light' : 'dark' })
+          },
+          {
+            label: 'Enable In-App Notifications',
+            field: 'notifications',
+            value: settings.notifications,
+            toggle: () => handleToggleChange('notifications')
+          },
+          {
+            label: 'Two Factor Verification',
+            field: 'verified',
+            value: settings.verified,
+            toggle: () => handleToggleChange('verified')
+          },
+        ].map(({ label, field, value, toggle }, i) => (
           <div key={i} className="flex items-center justify-between mb-4">
             <p className="text-sm font-medium text-gray-700">{label}</p>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={state}
-                onChange={() => setter(!state)}
+                checked={value}
+                onChange={toggle}
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-gray-200 peer-checked:bg-[#88BC46] rounded-full transition-all duration-300"></div>
@@ -109,8 +215,8 @@ const Settings = () => {
           {avatarList.map((avatar) => (
             <button
               key={avatar.id}
-              onClick={() => setSelectedAvatar(avatar.id)}
-              className={`rounded-full overflow-hidden border-4 ${selectedAvatar === avatar.id ? 'border-[#88BC46]' : 'border-transparent'} transition-all duration-200`}
+              onClick={() => handleAvatarSelect(avatar.id)}
+              className={`rounded-full overflow-hidden border-4 ${settings.avatarId === avatar.id ? 'border-[#88BC46]' : 'border-transparent'} transition-all duration-200`}
             >
               <img
                 src={avatar.src}
@@ -138,8 +244,12 @@ const Settings = () => {
 
       {/* Save/Cancel */}
       <div className="bg-white shadow rounded-xl p-4 flex justify-start space-x-3">
-        <button className="bg-gray-200 px-4 py-2 rounded-md">Cancel</button>
-        <button className="bg-[#AAD977] text-white px-4 py-2 rounded-md">Save</button>
+        <button className="bg-gray-200 px-4 py-2 rounded-md"
+          onClick={() => navigate(-1)}
+        >Cancel</button>
+        <button className="bg-[#AAD977] text-white px-4 py-2 rounded-md"
+          onClick={handleSaveSettings}
+        >Save</button>
       </div>
 
       {/* Confirmation Modal */}
