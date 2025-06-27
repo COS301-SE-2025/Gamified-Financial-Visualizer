@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 import CommunityLayout from '../../pages/Community/CommunityLayout';
@@ -7,21 +7,32 @@ import {
   FaPlusCircle, FaSearch, FaArrowLeft, FaUsers,
 } from 'react-icons/fa';
 
-const bannerOptions = [
-  { id: 'apartment', label: 'Pixel Apartment', src: require('../../assets/Images/banners/pixelApartment.gif') },
-  { id: 'store', label: 'Pixel Store', src: require('../../assets/Images/banners/pixelStore.gif') },
-  { id: 'students', label: 'Pixel Students', src: require('../../assets/Images/banners/pixelStudents.jpeg') },
-];
-
-const friendsList = [
-  { name: 'snow', avatar: require('../../assets/Images/avatars/snakeAvatar.jpeg') },
-  { name: 'beached_in', avatar: require('../../assets/Images/avatars/beachAvatar.jpeg') },
-  { name: 'miss_smith', avatar: require('../../assets/Images/avatars/windowAvatar.jpeg') },
-  { name: 'thats_me', avatar: require('../../assets/Images/avatars/lilyAvatar.jpeg') },
-  { name: 'james_link', avatar: require('../../assets/Images/avatars/cottageAvatar.jpeg') },
-];
-
 const CommunityCreate = () => {
+
+  const [bannerOptions, setBannerOptions] = useState([]);
+  const [friendsList, setFriendsList] = useState([]);
+
+  useEffect(() => {
+    const fetchAssets = async () => {
+      try {
+        const bannersRes = await fetch('http://localhost:5000/api/community/banners');
+        const bannersData = await bannersRes.json();
+        setBannerOptions(bannersData.data || []);
+
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user?.id) {
+          const friendsRes = await fetch(`http://localhost:5000/api/community/friends/${user.id}`);
+          const friendsData = await friendsRes.json();
+          setFriendsList(friendsData.data || []);
+        }
+      } catch (err) {
+        toast.error("Failed to load banners or friends.");
+      }
+    };
+
+    fetchAssets();
+  }, []);
+
   const [invitedFriends, setInvitedFriends] = useState([]);
   const navigate = useNavigate();
   const [isCreating, setIsCreating] = useState(false); 
@@ -45,61 +56,69 @@ const CommunityCreate = () => {
   };
 
   const handleInvite = (friend) => {
-    if (!invitedFriends.includes(friend.name)) {
-      setInvitedFriends([...invitedFriends, friend.name]);
-      toast.success(`Invite sent to ${friend.name}`);
+    if (!invitedFriends.includes(friend.username)) {
+      setInvitedFriends([...invitedFriends, friend.username]);
+      toast.success(`Invite sent to ${friend.username}`);
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    toast.success('Community created and invitations sent!');
+    setShowConfirmation(true); // triggers the confirmation popup
   };
-  const filteredFriends = friendsList.filter((f) => f.name.toLowerCase().includes(search.toLowerCase()));
+  const filteredFriends = friendsList.filter((f) => f.username.toLowerCase().includes(search.toLowerCase()));
 
   // confirmation popup
   const confirmCreate = async () => {
     setIsCreating(true);
     setShowConfirmation(false);
 
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user?.id) {
+      toast.error("User not logged in.");
+      return;
+    }
+
     try {
-      // Mock API call with delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Simulate successful creation
-      toast.success(`Community "${formData.name}" created successfully!`);
-
-      // Simulate sending invitations
-      if (invitedFriends.length > 0) {
-        toast.success(`Invitations sent to ${invitedFriends.length} friends`);
-      }
-
-      // Reset form
-      setFormData({
-        name: '',
-        description: '',
-        tag: '',
-        goalCount: 0,
-        memberCount: 0,
-        bannerId: '',
-        selectedFriends: [],
-        challengeTitles: ['']
+      const response = await fetch('http://localhost:5000/api/community', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          owner_id: user.id,
+          community_name: formData.name,
+          description: formData.description,
+          banner_id: formData.bannerId || 1,
+          invited_usernames: invitedFriends,
+        }),
       });
-      setInvitedFriends([]);
 
-      // Mock redirect after 2 seconds
-      setTimeout(() => {
-        navigate('/community');
-      }, 2000);
+      const result = await response.json();
 
+      if (response.ok) {
+        toast.success(`Community "${formData.name}" created successfully!`);
+        if (invitedFriends.length > 0) {
+          toast.success(`Invited ${invitedFriends.length} friend(s).`);
+        }
+
+        setFormData({ name: '', description: '', tag: '', goalCount: 0, memberCount: 0, bannerId: '', selectedFriends: [], challengeTitles: [''] });
+        setInvitedFriends([]);
+
+        setTimeout(() => {
+          navigate('/community');
+        }, 1500);
+      } else {
+        toast.error(result.message || 'Failed to create community.');
+      }
     } catch (error) {
-      // Simulate error case
       toast.error('Failed to create community. Please try again.');
-      console.error('Mock API Error:', error);
+      console.error('Error:', error);
     } finally {
       setIsCreating(false);
     }
   };
+
 
   const cancelCreate = () => {
     setShowConfirmation(false);
@@ -111,7 +130,7 @@ const CommunityCreate = () => {
       <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
         <CommunityHeader />
 
-        {/* Confrimation popup */}
+        {/* Confirmation popup */}
         {showConfirmation && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-2xl shadow-xl max-w-md w-full">
@@ -191,9 +210,13 @@ const CommunityCreate = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Select a Banner</label>
               <div className="flex gap-4">
                 {bannerOptions.map((banner) => (
-                  <div key={banner.id} className={`cursor-pointer border-2 rounded-xl p-1 ${formData.bannerId === banner.id ? 'border-[#88BC46]' : 'border-gray-300'}`} onClick={() => setFormData({ ...formData, bannerId: banner.id })}>
-                    <img src={banner.src} alt={banner.label} className="w-24 h-24 rounded-lg object-cover" />
-                    <p className="text-xs text-center mt-1">{banner.label}</p>
+                  <div
+                    key={banner.banner_id}
+                    className={`cursor-pointer border-2 rounded-xl p-1 ${formData.bannerId === banner.banner_id ? 'border-[#88BC46]' : 'border-gray-300'}`}
+                    onClick={() => setFormData({ ...formData, bannerId: banner.banner_id })}
+                  >
+                    <img src={`/assets/Images/${banner.banner_image_path}`} alt={banner.banner_image_path} className="w-24 h-24 rounded-lg object-cover" />
+                    <p className="text-xs text-center mt-1">{banner.banner_image_path.split('/').pop().split('.')[0]}</p>
                   </div>
                 ))}
               </div>
@@ -214,14 +237,10 @@ const CommunityCreate = () => {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                 {filteredFriends.map((friend, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center gap-4 bg-gray-50 p-2 rounded-xl border border-gray-200"
-                  >
-                    <img src={friend.avatar} alt={friend.name} className="w-10 h-10 rounded-full object-cover" />
+                  <div key={idx} className="flex items-center gap-4 bg-gray-50 p-2 rounded-xl border border-gray-200">
+                    <img src={`/assets/Images/${friend.avatar_image_path}`} alt={friend.username} className="w-10 h-10 rounded-full object-cover" />
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-800">@{friend.name}</p>
-                      <p className="text-xs text-gray-500 italic">{friend.level}</p>
+                      <p className="text-sm font-medium text-gray-800">@{friend.username}</p>
                     </div>
                     <button
                       onClick={() => handleInvite(friend)}

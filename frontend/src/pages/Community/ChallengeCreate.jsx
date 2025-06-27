@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -25,7 +25,7 @@ const ChallengeCreate = () => {
     xpReward: '',
     category: '',
     type: '',
-    community:'',
+    community: '',
     targetAmount: '',
     startDate: '',
     endDate: '',
@@ -37,14 +37,47 @@ const ChallengeCreate = () => {
   const [invitedFriends, setInvitedFriends] = useState([]);
   const [isCreating, setIsCreating] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [communities, setCommunities] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/transactions/categories');
+        const data = await res.json();
+        setCategories(data.data || []);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  const fetchCommunities = async () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user?.id) return;
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/auth/profile/communities/${user.id}`);
+      const data = await res.json();
+      setCommunities(data.data || []);
+    } catch (err) {
+      console.error('Failed to load communities:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchCommunities();
+  }, []);
+
 
   const imageOptions = [
-    { id: 'store_banner', src: require('../../assets/Images/banners/pixelStore.gif'), label: 'Pixel Store' },
-    { id: 'apartment_banner', src: require('../../assets/Images/banners/pixelApartment.gif'), label: 'Pixel Apartment' },
-    { id: 'ally_banner', src: require('../../assets/Images/banners/pixelGirlAlly.gif'), label: 'Pixel Ally' },
-    { id: 'students_banner', src: require('../../assets/Images/banners/pixelStudents.jpeg'), label: 'Pixel Students' },
+    { id: 'store_banner', apiId: 1, src: require('../../assets/Images/banners/pixelStore.gif'), label: 'Pixel Store' },
+    { id: 'apartment_banner', apiId: 2, src: require('../../assets/Images/banners/pixelApartment.gif'), label: 'Pixel Apartment' },
+    { id: 'ally_banner', apiId: 3, src: require('../../assets/Images/banners/pixelGirlAlly.gif'), label: 'Pixel Ally' },
+    { id: 'students_banner', apiId: 4, src: require('../../assets/Images/banners/pixelStudents.jpeg'), label: 'Pixel Students' },
   ];
-
   // 
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
@@ -66,48 +99,98 @@ const ChallengeCreate = () => {
   // handle the submitting of the form 
   const handleSubmit = (e) => {
     e.preventDefault();
-    toast.success('Challenge created!');
+    setShowConfirmation(true);
   };
 
-  // Challenges confrimation popup
-   const confirmCreate = async () => {
+  // Challenges confirmation popup
+  const confirmCreate = async () => {
     setIsCreating(true);
     setShowConfirmation(false);
 
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user?.id) {
+      toast.error('You must be logged in to create a challenge');
+      setIsCreating(false);
+      return;
+    }
+
+    const xpReward = parseInt(formData.xpReward) || 0;
+    let difficulty;
+
+    if (xpReward < 100) {
+      difficulty = 'easy';
+    } else if (xpReward < 250) {
+      difficulty = 'medium';
+    } else if (xpReward < 500) {
+      difficulty = 'hard';
+    } else {
+      difficulty = 'extreme';
+    }
+
+    // Map form data to API expected structure
+    const challengeData = {
+      creator_id: user.id,
+      community_id: formData.community,
+      challenge_title: formData.title,
+      challenge_type: formData.type,
+      measurement_type: formData.measurementType,
+      target_amount: parseFloat(formData.targetAmount),
+      start_date: formData.startDate,
+      target_date: formData.endDate,
+      category_id: formData.category || null,
+      custom_category_id: null, // Not in form yet
+      banner_id: formData.imageId || 1,
+      difficulty: difficulty, // Default or could add to form
+    };
+
     try {
-      // Mock API call with delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await fetch('http://localhost:5000/api/community/challenges', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`, // Add if your API needs auth
+        },
+        body: JSON.stringify(challengeData)
+      });
 
-      // Simulate successful creation
-      toast.success(`Community "${formData.name}" created successfully!`);
+      const data = await response.json();
 
-      // Simulate sending invitations
-      if (invitedFriends.length > 0) {
-        toast.success(`Invitations sent to ${invitedFriends.length} friends`);
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to create challenge');
       }
 
-      // Reset form
-      setFormData({
-        name: '',
-        description: '',
-        tag: '',
-        goalCount: 0,
-        memberCount: 0,
-        bannerId: '',
-        selectedFriends: [],
-        challengeTitles: ['']
-      });
-      setInvitedFriends([]);
+      toast.success('Challenge created successfully!');
 
-      // Mock redirect after 2 seconds
+      // Handle sending invitations if any
+      if (invitedFriends.length > 0) {
+        try {
+          // Assuming you have an endpoint to handle invitations
+          await fetch('http://localhost:5000/api/community/challenges/invite', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            },
+            body: JSON.stringify({
+              challenge_id: data.data.challenge_id, // Assuming API returns the new challenge ID
+              invited_users: invitedFriends
+            })
+          });
+          toast.success(`Invitations sent to ${invitedFriends.length} friends`);
+        } catch (inviteError) {
+          console.error('Failed to send invitations:', inviteError);
+          toast.error('Challenge created but failed to send some invitations');
+        }
+      }
+
+      // Redirect after success
       setTimeout(() => {
         navigate('/community');
       }, 2000);
 
     } catch (error) {
-      // Simulate error case
-      toast.error('Failed to create community. Please try again.');
-      console.error('Mock API Error:', error);
+      console.error('Error creating challenge:', error);
+      toast.error(error.message || 'Failed to create challenge');
     } finally {
       setIsCreating(false);
     }
@@ -209,7 +292,10 @@ const ChallengeCreate = () => {
                       type="radio"
                       name="imageId"
                       value={img.id}
-                      onChange={(e) => setFormData({ ...formData, imageId: e.target.value })}
+                      onChange={(e) => {
+                        const selected = imageOptions.find(i => i.id === e.target.value);
+                        setFormData({ ...formData, imageId: selected?.apiId || null });
+                      }}
                       className="hidden"
                     />
                     <img src={img.src} alt={img.label} className="w-full h-24 object-cover" />
@@ -233,9 +319,11 @@ const ChallengeCreate = () => {
                   className="w-full border border-gray-300 rounded-lg px-4 py-2"
                 >
                   <option value="">Select Type</option>
-                  <option value="Goal">Investment</option>
-                  <option value="Savings">Savings</option>
-                  <option value="Spending">Spending</option>
+                  <option value="savings">Savings</option>
+                  <option value="debt">Debt</option>
+                  <option value="investment">Investment</option>
+                  <option value="spending limit">Spending Limit</option>
+                  <option value="donation">Donation</option>
                 </select>
               </div>
               {/* Category dropdown */}
@@ -244,16 +332,18 @@ const ChallengeCreate = () => {
                   <FaTag /> Category
                 </label>
                 <select
-                  type="text"
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
                   className="w-full border border-gray-300 rounded-lg px-4 py-2"
                 >
-                  <option value="">Select Type</option>
-                  <option value="Goal">Vacation</option>
-                  <option value="Savings">Travel</option>
-                  <option value="Spending">Subcriptions</option>
+                  <option value="">Select a category</option>
+                  {categories.map((cat) => (
+                    <option key={cat.category_id} value={cat.category_id}>
+                      {cat.category_name}
+                    </option>
+                  ))}
+
                 </select>
               </div>
               {/* Community dropdown */}
@@ -269,10 +359,30 @@ const ChallengeCreate = () => {
                   className="w-full border border-gray-300 rounded-lg px-4 py-2"
                 >
                   <option value="">Select Type</option>
-                  <option value="Goal">Happy Savers</option>
-                  <option value="Savings">Coupon Crew</option>
-                  <option value="Spending">Money Maniacs</option>
-                  <option value="Spending">Heist Club</option>
+                  {communities.map((cat) => (
+                    <option key={cat.community_id} value={cat.community_id}>
+                      {cat.community_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                  <FaListUl /> Measurement Type
+                </label>
+                <select
+                  name="measurementType"
+                  value={formData.measurementType}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                >
+                  <option value="">Select Type</option>
+                  <option value="goals_completed">Goals Completed</option>
+                  <option value="transactions_logged">Transactions Logged</option>
+                  <option value="amount_invested">Amount Invested</option>
+                  <option value="amount_donated">Amount Donated</option>
+                  <option value="spending_within_limit">Spending within limit</option>
                 </select>
               </div>
             </div>
