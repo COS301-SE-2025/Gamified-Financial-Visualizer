@@ -2,7 +2,8 @@ import { Router, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import argon2 from 'argon2';
 import crypto from 'crypto';
-import { V3 }                from 'paseto';
+import { V4 as paseto } from 'paseto';
+import { V3 } from 'paseto';
 import { logger } from '../../../config/logger';
 import * as userService from '../services/auth.service';
 
@@ -183,110 +184,6 @@ router.get('/user-id/:username', async (req: Request, res: Response) => {
     });
   }
 });
-
-/**
- * @route DELETE /api/auth/:userId
- * @brief Permanently deletes a user account when they decide to delete their account
- */
-router.delete('/:userId', async (req: Request, res: Response) => {
-  const { userId } = req.params;
-
-  try {
-    await userService.deleteUser(Number(userId));
-    logger.info(`[Auth] User with ID ${userId} deleted successfully.`);
-    res.status(200).json({
-      status: 'success',
-      message: `User account with ID ${userId} deleted successfully.`,
-    });
-  } catch (error) {
-    logger.error(`[Auth] Failed to delete user with ID ${userId}:`, error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Internal server error while deleting user account.',
-    });
-  }
-});
-
-
-/**
- * @route PUT /api/auth/:userId/settings
- * @desc Updates user settings including username, theme, avatar, preferences, 2FA
- */
-router.put('/:userId/settings', async (req: Request, res: Response) => {
-  const { userId } = req.params;
-  const updates = req.body;
-
-  if (!userId || Object.keys(updates).length === 0) {
-    res.status(400).json({
-      status: 'error',
-      message: 'Missing user ID or updates in request body.',
-    });
-    return;
-  }
-
-  try {
-    await userService.updateUserSettings(Number(userId), updates);
-    logger.info(`[Auth] Settings updated for user ID ${userId}`);
-    res.status(200).json({
-      status: 'success',
-      message: 'User settings updated successfully.',
-    });
-  } catch (error: any) {
-    logger.error(`[Auth] Failed to update settings for user ID ${userId}:`, error);
-
-    if (error.message === 'Username already taken') {
-      res.status(409).json({
-        status: 'error',
-        message: 'That username is already in use.',
-      });
-      return;
-    }
-
-    res.status(500).json({
-      status: 'error',
-      message: 'Internal server error while updating user settings.',
-    });
-    return;
-  }
-});
-
-/**
- * @route PUT /api/auth/:userId/change-password
- * @desc Changes the user's password with validation
- */
-router.put(
-  '/:userId/change-password',
-  [
-    body('currentPassword').notEmpty().withMessage('Current password required'),
-    body('newPassword')
-      .isLength({ min: 8 }).withMessage('New password must be at least 8 characters')
-      .matches(/[a-z]/).withMessage('Include lowercase')
-      .matches(/[A-Z]/).withMessage('Include uppercase')
-      .matches(/\d/).withMessage('Include a number')
-      .matches(/[\W_]/).withMessage('Include a special character'),
-    body('confirmPassword').custom((value, { req }) => {
-      if (value !== req.body.newPassword) throw new Error('Passwords do not match');
-      return true;
-    })
-  ],
-  async (req: Request, res: Response): Promise<void> => {
-    const { userId } = req.params;
-    const { currentPassword, newPassword } = req.body;
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      res.status(400).json({ status: 'error', errors: errors.array() });
-      return;
-    }
-
-    try {
-      await userService.changeUserPassword(Number(userId), currentPassword, newPassword);
-      res.status(200).json({ status: 'success', message: 'Password updated successfully.' });
-    } catch (err: any) {
-      res.status(400).json({ status: 'error', message: err.message || 'Password change failed.' });
-    }
-  }
-);
 
 
 
@@ -475,6 +372,162 @@ router.get('/profile/level-progress/:userId', async (req: Request, res: Response
     });
   }
 });
+
+
+
+// =============== Settings Page Specific Functions ============== //
+
+
+
+/**
+ * @route DELETE /api/auth/:userId
+ * @brief Permanently deletes a user account when they decide to delete their account
+ */
+router.delete('/:userId', async (req: Request, res: Response) => {
+  const { userId } = req.params;
+
+  try {
+    await userService.deleteUser(Number(userId));
+    logger.info(`[Auth] User with ID ${userId} deleted successfully.`);
+    res.status(200).json({
+      status: 'success',
+      message: `User account with ID ${userId} deleted successfully.`,
+    });
+  } catch (error) {
+    logger.error(`[Auth] Failed to delete user with ID ${userId}:`, error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Internal server error while deleting user account.',
+    });
+  }
+});
+
+
+/**
+ * @route PUT /api/auth/:userId/settings
+ * @desc Updates user settings including username, theme, avatar, preferences, 2FA
+ */
+router.put('/:userId/settings', async (req: Request, res: Response) => {
+  const { userId } = req.params;
+  const updates = req.body;
+
+  if (!userId || Object.keys(updates).length === 0) {
+    res.status(400).json({
+      status: 'error',
+      message: 'Missing user ID or updates in request body.',
+    });
+    return;
+  }
+
+  try {
+    await userService.updateUserSettings(Number(userId), updates);
+    logger.info(`[Auth] Settings updated for user ID ${userId}`);
+    res.status(200).json({
+      status: 'success',
+      message: 'User settings updated successfully.',
+    });
+  } catch (error: any) {
+    logger.error(`[Auth] Failed to update settings for user ID ${userId}:`, error);
+
+    if (error.message === 'Username already taken') {
+      res.status(409).json({
+        status: 'error',
+        message: 'That username is already in use.',
+      });
+      return;
+    }
+
+    res.status(500).json({
+      status: 'error',
+      message: 'Internal server error while updating user settings.',
+    });
+    return;
+  }
+});
+
+/**
+ * @route GET /api/auth/:userId/settings
+ * @desc Retrieves current user settings (username, preferences, push settings, 2FA)
+ */
+router.get(
+  '/:userId/settings',
+  async (req: Request, res: Response): Promise<void> => {
+    const userIdParam = req.params.userId;
+
+    // Validate userId is a number
+    const userId = Number(userIdParam);
+    if (isNaN(userId)) {
+      res.status(400).json({ status: 'error', message: 'Invalid user ID.' });
+      return;
+    }
+
+    try {
+      const settings = await userService.getUserSettings(userId);
+      res.status(200).json(settings);
+    } catch (err: any) {
+      logger.error(`[Auth] Failed to fetch settings for user ID ${userId}:`, err);
+
+      if (err.message === 'User not found') {
+        res.status(404).json({ status: 'error', message: 'User not found.' });
+      } else {
+        res.status(500).json({
+          status: 'error',
+          message: 'Failed to retrieve user settings.'
+        });
+      }
+    }
+  }
+);
+
+/**
+ * @route PUT /api/auth/:userId/change-password
+ * @desc Changes the user's password with validation
+ */
+router.put(
+  '/:userId/change-password',
+  [
+    body('currentPassword').notEmpty().withMessage('Current password required'),
+    body('newPassword')
+      .isLength({ min: 8 }).withMessage('New password must be at least 8 characters')
+      .matches(/[a-z]/).withMessage('Include lowercase')
+      .matches(/[A-Z]/).withMessage('Include uppercase')
+      .matches(/\d/).withMessage('Include a number')
+      .matches(/[\W_]/).withMessage('Include a special character'),
+    body('confirmPassword').custom((value, { req }) => {
+      if (value !== req.body.newPassword) throw new Error('Passwords do not match');
+      return true;
+    })
+  ],
+  async (req: Request, res: Response): Promise<void> => {
+    const { userId } = req.params;
+    const { currentPassword, newPassword } = req.body;
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      res.status(400).json({ status: 'error', errors: errors.array() });
+      return;
+    }
+
+    try {
+      await userService.changeUserPassword(Number(userId), currentPassword, newPassword);
+      res.status(200).json({ status: 'success', message: 'Password updated successfully.' });
+    } catch (err: any) {
+      res.status(400).json({ status: 'error', message: err.message || 'Password change failed.' });
+    }
+  }
+);
+
+
+router.get('/avatars', async (_req, res) => {
+  try {
+    const avatars = await userService.getAllAvatars();
+    res.status(200).json({ status: 'success', data: avatars });
+  } catch (err) {
+    res.status(500).json({ status: 'error', message: 'Could not fetch avatars.' });
+  }
+});
+
+
 
 
 

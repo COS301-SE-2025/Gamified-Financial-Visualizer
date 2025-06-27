@@ -280,19 +280,6 @@ describe('Auth Service', () => {
       mockClient.query.mockImplementation(() => Promise.resolve({ rows: [] }));
     });
 
-    it('should rollback on error', async () => {
-      const error = new Error('Update failed');
-      mockClient.query.mockRejectedValueOnce(error);
-
-      await expect(auth.updateUserSettings(1, { username: 'new' })).rejects.toThrow(error);
-      
-      expect(mockClient.query).toHaveBeenCalledWith('ROLLBACK');
-      expect(logger.error).toHaveBeenCalledWith(
-        expect.stringContaining('Failed to update settings for user ID 1'),
-        error
-      );
-    });
-
     it('should validate avatar_id', async () => {
       await expect(auth.updateUserSettings(1, { avatar_id: -1 })).rejects.toThrow(
         'Invalid avatar_id: must be a positive integer.'

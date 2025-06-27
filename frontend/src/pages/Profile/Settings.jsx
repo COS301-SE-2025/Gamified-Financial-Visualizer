@@ -1,29 +1,104 @@
-// Settings.jsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Settings = () => {
+  const user = JSON.parse(localStorage.getItem('user'));
+const userId = user?.id;
   const [theme, setTheme] = useState(true);
   const [notifications, setNotifications] = useState(true);
   const [verified, setVerified] = useState(false);
   const [username, setUsername] = useState('');
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState(0);
+  const [avatarList, setAvatarList] = useState([]);
   const [showConfirm, setShowConfirm] = useState(false);
   const navigate = useNavigate();
 
-  function importAll(r) {
-    return r.keys().map(r);
-  }
+  // Fetch user settings and avatars
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/auth/${userId}/settings`);
+        const data = await res.json();
+        if (res.ok) {
+          setUsername(data.username);
+          setTheme(data.preferences?.theme === 'dark');
+          setNotifications(data.preferences?.in_app_notifications_enabled ?? true);
+          setSelectedAvatar(data.preferences?.avatar_id || 1);
+          setVerified(data.twoFactorEnabled ?? false);
+        }
+      } catch (err) {
+        console.error('Failed to load settings');
+      }
+    };
 
-  const avatarImages = importAll(
-    require.context('../../assets/Images/avatars', false, /\.(png|jpe?g|svg)$/)
-  );
-  const avatarList = avatarImages.map((src, i) => ({ id: i, src }));
+    const fetchAvatars = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/auth/avatars');
+        const data = await res.json();
+        setAvatarList(data.data);
+      } catch (err) {
+        console.error('Failed to load avatars:', err);
+      }
+    };
 
-  const handleUsernameChange = () => {
-    console.log('Username changed to:', username);
-    setIsEditingUsername(false);
+
+
+    fetchSettings();
+    fetchAvatars();
+  }, [userId]);
+
+  const handleUsernameChange = async () => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/auth/${userId}/settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username }),
+      });
+
+      const text = await res.text();
+      console.log('Status:', res.status);
+      console.log('Raw response:', text);
+
+      try {
+        const data = JSON.parse(text);
+        if (res.ok) {
+          alert('Username updated successfully!');
+          setIsEditingUsername(false);
+
+          const updatedUser = { ...user, username };
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+
+        } else {
+          alert(data.message || 'Failed to update username.');
+        }
+      } catch (parseError) {
+        alert('Invalid server response. Check console.');
+      }
+    } catch (err) {
+      console.error('Error:', err);
+      alert('Failed to update username.');
+    }
+  };
+
+
+
+  const handleAvatarChange = async (avatarId) => {
+    try {
+      setSelectedAvatar(avatarId); // Optimistic update
+      const res = await fetch(`http://localhost:5000/api/auth/${userId}/settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ avatar_id: avatarId }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.message || 'Failed to update avatar.');
+      }
+    } catch (err) {
+      alert('Error updating avatar.');
+    }
   };
 
   return (
@@ -108,13 +183,15 @@ const Settings = () => {
         <div className="flex flex-wrap gap-3">
           {avatarList.map((avatar) => (
             <button
-              key={avatar.id}
-              onClick={() => setSelectedAvatar(avatar.id)}
-              className={`rounded-full overflow-hidden border-4 ${selectedAvatar === avatar.id ? 'border-[#88BC46]' : 'border-transparent'} transition-all duration-200`}
+              key={avatar.avatar_id}
+              onClick={() => handleAvatarChange(avatar.avatar_id)}
+              className={`rounded-full overflow-hidden border-4 ${
+                selectedAvatar === avatar.avatar_id ? 'border-[#88BC46]' : 'border-transparent'
+              } transition-all duration-200`}
             >
               <img
-                src={avatar.src}
-                alt={`avatar-${avatar.id}`}
+                src={`/assets/Images/${avatar.avatar_image_path}`}
+                alt={`avatar-${avatar.avatar_id}`}
                 className="w-14 h-14 object-cover rounded-full"
               />
             </button>

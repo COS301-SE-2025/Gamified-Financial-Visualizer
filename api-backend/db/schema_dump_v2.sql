@@ -329,9 +329,9 @@ CREATE TABLE challenges (
     target_amount NUMERIC(12,2) NOT NULL CHECK (target_amount > 0),
     current_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
 
-    start_date DATE NOT NULL,                     -- 🆕 Explicit start of challenge
-    target_date DATE NOT NULL,                    -- Goal or milestone date
-    end_date DATE,                                -- Actual end if completed/expired
+    start_date DATE NOT NULL,                      -- Explicit start of challenge
+    target_date DATE NOT NULL,                     -- Goal or milestone date
+    end_date DATE,                                 -- Actual end if completed/expired
 
     banner_id INT NOT NULL DEFAULT 1
                REFERENCES banner_images(banner_id)
@@ -354,6 +354,10 @@ CREATE TABLE challenges (
             'amount_donated',
             'spending_within_limit'
         )
+    ),
+
+    difficulty VARCHAR(20) NOT NULL DEFAULT 'easy' CHECK (
+        difficulty IN ('easy', 'medium', 'hard', 'extreme')
     ),
 
     challenge_status VARCHAR(50) NOT NULL DEFAULT 'active' CHECK (
