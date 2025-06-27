@@ -1,117 +1,98 @@
-// Settings.jsx
-import React, { useState, useEffect, use } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Settings = () => {
-  const user = JSON.parse(localStorage.getItem('user'));
-
+  const userId = localStorage.getItem('userId');
   const [theme, setTheme] = useState(true);
   const [notifications, setNotifications] = useState(true);
   const [verified, setVerified] = useState(false);
+  const [username, setUsername] = useState('');
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState(0);
+  const [avatarList, setAvatarList] = useState([]);
   const [showConfirm, setShowConfirm] = useState(false);
   const navigate = useNavigate();
-  const [passwords, setPasswords] = useState({
-    current: '',
-    new: '',
-    confirm: ''
-  });
 
-  function importAll(r) {
-    return r.keys().map(r);
-  }
-
-  const avatarImages = importAll(
-    require.context('../../assets/Images/avatars', false, /\.(png|jpe?g|svg)$/)
-  );
-  const avatarList = avatarImages.map((src, i) => ({ id: i, src }));
-
-  // Initialize state with user data
-  const [settings, setSettings] = useState({
-    username: user?.username || '',
-    theme: 'light', // default to light
-    notifications: true,
-    verified: false,
-    avatarId: user?.avatar_id || 1,
-    outOfAppNotifications: true
-  });
-
-
-  // Fetch current settings on mount
+  // Fetch user settings and avatars
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/auth/${user.id}/settings`);
-        const data = await response.json();
-        if (response.ok) {
-          setSettings({
-            username: data.username || user.username,
-            theme: data.theme || 'light',
-            notifications: data.inAppNotifications !== false,
-            verified: data.twoFactorEnabled || false,
-            avatarId: data.avatar_id || 1,
-            outOfAppNotifications: data.outOfAppEnabled !== false
-          });
+        const res = await fetch(`http://localhost:5000/api/auth/${userId}/settings`);
+        const data = await res.json();
+        if (res.ok) {
+          setUsername(data.username);
+          setTheme(data.preferences?.theme === 'dark');
+          setNotifications(data.preferences?.in_app_notifications_enabled ?? true);
+          setSelectedAvatar(data.preferences?.avatar_id || 1);
+          setVerified(data.twoFactorEnabled ?? false);
         }
-      } catch (error) {
-        console.error('Failed to fetch settings:', error);
+      } catch (err) {
+        console.error('Failed to load settings');
       }
     };
 
-    if (user?.id) {
-      fetchSettings();
-    }
-  }, [user?.id,  user?.username]);
-
-  // Handle saving settings
-  const handleSaveSettings = async () => {
-    try {
-      const response = await fetch(`http://localhost:5000/api/auth/${user.id}/settings`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          username: isEditingUsername ? settings.username : undefined,
-          theme: settings.theme === 'dark' ? 'dark' : 'light',
-          avatar_id: settings.avatarId,
-          inAppNotifications: settings.notifications,
-          outOfAppEnabled: settings.outOfAppNotifications,
-          twoFactorEnabled: settings.verified
-        })
-      });
-      const data = await response.json();
-
-      if (response.ok) {
-        // Update local user data
-        if (isEditingUsername) {
-          const updatedUser = { ...user, username: settings.username };
-          localStorage.setItem('user', JSON.stringify(updatedUser));
-          setIsEditingUsername(false);
-        }
-      } else {
-        throw new Error(data.message || 'Failed to save settings');
+    const fetchAvatars = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/auth/avatars');
+        const data = await res.json();
+        setAvatarList(data.data);
+      } catch (err) {
+        console.error('Failed to load avatars:', err);
       }
-    } catch (error) {
-      console.error('Error saving settings:', error);
+    };
+
+
+
+    fetchSettings();
+    fetchAvatars();
+  }, [userId]);
+
+  const handleUsernameChange = async () => {
+    try {
+      const res = await fetch(`http://localhost:5000/auth/${userId}/settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username }),
+      });
+
+      const text = await res.text();
+      console.log('Status:', res.status);
+      console.log('Raw response:', text);
+
+      try {
+        const data = JSON.parse(text);
+        if (res.ok) {
+          alert('Username updated successfully!');
+          setIsEditingUsername(false);
+        } else {
+          alert(data.message || 'Failed to update username.');
+        }
+      } catch (parseError) {
+        alert('Invalid server response. Check console.');
+      }
+    } catch (err) {
+      console.error('Error:', err);
+      alert('Failed to update username.');
     }
   };
 
-  // Handle username change
-  const handleUsernameChange = (e) => {
-    const newUsername = e.target.value;
-    setSettings({ ...settings, username: newUsername });
-  };
 
-  // Handle toggle changes
-  const handleToggleChange = (field) => {
-    setSettings({ ...settings, [field]: !settings[field] });
-  };
+  const handleAvatarChange = async (avatarId) => {
+    try {
+      setSelectedAvatar(avatarId); // Optimistic update
+      const res = await fetch(`http://localhost:5000/auth/${userId}/settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ avatar_id: avatarId }),
+      });
 
-  // Handle avatar selection
-  const handleAvatarSelect = (id) => {
-    setSettings({ ...settings, avatarId: id });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.message || 'Failed to update avatar.');
+      }
+    } catch (err) {
+      alert('Error updating avatar.');
+    }
   };
 
   return (
@@ -123,16 +104,13 @@ const Settings = () => {
           <div className="flex items-center gap-2">
             <input
               type="text"
-              value={settings.username}
-              onChange={handleUsernameChange}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               placeholder="Enter new username"
               className="input flex-1"
             />
             <button
-              onClick={() => {
-                handleSaveSettings();
-                setIsEditingUsername(true);
-              }}
+              onClick={handleUsernameChange}
               className="bg-[#AAD977] text-white px-4 py-2 rounded-md"
             >
               Save
@@ -147,7 +125,7 @@ const Settings = () => {
         ) : (
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-gray-700">
-              Current username: <span className="font-bold">{user.username || 'Not set'}</span>
+              Current username: <span className="font-bold">{username || 'Not set'}</span>
             </p>
             <button
               onClick={() => setIsEditingUsername(true)}
@@ -163,32 +141,17 @@ const Settings = () => {
       <div className="bg-white shadow rounded-xl p-6">
         <h3 className="font-semibold text-[#88BC46] text-lg mb-4">Preferences</h3>
         {[
-          {
-            label: 'Dark Mode',
-            field: 'theme',
-            value: settings.theme === 'dark',
-            toggle: () => setSettings({ ...settings, theme: settings.theme === 'dark' ? 'light' : 'dark' })
-          },
-          {
-            label: 'Enable In-App Notifications',
-            field: 'notifications',
-            value: settings.notifications,
-            toggle: () => handleToggleChange('notifications')
-          },
-          {
-            label: 'Two Factor Verification',
-            field: 'verified',
-            value: settings.verified,
-            toggle: () => handleToggleChange('verified')
-          },
-        ].map(({ label, field, value, toggle }, i) => (
+          { label: 'Dark Mode', state: theme, setter: setTheme },
+          { label: 'Enable In-App Notifications', state: notifications, setter: setNotifications },
+          { label: 'Two Factor Verification', state: verified, setter: setVerified },
+        ].map(({ label, state, setter }, i) => (
           <div key={i} className="flex items-center justify-between mb-4">
             <p className="text-sm font-medium text-gray-700">{label}</p>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={value}
-                onChange={toggle}
+                checked={state}
+                onChange={() => setter(!state)}
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-gray-200 peer-checked:bg-[#88BC46] rounded-full transition-all duration-300"></div>
@@ -214,13 +177,15 @@ const Settings = () => {
         <div className="flex flex-wrap gap-3">
           {avatarList.map((avatar) => (
             <button
-              key={avatar.id}
-              onClick={() => handleAvatarSelect(avatar.id)}
-              className={`rounded-full overflow-hidden border-4 ${settings.avatarId === avatar.id ? 'border-[#88BC46]' : 'border-transparent'} transition-all duration-200`}
+              key={avatar.avatar_id}
+              onClick={() => handleAvatarChange(avatar.avatar_id)}
+              className={`rounded-full overflow-hidden border-4 ${
+                selectedAvatar === avatar.avatar_id ? 'border-[#88BC46]' : 'border-transparent'
+              } transition-all duration-200`}
             >
               <img
-                src={avatar.src}
-                alt={`avatar-${avatar.id}`}
+                src={`/assets/Images/${avatar.avatar_image_path}`}
+                alt={`avatar-${avatar.avatar_id}`}
                 className="w-14 h-14 object-cover rounded-full"
               />
             </button>
@@ -244,12 +209,8 @@ const Settings = () => {
 
       {/* Save/Cancel */}
       <div className="bg-white shadow rounded-xl p-4 flex justify-start space-x-3">
-        <button className="bg-gray-200 px-4 py-2 rounded-md"
-          onClick={() => navigate(-1)}
-        >Cancel</button>
-        <button className="bg-[#AAD977] text-white px-4 py-2 rounded-md"
-          onClick={handleSaveSettings}
-        >Save</button>
+        <button className="bg-gray-200 px-4 py-2 rounded-md">Cancel</button>
+        <button className="bg-[#AAD977] text-white px-4 py-2 rounded-md">Save</button>
       </div>
 
       {/* Confirmation Modal */}
