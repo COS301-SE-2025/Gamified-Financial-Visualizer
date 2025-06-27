@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Settings = () => {
-  const userId = localStorage.getItem('userId');
+  const user = JSON.parse(localStorage.getItem('user'));
+const userId = user?.id;
   const [theme, setTheme] = useState(true);
   const [notifications, setNotifications] = useState(true);
   const [verified, setVerified] = useState(false);
@@ -49,7 +50,7 @@ const Settings = () => {
 
   const handleUsernameChange = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/auth/${userId}/settings`, {
+      const res = await fetch(`http://localhost:5000/api/auth/${userId}/settings`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username }),
@@ -64,6 +65,10 @@ const Settings = () => {
         if (res.ok) {
           alert('Username updated successfully!');
           setIsEditingUsername(false);
+
+          const updatedUser = { ...user, username };
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+
         } else {
           alert(data.message || 'Failed to update username.');
         }
@@ -77,10 +82,11 @@ const Settings = () => {
   };
 
 
+
   const handleAvatarChange = async (avatarId) => {
     try {
       setSelectedAvatar(avatarId); // Optimistic update
-      const res = await fetch(`http://localhost:5000/auth/${userId}/settings`, {
+      const res = await fetch(`http://localhost:5000/api/auth/${userId}/settings`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ avatar_id: avatarId }),
