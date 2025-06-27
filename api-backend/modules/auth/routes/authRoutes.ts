@@ -518,6 +518,19 @@ router.put(
 );
 
 
+router.get('/avatars', async (_req, res) => {
+  try {
+    const avatars = await userService.getAllAvatars();
+    res.status(200).json({ status: 'success', data: avatars });
+  } catch (err) {
+    res.status(500).json({ status: 'error', message: 'Could not fetch avatars.' });
+  }
+});
+
+
+
+
+
 /**
  * - POST /api/auth/register
  * - POST /api/auth/login

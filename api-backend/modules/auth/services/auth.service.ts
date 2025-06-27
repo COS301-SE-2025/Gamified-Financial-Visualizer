@@ -803,3 +803,18 @@ export async function deleteUser(user_id: number): Promise<void> {
     client.release();
   }
 }
+
+
+// Get all available banners
+export async function getAllAvatars() {
+  try {
+    const result = await pool.query(`
+      SELECT avatar_id, avatar_image_path FROM avatar_images
+    `);
+    logger.info('[AuthService] Fetched all avatars');
+    return result.rows;
+  } catch (err) {
+    logger.error('[AuthService] Failed to fetch avatars:', err);
+    throw err;
+  }
+}
