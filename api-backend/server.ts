@@ -5,6 +5,8 @@ import dotenv  from 'dotenv';
 import { logger } from './config/logger';
 import pool       from './config/db';
 
+import './jobs/resetBudgets'; // This will auto-schedule the job
+
 // 🔌 module registrars
 import { registerAuthModule }        from './modules/auth';
 import { registerTransactionModule } from './modules/transactions';
@@ -40,7 +42,6 @@ registerLearningModule(app);
 registerClassifierModule(app);
 
 registerCommunityModule(app); // Register the Community module
-
 
 
 // ...

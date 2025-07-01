@@ -13,11 +13,25 @@ const Navbar = () => {
   const [user, setUser] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [darkMode] = useState(false);
+  const [performance, setPerformance] = useState(null);
+  const [levelProgress, setLevelProgress] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('user'));
     setUser(storedUser);
+
+    fetch(`http://localhost:5000/api/community/performance-summary/${storedUser.id}`)
+      .then(res => res.json())
+      .then(data => setPerformance(data.data))
+      .catch(err => console.error('Community performance summary error:', err));
+
+        // Fetch level progress
+  fetch(`http://localhost:5000/api/auth/profile/level-progress/${storedUser.id}`)
+    .then(res => res.json())
+    .then(res => setLevelProgress(res.data))
+    .catch(err => console.error('Failed to load level progress:', err));
+
   }, []);
 
   useEffect(() => {
@@ -42,14 +56,18 @@ const Navbar = () => {
         <div className="flex items-center space-x-4">
           <NavLink to="/profile">
             <img
-              src={User}
-              alt="User"
+              src={
+                performance
+                  ? `../../assets/Images/${performance.avatar_image_path}`
+                  : { User }
+              }
               className="w-12 h-12 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
             />
+
           </NavLink>
           <div>
             <p className="text-sm font-semibold text-gray-900">{user ? user.username : "Guest"}</p>
-            <p className="text-xs text-gray-400">Silver</p>
+            <p className="text-xs text-gray-400">{levelProgress?.tier_status ?? '—'}</p>
           </div>
         </div>
 

@@ -71,6 +71,13 @@ export async function createGoal(goal: Goal): Promise<number> {
     ]);
     const newId = res.rows[ 0 ].goal_id;
     logger.info(`[GoalService] Created goal ID=${newId}`);
+     // 🟢 Invalidate or update user goals cache after creation
+    if (user_id) {
+      const cacheKey = `user_goals:${user_id}`;
+      // Option 1: Invalidate cache (recommended for consistency)
+      await redisClient.del(cacheKey);
+      getUserGoals(user_id); // Ensure we fetch the latest goals
+    }
     return newId;
   } catch (error) {
     logger.error(`[GoalService] Error creating goal:`, error);
@@ -98,18 +105,11 @@ export async function getGoal(goal_id: number): Promise<Goal | null> {
 export async function getUserGoals(user_id: number): Promise<Goal[]> {
   const sql = `SELECT * FROM goals WHERE user_id = $1 ORDER BY created_at DESC;`;
   try {
-    // check cache
-    const cacheKey = `user_goals:${user_id}`;
-    const cachedGoals = await redisClient.get(cacheKey);
-    if (cachedGoals) {
-      return JSON.parse(cachedGoals) as Goal[];
-    }
+
 
     const res = await pool.query(sql, [ user_id ]);
     // cache the result
-    await redisClient.set(cacheKey, JSON.stringify(res.rows), {
-      EX: 60 * 60 // cache for 1 hour
-    });
+
 
     if (res.rows.length === 0) {
       logger.info(`[GoalService] No goals found for user ${user_id}`);
