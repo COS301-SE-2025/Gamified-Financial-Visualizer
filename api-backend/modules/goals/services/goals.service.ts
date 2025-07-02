@@ -1,5 +1,4 @@
 // goal.service.ts
-// Handles operations for personal and community goals
 import dotenv from 'dotenv';
 dotenv.config();
 import { logger } from '../../../config/logger';
@@ -131,32 +130,51 @@ export async function getGoalsSummary(user_id: number) {
     END
     WHERE user_id = $1;
   `;
+
   try {
-    await pool.query(updateStatusSql, [ user_id ]);
+    await pool.query(updateStatusSql, [user_id]);
   } catch (error) {
     logger.error(`[GoalService] Error updating goal statuses for user ${user_id}:`, error);
     throw error;
   }
 
   const sql = `
+    WITH dormant_goals AS (
+      SELECT g.goal_id
+      FROM goals g
+      LEFT JOIN goal_progress gp
+        ON g.goal_id = gp.goal_id
+        AND DATE_TRUNC('month', gp.progress_date) = DATE_TRUNC('month', CURRENT_DATE) -- Only consider progress for the current month
+      WHERE g.user_id = $1
+        AND g.goal_status NOT IN ('completed', 'cancelled')
+      GROUP BY g.goal_id
+      HAVING COUNT(gp.progress_id) = 0
+    )
     SELECT
       COUNT(*) AS total_goals,
       COUNT(*) FILTER (WHERE goal_status = 'completed') AS completed_goals,
       COUNT(*) FILTER (WHERE goal_status = 'in-progress') AS in_progress_goals,
       COUNT(*) FILTER (WHERE goal_status = 'paused') AS paused_goals,
       COUNT(*) FILTER (WHERE goal_status = 'cancelled') AS cancelled_goals,
-      COUNT(*) FILTER (WHERE goal_status = 'failed') AS failed_goals
+      COUNT(*) FILTER (WHERE goal_status = 'failed') AS failed_goals,
+      COUNT(*) FILTER (WHERE start_date > CURRENT_DATE) AS upcoming_goals,
+      (SELECT COUNT(*) FROM dormant_goals) AS dormant_goals
     FROM goals
     WHERE user_id = $1;
   `;
+
   try {
-    const res = await pool.query(sql, [ user_id ]);
+    const res = await pool.query(sql, [user_id]);
     if (!res.rows || res.rows.length === 0) {
       return {
         total_goals: 0,
         completed_goals: 0,
         in_progress_goals: 0,
-        overdue_goals: 0
+        paused_goals: 0,
+        cancelled_goals: 0,
+        failed_goals: 0,
+        upcoming_goals: 0,
+        dormant_goals: 0
       };
     }
     return res.rows[0];
