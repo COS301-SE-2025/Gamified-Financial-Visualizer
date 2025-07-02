@@ -71,12 +71,7 @@ export async function createGoal(goal: Goal): Promise<number> {
     const newId = res.rows[ 0 ].goal_id;
     logger.info(`[GoalService] Created goal ID=${newId}`);
      // 🟢 Invalidate or update user goals cache after creation
-    if (user_id) {
-      const cacheKey = `user_goals:${user_id}`;
-      // Option 1: Invalidate cache (recommended for consistency)
-      await redisClient.del(cacheKey);
-      getUserGoals(user_id); // Ensure we fetch the latest goals
-    }
+
     return newId;
   } catch (error) {
     logger.error(`[GoalService] Error creating goal:`, error);
