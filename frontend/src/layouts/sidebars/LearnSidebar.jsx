@@ -15,6 +15,8 @@ const LearnSidebar = () => {
   const id = user ? user.id : null;
   const [summary, setSummary] = useState(null);
   const [error, setError] = useState(null);
+  const [userPerformance, setPerformance] = useState(null);
+  const [levelProgress, setLevelProgress] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -31,6 +33,19 @@ const LearnSidebar = () => {
       } finally {
       }
     };
+
+        fetch(`http://localhost:5000/api/community/performance-summary/${id}`)
+      .then(res => res.json())
+      .then(data => setPerformance(data.data))
+      .catch(err => console.error('Community performance summary error:', err));
+
+        // Fetch level progress
+    fetch(`http://localhost:5000/api/auth/profile/level-progress/${id}`)
+      .then(res => res.json())
+      .then(res => setLevelProgress(res.data))
+      .catch(err => console.error('Failed to load level progress:', err));
+
+
 
     if (id) fetchData();
   }, [id]);
@@ -109,8 +124,12 @@ const LearnSidebar = () => {
             </p>
             <p className="text-sm text-[#718096]">{performance.level}</p>
             <img
-              src={avatar}
-              alt="User Avatar"
+              src={
+                userPerformance
+                  ? `../../assets/Images/${userPerformance.avatar_image_path}`
+                  : { avatar }
+              }
+              alt="Avatar"
               className="w-8 h-8 mt-1 rounded-full object-cover"
             />
           </div>
@@ -124,7 +143,7 @@ const LearnSidebar = () => {
           </div>
         </div>
         <p className="text-sm font-medium mt-2" style={{ color: "#F56565"}}>
-          Lv {summary ? Math.floor(summary.score/20) + 1 : 1}: {performance.tier}
+          Lv {levelProgress?.level_number ?? '—'}: {levelProgress?.tier_status ?? '—'}
         </p>
       </div>
 

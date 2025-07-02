@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { FaUmbrellaBeach, FaDesktop, FaCameraRetro, FaCalendarAlt, FaQuestion } from 'react-icons/fa';
+import { categoryIconMap, categorize } from './categoryIcons.ts';
+
 
 const UpcomingDeadlinesCard = () => {
   const user = JSON.parse(localStorage.getItem('user'));
   const [deadlines, setDeadlines] = useState([]);
 
+  
   useEffect(() => {
     const fetchDeadlines = async () => {
       try {
@@ -19,13 +22,12 @@ const UpcomingDeadlinesCard = () => {
     if (user?.id) fetchDeadlines();
   }, [user?.id]);
 
-  const getIcon = (title) => {
-    title = title.toLowerCase();
-    if (title.includes('vacation')) return <FaUmbrellaBeach className="text-[#5FBFFF]" />;
-    if (title.includes('pc') || title.includes('computer')) return <FaDesktop className="text-[#AAD977]" />;
-    if (title.includes('camera')) return <FaCameraRetro className="text-[#F97156]" />;
-    return <FaQuestion className="text-gray-400" />;
-  };
+const getIcon = (goalType) => {
+  const category = categorize(goalType);
+  const Icon = categoryIconMap[category];
+  return <Icon className="text-[#5FBFFF]" />;
+};
+
 
   const formatDate = (iso) => {
     const d = new Date(iso);
@@ -41,7 +43,7 @@ const UpcomingDeadlinesCard = () => {
         {deadlines.map((goal, index) => (
           <li key={index} className="flex justify-between items-center">
             <div className="flex items-center gap-2">
-              {getIcon(goal.goal_name)}
+              {getIcon(goal.goal_type)}
               <span>{goal.goal_name}</span>
             </div>
             <span className="text-gray-500">{formatDate(goal.target_date)}</span>
