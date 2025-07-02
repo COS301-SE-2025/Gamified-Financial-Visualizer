@@ -125,17 +125,15 @@ const GoalsSidebar = () => {
                 icon: <FaCheck />,
                 color: '#7FDD53'
               },
-              { value: goalStats.paused_goals, label: 'Inactive', icon: <FaChartBar />, color: '#5FBFFF' },
+              { value: goalStats.upcoming_goals, label: 'Upcoming', icon: <FaChartBar />, color: '#5FBFFF' },
               { value: goalStats.in_progress_goals, label: 'In-Progress', icon: <FaHourglassHalf />, color: '#FFC541' },
               {
-                value: `${Math.round(
-                  ((Number(goalStats.failed_goals) + Number(goalStats.cancelled_goals)) / Math.max(1, Number(goalStats.total_goals))) * 100
-                )}%`,
-                label: 'Incomplete',
+                value: goalStats.dormant_goals,
+                label: 'Dormant',
                 icon: <FaTimes />,
                 color: '#F68D2B'
               },
-              { value: goalStats.cancelled_goals, label: 'Cancelled', icon: <FaBan />, color: '#FF7F9E' }
+              { value: goalStats.failed_goals, label: 'Failed', icon: <FaBan />, color: '#FF7F9E' }
             ].map(({ value, label, icon, color }, i) => (
               <div key={i} className="relative bg-white rounded-xl shadow-md p-3 flex items-center justify-between">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: `${color}20` }}>

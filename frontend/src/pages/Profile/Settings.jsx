@@ -63,21 +63,19 @@ const userId = user?.id;
       try {
         const data = JSON.parse(text);
         if (res.ok) {
-          alert('Username updated successfully!');
           setIsEditingUsername(false);
 
           const updatedUser = { ...user, username };
           localStorage.setItem('user', JSON.stringify(updatedUser));
 
         } else {
-          alert(data.message || 'Failed to update username.');
+          console.error(`Failed to update username: ${data.message}`);
         }
       } catch (parseError) {
-        alert('Invalid server response. Check console.');
+        console.error('Invalid server response. Check console.');
       }
     } catch (err) {
       console.error('Error:', err);
-      alert('Failed to update username.');
     }
   };
 
@@ -94,10 +92,10 @@ const userId = user?.id;
 
       const data = await res.json();
       if (!res.ok) {
-        alert(data.message || 'Failed to update avatar.');
+        console.error(data.message || 'Failed to update avatar.');
       }
     } catch (err) {
-      alert('Error updating avatar.');
+      console.error('Error updating avatar.');
     }
   };
 
