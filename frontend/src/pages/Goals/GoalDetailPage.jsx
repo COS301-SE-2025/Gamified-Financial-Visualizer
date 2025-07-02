@@ -6,6 +6,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { FaTrashAlt, FaUmbrellaBeach } from 'react-icons/fa';
 import GoalsViewLayout from '../../pages/Goals/GoalsViewLayout';
 import image from '../../assets/Images/banners/pixelAllyway.jpeg';
+import goal1 from '../../assets/Images/banners/pixelApartment.gif';
+import goal2 from '../../assets/Images/banners/pixelHouse.gif';
+import goal3 from '../../assets/Images/banners/pixelOffice1.gif';
+
 const GoalsDetailPage = () => {
 
   const { goalId } = useParams();
@@ -15,7 +19,7 @@ const GoalsDetailPage = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
   const [showConfirm, setShowConfirm] = useState(false);
-
+  const bannerImages = [goal1, goal2, goal3];
 
   useEffect(() => {
     const fetchGoalDetails = async () => {
@@ -66,7 +70,7 @@ const GoalsDetailPage = () => {
 
           <div className="flex items-start gap-6">
             {/* Goal Image */}
-            <img src={image} alt="Goal" className="rounded-xl w-1/3 object-cover shadow" />
+            <img src={ bannerImages[goal.banner_id-1]} alt="Goal" className="rounded-xl w-1/3 object-cover shadow" />
 
             {/* Goal Info */}
             <div className="flex-1 space-y-2">

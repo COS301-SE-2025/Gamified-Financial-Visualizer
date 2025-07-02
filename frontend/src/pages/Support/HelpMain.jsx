@@ -60,12 +60,12 @@ const HelpMain = () => {
   // Claim reward function
   const claimReward = () => {
     if (completedCount === 3) {
-      alert('Reward Claimed! +15 XP');
+      console.log('Reward Claimed! +15 XP');
       // Reset all tasks
       setTasks(tasks.map(t => ({ ...t, done: false })));
 
     } else {
-      alert(`${3 - completedCount} more tasks to complete!`);
+      console.log(`${3 - completedCount} more tasks to complete!`);
     }
   };
 

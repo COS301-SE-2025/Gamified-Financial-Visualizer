@@ -25,6 +25,7 @@ const LearningPage = () => {
   const [modulesData, setModulesData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchModules = async () => {
@@ -69,6 +70,8 @@ const LearningPage = () => {
           type="text"
           placeholder="Search for modules..."
           className="w-full outline-none bg-transparent text-sm text-[#E5794B] placeholder-[#E5794B]/70"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
       <h2 className="text-lg font-semibold text-sky-500 bg-sky-100 inline-block px-4 py-1 rounded-full mb-6">
@@ -76,7 +79,7 @@ const LearningPage = () => {
       </h2>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {modulesData.map((module) => (
+        {modulesData.filter(m => m.module_title.toLowerCase().includes(searchTerm.toLowerCase())).map((module) => (
           <CourseCard
             id={module.module_id}
             title={module.module_title}
@@ -88,6 +91,13 @@ const LearningPage = () => {
           />
         ))}
       </div>
+      {modulesData.filter(m =>
+          m.module_title.toLowerCase().includes(searchTerm.toLowerCase())
+        ).length === 0 && (
+          <div className="text-center text-gray-500 mt-6 text-sm">
+            No matching Goals found.
+          </div>
+        )}
     </LearnLayout>
   );
 };

@@ -1,23 +1,22 @@
 // pages/GoalsPage.tsx
 import React, { useEffect, useState } from 'react';
 import GoalsViewLayout from './GoalsViewLayout';
-
 import { FaSearch } from 'react-icons/fa';
-
 import GoalOverviewCards from '../../components/cards/GoalOverviewCards';
 import GoalCard from '../../components/cards/GoalCard';
 import DonutChart from '../../components/charts/DonutChart';
 import BarChart from '../../components/charts/BarChart';
 import UpcomingDeadlinesCard from '../../components/cards/UpcomingDeadlinesCard';
-import vacationImg from '../../assets/Images/banners/pixelStore.gif';
-import pcImg from '../../assets/Images/banners/pixelHouse.gif';
-import cameraImg from '../../assets/Images/banners/pixelStudents.jpeg';
+
+import goal1 from '../../assets/Images/banners/pixelApartment.gif';
+import goal2 from '../../assets/Images/banners/pixelHouse.gif';
+import goal3 from '../../assets/Images/banners/pixelOffice1.gif';
 
 const GoalsPage = () => {
   const user = JSON.parse(localStorage.getItem('user'));
   const [goals, setGoals] = useState([]);
-
-  const bannerImages = [vacationImg, pcImg, cameraImg];
+  const [searchTerm, setSearchTerm] = useState('');
+  const bannerImages = [goal1, goal2, goal3];
 
   useEffect(() => {
     const fetchGoals = async () => {
@@ -59,13 +58,15 @@ const GoalsPage = () => {
             type="text"
             placeholder="Search your goals..."
             className="w-full outline-none bg-transparent text-sm text-[#E5794B] placeholder-[#E5794B]/70"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
         {/* Goal Cards */}
         <div className="grid grid-cols-3 gap-6">
-          {goals.map((goal) => {
-            const randomImage = bannerImages[goal.banner_id % bannerImages.length];
+          {goals.filter(g => g.goal_name.toLowerCase().includes(searchTerm.toLowerCase())).map((goal) => {
+            const randomImage = bannerImages[goal.banner_id-1];
             const progress = Math.min(
               Math.round((Number(goal.current_amount) / Number(goal.target_amount)) * 100),
               100
@@ -79,7 +80,7 @@ const GoalsPage = () => {
             return (
               <GoalCard
                 key={goal.goal_id}
-                goalId={goal.goal_id}  // Pass goal_id as goalId prop
+                goalId={goal.goal_id}  
                 title={goal.goal_name}
                 image={randomImage}
                 progress={progress}
@@ -89,6 +90,14 @@ const GoalsPage = () => {
             );
           })}
         </div>
+
+        {goals.filter(c =>
+          c.goal_name.toLowerCase().includes(searchTerm.toLowerCase())
+        ).length === 0 && (
+          <div className="text-center text-gray-500 mt-6 text-sm">
+            No matching Goals found.
+          </div>
+        )}
       </div>
     </GoalsViewLayout>
   );

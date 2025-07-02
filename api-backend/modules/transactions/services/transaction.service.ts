@@ -721,17 +721,9 @@ WHERE b.user_id = $1
 GROUP BY b.budget_id;
   `;
   try {
-    // at redis
-    const cacheKey = `budgets_summary:${user_id}`;
-    const cached = await redisClient.get(cacheKey);
-    if (cached) return JSON.parse(cached);
-
+ 
     const res = await pool.query(sql, [ user_id ]);
 
-    // Cache the result in Redis for 1 hour
-    await redisClient.set(cacheKey, JSON.stringify(res.rows), {
-      EX: 3600 // 1 hour expiration
-    });
 
     return res.rows;
   } catch (error) {

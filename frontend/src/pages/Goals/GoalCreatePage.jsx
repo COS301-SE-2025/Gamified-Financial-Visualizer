@@ -68,11 +68,10 @@ const handleSubmit = async (e) => {
     if (res.ok) {
       window.location.href = '/goals';
     } else {
-      alert(`Failed to create goal: ${data.message}`);
+      console.error(`Failed to create goal: ${data.message}`);
     }
   } catch (err) {
     console.error('Error submitting goal:', err);
-    alert('An error occurred while creating the goal.');
   }
 };
 
