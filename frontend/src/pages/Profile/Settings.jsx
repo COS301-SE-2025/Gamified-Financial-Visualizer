@@ -99,6 +99,53 @@ const userId = user?.id;
     }
   };
 
+
+  const handleSavePreferences = async () => {
+  try {
+    // Update theme, notifications, 2FA
+    await fetch(`http://localhost:5000/api/auth/${userId}/settings`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        theme: theme ? 'dark' : 'light',
+        inAppNotifications: notifications,
+        twoFactorEnabled: verified,
+      }),
+    });
+
+    // Handle password change if any field is filled
+    const currentPassword = document.getElementById('current-pass').value;
+      const newPassword = document.getElementById('new-pass').value;
+      const confirmPassword = document.getElementById('confirm-pass').value;
+
+      const anyPasswordFilled = currentPassword || newPassword || confirmPassword;
+      if (anyPasswordFilled) {
+        const res = await fetch(`http://localhost:5000/api/auth/${userId}/change-password`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ currentPassword, newPassword, confirmPassword }),
+        });
+
+        const result = await res.json();
+        if (!res.ok) {
+          alert(result.message || 'Password change failed');
+          return;
+        }
+
+        alert('Password updated successfully');
+      } else {
+        alert('Preferences updated successfully');
+      }
+
+    } catch (err) {
+      console.error('Error updating settings:', err);
+      alert('An error occurred while saving settings.');
+    }
+  };
+
+
+
+
   return (
     <div className="max-w-6xl mx-auto px-2 pb-2 space-y-6 overflow-y-auto">
       {/* Username */}
@@ -169,9 +216,9 @@ const userId = user?.id;
       <div className="bg-white shadow rounded-xl p-6">
         <h3 className="font-semibold mb-4 text-[#88BC46]">Change Password</h3>
         <div className="grid gap-4">
-          <input type="password" placeholder="Current Password" className="input" />
-          <input type="password" placeholder="New Password" className="input" />
-          <input type="password" placeholder="Confirm New Password" className="input" />
+          <input id="current-pass" type="password" placeholder="Current Password" className="input" />
+          <input id="new-pass" type="password" placeholder="New Password" className="input" />
+          <input id="confirm-pass" type="password" placeholder="Confirm New Password" className="input" />
         </div>
       </div>
 
@@ -214,7 +261,7 @@ const userId = user?.id;
       {/* Save/Cancel */}
       <div className="bg-white shadow rounded-xl p-4 flex justify-start space-x-3">
         <button className="bg-gray-200 px-4 py-2 rounded-md">Cancel</button>
-        <button className="bg-[#AAD977] text-white px-4 py-2 rounded-md">Save</button>
+        <button onClick={handleSavePreferences} className="bg-[#AAD977] text-white px-4 py-2 rounded-md">Save</button>
       </div>
 
       {/* Confirmation Modal */}
@@ -233,14 +280,28 @@ const userId = user?.id;
                 Cancel
               </button>
               <button
-                onClick={() => {
-                  localStorage.clear();
-                  navigate('/landing');
-                }}
-                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md"
-              >
-                Confirm Delete
-              </button>
+              onClick={async () => {
+                try {
+                  const res = await fetch(`http://localhost:5000/api/auth/${userId}`, {
+                    method: 'DELETE',
+                  });
+
+                  if (res.ok) {
+                    localStorage.clear();
+                    navigate('/landing');
+                  } else {
+                    const data = await res.json();
+                    alert(data.message || 'Account deletion failed.');
+                  }
+                } catch (err) {
+                  console.error('Error deleting account:', err);
+                  alert('An error occurred while deleting your account.');
+                }
+              }}
+              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md"
+            >
+              Confirm Delete
+            </button>
             </div>
           </div>
         </div>
