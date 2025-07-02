@@ -790,8 +790,78 @@ export async function deleteUser(user_id: number): Promise<void> {
   try {
     await client.query('BEGIN');
 
-    // All related records are set to cascade via foreign keys in your schema
-    await client.query('DELETE FROM users WHERE user_id = $1', [user_id]);
+    // STEP 1: Delete recurring transactions tied to user's accounts
+    await client.query(`
+      DELETE FROM recurring_transactions
+      WHERE transaction_id IN (
+        SELECT t.transaction_id
+        FROM transactions t
+        JOIN accounts a ON t.account_id = a.account_id
+        WHERE a.user_id = $1
+      )
+    `, [user_id]);
+
+    // STEP 2: Delete transactions using user's custom categories (to prevent check constraint failure)
+    await client.query(`
+      DELETE FROM transactions
+      WHERE custom_category_id IN (
+        SELECT custom_category_id FROM custom_categories WHERE user_id = $1
+      )
+    `, [user_id]);
+
+    // STEP 3: Delete remaining transactions tied to user's accounts
+    await client.query(`
+      DELETE FROM transactions
+      WHERE account_id IN (
+        SELECT account_id FROM accounts WHERE user_id = $1
+      )
+    `, [user_id]);
+
+    // STEP 4: Delete goal progress linked to goals with custom categories
+    await client.query(`
+      DELETE FROM goal_progress
+      WHERE goal_id IN (
+        SELECT goal_id FROM goals
+        WHERE custom_category_id IN (
+          SELECT custom_category_id FROM custom_categories WHERE user_id = $1
+        )
+      )
+    `, [user_id]);
+
+    // STEP 5: Delete goals using user's custom categories
+    await client.query(`
+      DELETE FROM goals
+      WHERE custom_category_id IN (
+        SELECT custom_category_id FROM custom_categories WHERE user_id = $1
+      )
+    `, [user_id]);
+
+    // STEP 6: Remaining deletions of associated records
+    await client.query(`DELETE FROM goal_progress WHERE contributor_id = $1`, [user_id]);
+    await client.query(`DELETE FROM challenge_progress WHERE user_id = $1`, [user_id]);
+    await client.query(`DELETE FROM user_achievements WHERE user_id = $1`, [user_id]);
+    await client.query(`DELETE FROM quiz_attempts WHERE user_id = $1`, [user_id]);
+    await client.query(`DELETE FROM user_lessons WHERE user_id = $1`, [user_id]);
+    await client.query(`DELETE FROM leaderboard_entries WHERE user_id = $1`, [user_id]);
+    await client.query(`DELETE FROM points_log WHERE user_id = $1`, [user_id]);
+    await client.query(`DELETE FROM user_points WHERE user_id = $1`, [user_id]);
+    await client.query(`DELETE FROM goals WHERE user_id = $1`, [user_id]);
+    await client.query(`DELETE FROM budgets WHERE user_id = $1`, [user_id]);
+    await client.query(`DELETE FROM accounts WHERE user_id = $1`, [user_id]);
+    await client.query(`DELETE FROM user_preferences WHERE user_id = $1`, [user_id]);
+    await client.query(`DELETE FROM user_tokens WHERE user_id = $1`, [user_id]);
+    await client.query(`DELETE FROM user_push_subscriptions WHERE user_id = $1`, [user_id]);
+    await client.query(`DELETE FROM community_members WHERE user_id = $1`, [user_id]);
+    await client.query(`DELETE FROM friendships WHERE user_id = $1 OR friend_id = $1`, [user_id]);
+    await client.query(`DELETE FROM visual_assets WHERE user_id = $1`, [user_id]);
+    await client.query(`DELETE FROM ar_scene_state WHERE user_id = $1`, [user_id]);
+    await client.query(`DELETE FROM ai_scores WHERE user_id = $1`, [user_id]);
+
+    // STEP 7: Finally delete custom categories
+    await client.query(`DELETE FROM custom_categories WHERE user_id = $1`, [user_id]);
+
+    // STEP 8: Finally delete the user
+    await client.query(`DELETE FROM users WHERE user_id = $1`, [user_id]);
 
     await client.query('COMMIT');
     logger.info(`[AuthService] Deleted user ID ${user_id}`);
@@ -803,6 +873,7 @@ export async function deleteUser(user_id: number): Promise<void> {
     client.release();
   }
 }
+
 
 
 // Get all available banners
