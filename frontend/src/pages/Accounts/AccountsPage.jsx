@@ -13,8 +13,6 @@ const AccountsPage = () => {
   const [accounts, setAccounts] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]); // Add categories state
-  const [loading, setLoading] = useState(true);
-  const [loadingTransactions, setLoadingTransactions] = useState(false);
   const [error, setError] = useState(null);
   const transactionsRef = useRef(null);
 
@@ -36,7 +34,6 @@ const AccountsPage = () => {
     return 'Uncategorized';
   };
 
-  // Fetch all user transactions (across all accounts) - wrapped in useCallback
   const fetchAllUserTransactions = useCallback(async () => {
     if (!userId) {
       setTransactions([]);
@@ -44,7 +41,6 @@ const AccountsPage = () => {
     }
 
     try {
-      setLoadingTransactions(true);
       setError(null);
 
       const res = await fetch(`http://localhost:5000/api/transactions/user/${userId}`);
@@ -71,11 +67,9 @@ const AccountsPage = () => {
       setError(err.message);
       setTransactions([]);
     } finally {
-      setLoadingTransactions(false);
     }
-  }, [userId]); // Include userId as dependency
+  }, [userId]);
 
-  // Fetch categories when component mounts
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -85,7 +79,6 @@ const AccountsPage = () => {
         setCategories(data.data || []);
       } catch (err) {
         console.error('Error fetching categories:', err);
-        // Don't set error here as it's not critical for the main functionality
       }
     };
 
@@ -95,13 +88,11 @@ const AccountsPage = () => {
   useEffect(() => {
     if (!userId) {
       setError('User not logged in. Please log in again.');
-      setLoading(false);
       return;
     }
 
     const fetchAccountsAndTransactions = async () => {
       try {
-        setLoading(true);
         setError(null);
         
         // Fetch accounts
@@ -115,7 +106,6 @@ const AccountsPage = () => {
       } catch (err) {
         setError(err.message);
       } finally {
-        setLoading(false);
       }
     };
 
@@ -124,13 +114,11 @@ const AccountsPage = () => {
 
   const fetchTransactionsForAccount = async (accountId) => {
     if (!accountId) {
-      // If no account selected, show all user transactions
       await fetchAllUserTransactions();
       return;
     }
 
     try {
-      setLoadingTransactions(true);
       setError(null);
 
       const res = await fetch(`http://localhost:5000/api/transactions/accounts/${accountId}`);
@@ -140,7 +128,6 @@ const AccountsPage = () => {
       const mapped = (data.data || []).map(txn => ({
         name: txn.transaction_name,
         date: new Date(txn.transaction_date).toLocaleDateString(),
-        // Fix: Use proper category resolution
         category: getCategoryName(txn.category_id, txn.custom_category_id),
         amount: `${txn.transaction_amount >= 0 ? '' : '-'}${activeAccount?.currency + ' ' || 'ZAR'}${Math.abs(txn.transaction_amount).toFixed(2)}`,
         account_id: txn.account_id,
@@ -149,7 +136,6 @@ const AccountsPage = () => {
         original_amount: txn.transaction_amount, // Keep original for calculations
         category_id: txn.category_id, // Keep for editing
         custom_category_id: txn.custom_category_id, // Keep for editing
-        // Add color property based on transaction type
         amountColor: (txn.transaction_type === 'income' || txn.transaction_type === 'transfer' || txn.transaction_type === 'deposit') ? 'bg-green-400' : (txn.transaction_type === 'expense' || txn.transaction_type === 'withdrawal' || txn.transaction_type === 'fee') ? 'bg-red-400' : 'bg-gray-400',
       }));
 
@@ -159,7 +145,6 @@ const AccountsPage = () => {
       setError(err.message);
       setTransactions([]);
     } finally {
-      setLoadingTransactions(false);
     }
   };
 
@@ -290,8 +275,6 @@ const AccountsPage = () => {
 
   // Fixed: Handle transaction operations with proper refresh
   const handleAddTransaction = async (newTransaction) => {
-    // The transaction was already added to database in AddTransactionModal
-    // Refresh the appropriate transactions list
     if (activeAccount?.account_id) {
       await fetchTransactionsForAccount(activeAccount.account_id);
     } else {
@@ -300,8 +283,6 @@ const AccountsPage = () => {
   };
 
   const handleEditTransaction = async (index, updatedTransaction) => {
-    // The transaction was already updated in database in EditTransactionModal
-    // Refresh the appropriate transactions list
     if (activeAccount?.account_id) {
       await fetchTransactionsForAccount(activeAccount.account_id);
     } else {
@@ -324,18 +305,6 @@ const AccountsPage = () => {
   const transactionHeading = activeAccount
     ? `${activeAccount.account_name || activeAccount.accountName} Transactions`
     : 'Recent Transactions';
-
-  if (loading) {
-    return (
-      <div className="w-full max-w-6xl mx-auto p-4 flex justify-center items-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#336699] mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading accounts...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="w-full max-w-6xl mx-auto p-4 space-y-8 -ml-[10px]">
       {error && (
@@ -368,10 +337,7 @@ const AccountsPage = () => {
         </div>
 
         {accounts.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 mb-4">No accounts found</p>
-              {/* onClick={() => setShowModal(true)} */}
-          </div>
+          console.log("No accounts found")
         ) : (
           <div className="flex space-x-6 px-1 overflow-x-auto">
             {accounts.map((acc, idx) => (
@@ -410,8 +376,7 @@ const AccountsPage = () => {
           account={activeAccount}
           transactions={filteredTransactions}
           heading={transactionHeading}
-          loading={loadingTransactions}
-          categories={categories} // Pass categories to the table component
+          categories={categories}
           onAdd={handleAddTransaction}
           onEdit={handleEditTransaction}
           onDelete={handleDeleteTransaction}

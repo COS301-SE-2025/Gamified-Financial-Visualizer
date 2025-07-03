@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import avatar from '../../assets/Images/avatars/totoroAvatar.jpeg';
 import {
-
   FaBolt,
   FaChartBar,
   FaHourglassHalf,
@@ -39,7 +38,6 @@ import {
   FaCoins,
   FaExchangeAlt,
   FaSpinner
-
 } from 'react-icons/fa';
 
 // Category icons mapping
@@ -68,12 +66,7 @@ const categoryIcons = {
   default: <FaMoneyBillWave />
 };
 
-function getRandomColor() {
-  return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
-}
-
-const randomColor = getRandomColor(); // Example output: "#3A7B42"
-// Category colors mapping
+// Base category colors mapping
 const categoryColors = {
   groceries: '#FF8A8A',
   transport: '#5FBFFF',
@@ -94,13 +87,29 @@ const categoryColors = {
   clothing: '#DD6B20',
   personal: '#7FDD53',
   gifts: '#68D391',
-  charity: '#48BB78',
-  default: randomColor
+  charity: '#48BB78'
+};
+
+// Array of vibrant colors for categories not in the mapping
+const fallbackColors = [
+  '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57',
+  '#FF9FF3', '#54A0FF', '#5F27CD', '#00D2D3', '#FF9F43',
+  '#10AC84', '#EE5A6F', '#C44569', '#F8B500', '#6C5CE7',
+  '#A29BFE', '#FD79A8', '#00B894', '#E17055', '#74B9FF',
+  '#81ECEC', '#FAB1A0', '#E84393', '#00CEC9', '#FDCB6E'
+];
+
+// Function to get color for a category
+const getCategoryColor = (categoryKey, index = 0) => {
+  if (categoryColors[categoryKey]) {
+    return categoryColors[categoryKey];
+  }
+  
+  return fallbackColors[index % fallbackColors.length];
 };
 
 const AccountsSidebar = () => {
   const [categorySummary, setCategorySummary] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userId, setUserId] = useState(null);
 
@@ -136,16 +145,13 @@ const AccountsSidebar = () => {
     const fetchCategorySummary = async () => {
       if (!userId) {
         if (userId === null) {
-          // Still loading user ID
           return;
         }
         setError('User ID is required');
-        setLoading(false);
         return;
       }
 
       try {
-        setLoading(true);
         setError(null);
 
         const response = await fetch(`http://localhost:5000/api/transactions/user/${userId}/summary`);
@@ -165,7 +171,6 @@ const AccountsSidebar = () => {
         console.error('Error fetching category summary:', err);
         setError(err.message || 'Failed to load category data');
       } finally {
-        setLoading(false);
       }
     };
 
@@ -177,10 +182,9 @@ const AccountsSidebar = () => {
     console.log('AccountsSidebar Debug:', {
       userId,
       categorySummary,
-      loading,
       error
     });
-  }, [userId, categorySummary, loading, error]);
+  }, [userId, categorySummary, error]);
 
   // Process category data for display
   const categoryTotals = useMemo(() => {
@@ -188,15 +192,14 @@ const AccountsSidebar = () => {
       return [];
     }
 
-    return categorySummary.map(category => {
-      // Fix: Use 'category' instead of 'category_name' to match API response
+    return categorySummary.map((category, index) => {
       const categoryKey = category.category?.toLowerCase() || 'default';
       
       return {
         total: parseFloat(category.total_spent) || 0,
-        name: category.category || 'Unknown', // Fix: Use 'category' instead of 'category_name'
+        name: category.category || 'Unknown',
         icon: categoryIcons[categoryKey] || categoryIcons.default,
-        color: categoryColors[categoryKey] || categoryColors.default,
+        color: getCategoryColor(categoryKey, index), // Use the new color function
         transactionCount: category.transaction_count || 0
       };
     }).sort((a, b) => b.total - a.total); // Sort by highest spending first
@@ -207,19 +210,6 @@ const AccountsSidebar = () => {
     return categoryTotals.reduce((sum, category) => sum + category.total, 0);
   }, [categoryTotals]);
 
-  // Loading state
-  if (loading) {
-    return (
-      <aside className="space-y-6">
-        <div className="bg-white rounded-2xl p-4 shadow text-center">
-          <div className="flex items-center justify-center space-x-2">
-            <FaSpinner className="animate-spin text-blue-500" />
-            <span className="text-gray-600">Loading categories...</span>
-          </div>
-        </div>
-      </aside>
-    );
-  }
 
   // Error state
   if (error) {
@@ -305,11 +295,7 @@ const AccountsSidebar = () => {
         </div>
 
         {categoryTotals.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <FaChartBar className="mx-auto text-3xl mb-2 opacity-50" />
-            <p className="text-sm">No spending data available</p>
-            <p className="text-xs mt-1">Start making transactions to see your categories</p>
-          </div>
+          console.log('No categories found. ')
         ) : (
           <div className="grid grid-cols-2 gap-4">
             {categoryTotals.map((category, i) => (
