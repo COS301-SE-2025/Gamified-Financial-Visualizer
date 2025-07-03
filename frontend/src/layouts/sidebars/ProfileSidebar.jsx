@@ -1,36 +1,42 @@
-// import React from 'react';
-import avatar from '../../assets/Images/avatars/totoroAvatar.jpeg';
-
 import React, { useEffect, useState } from 'react';
+import avatar from '../../assets/Images/avatars/totoroAvatar.jpeg';
 
 import {
   FaBolt,
   FaChartBar,
-  FaHourglassHalf, 
+  FaHourglassHalf,
   FaCheck,
-  FaTimes, 
+  FaTimes,
   FaBan,
 } from 'react-icons/fa';
 
 const ProfileSidebar = () => {
-
   const [sidebarStats, setSidebarStats] = useState(null);
   const [performanceSummary, setPerformanceSummary] = useState(null);
 
+  const fetchSidebarData = () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user?.id) return;
+
+    fetch(`http://localhost:5000/api/auth/sidebar/${user.id}`)
+      .then(res => res.json())
+      .then(data => setSidebarStats(data.data))
+      .catch(err => console.error('Sidebar stats error:', err));
+
+    fetch(`http://localhost:5000/api/auth/profile/performance-summary/${user.id}`)
+      .then(res => res.json())
+      .then(data => setPerformanceSummary(data.data))
+      .catch(err => console.error('Performance summary error:', err));
+  };
+
   useEffect(() => {
-  const user = JSON.parse(localStorage.getItem('user'));
-  if (!user?.id) return;
+    fetchSidebarData();
 
-  fetch(`http://localhost:5000/api/auth/sidebar/${user.id}`)
-    .then(res => res.json())
-    .then(data => setSidebarStats(data.data))
-    .catch(err => console.error('Sidebar stats error:', err));
+    const handleUserUpdated = () => fetchSidebarData();
+    window.addEventListener('userUpdated', handleUserUpdated);
 
-  fetch(`http://localhost:5000/api/auth/profile/performance-summary/${user.id}`)
-    .then(res => res.json())
-    .then(data => setPerformanceSummary(data.data))
-    .catch(err => console.error('Performance summary error:', err));
-}, []);
+    return () => window.removeEventListener('userUpdated', handleUserUpdated);
+  }, []);
 
   return (
     <aside className="space-y-6">
@@ -40,19 +46,9 @@ const ProfileSidebar = () => {
           Overall Performance
         </p>
 
-        {/* Progress Circle Styling */}
         <div className="relative w-40 h-40 mx-auto">
           <svg viewBox="0 0 100 100" className="w-full h-full">
-            {/* Background Circle */}
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              fill="none"
-              stroke="#E8F0FA"
-              strokeWidth="10"
-            />
-            {/* Foreground Arc */}
+            <circle cx="50" cy="50" r="45" fill="none" stroke="#E8F0FA" strokeWidth="10" />
             <circle
               cx="50"
               cy="50"
@@ -60,7 +56,7 @@ const ProfileSidebar = () => {
               fill="none"
               stroke="url(#gradient)"
               strokeWidth="10"
-              strokeDasharray="282.6" // Circumference = 2πr = 2π×45
+              strokeDasharray="282.6"
               strokeDashoffset={
                 performanceSummary?.performance_score !== undefined
                   ? 282.6 - (performanceSummary.performance_score / 1000) * 282.6
@@ -77,8 +73,6 @@ const ProfileSidebar = () => {
             </defs>
           </svg>
 
-
-          {/* Center Content */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <p className="text-[24px] font-bold text-[#2D3748]">
               {performanceSummary?.performance_score ?? '0'}
@@ -97,16 +91,14 @@ const ProfileSidebar = () => {
             />
           </div>
 
-          {/* Top Blue Dot */}
           <div className="absolute top-[6px] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full flex items-center justify-center">
             <div className="w-4 h-4 bg-blue-400 rounded-full" />
           </div>
-          </div>
+        </div>
 
-          {/* Level and Tier */}
-          <p className="text-sm text-[#F56565] mt-2 font-medium">
-            Lv {performanceSummary?.level_number ?? '?'}: {performanceSummary?.tier_level ?? '0'}
-          </p>
+        <p className="text-sm text-[#F56565] mt-2 font-medium">
+          Lv {performanceSummary?.level_number ?? '?'}: {performanceSummary?.tier_level ?? '0'}
+        </p>
       </div>
 
       {/* Goal Statistics */}
@@ -125,23 +117,20 @@ const ProfileSidebar = () => {
             { value: sidebarStats?.total_communities ?? '...', label: 'Communities', icon: <FaBan />, color: '#FF7F9E' },
           ].map(({ value, label, icon, color }, i) => (
             <div key={i} className="relative bg-white rounded-xl shadow-md p-3 flex items-center justify-between">
-              {/* Icon Bubble */}
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: color + '20' }} // Light version of color
+                style={{ backgroundColor: color + '20' }}
               >
                 <div className="text-white" style={{ color }}>
                   {icon}
                 </div>
               </div>
 
-              {/* Stat Content */}
               <div className="text-right">
                 <p className="text-lg font-bold text-gray-900">{value}</p>
                 <p className="text-sm text-gray-500">{label}</p>
               </div>
 
-              {/* Bottom Bar */}
               <div
                 className="absolute bottom-0 left-0 h-[5px] w-full rounded-b-xl"
                 style={{ backgroundColor: color }}
