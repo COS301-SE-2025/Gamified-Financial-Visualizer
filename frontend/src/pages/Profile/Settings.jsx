@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { FaCheckCircle, FaTimesCircle, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Settings = () => {
   const user = JSON.parse(localStorage.getItem('user'));
@@ -19,9 +21,12 @@ const Settings = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordChanged, setPasswordChanged] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const navigate = useNavigate();
-
+ 
   const passwordCriteria = {
     length: /^.{8,}$/,
     lowercase: /[a-z]/,
@@ -94,12 +99,18 @@ const Settings = () => {
         const updatedUser = { ...user, username };
         localStorage.setItem('user', JSON.stringify(updatedUser));
         window.dispatchEvent(new Event('userUpdated'));
+        toast.success('Username updated successfully');
       } else {
         const data = await res.json();
-        console.error(`Failed to update username: ${data.message}`);
+        if (data.message.includes('already in use')) {
+          toast.error('Username already in use');
+        } else {
+          toast.error('Failed to update username');
+        }
       }
     } catch (err) {
       console.error('Error:', err);
+      toast.error('Failed to update username');
     }
   };
 
@@ -109,7 +120,7 @@ const Settings = () => {
 
   const handleSavePreferences = async () => {
     try {
-      await fetch(`http://localhost:5000/api/auth/${userId}/settings`, {
+      const res = await fetch(`http://localhost:5000/api/auth/${userId}/settings`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -121,10 +132,16 @@ const Settings = () => {
         }),
       });
 
-      await fetchSettings();
-      window.dispatchEvent(new Event('userUpdated'));
+      if (res.ok) {
+        await fetchSettings();
+        window.dispatchEvent(new Event('userUpdated'));
+        toast.success('Preferences saved successfully');
+      } else {
+        toast.error('Failed to save preferences');
+      }
     } catch (err) {
       console.error('Error saving preferences:', err);
+      toast.error('Failed to save preferences');
     }
   };
 
@@ -144,9 +161,18 @@ const Settings = () => {
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
+        toast.success('Password updated successfully');
+      } else {
+        const data = await res.json();
+        if (data.message.includes('Current password is incorrect')) {
+          toast.error('Current password is wrong');
+        } else {
+          toast.error('Failed to change password');
+        }
       }
     } catch (err) {
       console.error('Error updating password:', err);
+      toast.error('Failed to change password');
     }
   };
 
@@ -224,9 +250,51 @@ const Settings = () => {
       <div className="bg-white shadow rounded-xl p-6">
         <h3 className="font-semibold mb-4 text-[#88BC46]">Change Password</h3>
         <div className="grid gap-4 mb-3">
-          <input type="password" placeholder="Current Password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="input" />
-          <input type="password" placeholder="New Password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="input" />
-          <input type="password" placeholder="Confirm New Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="input" />
+          <div className="relative">
+            <input 
+              type={showCurrentPassword ? "text" : "password"} 
+              placeholder="Current Password" 
+              value={currentPassword} 
+              onChange={(e) => setCurrentPassword(e.target.value)} 
+              className="input w-full" 
+            />
+            <button 
+              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+            >
+              {showCurrentPassword ? <FaEyeSlash /> : <FaEye />}
+            </button>
+          </div>
+          <div className="relative">
+            <input 
+              type={showNewPassword ? "text" : "password"} 
+              placeholder="New Password" 
+              value={newPassword} 
+              onChange={(e) => setNewPassword(e.target.value)} 
+              className="input w-full" 
+            />
+            <button 
+              onClick={() => setShowNewPassword(!showNewPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+            >
+              {showNewPassword ? <FaEyeSlash /> : <FaEye />}
+            </button>
+          </div>
+          <div className="relative">
+            <input 
+              type={showConfirmPassword ? "text" : "password"} 
+              placeholder="Confirm New Password" 
+              value={confirmPassword} 
+              onChange={(e) => setConfirmPassword(e.target.value)} 
+              className="input w-full" 
+            />
+            <button 
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+            >
+              {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+            </button>
+          </div>
         </div>
         {(currentPassword || newPassword || confirmPassword) && (
           <div className="text-xs space-y-1 mb-2">

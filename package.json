@@ -18,6 +18,7 @@
     "react-confetti": "^6.4.0",
     "react-hot-toast": "^2.5.2",
     "react-icons": "^5.5.0",
+    "react-toastify": "^11.0.5",
     "redis": "^5.5.6",
     "socket.io-client": "^4.8.1",
     "tsconfig-paths": "^4.2.0",
@@ -26,7 +27,7 @@
   "scripts": {
     "format": "prettier . --write",
     "dev": "concurrently \"redis-server\" \"npx ts-node api-backend/server.ts\" \"npm start --prefix frontend\"",
-    "test": "jest --setupFilesAfterEnv=./api-backend/tests/jest-setup.ts",  
+    "test": "jest --setupFilesAfterEnv=./api-backend/tests/jest-setup.ts",
     "test:int": "jest integration --setupFilesAfterEnv=./api-backend/tests/jest-setup.ts",
     "test:services": "jest services --setupFilesAfterEnv=./api-backend/tests/jest-setup.ts",
     "test:watch": "jest --watch --setupFilesAfterEnv=./api-backend/tests/jest-setup.ts",
