@@ -346,8 +346,8 @@ const AccountsPage = () => {
                   bank={acc.bank_name || acc.bankName}
                   accountName={acc.account_name || acc.accountName}
                   type={acc.account_type || acc.accountType}
-                  available={acc.account_balance || acc.available || '0.00'}
-                  balance={acc.balance || '0.00'}
+                  // available={acc.account_balance || acc.available || '0.00'}
+                   balance={acc.account_balance}
                   currency={acc.currency}
                   bg={['bg-pink-300', 'bg-yellow-300', 'bg-green-300'][idx % 3]}
                   overlay={['bg-pink-400', 'bg-yellow-400', 'bg-green-400'][idx % 3]}
