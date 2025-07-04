@@ -299,6 +299,41 @@ router.get('/challenges/user/:userId', async (req, res) => {
   }
 });
 
+router.get('/challenges/:challengeId', async (req, res) => {
+  const challengeId = Number(req.params.challengeId);
+
+  if (isNaN(challengeId)) {
+    res.status(400).json({
+      status: 'error',
+      message: 'Invalid challenge ID.',
+    });
+    return;
+  } 
+
+  try {
+    const challenge = await communityService.getChallenge(challengeId);
+    if (!challenge) {
+      res.status(404).json({
+        status: 'error',
+        message: 'Challenge not found.',
+      });
+      return;
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Challenge details retrieved successfully.',
+      data: challenge,
+    });
+  } catch (err) {
+    logger.error(`[Route] Failed to fetch challenge ID ${challengeId}:`, err);
+    res.status(500).json({
+      status: 'error',
+      message: 'Could not fetch challenge details.',
+    });
+  }
+});
+
 
 /**
  * @route POST /api/community/challenges
@@ -378,6 +413,29 @@ router.post('/challenges', async (req: Request, res: Response) => {
   }
 });
 
+
+router.delete('/challenges/:challengeId', async (req: Request, res: Response) => {
+  const challengeId = Number(req.params.challengeId);
+
+  if (isNaN(challengeId)) {
+    res.status(400).json({ status: 'error', message: 'Invalid challenge ID.' });
+    return;
+  }
+  
+  try {
+    const deletedChallenge = await communityService.deleteChallengeById(challengeId);
+    res.status(200).json({
+      status: 'success',
+      message: `Challenge "${deletedChallenge.challenge_title}" deleted successfully.`,
+    });
+    return;
+  } catch (error) {
+    logger.error(`[Community] Failed to delete challenge ID ${challengeId}:`, error);
+    res.status(500).json({ status: 'error', message: 'Could not delete challenge.' });
+    return;
+  }
+});
+
 /**
  * @route GET /api/community/categories/:userId
  * @desc Returns global and user-specific custom categories
@@ -409,15 +467,5 @@ router.get('/categories/:userId', async (req, res) => {
     return;
   }
 });
-
-
-
-
-
-
-
-
-
-
 
 export default router;
