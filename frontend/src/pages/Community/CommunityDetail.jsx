@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 
 import CommunityLayout from '../../pages/Community/CommunityLayout';
@@ -49,12 +49,29 @@ const bannerOptions = [
 
 const CommunityDetail = () => {
   const navigate = useNavigate();
+  const {id} = useParams()
   const [isEditing, setIsEditing] = useState(false);
   const [communityData, setCommunityData] = useState({
     name: 'Happy Savers',
     bannerId: 'students',
     description: 'A community for people who enjoy saving money together',
   });
+
+  useEffect(() => {
+    const fetchCommunityData = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/community/${id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch community data');
+        }
+        const data = await response.json();
+        setCommunityData(data);
+      } catch (error) {
+        console.error('Error fetching community data:', error);
+        navigate('/community'); // Redirect if community not found
+      }
+    }
+  }) 
 
   const handleDelete = (itemName) => {
     toast.custom((t) => (

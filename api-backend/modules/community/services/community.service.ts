@@ -253,6 +253,55 @@ export async function getChallengesByUserCategorized(user_id: number): Promise<{
   return categorized;
 }
 
+export async function getChallenge(challenge_id: number) {
+  const query = `
+SELECT 
+      ch.*,
+      c.community_name,
+      b.banner_image_path,
+
+      -- total accepted members count
+      (
+        SELECT COUNT(*) 
+        FROM community_members cm
+        WHERE cm.community_id = ch.community_id
+          AND cm.membership_status = 'accepted'
+      ) AS "participantsCount",
+
+      -- list of avatar image paths (e.g. latest 5)
+      (
+        SELECT COALESCE(json_agg(ai.avatar_image_path), '[]'::json)
+        FROM community_members cm
+        JOIN user_preferences up
+          ON up.user_id = cm.user_id
+        JOIN avatar_images ai
+          ON ai.avatar_id = up.avatar_id
+        WHERE cm.community_id = ch.community_id
+          AND cm.membership_status = 'accepted'
+        LIMIT 5
+      ) AS participants,
+
+      (ch.target_date::date - CURRENT_DATE) AS days_until_due,
+      GREATEST(10, FLOOR(ch.target_amount / 100)) AS xp_points
+
+    FROM challenges ch
+    JOIN communities c   ON c.community_id = ch.community_id
+    LEFT JOIN banner_images b
+      ON b.banner_id = c.banner_id
+    WHERE ch.challenge_id = $1;`
+    
+    try {
+    const result = await pool.query(query, [challenge_id]);
+    if (result.rowCount === 0) {
+      throw new Error(`Challenge ID ${challenge_id} not found.`);
+    }
+    return result.rows[0];
+  } catch (err) {
+    logger.error(`[CommunityService] Failed to fetch challenge ID ${challenge_id}:`, err);
+    throw err;
+  }
+}
+
 // Get global leaderboard for communities
 export async function getGlobalLeaderboard() {
   const query = `
@@ -679,6 +728,26 @@ export async function createChallenge(data: ChallengeRecord) {
     return result.rows[0]; // includes xp_reward as virtual field
   } catch (err) {
     logger.error('[CommunityService] Failed to create challenge:', err);
+    throw err;
+  }
+}
+
+export async function deleteChallengeById(challenge_id: number) {
+  const query = `
+    DELETE FROM challenges
+    WHERE challenge_id = $1
+    RETURNING *;
+  `;
+
+  try {
+    const result = await pool.query(query, [challenge_id]);
+    if (result.rowCount === 0) {
+      throw new Error(`Challenge ID ${challenge_id} not found.`);
+    }
+    logger.info(`[CommunityService] Deleted challenge ID ${challenge_id}`);
+    return result.rows[0];
+  } catch (err) {
+    logger.error(`[CommunityService] Failed to delete challenge ID ${challenge_id}:`, err);
     throw err;
   }
 }
