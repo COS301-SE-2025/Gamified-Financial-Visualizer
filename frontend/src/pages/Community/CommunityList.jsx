@@ -132,7 +132,7 @@ const CommunityList = () => {
                 </div>
 
                 <div className="flex flex-wrap items-center justify-end gap-2">
-                  <Link to={`/community/details/${community.community_name.toLowerCase().replace(/\s+/g, '_')}`}>
+                  <Link to={`/community/details/${community.community_name.replace(/\s+/g, '_')}`}>
                     <button className="bg-[#AAD977] text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-[#83AB55] transition whitespace-nowrap">
                       <FaEye className="inline-block mr-1" /> View
                     </button>

@@ -139,6 +139,29 @@ router.delete('/:communityId', async (req: Request, res: Response) => {
   }
 });
 
+router.get('/:title', async (req: Request, res: Response) => {
+  const communityId = req.params.title;
+  if (!communityId) {
+    res.status(400).json({ status: 'error', message: 'Community ID is required.' });
+    return;
+  }
+
+  try {
+    const community = await communityService.getCommunityByTitle(communityId);
+    if (!community) {
+      res.status(404).json({ status: 'error', message: 'Community not found.' });
+      return;
+    }
+    res.status(200).json({
+      status: 'success',
+      message: 'Community details retrieved successfully.',
+      data: community,
+    });
+  } catch (err) {
+    logger.error(`[Community] Failed to fetch community ID ${communityId}:`, err);
+    res.status(500).json({ status: 'error', message: 'Could not fetch community details.' });
+  }
+})
 
 /**
  * @route POST /api/community
