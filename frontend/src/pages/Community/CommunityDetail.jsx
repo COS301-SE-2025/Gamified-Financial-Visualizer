@@ -17,10 +17,10 @@ import banner2 from '../../assets/Images/banners/pixelApartment.gif';
 import banner3 from '../../assets/Images/banners/pixelStore.gif';
 
 const bannerOptions = [
-  { id: 'students', label: 'Pixel Students', src: banner },
-  { id: 'ally', label: 'Pixel Ally', src: banner1 },
-  { id: 'apartment', label: 'Pixel Apartment', src: banner2 },
-  { id: 'store', label: 'Pixel Store', src: banner3 },
+  { id: 1, label: 'Pixel Students', src: banner },
+  { id: 2, label: 'Pixel Ally', src: banner1 },
+  { id: 3, label: 'Pixel Apartment', src: banner2 },
+  { id: 4, label: 'Pixel Store', src: banner3 },
 ];
 
 const CommunityDetail = () => {
@@ -42,7 +42,7 @@ const CommunityDetail = () => {
         const data = await response.json();
         const community = data.data;
         setCommunityData(community);
-        setMembers(community.members);     
+        setMembers(community.members);
         setChallengeData(community.challenges);
       } catch (error) {
         console.error('Error fetching community data:', error);
@@ -62,6 +62,26 @@ const CommunityDetail = () => {
       </CommunityLayout>
     );
   }
+  const deleteChallenge = async (challengeId) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/community/challenges/${challengeId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      const json = await res.json();
+      if (res.ok) {
+        toast.success(`Deleted challenge "${json.data.title}"`);
+      }
+      else {
+        toast.error(json.message || 'Failed to delete challenge');
+      }
+    } catch (err) {
+      toast.error('Error deleting challenge');
+      console.error(err);
+    }
+  };
 
   const handleDelete = (itemName) => {
     toast.custom((t) => (
@@ -74,7 +94,7 @@ const CommunityDetail = () => {
             onClick={() => {
               toast.dismiss(t.id);
               toast.success(`Deleted "${itemName}"`);
-              // TODO: Actual deletion logic here
+              deleteChallenge(itemName);
               console.log(`Deleted ${itemName}`);
             }}
             className="bg-[#ED5E52] hover:bg-[#FE9B90] text-white px-4 py-1.5 text-sm rounded-full font-medium"
@@ -126,7 +146,33 @@ const CommunityDetail = () => {
     setCommunityData({ ...communityData, [name]: value });
   };
 
-  const handleSave = () => {
+  const removeMember = async (userId) => {
+    const res = await fetch(
+      `http://localhost:5000/api/community/${communityData.community_id}/members/${userId}`,
+      { method: 'DELETE' }
+    );
+    if (!res.ok) throw new Error('Remove failed');
+    // locally filter them out
+    setMembers((prev) => prev.filter((m) => m.user_id !== userId));
+  };
+
+  const handleSave = async () => {
+    const payload = {
+      community_name: communityData.community_name,
+      description: communityData.description,
+    };
+
+    const res = await fetch(
+      `http://localhost:5000/api/community/${communityData.community_id}`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }
+    );
+    if (!res.ok) throw new Error('Update failed');
+    const json = await res.json();
+    setCommunityData(json.data);
     toast.success('Community updated successfully!');
     setIsEditing(false);
     // Here you would typically send the updated data to your backend
@@ -151,7 +197,7 @@ const CommunityDetail = () => {
             {isEditing ? (
               <input
                 type="text"
-                name="name"
+                name="community_name"
                 value={communityData.community_name}
                 onChange={handleChange}
                 className="text-2xl font-bold border-b border-gray-300 focus:outline-none focus:border-[#66BFBF]"
@@ -315,15 +361,15 @@ const CommunityDetail = () => {
                 <div className="flex justify-between items-start">
                   <div>
                     <h4 className="text-lg font-semibold text-[#111827]">{challenge.title}</h4>
-                    <p className="text-sm text-[#ED5E52] font-medium mt-1">2000/4000 ZAR</p>
-                    <p className="text-sm text-[#374151]">2000 ZAR Left</p>
-                    <p className="text-sm text-[#6B7280] mt-1">Goal will be accomplished on <span className="text-[#ED5E52] font-semibold">21/07/2027</span></p>
+                    <p className="text-sm text-[#ED5E52] font-medium mt-1">{challenge.current_amount}/{challenge.target_amount} ZAR</p>
+                    <p className="text-sm text-[#374151]">{challenge.target_amount - challenge.current_amount} ZAR Left</p>
+                    <p className="text-sm text-[#6B7280] mt-1">Goal should be accomplished on <span className="text-[#ED5E52] font-semibold">{challenge.deadline}</span></p>
                   </div>
 
                   {/* Tags */}
                   <div className="flex flex-col items-end gap-2 ml-4">
                     <span className="text-xs px-4 py-1 rounded-full bg-[#B1E1FF] text-[#4B82A2] font-medium">In-Progress</span>
-                    <span className="text-xs px-3 py-1 rounded-full bg-[#FFD18C] text-[#FFFFFF] font-medium">Savings</span>
+                    <span className="text-xs px-3 py-1 rounded-full bg-[#FFD18C] text-[#FFFFFF] font-medium">{challenge.challenge_type}</span>
                     <span className="text-xs px-3 py-1 rounded-full bg-[#FFD18C] text-[#FFFFFF] font-semibold">{challenge.xp} XP</span>
                   </div>
                 </div>
@@ -352,7 +398,7 @@ const CommunityDetail = () => {
 
                   <div className="flex-1">
                     <button
-                      onClick={() => handleDelete(challenge.title)}
+                      onClick={() => handleDelete(challenge.id)}
                       className="w-full bg-[#FE9B90] text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-[#ED5E52] transition">
                       Delete
                     </button>
@@ -373,17 +419,17 @@ const CommunityDetail = () => {
                 <div
                   className="h-full"
                   style={{
-                    width: '60%',
+                    width: (communityData.xpCollected/communityData.xpGoal)*100 + '%',
                     background: 'linear-gradient(to right, #FACC15, #FB923C)',
                     borderRadius: '9999px',
                   }}
                 />
               </div>
               <span className="text-sm font-semibold" style={{ color: '#F97316' }}>
-                2504 XP
+                {communityData.xpCollected} XP
               </span>
             </div>
-            <p className="text-xs mt-1 text-right" style={{ color: '#6B7280' }}>Out of 4000 XP Goal</p>
+            <p className="text-xs mt-1 text-right" style={{ color: '#6B7280' }}>Out of {communityData.xpGoal} XP Goal</p>
           </div>
 
           {/* Goals Completed */}
@@ -394,14 +440,14 @@ const CommunityDetail = () => {
                 <div
                   className="h-full"
                   style={{
-                    width: '50%',
+                    width: (communityData.goalsCompleted/communityData.goalsTotal)*100 +  '%',
                     background: 'linear-gradient(to right, #FACC15, #FB923C)',
                     borderRadius: '9999px',
                   }}
                 />
               </div>
               <span className="text-sm font-semibold" style={{ color: '#F97316' }}>
-                4 / 8
+                {communityData.goalsCompleted} / {communityData.goalsTotal}
               </span>
             </div>
             <p className="text-xs mt-1 text-right" style={{ color: '#6B7280' }}>Goals Completed</p>

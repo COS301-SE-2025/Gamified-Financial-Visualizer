@@ -246,6 +246,48 @@ router.get('/friends/:userId', async (req, res) => {
   }
 });
 
+router.put('/:communityId', async (req, res) => {
+  const communityId = Number(req.params.communityId);
+  const { community_name, description} = req.body;
+  if (isNaN(communityId)) {
+    res.status(400).json({ status: 'error', message: 'Invalid community ID.' });
+    return;
+  } 
+
+  try {
+    const updatedCommunity = await communityService.updateCommunity(communityId, {
+      community_name,
+      description
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Community updated successfully.',
+      data: updatedCommunity,
+    });
+  } catch (err) {
+    logger.error(`[Community] Failed to update community ID ${communityId}:`, err);
+    res.status(500).json({ status: 'error', message: 'Could not update community.' });
+  }
+});
+
+router.delete('/:communityId/members/:userId', async (req, res) => {
+  const communityId = Number(req.params.communityId);
+  const userId = Number(req.params.userId);
+
+  if (isNaN(communityId) || isNaN(userId)) {
+    res.status(400).json({ status: 'error', message: 'Invalid community or user ID.' });
+    return;
+  }
+
+  try {
+    await communityService.removeCommunityMember(communityId, userId);
+    res.status(200).json({ status: 'success', message: 'Member removed successfully.' });
+  } catch (err) {
+    logger.error(`[Community] Failed to remove member from community ID ${communityId}:`, err);
+    res.status(500).json({ status: 'error', message: 'Could not remove member from community.' });
+  }
+});
 
 /**
  * @route GET /api/community/friends/recommendations/:userId
