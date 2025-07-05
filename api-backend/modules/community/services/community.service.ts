@@ -38,6 +38,88 @@ export async function getCommunityById(community_id: number) {
   }
 }
 
+
+export async function getCommunityByTitle(community_name: string) {
+  const BASE = '../../assets/Images';
+
+  const query = `
+    SELECT
+      c.community_id,
+      c.community_name,
+      c.description,
+      CONCAT('../../assets/Images','/', b.banner_image_path) AS banner_url,
+
+      -- 1) members
+      (
+        SELECT COALESCE(json_agg(json_build_object(
+          'user_id', u.user_id,
+          'username', u.username,
+          'level',    p.tier_status,
+          'avatar',   CONCAT('../../assets/Images', '/', ai.avatar_image_path),
+          'joined_at', m.joined_at
+        )), '[]'::json)
+        FROM community_members m
+        JOIN users u               ON u.user_id = m.user_id
+        join user_points p        ON p.user_id = u.user_id
+        JOIN user_preferences up   ON up.user_id = u.user_id
+        JOIN avatar_images ai      ON ai.avatar_id = up.avatar_id
+        WHERE m.community_id = c.community_id
+          AND m.membership_status = 'accepted'
+      ) AS members,
+
+      -- 2) challenges
+      (
+        SELECT COALESCE(json_agg(json_build_object(
+          'id',              ch.challenge_id,
+          'title',           ch.challenge_title,
+          'challenge_type',  ch.challenge_type,
+          'measurement_type',ch.measurement_type,
+          'xp',              GREATEST(10, FLOOR(ch.target_amount/100)),
+          'deadline',        to_char(ch.target_date,'YYYY-MM-DD'),
+          'status',          CONCAT(
+                               (
+                                 SELECT COUNT(*) 
+                                 FROM challenge_progress cp3
+                                 WHERE cp3.challenge_id   = ch.challenge_id
+                                   AND ch.challenge_status = 'completed'
+                               ),
+                               ' completed'
+                             ),
+          'avatarGroup',
+            (
+              SELECT COALESCE(json_agg(
+                CONCAT('../../assets/Images','/', ai2.avatar_image_path)
+              ), '[]'::json)
+              FROM challenge_progress cp2
+              JOIN user_preferences up2 ON up2.user_id = cp2.user_id
+              JOIN avatar_images ai2    ON ai2.avatar_id = up2.avatar_id
+              WHERE cp2.challenge_id = ch.challenge_id
+              LIMIT 5
+            )
+        )), '[]'::json)
+        FROM challenges ch
+        WHERE ch.community_id = c.community_id
+      ) AS challenges
+
+    FROM communities c
+    LEFT JOIN banner_images b ON b.banner_id = c.banner_id
+    WHERE c.community_name ILIKE $1
+    LIMIT 1;  -- only return one
+  `;
+
+  const { rows } = await pool.query(query, [
+    `%${community_name}%`
+  ]);
+
+  if (rows.length === 0) {
+    throw new Error(`No community found for "${community_name}"`);
+  }
+
+  // rows[0].members and rows[0].challenges come through as JSON already
+  return rows[0];
+}
+
+
 export async function listCommunitiesByUser(user_id: number) {
   const query = `
     SELECT c.*
