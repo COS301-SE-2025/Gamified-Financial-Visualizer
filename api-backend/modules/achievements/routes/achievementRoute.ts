@@ -110,4 +110,21 @@ router.get('/task/:title/:userId', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * GET /api/achievements/performance/:userId
+ * Returns overall user stats for sidebar (performance, quizzes, accuracy, leaderboard, goals, badges, challenges, credit score)
+ */
+router.get('/performance/:userId', async (req: Request, res: Response) => {
+  const userId = Number(req.params.userId);
+  if (isNaN(userId)) {
+    res.status(400).json({ status: 'error', error: 'Invalid user ID' });
+  }
+  try {
+    const stats = await achievementService.getSidebarStats(userId);
+    res.json({ status: 'success', data: stats });
+  } catch (error) {
+    logger.error(`Failed to fetch sidebar stats for user ${req.params.userId}:`, error);
+    res.status(500).json({ status: 'error', error: 'Internal server error' });
+  }
+});
 export default router;

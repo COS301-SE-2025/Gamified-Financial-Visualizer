@@ -50,8 +50,8 @@ const BadgeTaskCard = ({ task, primaryColor, image, barGradient }) => {
     >
       <div className="flex items-center gap-4">
         <div
-          className="w-14 h-14 flex items-center justify-center rounded-full"
-          style={{ background: barGradient, border: `1.5px solid ${primaryColor}` }}
+          className="w-14 h-14 flex items-center justify-center rounded-full bg-gradient-to-br"
+          style={{ border: `1.5px solid ${primaryColor}` }}
         >
           <img src={image} alt={task.title} className="w-9 h-9 object-contain" />
         </div>

@@ -308,3 +308,167 @@ export async function fetchAchievementTasks(
 
   return tasks;
 }
+
+export interface SidebarStats {
+  performance: number;           // percent 0-100
+  performanceLabel: string;
+  creditScore: number;           // 300-850
+  level: string;                 // e.g. Bronze, Silver, etc.
+  avatar_url: string;
+  totalXp: number;              // total XP earned
+  quizzes: number;
+  accuracy: number;              // percent correct
+  leaderboardRank: number;
+  goalsCompleted: number;
+  goalsTotal: number;
+  badgesEarned: number;
+  challengesJoined: number;
+}
+
+/**
+ * Fetch all stats needed for the account sidebar in one go.
+ */
+export async function getSidebarStats(userId: number): Promise<SidebarStats> {
+  // 1) XP performance: collected vs goal
+  const xpRes = await pool.query(
+    `
+      WITH xp AS (
+        SELECT
+          COALESCE(SUM(
+            GREATEST(10, FLOOR(ch.target_amount/100))
+          ),0) AS collected,
+          COALESCE(SUM(
+            GREATEST(10, FLOOR(ch.target_amount/100))
+          ) FILTER (WHERE ch.community_id = ch.community_id), 0) AS goal
+        FROM challenges ch
+        JOIN challenge_progress cp ON ch.challenge_id = cp.challenge_id AND cp.user_id = $1
+        WHERE cp.participation_status = 'joined'
+      )
+      SELECT collected, goal FROM xp;
+    `,
+    [userId]
+  );
+  const { collected, goal } = xpRes.rows[0];
+  const performance = goal > 0 ? Math.round((collected/goal)*100) : 0;
+  let performanceLabel = 'Poor';
+  if (performance >= 80) performanceLabel = 'Excellent';
+  else if (performance >= 50) performanceLabel = 'Good';
+  else if (performance > 0) performanceLabel = 'Fair';
+
+  // credit score: map performance% to 300-850
+  const creditScore = Math.min(850, Math.round(300 + (performance/100) * (850 - 300)));
+
+  // level from credit score
+  let level = 'Bronze';
+  if (creditScore >= 750) level = 'Gold';
+  else if (creditScore >= 600) level = 'Silver';
+  else if (creditScore >= 450) level = 'Bronze';
+
+  // avatar URL
+  const avatarRes = await pool.query(
+    `SELECT CONCAT('../../assets/Images', '/', ai.avatar_image_path) AS avatar_url
+     FROM user_preferences up
+     JOIN avatar_images ai ON up.avatar_id = ai.avatar_id
+     WHERE up.user_id = $1;
+    `,
+    [userId]
+  );
+  const avatar_url = avatarRes.rows[0]?.avatar_url || '';
+
+  // quizzes & accuracy
+  const quizRes = await pool.query(
+    `
+      SELECT
+        COUNT(*) AS quizzes,
+        CASE WHEN COUNT(*)=0 THEN 0
+             ELSE ROUND(100.0 * SUM(attempt_score::int) / COUNT(*))
+        END AS accuracy
+      FROM quiz_attempts
+      WHERE user_id = $1;
+    `,
+    [userId]
+  );
+  const { quizzes, accuracy } = quizRes.rows[0];
+
+  // leaderboard rank by total XP earned
+  const rankRes = await pool.query(
+    `
+      SELECT rank FROM (
+        SELECT user_id,
+               RANK() OVER (ORDER BY SUM(progress_value) DESC) AS rank
+        FROM user_achievements ua
+        WHERE achievement_status='complete'
+        GROUP BY user_id
+      ) sub
+      WHERE user_id = $1;
+    `,
+    [userId]
+  );
+  const leaderboardRank = rankRes.rows[0]?.rank || 0;
+
+  const totalXpRes = await pool.query(
+    `
+      SELECT SUM(a.points_awarded) AS totalXp
+      FROM user_achievements
+      JOIN achievements a ON user_achievements.achievement_id = a.achievement_id
+      WHERE user_id = $1
+        AND achievement_status = 'complete'; 
+    `,
+    [userId]
+  );
+
+  const totalXp = totalXpRes.rows[0]?.totalxp || 0;
+  // goals completed/total
+  const goalsRes = await pool.query(
+    `
+      SELECT
+        COUNT(*) FILTER (WHERE ch.challenge_status='completed') AS goalsCompleted,
+        COUNT(*) AS goalsTotal
+      FROM challenge_progress cp
+      JOIN challenges ch ON cp.challenge_id = ch.challenge_id
+      WHERE cp.user_id = $1;
+    `,
+    [userId]
+  );
+  const { goalscompleted, goalstotal } = goalsRes.rows[0];
+
+  // badges earned
+  const badgeRes = await pool.query(
+    `
+      SELECT COUNT(*) AS badgesEarned
+      FROM user_achievements
+      WHERE user_id = $1
+        AND achievement_status = 'complete';
+    `,
+    [userId]
+  );
+  const badgesEarned = badgeRes.rows[0].badgeseaned || 0;
+
+  // challenges joined
+  const challRes = await pool.query(
+    `
+      SELECT COUNT(*) AS challengesJoined
+      FROM challenge_progress
+      WHERE user_id = $1
+        AND participation_status = 'joined';
+    `,
+    [userId]
+  );
+  const challengesJoined = challRes.rows[0].challengesjoined || 0;
+
+  return {
+    performance,
+    performanceLabel,
+    creditScore,
+    level,
+    avatar_url,
+    totalXp: Number(totalXp),
+    quizzes: Number(quizzes),
+    accuracy: Number(accuracy),
+    leaderboardRank: Number(leaderboardRank),
+    goalsCompleted: Number(goalscompleted),
+    goalsTotal: Number(goalstotal),
+    badgesEarned: Number(badgesEarned),
+    challengesJoined: Number(challengesJoined),
+  };
+}

@@ -427,7 +427,7 @@ export async function getAllGoals(): Promise<Goal[]> { // delete
     const res = await pool.query(sql);
     // Cache the result for 1 hour
     await redisClient.set(cacheKey, JSON.stringify(res.rows), {
-      EX: 60 * 60 // cache for 1 hour
+      EX: 60 * 10 // cache for 1 hour
     });
     return res.rows;
   } catch (error) {
@@ -458,7 +458,7 @@ export async function getUserGoalStats(user_id: number) {
   const result = await pool.query(sql, [ user_id ]);
   // cache the result for 1 hour
   await redisClient.set(cacheKey, JSON.stringify(result.rows[0]), {
-    EX: 60 * 60 // cache for 1 hour
+    EX: 60 * 10 // cache for 1 hour
   });
   return result.rows[ 0 ];
 }
@@ -488,7 +488,7 @@ export async function getUpcomingGoals(user_id: number) {
     const result = await pool.query(query, [ user_id ]);
     // Cache the result for 1 hour
     await redisClient.set(cacheKey, JSON.stringify(result.rows), {
-      EX: 60 * 60 // cache for 1 hour
+      EX: 60 * 10 // cache for 1 hour
     });
     return result.rows;
   } catch (err) {
