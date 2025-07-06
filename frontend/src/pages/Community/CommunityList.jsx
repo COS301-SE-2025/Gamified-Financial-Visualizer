@@ -9,7 +9,7 @@ const CommunityList = () => {
   const [communities, setCommunities] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const fetchCommunities = async () => {
+  const fetchUserCommunities = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user?.id) return;
 
@@ -23,8 +23,9 @@ const CommunityList = () => {
   };
 
   useEffect(() => {
-    fetchCommunities();
+    fetchUserCommunities();
   }, []);
+
 
   const handleDelete = (communityName, communityId) => {
     toast.custom((t) => (
@@ -45,7 +46,7 @@ const CommunityList = () => {
 
                 if (res.ok) {
                   toast.success(result.message || `Deleted "${communityName}"`);
-                  fetchCommunities(); // Refresh list
+                  fetchUserCommunities(); // Refresh list
                 } else {
                   toast.error(result.message || 'Failed to delete.');
                 }
@@ -151,10 +152,10 @@ const CommunityList = () => {
         {communities.filter(c =>
           c.community_name.toLowerCase().includes(searchTerm.toLowerCase())
         ).length === 0 && (
-          <div className="text-center text-gray-500 mt-6 text-sm">
-            No matching communities found.
-          </div>
-        )}
+            <div className="text-center text-gray-500 mt-6 text-sm">
+              No matching communities found.
+            </div>
+          )}
       </div>
     </CommunityLayout>
   );

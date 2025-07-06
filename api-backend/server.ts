@@ -14,7 +14,7 @@ import { registerGoalModule }        from './modules/goals';
 import { registerLearningModule }    from './modules/learning'; // Learning module
 import { registerClassifierModule } from './modules/classifier';
 import { registerCommunityModule }   from './modules/community'; // Community module
-
+import { registerAchievementModule } from './modules/achievements'; // Achievement module     
 
 // …add others as they migrate
 
@@ -36,12 +36,10 @@ app.use(express.json());
 registerAuthModule(app);
 registerTransactionModule(app);
 registerGoalModule(app);
-
 registerLearningModule(app);
-
 registerClassifierModule(app);
-
-registerCommunityModule(app); // Register the Community module
+registerCommunityModule(app); 
+registerAchievementModule(app); // Register the achievement module
 
 
 // ...
