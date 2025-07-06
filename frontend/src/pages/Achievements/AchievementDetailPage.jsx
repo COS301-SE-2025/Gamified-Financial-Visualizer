@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { FaBolt } from 'react-icons/fa';
 import AchievementsLayout from '../../pages/Achievements/AchievementsLayout';
+import toast from 'react-hot-toast';
+
+// Badge icon mapping
 import badge1 from '../../assets/Images/badges/CoinStack.png';
 import badge2 from '../../assets/Images/badges/notesIcon.png';
 import badge3 from '../../assets/Images/badges/targetIcon.png';
@@ -11,19 +14,6 @@ import badge6 from '../../assets/Images/badges/moneyBagIcon.png';
 import badge7 from '../../assets/Images/badges/moneyGrowIcon.png';
 import badge8 from '../../assets/Images/badges/mountainIcon.png';
 import badge9 from '../../assets/Images/badges/awardIcon.png';
-
-const sampleTasks = [
-  { title: 'First Time Saver', reward: 500, progress: 3, total: 5, status: 'complete' },
-  { title: 'First Time Saver', reward: 500, progress: 3, total: 5, status: 'incomplete' },
-  { title: 'First Time Saver', reward: 500, progress: 3, total: 5, status: 'complete' },
-  { title: 'First Time Saver', reward: 500, progress: 3, total: 5, status: 'incomplete' },
-];
-
-const gradientMap = {
-  red: 'linear-gradient(to right, #FF4C28, #FFCE51)',
-  blue: 'linear-gradient(to right, #5FBFFF, #B1E1FF)',
-  green: 'linear-gradient(to right, #88BC46, #CBEEA5)',
-};
 
 const colorMap = {
   'Cash Horder': 'red',
@@ -38,24 +28,32 @@ const colorMap = {
   '#1 Investor': 'red',
 };
 
-const hexMap = {
+const hexMap =  {
   red: '#ED5E52',
   blue: '#5FBFFF',
   green: '#88BC46'
 };
 
-const BadgeTaskCard = ({ task, primaryColor, image, barGradient }) => {
-  const isComplete = task.status === 'complete';
+const gradientMap = {
+  red: 'linear-gradient(to right, #FF4C28, #FFCE51)',
+  blue: 'linear-gradient(to right, #5FBFFF, #B1E1FF)',
+  green: 'linear-gradient(to right, #88BC46, #CBEEA5)',
+};
 
+
+const BadgeTaskCard = ({ task, primaryColor, image, barGradient }) => {
+  const progressPercent = (task.progress / task.total) * 100;
   return (
-    <div className="flex items-center justify-between bg-white rounded-2xl p-4 shadow-md border"
-         style={{ borderColor: primaryColor }}>
+    <div
+      className="flex items-center justify-between bg-white rounded-2xl p-4 shadow-md border"
+      style={{ borderColor: primaryColor }}
+    >
       <div className="flex items-center gap-4">
         <div
-          className="w-14 h-14 flex items-center justify-center rounded-full bg-gradient-to-br "
-          style={{ border: `1.5px solid ${primaryColor}` }}
+          className="w-14 h-14 flex items-center justify-center rounded-full"
+          style={{ background: barGradient, border: `1.5px solid ${primaryColor}` }}
         >
-          <img src={image} alt="icon" className="w-9 h-9 object-contain" />
+          <img src={image} alt={task.title} className="w-9 h-9 object-contain" />
         </div>
 
         <div>
@@ -71,10 +69,7 @@ const BadgeTaskCard = ({ task, primaryColor, image, barGradient }) => {
           <div className="w-64 bg-gray-200 h-2 rounded-full mt-2">
             <div
               className="h-2 rounded-full"
-              style={{
-                width: `${(task.progress / task.total) * 100}%`,
-                background: barGradient
-              }}
+              style={{ width: `${progressPercent}%`, background: barGradient }}
             />
           </div>
 
@@ -87,25 +82,61 @@ const BadgeTaskCard = ({ task, primaryColor, image, barGradient }) => {
   );
 };
 
-
-const AchievementDetailPage = () => {
+const AchievementDetailPage  = () => {
   const { id } = useParams();
+  const [tasks, setTasks] = useState([]);
+
+  // determine styling based on umbrella
   const colorKey = colorMap[id] || 'red';
   const primaryColor = hexMap[colorKey];
   const barGradient = gradientMap[colorKey];
   const badgeMap = {
-  'Cash Horder': badge1,
-  'Stack Stacker': badge2,
-  'Target Chaser': badge3,
-  'Just Grow it': badge4,
-  'All My Friends': badge5,
-  'Money Major': badge6,
-  'Building Wealth': badge7,
-  'OverAchiever': badge8,
-  '#1 Investor': badge9
-};
+    'Cash Horder': badge1,
+    'OverAchiever': badge8,
+    'Just Grow it': badge4,
+    'Money Major': badge6,
+    'Real Banker': badge8,
+    'Stack Stacker': badge2,
+    'All My Friends': badge5,
+    'Target Chaser': badge3,
+    'Building Wealth': badge7,
+    '#1 Investor': badge9,
+  };
+  const badgeImage = badgeMap[id] || badge9;
 
-const badgeImage = badgeMap[id] || badge9;
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!user?.id || !id) return;
+
+    const loadTasks = async () => {
+      try {
+        console.log(`Fetching tasks for achievement: ${id} and user: ${user.id}`);
+        const response = await fetch(`http://localhost:5000/api/achievements/task/${id}/${user.id}`);
+        if (!response.ok) throw new Error('Failed to fetch achievement tasks');
+        const data = await response.json();
+        setTasks(data.data || []);
+      } catch (error) {
+        console.error(error);
+        toast.error('Could not load achievement tasks');
+      }
+    }
+
+    loadTasks();
+  }, [id]);
+
+  if (!tasks.length) {
+    return (
+      <AchievementsLayout>
+        <div className="p-6 space-y-6 rounded-2xl -mt-6">
+          <div className="flex items-center justify-center h-64">
+            <FaBolt className="text-gray-400 text-6xl" />
+          </div>
+          <p className="text-center text-gray-500">Loading achievement tasks...</p>
+        </div>
+      </AchievementsLayout>
+    );
+  }
+
   return (
     <AchievementsLayout>
       <div className="p-6 space-y-6 rounded-2xl -mt-6">
@@ -116,7 +147,7 @@ const badgeImage = badgeMap[id] || badge9;
               borderColor: primaryColor,
               backgroundImage: barGradient,
               WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
+              WebkitTextFillColor: 'transparent',
             }}
           >
             {id}
@@ -127,10 +158,16 @@ const badgeImage = badgeMap[id] || badge9;
           </p>
 
           <div className="space-y-4">
-            {sampleTasks.map((task, i) => (
+            {tasks.map((task, i) => (
               <BadgeTaskCard
                 key={i}
-                task={task}
+                task={{
+                  title: task.title,
+                  reward: task.points_awarded,
+                  progress: task.progress,
+                  total: task.total,
+                  status: task.status === 'complete' ? 'complete' : 'incomplete',
+                }}
                 primaryColor={primaryColor}
                 barGradient={barGradient}
                 image={badgeImage}

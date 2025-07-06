@@ -55,9 +55,6 @@ const ChallengesPage = () => {
       if (res.ok) {
         toast.success(`Deleted challenge "${json.data.title}"`);
       }
-      else {
-        toast.error(json.message || 'Failed to delete challenge');
-      }
     } catch (err) {
       toast.error('Error deleting challenge');
       console.error(err);

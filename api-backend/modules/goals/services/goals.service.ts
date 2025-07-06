@@ -244,16 +244,19 @@ export async function deleteGoal(goal_id: number): Promise<void> {
   }
 }
 
-export async function getTotalGoalValue(user_id: number): Promise<number> {
+export async function getTotalGoalValue(user_id: number): Promise<{ total_goal_value: number; total_goal_value_target: number }> {
   const query = `
-    SELECT COALESCE(SUM(current_amount), 0) AS total_goal_value
+    SELECT COALESCE(SUM(current_amount), 0) AS total_goal_value, COALESCE(SUM(target_amount), 0) AS total_goal_value_target
     FROM goals
     WHERE user_id = $1;
   `;
 
   try {
     const result = await pool.query(query, [ user_id ]);
-    return Number(result.rows[ 0 ].total_goal_value);
+    return {
+      total_goal_value: result.rows[0].total_goal_value || 0,
+      total_goal_value_target: result.rows[0].total_goal_value_target || 0
+    }
   } catch (error) {
     console.error('[GoalService] Failed to get total goal value:', error);
     throw error;
@@ -288,44 +291,45 @@ export async function addGoalProgress(
   }
 }
 
-export async function getWeeklyGoalCompletions(userId: number) {
+export async function getWeeklyGoalCompletions(userId: number): Promise<{day_label: string; count: number}[]> {
   const sql = `
+    WITH week_days AS (
+      SELECT generate_series(
+        CURRENT_DATE - EXTRACT(DOW FROM CURRENT_DATE)::int,
+        CURRENT_DATE - EXTRACT(DOW FROM CURRENT_DATE)::int + 6,
+        '1 day'
+      )::date AS day
+    ),
+    tx_counts AS (
+      SELECT
+        DATE(t.transaction_date) AS day,
+        COUNT(*)                AS count
+      FROM transactions t
+      INNER JOIN goals g
+        ON t.linked_goal_id = g.goal_id
+      WHERE g.user_id = $1
+        AND t.linked_goal_id IS NOT NULL
+        AND DATE(t.transaction_date)
+            BETWEEN CURRENT_DATE - EXTRACT(DOW FROM CURRENT_DATE)::int
+                AND CURRENT_DATE - EXTRACT(DOW FROM CURRENT_DATE)::int + 6
+      GROUP BY DATE(t.transaction_date)
+    )
     SELECT
-      TO_CHAR(DATE(t.transaction_date), 'Dy') AS day,
-      COUNT(*) AS count
-    FROM transactions t
-    INNER JOIN goals g ON t.linked_goal_id = g.goal_id
-    WHERE g.user_id = $1
-      AND t.linked_goal_id IS NOT NULL
-      AND t.transaction_date >= CURRENT_DATE - INTERVAL '6 days'
-    GROUP BY DATE(t.transaction_date)
-    ORDER BY MIN(DATE(t.transaction_date));
+      TO_CHAR(w.day, 'Dy')     AS day_label,
+      COALESCE(tc.count, 0)    AS count
+    FROM week_days w
+    LEFT JOIN tx_counts tc
+      ON w.day = tc.day
+    ORDER BY w.day;
   `;
-  try {
-    // Check cache first
-    const cacheKey = `weekly_goal_completions:${userId}`;
-    const cachedData = await redisClient.get(cacheKey);
-    if (cachedData) {
-      return JSON.parse(cachedData);
-    }
 
-    const result = await pool.query(sql, [ userId ]);
-    // Cache the result for 1 hour
-    await redisClient.set(cacheKey, JSON.stringify(result.rows), {
-      EX: 60 * 60 // 1 hour
-    });
-
-    if (result.rows.length === 0) {
-      logger.info(`[GoalService] No weekly completions found for user ${userId}`);
-      return [];
-    }
-
-    return result.rows; // e.g., [{ day: 'Mon', count: 2 }, ...]
-  } catch (err) {
-    console.error('[GoalService] Error fetching goal progress frequency', err);
-    throw err;
-  }
+  const { rows } = await pool.query(sql, [userId]);
+  return rows.map(r => ({
+    day_label: r.day_label,
+    count:     Number(r.count),
+  }));
 }
+
 
 export async function calculateGoalPerformance(userId: number) {
   const result = await pool.query(`
