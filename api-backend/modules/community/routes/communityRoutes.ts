@@ -139,6 +139,29 @@ router.delete('/:communityId', async (req: Request, res: Response) => {
   }
 });
 
+router.get('/:title', async (req: Request, res: Response) => {
+  const communityId = req.params.title;
+  if (!communityId) {
+    res.status(400).json({ status: 'error', message: 'Community ID is required.' });
+    return;
+  }
+
+  try {
+    const community = await communityService.getCommunityByTitle(communityId);
+    if (!community) {
+      res.status(404).json({ status: 'error', message: 'Community not found.' });
+      return;
+    }
+    res.status(200).json({
+      status: 'success',
+      message: 'Community details retrieved successfully.',
+      data: community,
+    });
+  } catch (err) {
+    logger.error(`[Community] Failed to fetch community ID ${communityId}:`, err);
+    res.status(500).json({ status: 'error', message: 'Could not fetch community details.' });
+  }
+})
 
 /**
  * @route POST /api/community
@@ -223,6 +246,48 @@ router.get('/friends/:userId', async (req, res) => {
   }
 });
 
+router.put('/:communityId', async (req, res) => {
+  const communityId = Number(req.params.communityId);
+  const { community_name, description} = req.body;
+  if (isNaN(communityId)) {
+    res.status(400).json({ status: 'error', message: 'Invalid community ID.' });
+    return;
+  } 
+
+  try {
+    const updatedCommunity = await communityService.updateCommunity(communityId, {
+      community_name,
+      description
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Community updated successfully.',
+      data: updatedCommunity,
+    });
+  } catch (err) {
+    logger.error(`[Community] Failed to update community ID ${communityId}:`, err);
+    res.status(500).json({ status: 'error', message: 'Could not update community.' });
+  }
+});
+
+router.delete('/:communityId/members/:userId', async (req, res) => {
+  const communityId = Number(req.params.communityId);
+  const userId = Number(req.params.userId);
+
+  if (isNaN(communityId) || isNaN(userId)) {
+    res.status(400).json({ status: 'error', message: 'Invalid community or user ID.' });
+    return;
+  }
+
+  try {
+    await communityService.removeCommunityMember(communityId, userId);
+    res.status(200).json({ status: 'success', message: 'Member removed successfully.' });
+  } catch (err) {
+    logger.error(`[Community] Failed to remove member from community ID ${communityId}:`, err);
+    res.status(500).json({ status: 'error', message: 'Could not remove member from community.' });
+  }
+});
 
 /**
  * @route GET /api/community/friends/recommendations/:userId
@@ -295,6 +360,41 @@ router.get('/challenges/user/:userId', async (req, res) => {
     res.status(500).json({
       status: 'error',
       message: 'Could not fetch categorized challenges.',
+    });
+  }
+});
+
+router.get('/challenges/:challengeId', async (req, res) => {
+  const challengeId = Number(req.params.challengeId);
+
+  if (isNaN(challengeId)) {
+    res.status(400).json({
+      status: 'error',
+      message: 'Invalid challenge ID.',
+    });
+    return;
+  } 
+
+  try {
+    const challenge = await communityService.getChallenge(challengeId);
+    if (!challenge) {
+      res.status(404).json({
+        status: 'error',
+        message: 'Challenge not found.',
+      });
+      return;
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Challenge details retrieved successfully.',
+      data: challenge,
+    });
+  } catch (err) {
+    logger.error(`[Route] Failed to fetch challenge ID ${challengeId}:`, err);
+    res.status(500).json({
+      status: 'error',
+      message: 'Could not fetch challenge details.',
     });
   }
 });
@@ -378,6 +478,29 @@ router.post('/challenges', async (req: Request, res: Response) => {
   }
 });
 
+
+router.delete('/challenges/:challengeId', async (req: Request, res: Response) => {
+  const challengeId = Number(req.params.challengeId);
+
+  if (isNaN(challengeId)) {
+    res.status(400).json({ status: 'error', message: 'Invalid challenge ID.' });
+    return;
+  }
+  
+  try {
+    const deletedChallenge = await communityService.deleteChallengeById(challengeId);
+    res.status(200).json({
+      status: 'success',
+      message: `Challenge "${deletedChallenge.challenge_title}" deleted successfully.`,
+    });
+    return;
+  } catch (error) {
+    logger.error(`[Community] Failed to delete challenge ID ${challengeId}:`, error);
+    res.status(500).json({ status: 'error', message: 'Could not delete challenge.' });
+    return;
+  }
+});
+
 /**
  * @route GET /api/community/categories/:userId
  * @desc Returns global and user-specific custom categories
@@ -409,15 +532,5 @@ router.get('/categories/:userId', async (req, res) => {
     return;
   }
 });
-
-
-
-
-
-
-
-
-
-
 
 export default router;
