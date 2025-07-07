@@ -66,7 +66,7 @@ const GoalsPage = () => {
         {/* Goal Cards */}
         <div className="grid grid-cols-3 gap-6">
           {goals.filter(g => g.goal_name.toLowerCase().includes(searchTerm.toLowerCase())).map((goal) => {
-            const randomImage = bannerImages[goal.banner_id-1];
+            const randomImage = bannerImages[(goal.banner_id) % bannerImages.length];
             const progress = Math.min(
               Math.round((Number(goal.current_amount) / Number(goal.target_amount)) * 100),
               100
