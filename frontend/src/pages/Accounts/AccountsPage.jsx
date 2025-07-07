@@ -53,7 +53,7 @@ const AccountsPage = () => {
         category: txn.category_name || 'Uncategorized',
         amount: `${txn.transaction_amount >= 0 ? '' : '-'}${txn.transaction_amount >= 0 ? 'ZAR' : 'ZAR'}${Math.abs(txn.transaction_amount).toFixed(2)}`,
         account_id: txn.account_id,
-        account_name: txn.account_name, // Include account name for display
+        account_name: txn.account_name,
         transaction_id: txn.transaction_id,
         transaction_type: txn.transaction_type,
         original_amount: txn.transaction_amount,
