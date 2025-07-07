@@ -6,7 +6,7 @@ import {
 } from 'react-icons/fa';
 
 import Logo from '../assets/Images/Logo.png';
-import User from '../assets/Images/avatars/totoroAvatar.jpeg';
+import DefaultAvatar from '../assets/Images/avatars/totoroAvatar.jpeg';
 import NotificationsPanel from '../components/notifications/NotificationsPanel';
 
 const Navbar = () => {
@@ -17,8 +17,10 @@ const Navbar = () => {
   const [levelProgress, setLevelProgress] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const fetchUserData = () => {
     const storedUser = JSON.parse(localStorage.getItem('user'));
+    if (!storedUser?.id) return;
+
     setUser(storedUser);
 
     fetch(`http://localhost:5000/api/community/performance-summary/${storedUser.id}`)
@@ -26,12 +28,20 @@ const Navbar = () => {
       .then(data => setPerformance(data.data))
       .catch(err => console.error('Community performance summary error:', err));
 
-        // Fetch level progress
-  fetch(`http://localhost:5000/api/auth/profile/level-progress/${storedUser.id}`)
-    .then(res => res.json())
-    .then(res => setLevelProgress(res.data))
-    .catch(err => console.error('Failed to load level progress:', err));
+    fetch(`http://localhost:5000/api/auth/profile/level-progress/${storedUser.id}`)
+      .then(res => res.json())
+      .then(res => setLevelProgress(res.data))
+      .catch(err => console.error('Failed to load level progress:', err));
+  };
 
+  useEffect(() => {
+    fetchUserData();
+
+    // Listen for updates from settings page
+    const handleUpdate = () => fetchUserData();
+    window.addEventListener('userUpdated', handleUpdate);
+
+    return () => window.removeEventListener('userUpdated', handleUpdate);
   }, []);
 
   useEffect(() => {
@@ -57,16 +67,16 @@ const Navbar = () => {
           <NavLink to="/profile">
             <img
               src={
-                performance
-                  ? `../../assets/Images/${performance.avatar_image_path}`
-                  : { User }
+                performance?.avatar_image_path
+                  ? `/assets/Images/${performance.avatar_image_path}`
+                  : DefaultAvatar
               }
               className="w-12 h-12 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+              alt="User Avatar"
             />
-
           </NavLink>
           <div>
-            <p className="text-sm font-semibold text-gray-900">{user ? user.username : "Guest"}</p>
+            <p className="text-sm font-semibold text-gray-900">{user?.username || 'Guest'}</p>
             <p className="text-xs text-gray-400">{levelProgress?.tier_status ?? '—'}</p>
           </div>
         </div>
@@ -80,12 +90,10 @@ const Navbar = () => {
           <NavLink to="/learn" className={navClasses}><FaGraduationCap /> <span>Learn</span></NavLink>
           <NavLink to="/achievements" className={navClasses}><FaMedal /> <span>Achievements</span></NavLink>
           <NavLink to="/support" className={navClasses}><FaQuestionCircle /> <span>Support</span></NavLink>
-          {/* <NavLink to="/profile" className={navClasses}><FaUser /> <span>Profile</span></NavLink> */}
         </div>
 
         {/* Right: Icons + Logout */}
         <div className="flex items-center space-x-4">
-          {/* Notification Bell */}
           <div className="relative">
             <FaBell
               className="text-xl text-gray-700 hover:text-[#83AB55] cursor-pointer"
@@ -94,7 +102,6 @@ const Navbar = () => {
             <span className="absolute -top-2 -right-2 bg-[#FB7272] text-white text-xs rounded-full px-1">5</span>
           </div>
 
-          {/* Logout */}
           {user ? (
             <button
               onClick={handleLogout}
@@ -103,14 +110,12 @@ const Navbar = () => {
               <FaSignOutAlt className="text-[#83AB55] text-xl" />
               <span className="text-sm font-medium text-[#83AB55]">Logout</span>
             </button>
-
           ) : (
             <NavLink to="/landing" className="bg-[#83AB55] text-white px-4 py-1 rounded-full shadow">
               Login
             </NavLink>
           )}
 
-          {/* Logo */}
           <img src={Logo} alt="brand" className="w-16 h-16 object-cover" />
         </div>
       </nav>
