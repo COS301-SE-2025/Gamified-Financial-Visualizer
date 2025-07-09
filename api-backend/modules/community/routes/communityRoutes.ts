@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import pool from '../../../config/db';
 import { logger } from '../../../config/logger';
 import * as communityService from '../services/community.service';
+import { use } from 'react';
 
 const router = Router();
 
@@ -90,6 +91,30 @@ router.get('/leaderboard', async (_req: Request, res: Response) => {
   }
 });
 
+router.get('/userID/:username', async (req: Request, res: Response) => {
+  const username = req.params.username;
+
+  if (!username) {
+    res.status(400).json({ status: 'error', message: 'Username is required.' });
+    return;
+  }
+
+  try {
+    const user = await communityService.getUserID(username);
+    if (!user) {
+      res.status(404).json({ status: 'error', message: 'User not found.' });
+      return;
+    }
+    res.status(200).json({
+      status: 'success',
+      message: 'User ID retrieved successfully.',
+      data: user,
+    });
+  } catch (err) {
+    logger.error(`[Community] Failed to fetch user ID for username ${username}:`, err);
+    res.status(500).json({ status: 'error', message: 'Could not fetch user ID.' });
+  }
+})
 
 /**
  * @route DELETE /api/community/friends
@@ -112,6 +137,7 @@ router.delete('/friends', async (req: Request, res: Response) => {
     res.status(500).json({ status: 'error', message: 'Could not delete friend.' });
   }
 });
+
 
 
 /**
@@ -289,6 +315,16 @@ router.delete('/:communityId/members/:userId', async (req, res) => {
   }
 });
 
+router.get('/friends/all/members', async (req, res) => {
+  try{
+    const members = await communityService.fetchAllUsers();
+    res.status(200).json({ status: 'success', data: members });
+  } catch(err) {
+    logger.error('[Community] Failed to fetch all members:', err);
+    res.status(500).json({ status: 'error', message: 'Could not fetch members.' });
+  }
+});
+
 /**
  * @route GET /api/community/friends/recommendations/:userId
  * @desc Get recommended friends based on mutuals and tier
@@ -305,18 +341,38 @@ router.get('/friends/recommendations/:userId', async (req, res) => {
     const recommendations = await communityService.getFriendRecommendations(userId);
     res.status(200).json({ status: 'success', data: recommendations });
   } catch (err) {
+    logger.error(`[Community] Failed to get friend recommendations:`, err);
     res.status(500).json({ status: 'error', message: 'Could not fetch recommendations' });
   }
 });
 
+router.get('/friends/status/:userId/:friendId', async (req, res) => {
+  const userID = Number(req.params.userId);
+  const friendID = Number(req.params.friendId);
+
+  if(!userID || !friendID) {
+    res.status(400).json({ status: 'error', message: 'Invalid user ID' });
+    return;
+  }
+
+  try {
+    const result = await communityService.getFriendshipStatus(userID, friendID);
+    const isInitiator = result.user_id === userID;
+    res.status(200).json({ status: 'success',data: { status: result.status, isInitiator } });
+  } catch (err) {
+    logger.error(`[Community] Failed to get friendship status for ${userID}:`, err);
+    res.status(500).json({ status: 'error', message: 'Could not fetch friendship status' });   
+  }
+});
 
 /**
  * @route POST /api/community/friends/request
  * @desc Sends a friend request from one user to another
  * @body { sender_id, receiver_id }
  */
-router.post('/friends/request', async (req: Request, res: Response) => {
-  const { sender_id, receiver_id } = req.body;
+router.post('/friends/request/:sender_id/:receiver_id', async (req: Request, res: Response) => {
+  const sender_id = Number(req.params.sender_id);
+  const receiver_id = Number(req.params.receiver_id);  
 
   if (!sender_id || !receiver_id) {
     res.status(400).json({ status: 'error', message: 'Missing sender or receiver ID.' });
@@ -332,6 +388,51 @@ router.post('/friends/request', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * @route PUT /api/community/friends/remove
+ * @desc removes friend status
+ * @body { sender_id, receiver_id}
+ */
+router.delete('/friends/remove/:sender/:receiver', async (req: Request, res: Response) => {
+  const sender_id = Number(req.params.sender);
+  const receiver_id = Number(req.params.receiver);
+
+  if (!sender_id || !receiver_id) {
+    res.status(400).json({ status: 'error', message: 'Missing sender or receiver ID.' });
+    return;
+  }
+
+  try {
+    const request = await communityService.deleteFriend(sender_id, receiver_id);
+    res.status(200).json({ status: 'success', message: 'Friend deleted sent.', data: request });
+  } catch (error) {
+    logger.error(`[Community] Failed to remove friend:`, error);
+    res.status(500).json({ status: 'error', message: 'Could not remove friend.' });
+  }
+});
+
+router.patch('/friends/update', async (req: Request, res: Response) => {
+  const {user_id, friend_id, action} = req.body;
+
+  if (!user_id || !friend_id) {
+    res.status(400).json({ status: 'error', message: 'Missing sender or receiver ID.' });
+    return;
+  }
+
+  if (action != 'accepted' || action != 'declined') {
+    res.status(400).json({ status: 'error', message: 'Incorrect action' });
+    return;
+  }
+
+  try {
+    const request = await communityService.respondToFriendRequests(user_id, friend_id, action);
+    res.status(200).json({ status: 'success', message: 'Friendship status updated sent.', data: request });
+  } catch (err) {
+    logger.error(`[Community] Failed to remove friend:`, err);
+    res.status(500).json({ status: 'error', message: 'Could not update friendship status.' });
+  }
+
+});
 
 /**
  * @route GET /api/community/challenges/user/:userId
