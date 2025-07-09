@@ -60,7 +60,7 @@ const AddAccountModal = ({ isOpen, onClose, onAdd }) => {
           {[
             { label: 'Bank Name', name: 'bankName', placeholder: 'FNB' },
             { label: 'Account Name', name: 'accountName', placeholder: 'Private Account' },
-            { label: 'Available Amount', name: 'available', placeholder: '10000' },
+            { label: 'Balance', name: 'balance', placeholder: '10000' },
             //{ label: 'Balance', name: 'balance', placeholder: '500' },
           ].map((field) => (
             <div key={field.name}>
