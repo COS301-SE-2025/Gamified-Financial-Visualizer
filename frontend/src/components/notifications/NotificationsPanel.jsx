@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import toast, { Toaster } from 'react-hot-toast';
+
 import {
   FaTimes,
   FaCheckCircle,
@@ -48,7 +50,63 @@ const mockNotifications = [
   },
 ];
 
+
 const NotificationsPanel = ({ onClose }) => {
+  const [notifications, setNotifications] = useState([]);
+  const user = JSON.parse(localStorage.getItem('user'));
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      const res = await fetch(`http://localhost:5000/api/notifications/${user.id}`);
+      const notes = await res.json();
+      setNotifications(notes.data);
+    }
+    fetchNotifications();
+  });
+
+  const respondRequest = async (action, friend_id) => {
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/community/friends/update`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: user.id,
+            friend_id: friend_id,
+            action: action
+          })
+        }
+      );
+      if (!res.ok) throw new Error('Response failed');
+      toast.success(action === 'accepted' ? 'Friend added' : 'Request declined');
+    } catch (e) {
+      toast.error(e.message);
+    }
+  };
+
+
+  if (!notifications) {
+    return (
+      <div className="fixed top-0 right-0 w-[380px] h-full bg-white shadow-2xl z-50 rounded-l-3xl border-l border-gray-200 overflow-y-auto transition-all">
+        {/* Header */}
+        <div className="flex justify-between items-center px-6 py-4 border-b">
+          <h2 className="text-[#E5794B] font-semibold text-xl flex items-center gap-2">
+            <FaBell className="text-[#E5794B]" /> Notifications
+          </h2>
+          <FaTimes
+            className="text-[#E5794B] text-xl cursor-pointer"
+            onClick={onClose}
+          />
+        </div>
+
+        <div className="flex justify-center items-center h-full">
+          <p className="text-gray-500">Loading notifications...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed top-0 right-0 w-[380px] h-full bg-white shadow-2xl z-50 rounded-l-3xl border-l border-gray-200 overflow-y-auto transition-all">
       {/* Header */}
@@ -64,13 +122,13 @@ const NotificationsPanel = ({ onClose }) => {
 
       {/* Body */}
       <div className="p-4 space-y-4">
-        {mockNotifications.map((note) => (
+        {notifications.map((note) => (
           <div
-            key={note.id}
+            key={note.payload.id}
             className="flex items-center justify-between p-3 rounded-xl shadow-sm border bg-white"
           >
             <img
-              src={note.img}
+              src={'../../assets/Images/' + note.payload.avatar}
               alt="avatar"
               className="w-12 h-12 rounded-full object-cover border"
             />
@@ -78,22 +136,24 @@ const NotificationsPanel = ({ onClose }) => {
             <div className="flex-1 mx-3">
               {note.type === 'friend_request' ? (
                 <>
-                  <p className="text-sm text-gray-700 font-semibold">{note.name}</p>
+                  <p className="text-sm text-gray-700 font-semibold">{note.payload.username}</p>
                   <p className="text-xs text-gray-500">sent you a friend request</p>
                   <div className="flex gap-2 mt-2">
-                    <button className="bg-[#83AB55] text-white text-xs px-3 py-1 rounded-full hover:bg-green-600 transition">
+                    <button onClick={() => respondRequest('accepted', note.payload.from)}
+                      className="bg-[#83AB55] text-white text-xs px-3 py-1 rounded-full hover:bg-green-600 transition">
                       Accept
                     </button>
-                    <button className="bg-[#FB7272] text-white text-xs px-3 py-1 rounded-full hover:bg-red-600 transition">
+                    <button onClick={() => respondRequest('declined', note.payload.from)}
+                      className="bg-[#FB7272] text-white text-xs px-3 py-1 rounded-full hover:bg-red-600 transition">
                       Reject
                     </button>
                   </div>
                 </>
               ) : (
                 <>
-                  <p className="text-sm text-gray-700">{note.message}</p>
+                  <p className="text-sm text-gray-700">{note.payload.message}</p>
                   <div className="flex items-center gap-2 mt-1">
-                    {note.completed ? (
+                    {note.payload.completed ? (
                       <FaCheckCircle className="text-[#83AB55] text-sm" />
                     ) : (
                       <FaTimesCircle className="text-[#FB7272] text-sm" />
