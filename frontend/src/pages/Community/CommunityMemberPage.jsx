@@ -113,10 +113,10 @@ const CommunityMemberPage = () => {
       );
       if (!res.ok) throw new Error('Response failed');
       setFriendship({
-        status: action === 'accept' ? 'accepted' : null,
+        status: action === 'accepted' ? 'accepted' : null,
         isInitiator: false
       });
-      toast.success(action === 'accept' ? 'Friend added' : 'Request declined');
+      toast.success(action === 'accepted' ? 'Friend added' : 'Request declined');
     } catch (e) {
       toast.error(e.message);
     }
@@ -176,11 +176,11 @@ const CommunityMemberPage = () => {
       )
       : (
         <>
-          <button onClick={() => respondRequest('accept')}
+          <button onClick={() => respondRequest('accepted')}
             className="flex items-center gap-1 px-4 py-2 text-sm rounded-full bg-[#FFD18C] text-white shadow hover:bg-[#f9b54c] transition"          >
             <FaCheck /> Accept
           </button>
-          <button onClick={() => respondRequest('decline')}
+          <button onClick={() => respondRequest('declined')}
             className="flex items-center gap-1 px-4 py-2 text-sm rounded-full bg-[#FA8B81] text-white shadow hover:bg-[#f56a5a] transition"          >
             <FaTimes /> Decline
           </button>
