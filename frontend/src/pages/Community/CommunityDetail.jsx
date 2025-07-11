@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useMemo  } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -29,7 +29,7 @@ const CommunityDetail = () => {
   const title = communityId;
   const [isEditing, setIsEditing] = useState(false);
   const [communityData, setCommunityData] = useState(null);
-  const [members, setMembers] = useState(null);
+  const [members, setMembers] = useState([]);
   const [challengeData, setChallengeData] = useState(null);
 
   useEffect(() => {
@@ -53,6 +53,50 @@ const CommunityDetail = () => {
     fetchCommunityData();
   }, [title, navigate]);
 
+  const [friends, setFriends] = useState([]);               // all your friends
+  const [searchFriend, setSearchFriend] = useState('');     // for filtering
+  const [showAddMember, setShowAddMember] = useState(false);
+
+  // 1) when entering edit‐mode, fetch your friends
+  useEffect(() => {
+    if (!isEditing) return;
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+    fetch(`http://localhost:5000/api/community/friends/${currentUser.id}`)
+      .then(r => r.json())
+      .then(json => setFriends(json.data || []))
+      .catch(console.error);
+  }, [isEditing]);
+
+  // 2) build list of “eligible” friends: those not already members
+const eligible = useMemo(() => {
+  const memberIds = new Set(members.map(m => m.user_id));
+  return friends
+    .filter(f => !memberIds.has(f.user_id))
+    .filter(f => f.username.toLowerCase().includes(searchFriend.toLowerCase()));
+}, [members, friends, searchFriend]);
+
+  // 3) handler to actually add a friend to the community
+  const handleAddMember = async (friend) => {
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/community/${communityData.community_id}/members/${friend.user_id}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || 'Failed to add member');
+      toast.success(`Added ${friend.username}`); 
+      setMembers(m => [...m, friend]);      // append locally
+      setShowAddMember(false);
+      setSearchFriend('');
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message);
+    }
+  };
+
   if (!communityData) {
     return (
       <CommunityLayout>
@@ -62,6 +106,7 @@ const CommunityDetail = () => {
       </CommunityLayout>
     );
   }
+
   const deleteChallenge = async (challengeId) => {
     try {
       const res = await fetch(`http://localhost:5000/api/community/challenges/${challengeId}`, {
@@ -118,11 +163,28 @@ const CommunityDetail = () => {
         <p className="text-sm font-medium text-gray-800">Send friend request to <strong>all members</strong>?</p>
         <div className="flex gap-2">
           <button
-            onClick={() => {
-              toast.dismiss(t.id);
+            onClick={async () => {
+            toast.dismiss(t.id);
+            try {
+              const currentUser = JSON.parse(localStorage.getItem('user'));
+              // Kick off all requests in parallel:
+              await Promise.all(
+                members.map((m) =>
+                  fetch(
+                    `http://localhost:5000/api/community/friends/request/${currentUser.id}/${m.user_id}`,
+                    {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' }
+                    }
+                  )
+                )
+              );
               toast.success('Friend requests sent to all community members!');
-              console.log('Friend requests sent to:', members.map(m => m.name));
-            }}
+            } catch (err) {
+              console.error(err);
+              toast.error('Failed to send some requests.');
+            }
+          }}
             className="px-4 py-1 text-sm font-semibold text-white bg-[#5FBFFF] rounded-full hover:bg-[#3297E6]"
           >
             Confirm
@@ -284,9 +346,46 @@ const CommunityDetail = () => {
               />
             </div>
 
+
             {/* Member Management */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Manage Members</label>
+               {/* === NEW Add‐Member UI === */}
+      <div className="mb-6">
+        <button
+          onClick={() => setShowAddMember(v => !v)}
+          className="mb-2 inline-flex items-center gap-2 text-sm text-white bg-[#5FBFFF] px-3 py-1 rounded-full hover:bg-[#3297E6]"
+        >
+          <FaPlus /> Add Member
+        </button>
+        {showAddMember && (
+          <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <input
+              type="text"
+              placeholder="Search friends…"
+              value={searchFriend}
+              onChange={e => setSearchFriend(e.target.value)}
+              className="w-full mb-2 px-3 py-1 border rounded"
+            />
+            <div className="max-h-40 overflow-y-auto">
+              {eligible.length
+                ? eligible.map((f) => (
+                    <div
+                      key={f.user_id}
+                      className="flex justify-between items-center py-1 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => handleAddMember(f)}
+                    >
+                      <span>{f.username}</span>
+                      <FaUserPlus className="text-green-500" />
+                    </div>
+                  ))
+                : <p className="text-sm text-gray-500">No friends to add.</p>
+              }
+            </div>
+          </div>
+        )}
+      </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {members.map((member, i) => (
                   <div
@@ -304,7 +403,7 @@ const CommunityDetail = () => {
                       <p className="text-xs" style={{ color: '#6B7280' }}>{member.level}</p>
                     </div>
                     <button
-                      onClick={() => handleDelete(member.username)}
+                      onClick={() => removeMember(member.username)}
                       className="absolute top-2 right-2 text-xs bg-red-100 text-red-600 rounded-full px-2 py-1 hover:bg-red-200"
                     >
                       Remove

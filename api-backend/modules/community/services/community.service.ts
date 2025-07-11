@@ -688,6 +688,23 @@ export async function getAllBanners() {
   }
 }
 
+export async function getUserID(username: string) {
+  const query = `
+    SELECT user_id FROM users WHERE username ILIKE $1
+  `;
+
+  try {
+    const result = await pool.query(query, [ `%${username}%` ]);
+    if (result.rowCount === 0) {
+      throw new Error(`No user found with username "${username}"`);
+    }
+    return result.rows[ 0 ].user_id;
+  } catch (err) {
+    logger.error(`[CommunityService] Failed to fetch user ID for username "${username}":`, err);
+    throw err;
+  }
+}
+
 // Get friends with avatars for a specific user
 export async function getUserFriendsWithAvatars(user_id: number) {
   const query = `
@@ -714,6 +731,29 @@ export async function getUserFriendsWithAvatars(user_id: number) {
     return result.rows;
   } catch (err) {
     logger.error(`[CommunityService] Failed to fetch friends for user ${user_id}:`, err);
+    throw err;
+  }
+}
+
+export async function fetchAllUsers() {
+  const query = `
+    SELECT 
+      u.user_id,  
+      u.username,
+      ai.avatar_image_path,
+      up.tier_status
+    FROM users u
+    JOIN user_preferences pref ON pref.user_id = u.user_id  
+    JOIN avatar_images ai ON pref.avatar_id = ai.avatar_id
+    LEFT JOIN user_points up ON u.user_id = up.user_id
+    ORDER BY u.username;
+  `;
+
+  try {
+    const result = await pool.query(query);
+    return result.rows;
+  } catch (err) {
+    logger.error('[CommunityService] Failed to fetch all users:', err);
     throw err;
   }
 }
@@ -810,6 +850,51 @@ export async function deleteFriend(user_id: number, friend_id: number) {
     return result.rows[ 0 ];
   } catch (err) {
     logger.error(`[CommunityService] Failed to delete friend between ${u1} and ${u2}:`, err);
+    throw err;
+  }
+}
+
+export async function getFriendshipStatus(user_id: number, friend_id: number) {
+const [u1,u2] = user_id < friend_id
+  ? [user_id, friend_id]
+  : [friend_id, user_id];
+
+  const query = `
+    SELECT user_id, friend_id, relationship_status AS status
+    FROM friendships
+    WHERE user_id = $1
+    AND friend_id = $2
+  `;
+
+  try {
+    const result = await pool.query(query,[ u1, u2]);
+    logger.info(`[CommunityService] Fetched friend request `);
+    return result.rows[0];
+  } catch (error) {
+    logger.error(`[CommunityService] Failed to get friend requests`, error);
+    throw error;
+  }
+}
+
+export async function respondToFriendRequests(userId: number, receiver_id: number, response: string) {
+  const [u1,u2] = userId < receiver_id
+  ? [userId, receiver_id]
+  : [receiver_id, userId];
+
+  const query = `
+    UPDATE friendships
+    SET relationship_status = $1
+    WHERE user_id = $2
+    AND  friend_id = $3
+      RETURNING *;
+  `;
+
+  try {
+    const res = await pool.query(query, [response, u1, u2]);
+    if (res.rowCount === 0) throw new Error('No such friendship');
+    return res.rows[0];
+  } catch (err) {
+    logger.error(`[CommunityService] Friend requests for userID ${userId} updated with ${response}failed`);
     throw err;
   }
 }
