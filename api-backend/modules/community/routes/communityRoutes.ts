@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import pool from '../../../config/db';
 import { logger } from '../../../config/logger';
 import * as communityService from '../services/community.service';
-import { use } from 'react';
+import * as au from '../../auth/services/auth.service';
 import { notifyUser } from '../../notifications/services/notifications.services';
 import { redisClient } from '../../../config/redis';
 
@@ -465,10 +465,14 @@ router.patch('/friends/update', async (req: Request, res: Response) => {
   try {
     const request = await communityService.respondToFriendRequests(user_id, friend_id, action);
     res.status(200).json({ status: 'success', message: 'Friendship status updated sent.', data: request });
+
+    // get username
+    const user = await au.getUserById(user_id);
     // Notify the user about the friendship status update
     if (action === 'accepted') {
       await notifyUser(friend_id, 'friend_request_accepted', {
         user_id: user_id,
+        username: user.username,
       });
     } else if (action === 'declined') {
       await notifyUser(friend_id, 'friend_request_declined', {

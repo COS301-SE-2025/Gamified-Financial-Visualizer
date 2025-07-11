@@ -4,31 +4,31 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { logger } from './config/logger';
 import pool from './config/db';
-import { redisSubscriber } from './config/redis';
+import { redisClient } from './config/redis';
 import { Server } from 'socket.io';
 import http from 'http';
-import './jobs/resetBudgets'; // This will auto-schedule the job
+import { V3 } from 'paseto';
+import './jobs/resetBudgets'; // auto-schedules your budget reset job
 
 // 🔌 module registrars
 import { registerAuthModule } from './modules/auth';
 import { registerTransactionModule } from './modules/transactions';
 import { registerGoalModule } from './modules/goals';
-import { registerLearningModule } from './modules/learning'; // Learning module
+import { registerLearningModule } from './modules/learning';
 import { registerClassifierModule } from './modules/classifier';
-import { registerCommunityModule } from './modules/community'; // Community module
-import { registerAchievementModule } from './modules/achievements'; // Achievement module     
-import { registerNotificationsModule } from './modules/notifications'; // Notifications module
+import { registerCommunityModule } from './modules/community';
+import { registerAchievementModule } from './modules/achievements';
+import { registerNotificationsModule } from './modules/notifications';
 
 dotenv.config();
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
 
-/** ─────────── Global middleware ─────────── */
 app.use(cors({
-  origin: [ 'http://localhost:3000' ],
+  origin: ['http://localhost:3000'],
   credentials: true,
-  methods: [ 'GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS' ],
-  allowedHeaders: [ 'Content-Type', 'Authorization' ]
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization']
 }));
 app.use(helmet());
 app.use(express.json());
@@ -37,40 +37,99 @@ const httpServer = http.createServer(app);
 const io = new Server(httpServer, {
   cors: {
     origin: 'http://localhost:3000',
-    methods: [ 'GET', 'POST'],
+    methods: ['GET','POST'],
     credentials: true
   }
 });
 
-io.on('connection', async socket => {
-  const userId = socket.handshake.auth.userId
-  const channel = `notifications:${userId}`
-  if (!userId) return;
+// Track which socket ID belongs to which userId
+const connectedUsers = new Map<number,string>();
 
-  // 1) ask Redis to subscribe to that channel
-  await redisSubscriber.subscribe(channel, () => { })
+// Socket auth using PASETO v3.local
+io.use(async (socket, next) => {
+  try {
+    const token = socket.handshake.auth.token as string;
+    if (!token) throw new Error('No token provided');
 
-  // 2) listen for *all* messages
-  redisSubscriber.on('message', (chan, msg) => {
-    if (chan === channel) {
-      let notification: Notification;
-      try {
-        notification = JSON.parse(msg);
-      } catch (e) {
-        console.error('invalid JSON from Redis', msg);
-        return;
+    const localKeyHex = process.env.PASETO_LOCAL_KEY!;
+    const localKey = Buffer.from(localKeyHex, 'hex');
+    const payload = await V3.decrypt(token, localKey) as { user_id: number };
+
+    socket.data.userId = payload.user_id;
+    next();
+  } catch (err) {
+    logger.error('Socket.IO auth error:', err);
+    next(new Error('Authentication error'));
+  }
+});
+
+// When a client connects, remember their socket.id
+io.on('connection', socket => {
+  const userId = socket.data.userId as number;
+  if (!userId) {
+    socket.disconnect();
+    return;
+  }
+
+  connectedUsers.set(userId, socket.id);
+  logger.info(`User ${userId} connected on socket ${socket.id}`);
+  socket.emit('connected', { message: 'Real-time notifications enabled' });
+
+  socket.on('disconnect', reason => {
+    logger.info(`User ${userId} disconnected: ${reason}`);
+    connectedUsers.delete(userId);
+  });
+});
+
+// Bootstrap async work (no top‐level await!)
+async function bootstrap() {
+  // Duplicate client for pub/sub
+  const sub = redisClient.duplicate();
+  await sub.connect();
+
+  // Subscribe to all notification channels
+  await sub.pSubscribe('notifications:*', (message, channel) => {
+    let note: Notification;
+    try {
+      note = JSON.parse(message);
+    } catch {
+      return;
+    }
+
+    // extract userId from "notifications:123"
+    const userId = Number(channel.split(':')[1]);
+    const sockId = connectedUsers.get(userId);
+    if (!sockId) return;
+    
+    // emit on that socket
+    io.to(sockId).emit('notification', note);
+    logger.info(`Sent notification to user ${userId} via socket ${sockId}`);
+  });
+  logger.info('Redis subscriber listening on notifications:*');
+
+  // Dispatch incoming Redis messages to the right socket
+  sub.on('pmessage', (_pattern, channel, message) => {
+    try {
+      const note = JSON.parse(message);
+      const [, id] = channel.split(':');
+      const userId = Number(id);
+      const socketId = connectedUsers.get(userId);
+      if (socketId) {
+        io.to(socketId).emit('notification', note);
+        logger.info(`Pushed notification to user ${userId} (socket ${socketId})`);
       }
-      socket.emit('notification', notification);
+    } catch (err) {
+      logger.error('Error handling Redis pub/sub message:', err);
     }
   });
+}
 
-  // clean up on disconnect
-  socket.on('disconnect', () => {
-    redisSubscriber.unsubscribe(channel).catch(console.error);
-  });
-})
+bootstrap().catch(err => {
+  logger.error('Fatal error during bootstrap:', err);
+  process.exit(1);
+});
 
-/** ─────────── Register feature modules ─────────── */
+// Register all your feature modules
 registerAuthModule(app);
 registerTransactionModule(app);
 registerGoalModule(app);
@@ -80,7 +139,7 @@ registerCommunityModule(app);
 registerAchievementModule(app);
 registerNotificationsModule(app);
 
-/** ─────────── Universal health route ─────────── */
+// Health check
 app.get('/health', async (_req, res) => {
   try {
     const db = await pool.connect();
@@ -88,17 +147,18 @@ app.get('/health', async (_req, res) => {
     db.release();
     res.status(200).json({ status: 'OK', db: 'connected' });
   } catch (err) {
-    logger.error('DB check failed:', err);
+    logger.error('DB health check failed:', err);
     res.status(503).json({ status: 'unavailable', db: 'disconnected' });
   }
 });
 
-/** ─────────── Error handler ─────────── */
+// Global error handler
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   logger.error('Unhandled error:', err);
   res.status(500).json({ status: 'error', message: 'Internal server error' });
 });
-/** ─────────── Start HTTP listener ─────────── */
-httpServer.listen(PORT, () => logger.info(`Monolith listening on port ${PORT}`));
-/** ─────────── Start HTTP listener ─────────── */
-// app.listen(PORT, () => logger.info(`Monolith listening on port ${PORT}`));
+
+// Start HTTP + WebSocket server
+httpServer.listen(PORT, () => {
+  logger.info(`Monolith listening on port ${PORT} (with Socket.IO)`);
+});

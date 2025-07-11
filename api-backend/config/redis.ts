@@ -14,7 +14,7 @@ export const redisClient = createClient({
 
 redisClient.on('error', err => console.error('[Redis] Client Error', err));
 // …and a duplicate for pub/sub (so subscriptions don’t block normal commands)
-export const redisSubscriber: RedisClientType = redisClient.duplicate();
+export const redisSubscriber = redisClient.duplicate();
 
 (async () => {
   await redisClient.connect();
