@@ -15,6 +15,7 @@ const Navbar = () => {
   const [darkMode] = useState(false);
   const [performance, setPerformance] = useState(null);
   const [levelProgress, setLevelProgress] = useState(null);
+  const [notifications, setNotifications] = useState([]);
   const navigate = useNavigate();
 
   const fetchUserData = () => {
@@ -32,6 +33,11 @@ const Navbar = () => {
       .then(res => res.json())
       .then(res => setLevelProgress(res.data))
       .catch(err => console.error('Failed to load level progress:', err));
+
+    fetch(`http://localhost:5000/api/notifications/${storedUser.id}`)
+      .then(res => res.json())
+      .then(data => setNotifications(data.data.length)) // number of notifications
+      .catch(err => console.error('Failed to load notifications:', err));
   };
 
   useEffect(() => {
@@ -99,7 +105,7 @@ const Navbar = () => {
               className="text-xl text-gray-700 hover:text-[#83AB55] cursor-pointer"
               onClick={() => setShowNotifications(!showNotifications)}
             />
-            <span className="absolute -top-2 -right-2 bg-[#FB7272] text-white text-xs rounded-full px-1">5</span>
+            <span className="absolute -top-2 -right-2 bg-[#FB7272] text-white text-xs rounded-full px-1">{notifications}</span>
           </div>
 
           {user ? (
