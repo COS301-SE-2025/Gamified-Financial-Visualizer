@@ -12,7 +12,7 @@ const Layout = () => {
 
     // connect and pass the userId in the handshake
     const socket = io('http://localhost:5000', {
-      auth: { userId: user.id },
+      auth: { token: user.token }, 
       transports: ['websocket'],
     });
 
@@ -28,6 +28,9 @@ const Layout = () => {
           break;
         case 'achievement':
           toast.success(note.message || 'Achievement unlocked!');
+          break;
+        case 'friend_request_accepted':
+          toast.success(`${note.payload.username} accepted your friend request`);
           break;
         default:
           toast(note.message || 'You have a new notification');

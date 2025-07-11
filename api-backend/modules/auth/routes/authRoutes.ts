@@ -134,16 +134,15 @@ const login = async (req: Request, res: Response): Promise<void> => {
     
     /* 2. sign PASETO (v3.local) ------------------------------------------ */
   const localKey = Buffer.from(process.env.PASETO_LOCAL_KEY!, 'hex');
-
+const expiresAt = new Date(Date.now() + TOKEN_TTL * 1000);
   const token = await V3.encrypt(
         { 
           user_id: user.user_id, 
-          exp: Math.floor(Date.now() / 1000) + TOKEN_TTL 
+          exp: expiresAt.toISOString(), 
         },
         localKey
       );
 
-    const expiresAt = new Date(Date.now() + TOKEN_TTL * 1000);
 
     /* 3. store / update db token ----------------------------------------- */
     await userService.upsertToken(user.user_id, token, expiresAt);
