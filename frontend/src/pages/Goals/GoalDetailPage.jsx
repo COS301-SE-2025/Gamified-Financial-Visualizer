@@ -11,7 +11,6 @@ import goal2 from '../../assets/Images/banners/pixelHouse.gif';
 import goal3 from '../../assets/Images/banners/pixelOffice1.gif';
 
 const GoalsDetailPage = () => {
-
   const { goalId } = useParams();
   const [goal, setGoal] = useState(null);
   const [loading, setLoading] = useState(true);

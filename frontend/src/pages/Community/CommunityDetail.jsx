@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect,useMemo  } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 
 import CommunityLayout from '../../pages/Community/CommunityLayout';
@@ -16,45 +16,117 @@ import banner1 from '../../assets/Images/banners/pixelGirlAlly.gif';
 import banner2 from '../../assets/Images/banners/pixelApartment.gif';
 import banner3 from '../../assets/Images/banners/pixelStore.gif';
 
-const mockMembers = [
-  { name: 'just_cindy', level: 'Gold', avatar: cindy },
-  { name: 'shark', level: 'Gold', avatar: shark },
-  { name: 'andy_bear', level: 'Gold', avatar: bear },
-  { name: 'thats_me', level: 'Platinum', avatar: thatsMe },
-];
-
-const mockChallenges = [
-  {
-    title: 'Vacation - Bali',
-    xp: 1000,
-    deadline: '2025-07-20',
-    status: '2 Goals Left',
-    avatarGroup: [cindy, shark],
-  },
-  {
-    title: 'Vacation - Japan',
-    xp: 2000,
-    deadline: '2026-10-10',
-    status: '4 Goals Left',
-    avatarGroup: [bear, thatsMe, cindy],
-  },
-];
-
 const bannerOptions = [
-  { id: 'students', label: 'Pixel Students', src: banner },
-  { id: 'ally', label: 'Pixel Ally', src: banner1 },
-  { id: 'apartment', label: 'Pixel Apartment', src: banner2 },
-  { id: 'store', label: 'Pixel Store', src: banner3 },
+  { id: 1, label: 'Pixel Students', src: banner },
+  { id: 2, label: 'Pixel Ally', src: banner1 },
+  { id: 3, label: 'Pixel Apartment', src: banner2 },
+  { id: 4, label: 'Pixel Store', src: banner3 },
 ];
 
 const CommunityDetail = () => {
   const navigate = useNavigate();
+  const { communityId } = useParams();
+  const title = communityId;
   const [isEditing, setIsEditing] = useState(false);
-  const [communityData, setCommunityData] = useState({
-    name: 'Happy Savers',
-    bannerId: 'students',
-    description: 'A community for people who enjoy saving money together',
-  });
+  const [communityData, setCommunityData] = useState(null);
+  const [members, setMembers] = useState([]);
+  const [challengeData, setChallengeData] = useState(null);
+
+  useEffect(() => {
+    const fetchCommunityData = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/community/${title}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch community data');
+        }
+        const data = await response.json();
+        const community = data.data;
+        setCommunityData(community);
+        setMembers(community.members);
+        setChallengeData(community.challenges);
+      } catch (error) {
+        console.error('Error fetching community data:', error);
+        navigate('/community'); // Redirect if community not found
+      }
+    }
+
+    fetchCommunityData();
+  }, [title, navigate]);
+
+  const [friends, setFriends] = useState([]);               // all your friends
+  const [searchFriend, setSearchFriend] = useState('');     // for filtering
+  const [showAddMember, setShowAddMember] = useState(false);
+
+  // 1) when entering edit‐mode, fetch your friends
+  useEffect(() => {
+    if (!isEditing) return;
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+    fetch(`http://localhost:5000/api/community/friends/${currentUser.id}`)
+      .then(r => r.json())
+      .then(json => setFriends(json.data || []))
+      .catch(console.error);
+  }, [isEditing]);
+
+  // 2) build list of “eligible” friends: those not already members
+const eligible = useMemo(() => {
+  const memberIds = new Set(members.map(m => m.user_id));
+  return friends
+    .filter(f => !memberIds.has(f.user_id))
+    .filter(f => f.username.toLowerCase().includes(searchFriend.toLowerCase()));
+}, [members, friends, searchFriend]);
+
+  // 3) handler to actually add a friend to the community
+  const handleAddMember = async (friend) => {
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/community/${communityData.community_id}/members/${friend.user_id}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || 'Failed to add member');
+      toast.success(`Added ${friend.username}`); 
+      setMembers(m => [...m, friend]);      // append locally
+      setShowAddMember(false);
+      setSearchFriend('');
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message);
+    }
+  };
+
+  if (!communityData) {
+    return (
+      <CommunityLayout>
+        <div className="max-w-6xl mx-auto p-6 text-center text-gray-500">
+          Loading community data...
+        </div>
+      </CommunityLayout>
+    );
+  }
+
+  const deleteChallenge = async (challengeId) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/community/challenges/${challengeId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      const json = await res.json();
+      if (res.ok) {
+        toast.success(`Deleted challenge "${json.data.title}"`);
+      }
+      else {
+        toast.error(json.message || 'Failed to delete challenge');
+      }
+    } catch (err) {
+      toast.error('Error deleting challenge');
+      console.error(err);
+    }
+  };
 
   const handleDelete = (itemName) => {
     toast.custom((t) => (
@@ -67,7 +139,7 @@ const CommunityDetail = () => {
             onClick={() => {
               toast.dismiss(t.id);
               toast.success(`Deleted "${itemName}"`);
-              // TODO: Actual deletion logic here
+              deleteChallenge(itemName);
               console.log(`Deleted ${itemName}`);
             }}
             className="bg-[#ED5E52] hover:bg-[#FE9B90] text-white px-4 py-1.5 text-sm rounded-full font-medium"
@@ -91,11 +163,28 @@ const CommunityDetail = () => {
         <p className="text-sm font-medium text-gray-800">Send friend request to <strong>all members</strong>?</p>
         <div className="flex gap-2">
           <button
-            onClick={() => {
-              toast.dismiss(t.id);
+            onClick={async () => {
+            toast.dismiss(t.id);
+            try {
+              const currentUser = JSON.parse(localStorage.getItem('user'));
+              // Kick off all requests in parallel:
+              await Promise.all(
+                members.map((m) =>
+                  fetch(
+                    `http://localhost:5000/api/community/friends/request/${currentUser.id}/${m.user_id}`,
+                    {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' }
+                    }
+                  )
+                )
+              );
               toast.success('Friend requests sent to all community members!');
-              console.log('Friend requests sent to:', mockMembers.map(m => m.name));
-            }}
+            } catch (err) {
+              console.error(err);
+              toast.error('Failed to send some requests.');
+            }
+          }}
             className="px-4 py-1 text-sm font-semibold text-white bg-[#5FBFFF] rounded-full hover:bg-[#3297E6]"
           >
             Confirm
@@ -119,7 +208,33 @@ const CommunityDetail = () => {
     setCommunityData({ ...communityData, [name]: value });
   };
 
-  const handleSave = () => {
+  const removeMember = async (userId) => {
+    const res = await fetch(
+      `http://localhost:5000/api/community/${communityData.community_id}/members/${userId}`,
+      { method: 'DELETE' }
+    );
+    if (!res.ok) throw new Error('Remove failed');
+    // locally filter them out
+    setMembers((prev) => prev.filter((m) => m.user_id !== userId));
+  };
+
+  const handleSave = async () => {
+    const payload = {
+      community_name: communityData.community_name,
+      description: communityData.description,
+    };
+
+    const res = await fetch(
+      `http://localhost:5000/api/community/${communityData.community_id}`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }
+    );
+    if (!res.ok) throw new Error('Update failed');
+    const json = await res.json();
+    setCommunityData(json.data);
     toast.success('Community updated successfully!');
     setIsEditing(false);
     // Here you would typically send the updated data to your backend
@@ -144,14 +259,14 @@ const CommunityDetail = () => {
             {isEditing ? (
               <input
                 type="text"
-                name="name"
-                value={communityData.name}
+                name="community_name"
+                value={communityData.community_name}
                 onChange={handleChange}
                 className="text-2xl font-bold border-b border-gray-300 focus:outline-none focus:border-[#66BFBF]"
                 style={{ color: '#66BFBF' }}
               />
             ) : (
-              <h2 className="text-2xl font-bold" style={{ color: '#66BFBF' }}>{communityData.name}</h2>
+              <h2 className="text-2xl font-bold" style={{ color: '#66BFBF' }}>{communityData.community_name}</h2>
             )}
           </div>
           <div className="flex items-center gap-4">
@@ -200,16 +315,16 @@ const CommunityDetail = () => {
         {isEditing && (
           <div className="bg-white p-6 rounded-2xl shadow border" style={{ borderColor: '#E5E7EB' }}>
             <h3 className="text-lg font-semibold mb-4" style={{ color: '#4B5563' }}>Edit Community Details</h3>
-            
+
             {/* Banner Selection */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">Change Banner</label>
               <div className="flex gap-4 overflow-x-auto pb-2">
                 {bannerOptions.map((banner) => (
-                  <div 
-                    key={banner.id} 
+                  <div
+                    key={banner.id}
                     className={`cursor-pointer border-2 rounded-xl p-1 flex-shrink-0 ${communityData.bannerId === banner.id ? 'border-[#66BFBF]' : 'border-gray-300'}`}
-                    onClick={() => setCommunityData({...communityData, bannerId: banner.id})}
+                    onClick={() => setCommunityData({ ...communityData, bannerId: banner.id })}
                   >
                     <img src={banner.src} alt={banner.label} className="w-20 h-20 rounded-lg object-cover" />
                     <p className="text-xs text-center mt-1">{banner.label}</p>
@@ -231,11 +346,48 @@ const CommunityDetail = () => {
               />
             </div>
 
+
             {/* Member Management */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Manage Members</label>
+               {/* === NEW Add‐Member UI === */}
+      <div className="mb-6">
+        <button
+          onClick={() => setShowAddMember(v => !v)}
+          className="mb-2 inline-flex items-center gap-2 text-sm text-white bg-[#5FBFFF] px-3 py-1 rounded-full hover:bg-[#3297E6]"
+        >
+          <FaPlus /> Add Member
+        </button>
+        {showAddMember && (
+          <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <input
+              type="text"
+              placeholder="Search friends…"
+              value={searchFriend}
+              onChange={e => setSearchFriend(e.target.value)}
+              className="w-full mb-2 px-3 py-1 border rounded"
+            />
+            <div className="max-h-40 overflow-y-auto">
+              {eligible.length
+                ? eligible.map((f) => (
+                    <div
+                      key={f.user_id}
+                      className="flex justify-between items-center py-1 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => handleAddMember(f)}
+                    >
+                      <span>{f.username}</span>
+                      <FaUserPlus className="text-green-500" />
+                    </div>
+                  ))
+                : <p className="text-sm text-gray-500">No friends to add.</p>
+              }
+            </div>
+          </div>
+        )}
+      </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {mockMembers.map((member, i) => (
+                {members.map((member, i) => (
                   <div
                     key={i}
                     className="flex items-center gap-4 bg-white p-3 rounded-2xl shadow-sm border relative"
@@ -244,14 +396,14 @@ const CommunityDetail = () => {
                     <img
                       src={member.avatar}
                       className="w-12 h-12 rounded-full border object-cover"
-                      alt={member.name}
+                      alt={member.username}
                     />
                     <div>
-                      <p className="text-sm font-semibold" style={{ color: '#374151' }}>{member.name}</p>
+                      <p className="text-sm font-semibold" style={{ color: '#374151' }}>{member.username}</p>
                       <p className="text-xs" style={{ color: '#6B7280' }}>{member.level}</p>
                     </div>
-                    <button 
-                      onClick={() => handleDelete(member.name)}
+                    <button
+                      onClick={() => removeMember(member.username)}
                       className="absolute top-2 right-2 text-xs bg-red-100 text-red-600 rounded-full px-2 py-1 hover:bg-red-200"
                     >
                       Remove
@@ -267,7 +419,7 @@ const CommunityDetail = () => {
         <div>
           <h3 className="text-sm font-semibold mb-3" style={{ color: '#4B5563' }}>Community Members</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {mockMembers.map((member, i) => (
+            {members.map((member, i) => (
               <div
                 key={i}
                 className="flex items-center gap-4 bg-white p-3 rounded-2xl shadow-sm border"
@@ -276,10 +428,10 @@ const CommunityDetail = () => {
                 <img
                   src={member.avatar}
                   className="w-12 h-12 rounded-full border object-cover"
-                  alt={member.name}
+                  alt={member.username}
                 />
                 <div>
-                  <p className="text-sm font-semibold" style={{ color: '#374151' }}>{member.name}</p>
+                  <p className="text-sm font-semibold" style={{ color: '#374151' }}>{member.username}</p>
                   <p className="text-xs" style={{ color: '#6B7280' }}>{member.level}</p>
                 </div>
               </div>
@@ -291,7 +443,7 @@ const CommunityDetail = () => {
         <h3 className="text-sm font-semibold mb-3" style={{ color: '#4B5563' }}>Community Challenges</h3>
         <div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
-            {mockChallenges.map((challenge, i) => (
+            {challengeData.map((challenge, i) => (
               <div
                 key={i}
                 className="bg-white p-4 pt-10 rounded-3xl shadow-md border relative"
@@ -308,15 +460,15 @@ const CommunityDetail = () => {
                 <div className="flex justify-between items-start">
                   <div>
                     <h4 className="text-lg font-semibold text-[#111827]">{challenge.title}</h4>
-                    <p className="text-sm text-[#ED5E52] font-medium mt-1">2000/4000 ZAR</p>
-                    <p className="text-sm text-[#374151]">2000 ZAR Left</p>
-                    <p className="text-sm text-[#6B7280] mt-1">Goal will be accomplished on <span className="text-[#ED5E52] font-semibold">21/07/2027</span></p>
+                    <p className="text-sm text-[#ED5E52] font-medium mt-1">{challenge.current_amount}/{challenge.target_amount} ZAR</p>
+                    <p className="text-sm text-[#374151]">{challenge.target_amount - challenge.current_amount} ZAR Left</p>
+                    <p className="text-sm text-[#6B7280] mt-1">Goal should be accomplished on <span className="text-[#ED5E52] font-semibold">{challenge.deadline}</span></p>
                   </div>
 
                   {/* Tags */}
                   <div className="flex flex-col items-end gap-2 ml-4">
                     <span className="text-xs px-4 py-1 rounded-full bg-[#B1E1FF] text-[#4B82A2] font-medium">In-Progress</span>
-                    <span className="text-xs px-3 py-1 rounded-full bg-[#FFD18C] text-[#FFFFFF] font-medium">Savings</span>
+                    <span className="text-xs px-3 py-1 rounded-full bg-[#FFD18C] text-[#FFFFFF] font-medium">{challenge.challenge_type}</span>
                     <span className="text-xs px-3 py-1 rounded-full bg-[#FFD18C] text-[#FFFFFF] font-semibold">{challenge.xp} XP</span>
                   </div>
                 </div>
@@ -345,7 +497,7 @@ const CommunityDetail = () => {
 
                   <div className="flex-1">
                     <button
-                      onClick={() => handleDelete(challenge.title)}
+                      onClick={() => handleDelete(challenge.id)}
                       className="w-full bg-[#FE9B90] text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-[#ED5E52] transition">
                       Delete
                     </button>
@@ -366,17 +518,17 @@ const CommunityDetail = () => {
                 <div
                   className="h-full"
                   style={{
-                    width: '60%',
+                    width: (communityData.xpCollected/communityData.xpGoal)*100 + '%',
                     background: 'linear-gradient(to right, #FACC15, #FB923C)',
                     borderRadius: '9999px',
                   }}
                 />
               </div>
               <span className="text-sm font-semibold" style={{ color: '#F97316' }}>
-                2504 XP
+                {communityData.xpCollected} XP
               </span>
             </div>
-            <p className="text-xs mt-1 text-right" style={{ color: '#6B7280' }}>Out of 4000 XP Goal</p>
+            <p className="text-xs mt-1 text-right" style={{ color: '#6B7280' }}>Out of {communityData.xpGoal} XP Goal</p>
           </div>
 
           {/* Goals Completed */}
@@ -387,14 +539,14 @@ const CommunityDetail = () => {
                 <div
                   className="h-full"
                   style={{
-                    width: '50%',
+                    width: (communityData.goalsCompleted/communityData.goalsTotal)*100 +  '%',
                     background: 'linear-gradient(to right, #FACC15, #FB923C)',
                     borderRadius: '9999px',
                   }}
                 />
               </div>
               <span className="text-sm font-semibold" style={{ color: '#F97316' }}>
-                4 / 8
+                {communityData.goalsCompleted} / {communityData.goalsTotal}
               </span>
             </div>
             <p className="text-xs mt-1 text-right" style={{ color: '#6B7280' }}>Goals Completed</p>
