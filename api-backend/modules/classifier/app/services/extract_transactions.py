@@ -1,17 +1,23 @@
 # services/extract_transactions.py
 from pdf2image import convert_from_path           # needs poppler-utils present
 import pytesseract                                # needs tesseract-ocr installed
-import re, json
+import re, json, argparse, getpass
 from datetime import datetime
 from pathlib import Path
+import argparse
 # import logging
-import { logger }     from '../../config/logger';  
+# from .....config import logger
 
 # ---------- 1. OCR ----------
-def ocr_pdf_to_text(pdf_path: str, dpi: int = 300) -> str:
-   pages = convert_from_path(pdf_path, dpi=dpi)
-   # PSM-6 = assume a “block of text” per page – good for statements
-   return "\n".join(pytesseract.image_to_string(p, config="--psm 6") for p in pages)
+def ocr_pdf_to_text(pdf_path: str,
+                    dpi: int = 300,
+                    password: str | None = None) -> str:
+    # userpw unlocks encrypted PDFs
+    pages = convert_from_path(pdf_path, dpi=dpi, userpw=password)
+    return "\n".join(
+        pytesseract.image_to_string(p, config="--psm 6") for p in pages
+    )
+
 
 
 # ---------- 2. PRE-CLEAN ----------
@@ -129,15 +135,33 @@ def parse_transactions(lines: list[str]) -> list[dict]:
 
 
 # ---------- ORCHESTRATOR ----------
-def pdf_to_json(pdf_path: str, out: str | Path = "transactions.json") -> None:
-   raw = ocr_pdf_to_text(pdf_path)
-   lines = clean_lines(raw)
-   txs  = parse_transactions(lines)
-   with open(out, "w") as f:
-      json.dump(txs, f, indent=2)
-   print(f"✅ Saved {len(txs)} transactions → {out}")
-   logger.info(f"✅ Saved {len(txs)} transactions → {out}")
+def pdf_to_json(pdf_path: str,
+                out: str | Path = "./data/transactions.json",
+                password: str | None = None) -> None:
+    raw   = ocr_pdf_to_text(pdf_path, password=password)
+    lines = clean_lines(raw)
+    txs   = parse_transactions(lines)
 
+    with open(out, "w") as f:
+        json.dump(txs, f, indent=2)
 
+    print(f"✅ Saved {len(txs)} transactions → {out}")
+
+# ---------- CLI ----------
 if __name__ == "__main__":
-   pdf_to_json("./data/nedbank.pdf")
+    parser = argparse.ArgumentParser(
+        description="Extract transactions from (possibly-encrypted) PDF."
+    )
+    parser.add_argument("pdf", help="Path to bank-statement PDF")
+    parser.add_argument(
+        "-o", "--out", default="transactions.json", help="Output JSON file"
+    )
+    parser.add_argument(
+        "--password", help="PDF password (leave blank to prompt)"
+    )
+    args = parser.parse_args()
+
+    pwd = args.password
+    if pwd is None:                          # interactive prompt if not provided
+        pwd = getpass.getpass("PDF password (leave empty if none): ") or None
+    pdf_to_json(args.pdf, out=args.out, password=pwd)

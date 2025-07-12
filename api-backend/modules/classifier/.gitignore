@@ -2,3 +2,16 @@
 transactions.json
 /transactions.json
 data
+
+/model/*
+tokenizer.json
+model.safetensors
+
+!model/id2cat.json
+!model/tokenizer_config.json
+!model/config.json
+
+**/results/
+__pycache__/
+*.py[cod]
+*$py.class
