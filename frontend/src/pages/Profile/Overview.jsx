@@ -369,7 +369,7 @@ const Overview = () => {
 
                 {/* View Button */}
                 <button
-                  onClick={() => navigate(`/community/details/${community.community_id}`)}
+                  onClick={() => navigate(`/community/details/${community.community_name}`)}
                   className="flex items-center gap-2 bg-[#AAD977] text-white font-medium text-sm px-4 py-1.5 rounded-full hover:bg-[#83AB55] transition-all"
                 >
                   <FaEye /> View

@@ -1,1 +1,6 @@
 node_modules/
+
+# ignore database setup stuff
+/db/*.sql
+/db/*.sh
+/db/*.txt

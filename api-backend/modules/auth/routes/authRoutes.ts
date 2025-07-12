@@ -32,8 +32,8 @@ const registerValidation = [
     }),
   body('username')
     .trim()
-    .matches(/^[a-z._]+$/)
-    .withMessage('Username must contain only lowercase letters, dots, or underscores.')
+    .matches(/^[a-z0-9._]+$/)
+    .withMessage('Username must contain only lowercase letters, numbers, dots, or underscores.')
     .isLength({ min: 3, max: 15 })
     .withMessage('Username must be between 3 and 15 characters.'),
   body('email')
@@ -134,16 +134,15 @@ const login = async (req: Request, res: Response): Promise<void> => {
     
     /* 2. sign PASETO (v3.local) ------------------------------------------ */
   const localKey = Buffer.from(process.env.PASETO_LOCAL_KEY!, 'hex');
-
+const expiresAt = new Date(Date.now() + TOKEN_TTL * 1000);
   const token = await V3.encrypt(
         { 
           user_id: user.user_id, 
-          exp: Math.floor(Date.now() / 1000) + TOKEN_TTL 
+          exp: expiresAt.toISOString(), 
         },
         localKey
       );
 
-    const expiresAt = new Date(Date.now() + TOKEN_TTL * 1000);
 
     /* 3. store / update db token ----------------------------------------- */
     await userService.upsertToken(user.user_id, token, expiresAt);
