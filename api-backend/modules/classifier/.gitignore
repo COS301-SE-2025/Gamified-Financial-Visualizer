@@ -1,11 +1,13 @@
 /data
 transactions.json
 /transactions.json
+classified_transactions.json
 data
 
-/model/*
+**/model/*
 tokenizer.json
 model.safetensors
+personal_transactions.csv
 
 !model/id2cat.json
 !model/tokenizer_config.json
