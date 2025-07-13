@@ -345,6 +345,17 @@ export async function getTransactionByCategory(category_id: number) {
   }
 }
 
+export async function getCategoryId(category_name: string) {
+  const sql = `SELECT category_id FROM categories WHERE category_name = $1;`;
+  try {
+    const res = await pool.query(sql, [ category_name ]);
+    return res.rows[ 0 ]?.category_id || null;
+  } catch (error) {
+    logger.error(`[TransactionService] Error fetching category ID for name ${category_name}:`, error);
+    throw error;
+  }
+}
+
 export async function getTotalSpentPerCategory(user_id: number) {
   const sql = `
   WITH user_categories AS (

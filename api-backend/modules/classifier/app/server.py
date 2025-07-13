@@ -1,14 +1,80 @@
-from fastapi import FastAPI, Request
+# api-backend/modules/classifier/app/server.py
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from typing import List
+import uvicorn
 
-app = FastAPI()
+# import your service-layer functions
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from typing import List
 
-@app.post("/predict")
-async def predict(request: Request):
-    data = await request.json()
-    desc = data.get("description", "")
-    category = "Food & Dining" if "mcdonalds" in desc.lower() else "Uncategorized"
-    return {"category": category}
+# ---- Service-layer functions ----
+from app.services.extract_transactions import (
+    ocr_pdf_to_text,
+    clean_lines,
+    classify_row,
+    parse_transactions,
+    pdf_to_json
+)
+from app.services.predict_classifier import classify_batch
+from app.services.train_classifier import main as train_model
+from app.services.feedback_trainer import main as train_feedback
 
-@app.get("/health")
-async def health():
-    return {"status": "ok"}
+app = FastAPI(title="Transaction Classifier")
+
+# ---- Request/Response Schemas ----
+class PredictReq(BaseModel):
+    description: str
+
+class PredictRes(BaseModel):
+    category: str
+    source: str
+
+class Transaction(BaseModel):
+    date: str
+    description: str
+    amount: float
+    direction: str
+    balance: float
+
+class BatchReq(BaseModel):
+    transactions: List[Transaction]
+
+# ---- Endpoints ----
+@app.post("/predict", response_model=PredictRes)
+def single_predict(req: PredictReq):
+    try:
+        result = classify_batch([req.description])[0]
+        return PredictRes(category=result["category"], source=result["source"])
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/predict-batch", response_model=List[PredictRes])
+def batch_predict(req: BatchReq):
+    try:
+        descriptions = [t.description for t in req.transactions]
+        results = classify_batch(descriptions)
+        return [PredictRes(category=r["category"], source=r["source"]) for r in results]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/train")
+def retrain():
+    try:
+        train_model()
+        return {"status": "retraining started"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/feedback-train")
+def retrain_with_feedback():
+    try:
+        train_feedback()
+        return {"status": "feedback-based retraining started"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --- serve ---
+if __name__ == "__main__":
+    uvicorn.run("server:app", host="0.0.0.0", port=6000, log_level="info")

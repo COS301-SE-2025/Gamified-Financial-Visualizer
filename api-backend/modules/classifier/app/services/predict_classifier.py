@@ -1,19 +1,33 @@
-from preprocessing import normalize_description, keyword_match_category
+from .preprocessing import normalize_description, keyword_match_category
 from transformers import DistilBertForSequenceClassification, DistilBertTokenizerFast
 import json, torch, pathlib
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
+from pathlib import Path
 # ---------- Load model & tokenizer ----------
-model_path = pathlib.Path("./model")
-tokenizer = DistilBertTokenizerFast.from_pretrained(model_path)
-model     = DistilBertForSequenceClassification.from_pretrained(model_path).eval()
+model_path = pathlib.Path("model")
+
+try:
+    tokenizer = AutoTokenizer.from_pretrained(str(model_path))
+    model = AutoModelForSequenceClassification.from_pretrained(str(model_path)).eval()
+except OSError:
+    tokenizer = AutoTokenizer.from_pretrained("CodeBlooded-capstone/fin-classifier", token=True)
+    model = AutoModelForSequenceClassification.from_pretrained("CodeBlooded-capstone/fin-classifier", token=True).eval()
+   
 device    = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent  # goes up from `services/`
+DATA_PATH = BASE_DIR / "app/data" / "categories.json"
+MODEL_DIR = BASE_DIR / "app/model" / "categories.json"
+DATA_DIR = BASE_DIR / "data" 
+
 # ---------- Load internal keyword map ----------
-with open("../data/categories.json") as f:
+with open(DATA_PATH) as f:
    keyword_map = json.load(f)
 
-with open("../model/categories.json") as f:
+with open(MODEL_DIR) as f:
     categories_keywords = json.load(f)
 
 cat2id = {c: i for i, c in enumerate(categories_keywords)}
