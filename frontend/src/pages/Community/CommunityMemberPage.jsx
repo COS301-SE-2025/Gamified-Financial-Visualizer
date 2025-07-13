@@ -5,7 +5,7 @@ import toast, { Toaster } from 'react-hot-toast';
 
 import CommunityLayout from '../../pages/Community/CommunityLayout';
 import CommunityHeader from '../../layouts/headers/CommunityHeader';
-import { FaChartLine, FaStar, FaArrowLeft, FaCrown, FaEye, FaMedal, FaUserPlus, FaUserMinus, FaPaperPlane, FaTimes, FaCheck } from 'react-icons/fa';
+import { FaChartLine, FaArrowLeft, FaCrown, FaEye, FaMedal, FaUserMinus, FaPaperPlane, FaTimes, FaCheck } from 'react-icons/fa';
 
 const CommunityMemberPage = () => {
   const user = JSON.parse(localStorage.getItem('user'));

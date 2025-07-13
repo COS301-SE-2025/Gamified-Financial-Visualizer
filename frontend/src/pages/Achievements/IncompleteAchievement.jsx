@@ -3,15 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import AchievementsLayout from '../../pages/Achievements/AchievementsLayout';
 import toast from 'react-hot-toast';
 
-import badge1 from '../../assets/Images/badges/CoinStack.png';
-import badge2 from '../../assets/Images/badges/notesIcon.png';
-import badge3 from '../../assets/Images/badges/targetIcon.png';
-import badge4 from '../../assets/Images/badges/plantIcon.png';
-import badge5 from '../../assets/Images/badges/highFiveIcon.png';
-import badge6 from '../../assets/Images/badges/moneyBagIcon.png';
-import badge7 from '../../assets/Images/badges/moneyGrowIcon.png';
-import badge8 from '../../assets/Images/badges/mountainIcon.png';
-import badge9 from '../../assets/Images/badges/awardIcon.png';
+import badge1 from '../../assets/Images/badges/coin.png';
+import badge2 from '../../assets/Images/badges/banknote.png';
+import badge3 from '../../assets/Images/badges/target.png';
+import badge4 from '../../assets/Images/badges/growth.png';
+import badge5 from '../../assets/Images/badges/hi5.png';
+import badge6 from '../../assets/Images/badges/money-bag.png';
+import badge7 from '../../assets/Images/badges/investment.png';
+import badge8 from '../../assets/Images/badges/goal.png';
+import badge9 from '../../assets/Images/badges/trophy.png';
 
 // badge images mapping
 
