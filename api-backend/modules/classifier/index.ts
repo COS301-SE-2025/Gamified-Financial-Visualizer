@@ -5,8 +5,8 @@ import { logger } from '../../config/logger';
 
 /** Register the classifier module (calls Python service underneath) */
 export function registerClassifierModule(app: Application) {
-  // Mount route at /api/classify
-  app.use('/api/classify', classifierRoutes);
+  // Mount route at /api/classifier
+  app.use('/api/classifier', classifierRoutes);
 
   // Optional health check (check if Python service is reachable)
   app.get('/health/classifier', async (_req, res) => {

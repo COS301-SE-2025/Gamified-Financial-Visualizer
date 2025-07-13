@@ -173,14 +173,14 @@ const AccountsSidebar = () => {
   }, [userId]);
 
   // Debug logging to help troubleshoot
-  useEffect(() => {
-    console.log('AccountsSidebar Debug:', {
-      userId,
-      categorySummary,
-      loading,
-      error
-    });
-  }, [userId, categorySummary, loading, error]);
+  // useEffect(() => {
+  //   console.log('AccountsSidebar Debug:', {
+  //     userId,
+  //     categorySummary,
+  //     loading,
+  //     error
+  //   });
+  // }, [userId, categorySummary, loading, error]);
 
   // Process category data for display
   const categoryTotals = useMemo(() => {

@@ -1,51 +1,38 @@
-import React, { useState } from 'react';
+import React, { use, useState, useEffect } from 'react';
 import AccountsLayout from './AccountsLayout';
 import { FaUpload, FaFilePdf, FaLink, FaTrash, FaQuestionCircle, FaSpinner, FaCheck, FaTimes, FaEdit } from 'react-icons/fa';
 
 const ImportPage = () => {
+  const userData = JSON.parse(localStorage.getItem('user') || '{}');
+  const userId = userData?.id || null;
+
   // File upload state
   const [files, setFiles] = useState([]);
   const [url, setUrl] = useState('');
   const [isDragging, setIsDragging] = useState(false);
-  
+
   // Import configuration state
+  const [accounts, setAccounts] = useState(null);
+  const [categories, setCategories] = useState([]); // Add categories state
   const [selectedAccount, setSelectedAccount] = useState('');
   const [selectedBank, setSelectedBank] = useState('');
   const [password, setPassword] = useState('');
-  
+
   // Import process state
   const [isImporting, setIsImporting] = useState(false);
   const [importError, setImportError] = useState(null);
   const [importSuccess, setImportSuccess] = useState(false);
   const [showReview, setShowReview] = useState(false);
-  
+
   // Mock transaction data for review
-  const [transactions, setTransactions] = useState([
-    { id: 1, date: '2023-05-15', description: 'Grocery Store', amount: -85.32, category: 'Groceries', type: 'expense', originalCategory: 'Groceries', originalType: 'expense' },
-    { id: 2, date: '2023-05-14', description: 'Salary Deposit', amount: 2500.00, category: 'Income', type: 'income', originalCategory: 'Income', originalType: 'income' },
-    { id: 3, date: '2023-05-12', description: 'AMZN Purchase', amount: -42.99, category: 'Shopping', type: 'expense', originalCategory: 'Shopping', originalType: 'expense' },
-    { id: 4, date: '2023-05-10', description: 'Electric Bill', amount: -120.50, category: 'Utilities', type: 'expense', originalCategory: 'Utilities', originalType: 'expense' },
-    { id: 5, date: '2023-05-08', description: 'Restaurant', amount: -65.80, category: 'Dining', type: 'expense', originalCategory: 'Dining', originalType: 'expense' },
-  ]);
+  const [transactions, setTransactions] = useState([]);
 
-  // Mock accounts and banks data
-  const accounts = [
-    { id: 'acc1', name: 'Primary Checking (****3456)' },
-    { id: 'acc2', name: 'Savings Account (****7890)' },
-    { id: 'acc3', name: 'Credit Card (****4321)' },
-  ];
-
+  // banks supported by the extraction service
   const banks = [
-    { id: 'bank1', name: 'Chase Bank' },
-    { id: 'bank2', name: 'Bank of America' },
-    { id: 'bank3', name: 'Wells Fargo' },
-    { id: 'bank4', name: 'Citibank' },
-  ];
-
-  const categories = [
-    'Income', 'Groceries', 'Dining', 'Shopping', 
-    'Utilities', 'Entertainment', 'Transportation', 
-    'Healthcare', 'Travel', 'Education'
+    { id: 'bank1', name: 'Nedbank' },
+    { id: 'bank2', name: 'Standard Bank' },
+    { id: 'bank3', name: 'FNB' },
+    { id: 'bank4', name: 'Capitec' },
   ];
 
   const transactionTypes = ['income', 'expense', 'transfer'];
@@ -63,14 +50,14 @@ const ImportPage = () => {
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
-    const droppedFiles = Array.from(e.dataTransfer.files).filter(file => 
+    const droppedFiles = Array.from(e.dataTransfer.files).filter(file =>
       file.type === 'application/pdf'
     );
     setFiles([...files, ...droppedFiles]);
   };
 
   const handleFileChange = (e) => {
-    const selectedFiles = Array.from(e.target.files).filter(file => 
+    const selectedFiles = Array.from(e.target.files).filter(file =>
       file.type === 'application/pdf'
     );
     setFiles([...files, ...selectedFiles]);
@@ -90,63 +77,158 @@ const ImportPage = () => {
     setShowReview(false);
   };
 
+  // 1) process the PDF upload (or URL)
   const handleImport = async () => {
-    if (files.length === 0 && !url) return;
-    if (!selectedAccount) {
-      setImportError('Please select an account');
-      return;
-    }
-    if (!selectedBank) {
-      setImportError('Please select a bank');
-      return;
-    }
-
+    if ((!files.length && !url) || !selectedAccount || !selectedBank) return;
     setIsImporting(true);
     setImportError(null);
-    setImportSuccess(false);
 
     try {
-      // Simulate API call to process the statement
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Show the review screen
+      let res, body;
+      if (files.length) {
+        const form = new FormData();
+        form.append('statement', files[0]);              // note: single-file
+        form.append('accountId', selectedAccount);
+        form.append('password', password);
+        res = await fetch(
+          `http://localhost:5000/api/classifier/upload-statement`,
+          { method: 'POST', body: form }
+        );
+      } else {
+        // if you support URL-based upload server-side:
+        res = await fetch(
+          `http://localhost:5000/api/classifier/upload-statement-url`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              url,
+              accountId: selectedAccount,
+              password
+            })
+          }
+        );
+      }
+
+      body = await res.json();
+      if (!res.ok) throw new Error(body.error || 'Upload failed');
+
+      // Map your DB rows into UI-friendly shape
+      const txns = body.preview.map((tx) => {
+        const match = categories.find(c => c.category_name === tx.predicted_category.toLowerCase());
+        const id = match ? match.category_id : null;
+
+        return {
+          id: `${tx.accountId}-${tx.date}-${tx.description}-${Math.random().toString(36).substr(2, 9)}`, // unique ID
+          accountId: tx.accountId,
+          date: tx.date,
+          description: tx.description,
+          amount: tx.amount,
+          direction: tx.direction,
+          transaction_type: tx.transaction_type,
+          category: tx.category_id,         // numeric ID
+          originalCategory: id,
+          originalType: tx.transaction_type,
+        };
+      });
+      console.log('Transactions to review:', txns);
+      setTransactions(txns);
       setShowReview(true);
-    } catch (error) {
-      setImportError(error.message || 'Failed to import statements. Please try again.');
+    } catch (err) {
+      setImportError(err.message);
     } finally {
       setIsImporting(false);
     }
   };
 
+
   const handleCategoryChange = (id, newCategory) => {
-    setTransactions(transactions.map(tx => 
+    setTransactions(transactions.map(tx =>
       tx.id === id ? { ...tx, category: newCategory } : tx
     ));
   };
 
   const handleTypeChange = (id, newType) => {
-    setTransactions(transactions.map(tx => 
+    setTransactions(transactions.map(tx =>
       tx.id === id ? { ...tx, type: newType } : tx
     ));
   };
 
+  const hasChanges = transactions.some(tx =>
+    tx.category !== tx.originalCategory || tx.type !== tx.originalType
+  );
+
+  // 2) send back just the changed rows as feedback
   const handleConfirmChanges = async () => {
     setIsImporting(true);
+    setImportError(null);
+
+    const feedbacks = transactions
+      .filter(tx => tx.category !== tx.originalCategory)
+      .map(tx => ({
+        transaction_id: tx.id,
+        corrected_category: tx.category
+      }));
+
     try {
-      // Simulate API call to save changes
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const res = await fetch(
+        `http://localhost:5000/api/classifier/confirm-statement`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            preview: transactions.map(tx => ({
+              accountId: tx.accountId,
+              date: tx.date,
+              description: tx.description,
+              amount: tx.amount,
+              direction: tx.direction,
+              balance: tx.balance,
+              predicted_category: tx.predicted_category,
+              classification_source: tx.classification_source,
+              category_id: tx.category,
+              transaction_type: tx.transaction_type
+            })),
+            recurringFlags: transactions.map(_ => false)  // or your real flags
+          })
+        }
+      );
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error || 'Feedback save failed');
+
       setImportSuccess(true);
       setShowReview(false);
-    } catch (error) {
-      setImportError('Failed to save changes. Please try again.');
+    } catch (err) {
+      setImportError(err.message);
     } finally {
       setIsImporting(false);
     }
   };
 
-  const hasChanges = transactions.some(tx => 
-    tx.category !== tx.originalCategory || tx.type !== tx.originalType
-  );
+  useEffect(() => {
+    fetch(`http://localhost:5000/api/accounts/user/${userId}`)
+      .then(r => r.json())
+      .then(j => setAccounts(j.data))
+      .catch(() => setAccounts([]));
+
+    fetch(`http://localhost:5000/api/transactions/categories`)
+      .then(r => r.json())
+      .then(j => setCategories(j.data))
+      .catch(() => setCategories([]));
+  }, [userId]);
+
+  if (!accounts) {
+    return (
+      <AccountsLayout>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">Loading accounts...</h1>
+            <p className="text-gray-600">Please wait while we fetch your accounts.</p>
+          </div>
+        </div>
+      </AccountsLayout>
+    );
+  }
 
   return (
     <AccountsLayout>
@@ -169,7 +251,7 @@ const ImportPage = () => {
                     {importError}
                   </div>
                 )}
-                
+
                 {importSuccess && (
                   <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
                     Statements imported successfully!
@@ -189,11 +271,11 @@ const ImportPage = () => {
                     >
                       <option value="">Select an account</option>
                       {accounts.map(account => (
-                        <option key={account.id} value={account.id}>{account.name}</option>
+                        <option key={account.account_id} value={account.account_id}>{account.account_name}</option>
                       ))}
                     </select>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Bank Statement From
@@ -209,7 +291,7 @@ const ImportPage = () => {
                       ))}
                     </select>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Statement Password (if required)
@@ -225,7 +307,7 @@ const ImportPage = () => {
                 </div>
 
                 {/* Drag & Drop Zone */}
-                <div 
+                <div
                   className={`border-2 border-dashed rounded-xl p-8 mb-6 text-center transition-all ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-blue-400'}`}
                   onDragEnter={handleDragEnter}
                   onDragOver={handleDragEnter}
@@ -243,11 +325,11 @@ const ImportPage = () => {
                       or
                     </p>
                     <label className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-                      <input 
-                        type="file" 
-                        className="hidden" 
-                        accept=".pdf" 
-                        multiple 
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept=".pdf"
+                        multiple
                         onChange={handleFileChange}
                       />
                       Browse Files
@@ -272,7 +354,7 @@ const ImportPage = () => {
                               <p className="text-xs text-gray-500">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
                             </div>
                           </div>
-                          <button 
+                          <button
                             onClick={() => removeFile(index)}
                             className="text-gray-400 hover:text-red-500"
                           >
@@ -298,7 +380,7 @@ const ImportPage = () => {
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
                     />
-                    <button 
+                    <button
                       className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
                       onClick={() => {
                         if (url) {
@@ -322,14 +404,14 @@ const ImportPage = () => {
                   </div>
 
                   <div className="flex justify-end space-x-3">
-                    <button 
+                    <button
                       onClick={handleDiscard}
                       className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
                       disabled={isImporting}
                     >
                       Discard
                     </button>
-                    <button 
+                    <button
                       onClick={handleImport}
                       className={`px-6 py-2 rounded-lg text-white transition flex items-center justify-center ${(files.length > 0 || url) && selectedAccount && selectedBank ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}`}
                       disabled={!(files.length > 0 || url) || !selectedAccount || !selectedBank || isImporting}
@@ -356,7 +438,7 @@ const ImportPage = () => {
                     Please review the extracted transactions and make any necessary corrections
                   </p>
                 </div>
-
+                {/* Transactions Table Preview */}
                 <div className="overflow-x-auto mb-6">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
@@ -378,7 +460,7 @@ const ImportPage = () => {
                             {transaction.description}
                           </td>
                           <td className={`px-6 py-4 whitespace-nowrap text-sm ${transaction.amount < 0 ? 'text-red-600' : 'text-green-600'}`}>
-                            {transaction.amount < 0 ? `-$${Math.abs(transaction.amount).toFixed(2)}` : `$${transaction.amount.toFixed(2)}`}
+                            {transaction.amount < 0 ? `${Math.abs(transaction.amount)}` : `${transaction.amount}`}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             <select
@@ -387,7 +469,7 @@ const ImportPage = () => {
                               className="border border-gray-300 rounded px-2 py-1"
                             >
                               {categories.map(category => (
-                                <option key={category} value={category}>{category}</option>
+                                <option key={category.category_id} value={category.category_id}>{category.category_name}</option>
                               ))}
                             </select>
                           </td>
@@ -418,13 +500,13 @@ const ImportPage = () => {
                       )}
                     </div>
                     <div className="flex space-x-3">
-                      <button 
+                      <button
                         onClick={() => setShowReview(false)}
                         className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
                       >
                         Back
                       </button>
-                      <button 
+                      <button
                         onClick={handleConfirmChanges}
                         className={`px-6 py-2 rounded-lg text-white transition flex items-center justify-center ${hasChanges ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'}`}
                         disabled={isImporting}
