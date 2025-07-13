@@ -177,7 +177,7 @@ const AchievementsPage = () => {
   return (
     <AchievementsLayout>
       <div className="space-y-6 px-6 pt-10 pb-6 -mt-8">
-        <h2 className="text-xl font-semibold text-blue-500 bg-blue-100 inline-block px-4 py-1 rounded-full shadow-sm">
+        <h2 className="text-xl font-semibold text-cyan-500 bg-blue-50 inline-block px-4 py-1 rounded-full shadow-sm">
           All Achievements
         </h2>
 
