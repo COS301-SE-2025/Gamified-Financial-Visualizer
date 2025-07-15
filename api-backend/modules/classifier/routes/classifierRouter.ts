@@ -6,14 +6,15 @@ import { spawn } from 'child_process';
 import axios from 'axios';
 import pool from '../../../config/db';
 import { logger } from '../../../config/logger';
-import { getCategoryId, getCategories } from '../../transactions/services/transaction.service';
+import { getCategories } from '../../transactions/services/transaction.service';
 import { cp } from 'fs';
+import { ExtractorContext } from '../strategies/strategy_context';
 
 const upload = multer({ dest: '/tmp/uploads' });
 const router = express.Router();
 
 // run an external process and await its exit
-function runProcess(cmd: string, args: string[]): Promise<void> {
+export function runProcess(cmd: string, args: string[]): Promise<void> {
   return new Promise((resolve, reject) => {
     const proc = spawn(cmd, args);
     proc.stdout.on('data', d => console.log(`[extractor stdout]`, d.toString()));
@@ -28,7 +29,7 @@ function runProcess(cmd: string, args: string[]): Promise<void> {
 
 // STEP 1: upload → extract → classify → preview
 router.post('/upload-statement', upload.single('statement'), async (req, res) => {
-  const file = req.file, password = req.body.password || '', accountId = req.body.accountId;
+  const file = req.file, password = req.body.password || '', accountId = req.body.accountId, bankName = req.body.bankName;
   if (!file || !accountId) {
     res.status(400).json({ error: 'Missing file or accountId' });
     return;
@@ -36,10 +37,9 @@ router.post('/upload-statement', upload.single('statement'), async (req, res) =>
 
   try {
     // 1. extract
-    await runProcess('python3', [
-      path.resolve(__dirname, '../app/services/extract_transactions.py'),
-      file.path, '--out', '/tmp/transactions.json', '--password', password
-    ]);
+    const extractor = new ExtractorContext(bankName);
+    const outPath   = '/tmp/transactions.json';
+    await extractor.extract(file.path, outPath, password);
 
     // 2. load raw
     const transactions = JSON.parse(await fs.readFile('/tmp/transactions.json', 'utf8'));
@@ -100,10 +100,21 @@ router.post('/upload-statement', upload.single('statement'), async (req, res) =>
 });
 
 router.post('/feedback', async (req, res) => {
-  const { preview, recurringFlags } = req.body as {
-    preview: Array<any>;
-    recurringFlags?: boolean[];
-  };  
+  const { feedback } = req.body as { feedback: Array<{ transactionId: number; categoryId: number }> };
+  if (!Array.isArray(feedback)) {
+    res.status(400).json({ error: 'Missing feedback array' });
+    return;
+  }
+
+  try {
+    const { data } = await axios.post('http://localhost:6000/feedback-train', { feedback });
+    const feedbackResponse = data as { status: string };
+    res.json({ status: feedbackResponse.status });
+    logger.info(`Feedback processed, retraining started: ${feedbackResponse.status}`);
+  } catch (err) {
+    logger.error('Feedback processing error', err);
+    res.status(500).json({ error: 'Failed to process feedback' });
+  }
 })
 
 // STEP 2: confirm → persist
@@ -142,7 +153,6 @@ router.post('/confirm-statement', async (req, res) => {
       };
     });
 
-
     // bulk‐insert
     const cols = [
       'account_id',
@@ -153,6 +163,7 @@ router.post('/confirm-statement', async (req, res) => {
       'transaction_date',
       'is_recurring'
     ];
+    
     const placeholders = enriched
       .map((_, row) =>
         `(${cols.map((__, col) => `$${row * cols.length + col + 1}`).join(',')})`

@@ -33,6 +33,8 @@ const ImportPage = () => {
     { id: 'bank2', name: 'Standard Bank' },
     { id: 'bank3', name: 'FNB' },
     { id: 'bank4', name: 'Capitec' },
+    { id: 'bank5', name: 'Absa' },
+    { id: 'bank6', name: 'Old Mutual' }
   ];
 
   const transactionTypes = ['income', 'expense', 'transfer'];
@@ -90,6 +92,8 @@ const ImportPage = () => {
         form.append('statement', files[0]);              // note: single-file
         form.append('accountId', selectedAccount);
         form.append('password', password);
+        form.append('bankName', selectedBank.toLowerCase());    
+              
         res = await fetch(
           `http://localhost:5000/api/classifier/upload-statement`,
           { method: 'POST', body: form }
@@ -104,6 +108,7 @@ const ImportPage = () => {
             body: JSON.stringify({
               url,
               accountId: selectedAccount,
+              bankName: selectedBank,
               password
             })
           }
@@ -163,12 +168,30 @@ const ImportPage = () => {
     setIsImporting(true);
     setImportError(null);
 
-    const feedbacks = transactions
-      .filter(tx => tx.category !== tx.originalCategory)
-      .map(tx => ({
-        transaction_id: tx.id,
-        corrected_category: tx.category
-      }));
+    const feedbacks = [];
+
+    // build the minimal feedback array
+    const payload = {
+      feedbacks: transactions
+        .filter(tx => tx.category !== tx.originalCategory)
+        .map(tx => ({
+          transactionId: tx.id,
+          corrected_category: (categories.find(c => c.category_id === tx.category) || {}).category_name
+        }))
+    };
+
+    //  send corrections to /feedback
+    if (feedbacks.length) {
+      const fbRes = await fetch(
+        `http://localhost:5000/api/classifier/feedback`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ feedback: payload.feedbacks })
+        }
+      );
+      if (!fbRes.ok) throw new Error('Failed to save feedback');
+    }
 
     try {
       const res = await fetch(
@@ -287,7 +310,7 @@ const ImportPage = () => {
                     >
                       <option value="">Select your bank</option>
                       {banks.map(bank => (
-                        <option key={bank.id} value={bank.id}>{bank.name}</option>
+                        <option key={bank.id} value={bank.name}>{bank.name}</option>
                       ))}
                     </select>
                   </div>

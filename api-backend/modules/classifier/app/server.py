@@ -41,6 +41,13 @@ class Transaction(BaseModel):
 class BatchReq(BaseModel):
     transactions: List[Transaction]
 
+class FeedbackItem(BaseModel):
+    transactionId: int
+    categoryId:   int
+
+class FeedbackTrainReq(BaseModel):
+    feedbacks: List[FeedbackItem]
+
 # ---- Endpoints ----
 @app.post("/predict", response_model=PredictRes)
 def single_predict(req: PredictReq):
@@ -67,10 +74,12 @@ def retrain():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.post("/feedback-train")
-def retrain_with_feedback():
+def retrain_with_feedback(req: FeedbackTrainReq):
     try:
-        train_feedback()
+        # This will append the feedbacks to disk & kickoff a retrain
+        train_feedback([f.dict() for f in req.feedbacks])
         return {"status": "feedback-based retraining started"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
