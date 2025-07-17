@@ -147,7 +147,7 @@ def pdf_to_json(pdf_path: str,
 # ---------- CLI ----------
 if __name__ == "__main__":
    parser = argparse.ArgumentParser(
-      description="Extract transactions from (possibly-encrypted) PDF."
+      description="Extract transactions from Nedbank PDF statement."
    )
    parser.add_argument("pdf", help="Path to bank-statement PDF")
    parser.add_argument(

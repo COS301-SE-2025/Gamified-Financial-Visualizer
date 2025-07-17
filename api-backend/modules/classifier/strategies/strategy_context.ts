@@ -15,7 +15,7 @@ export class ExtractorContext {
          case 'nedbank':  // Nedbank
             this.strategy = new NedbankExtractor();
             break;
-         case 'standard_bank':  // Standard Bank
+         case 'standard bank':  // Standard Bank
             this.strategy = new StandardBankExtractor();
             break;
          case 'fnb':  // First National Bank

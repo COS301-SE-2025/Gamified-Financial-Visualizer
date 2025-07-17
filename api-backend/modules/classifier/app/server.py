@@ -10,13 +10,6 @@ from pydantic import BaseModel
 from typing import List
 
 # ---- Service-layer functions ----
-from app.services.extract_transactions import (
-    ocr_pdf_to_text,
-    clean_lines,
-    classify_row,
-    parse_transactions,
-    pdf_to_json
-)
 from app.services.predict_classifier import classify_batch
 from app.services.train_classifier import main as train_model
 from app.services.feedback_trainer import main as train_feedback
@@ -73,7 +66,6 @@ def retrain():
         return {"status": "retraining started"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.post("/feedback-train")
 def retrain_with_feedback(req: FeedbackTrainReq):

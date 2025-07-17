@@ -49,6 +49,9 @@ def parse_transactions(lines: list[str]) -> list[dict]:
       if not line or "Transaction Description" in line or "Date    |" in line:
          continue
          
+      if "Balance brought forward" in line or "Balance carried forward" in line:
+         continue
+      
       # Old Mutual format is either pipe-delimited table or space-separated
       if "|" in line:
          parts = [p.strip() for p in line.split("|") if p.strip()]
@@ -87,9 +90,11 @@ def parse_transactions(lines: list[str]) -> list[dict]:
          if amount < 0:
             direction = "out"
             amount_signed = amount
-         else:
+         elif amount > 0:
             direction = "in"
             amount_signed = amount
+         else:
+            continue  # Skip zero amounts
       except:
          continue
          
