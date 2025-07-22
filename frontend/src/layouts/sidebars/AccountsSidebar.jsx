@@ -110,6 +110,7 @@ const getCategoryColor = (categoryKey, index = 0) => {
 
 const AccountsSidebar = () => {
   const [categorySummary, setCategorySummary] = useState([]);
+  const [userTransactions, setUserTransactions] = useState([]);
   const [error, setError] = useState(null);
   const [userId, setUserId] = useState(null);
 
@@ -140,9 +141,9 @@ const AccountsSidebar = () => {
     getUserFromStorage();
   }, []);
 
-  // Fetch category summary data from API
+  // Fetch both category summary and user transactions
   useEffect(() => {
-    const fetchCategorySummary = async () => {
+    const fetchData = async () => {
       if (!userId) {
         if (userId === null) {
           return;
@@ -154,37 +155,142 @@ const AccountsSidebar = () => {
       try {
         setError(null);
 
-        const response = await fetch(`http://localhost:5000/api/transactions/user/${userId}/summary`);
+        // Fetch category summary
+        const summaryResponse = await fetch(`http://localhost:5000/api/transactions/user/${userId}/summary`);
         
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        if (!summaryResponse.ok) {
+          throw new Error(`HTTP error! status: ${summaryResponse.status}`);
         }
 
-        const result = await response.json();
+        const summaryResult = await summaryResponse.json();
         
-        if (result.status === 'success') {
-          setCategorySummary(result.data || []);
+        if (summaryResult.status === 'success') {
+          setCategorySummary(summaryResult.data || []);
         } else {
-          throw new Error(result.message || 'Failed to fetch category summary');
+          throw new Error(summaryResult.message || 'Failed to fetch category summary');
+        }
+
+        // Fetch user transactions
+        const transactionsResponse = await fetch(`http://localhost:5000/api/transactions/user/${userId}`);
+        
+        if (!transactionsResponse.ok) {
+          throw new Error(`HTTP error! status: ${transactionsResponse.status}`);
+        }
+
+        const transactionsResult = await transactionsResponse.json();
+        
+        if (transactionsResult.status === 'success') {
+          setUserTransactions(transactionsResult.data || []);
+        } else {
+          throw new Error(transactionsResult.message || 'Failed to fetch user transactions');
         }
       } catch (err) {
-        console.error('Error fetching category summary:', err);
-        setError(err.message || 'Failed to load category data');
-      } finally {
+        console.error('Error fetching data:', err);
+        setError(err.message || 'Failed to load data');
       }
     };
 
-    fetchCategorySummary();
+    fetchData();
   }, [userId]);
+
+  // Calculate performance metrics based on transactions
+  const performanceMetrics = useMemo(() => {
+    if (!userTransactions || userTransactions.length === 0) {
+      return {
+        /* score: 150,
+        level: 'Silver',
+        levelNumber: 3,
+        description: 'Excellent',
+        progressPercentage: 75 */
+      };
+    }
+
+    // Calculate totals by transaction type
+    const totals = userTransactions.reduce((acc, transaction) => {
+      const amount = parseFloat(transaction.transaction_amount) || 0;
+      const type = transaction.transaction_type?.toLowerCase();
+      
+      if (type === 'deposit' || type === 'income') {
+        acc.income += amount;
+      } else if (type === 'expense' || type === 'withdrawal' || type === 'fee') {
+        acc.expenses += amount;
+      } else if (type === 'transfer') {
+        acc.transfers += amount;
+      }
+      
+      return acc;
+    }, { income: 0, expenses: 0, transfers: 0 });
+
+    // Calculate performance score
+    // Base score starts at 100
+    let score = 100;
+    
+    // Income boosts score (every R100 income = +5 points, max +100)
+    const incomeBonus = Math.min((totals.income / 100) * 5, 100);
+    score += incomeBonus;
+    
+    // Expenses reduce score (every R100 expense = -3 points, max -80)
+    const expenseReduction = Math.min((totals.expenses / 100) * 3, 80);
+    score -= expenseReduction;
+    
+    // Transfers have neutral impact but show activity (+1 point per R100, max +20)
+    const transferBonus = Math.min((totals.transfers / 100) * 1, 20);
+    score += transferBonus;
+    
+    // Keep score within reasonable bounds
+    score = Math.max(0, Math.min(300, score));
+    
+    // Determine level based on score
+    let level, levelNumber, description;
+    
+    if (score >= 250) {
+      level = 'Diamond';
+      levelNumber = 5;
+      description = 'Outstanding';
+    } else if (score >= 200) {
+      level = 'Platinum';
+      levelNumber = 4;
+      description = 'Excellent';
+    } else if (score >= 150) {
+      level = 'Gold';
+      levelNumber = 3;
+      description = 'Excellent';
+    } else if (score >= 100) {
+      level = 'Silver';
+      levelNumber = 3;
+      description = 'Good';
+    } else if (score >= 50) {
+      level = 'Bronze';
+      levelNumber = 2;
+      description = 'Fair';
+    } else {
+      level = 'Starter';
+      levelNumber = 1;
+      description = 'Getting Started';
+    }
+    
+    // Calculate progress percentage for the circle (0-100%)
+    const progressPercentage = Math.min((score / 300) * 100, 100);
+    
+    return {
+      score: Math.round(score),
+      level,
+      levelNumber,
+      description,
+      progressPercentage
+    };
+  }, [userTransactions]);
 
   // Debug logging to help troubleshoot
   useEffect(() => {
     console.log('AccountsSidebar Debug:', {
       userId,
       categorySummary,
+      userTransactions,
+      performanceMetrics,
       error
     });
-  }, [userId, categorySummary, error]);
+  }, [userId, categorySummary, userTransactions, performanceMetrics, error]);
 
   // Process category data for display
   const categoryTotals = useMemo(() => {
@@ -199,10 +305,10 @@ const AccountsSidebar = () => {
         total: parseFloat(category.total_spent) || 0,
         name: category.category || 'Unknown',
         icon: categoryIcons[categoryKey] || categoryIcons.default,
-        color: getCategoryColor(categoryKey, index), // Use the new color function
+        color: getCategoryColor(categoryKey, index),
         transactionCount: category.transaction_count || 0
       };
-    }).sort((a, b) => b.total - a.total); // Sort by highest spending first
+    }).sort((a, b) => b.total - a.total);
   }, [categorySummary]);
 
   // Calculate total spending across all categories
@@ -210,6 +316,12 @@ const AccountsSidebar = () => {
     return categoryTotals.reduce((sum, category) => sum + category.total, 0);
   }, [categoryTotals]);
 
+  // Calculate stroke dash offset for progress circle
+  const strokeDashOffset = useMemo(() => {
+    const circumference = 2 * Math.PI * 45; // radius = 45
+    const progress = performanceMetrics.progressPercentage / 100;
+    return circumference * (1 - progress);
+  }, [performanceMetrics.progressPercentage]);
 
   // Error state
   if (error) {
@@ -251,10 +363,13 @@ const AccountsSidebar = () => {
               fill="none"
               stroke="url(#gradient)"
               strokeWidth="10"
-              strokeDasharray="270"
-              strokeDashoffset="67"
+              strokeDasharray={`${2 * Math.PI * 45}`}
+              strokeDashoffset={strokeDashOffset}
               strokeLinecap="round"
               transform="rotate(-90 50 50)"
+              style={{ 
+                transition: 'stroke-dashoffset 0.5s ease-in-out' 
+              }}
             />
             <defs>
               <linearGradient id="gradient" x1="1" y1="0" x2="0" y2="1">
@@ -265,20 +380,26 @@ const AccountsSidebar = () => {
           </svg>
 
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <p className="text-[24px] font-bold text-[#2D3748]">150</p>
-            <p className="text-sm text-[#718096]">Excellent</p>
-            <img
-              src={avatar}
-              alt="Silver Level"
-              className="w-8 h-8 mt-1 rounded-full object-cover"
-            />
+            {(
+              <>
+                <p className="text-[24px] font-bold text-[#2D3748]">{performanceMetrics.score}</p>
+                <p className="text-sm text-[#718096]">{performanceMetrics.description}</p>
+                <img
+                  src={avatar}
+                  alt={`${performanceMetrics.level} Level`}
+                  className="w-8 h-8 mt-1 rounded-full object-cover"
+                />
+              </>
+            )}
           </div>
 
           <div className="absolute top-[6px] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full flex items-center justify-center">
             <div className="w-4 h-4 bg-blue-400 rounded-full" />
           </div>
         </div>
-        <p className="text-sm text-[#F56565] mt-2 font-medium">Lv 3: Silver</p>
+        <p className="text-sm text-[#F56565] mt-2 font-medium">
+          Lv {performanceMetrics.levelNumber}: {performanceMetrics.level}
+        </p>
       </div>
 
       {/* Categories Summaries */}
