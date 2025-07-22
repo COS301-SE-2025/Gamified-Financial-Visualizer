@@ -11,12 +11,16 @@
      "rootDir": ".", 
     // Removed "rootDir" to allow sources from multiple service folders
     "baseUrl": ".", 
+    "types": [
+      "node",
+      "jest"
+    ],
    },
    "include": [
        "./*.ts", "./**/*.ts"
    ],
-   // "exclude": [
-   //     "node_modules",
-   //     "dist"
-   // ]
+   "exclude": [
+       "node_modules",
+       "dist"
+   ]
 }
