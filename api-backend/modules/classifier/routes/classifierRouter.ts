@@ -55,7 +55,7 @@ router.post('/upload-statement', upload.single('statement'), async (req, res) =>
     }
 
     const categories = await getCategories();
-    
+
     logger.info(`Classification results ${ results.length }`);
     if(results.length === 0) {
       logger.warn('No transactions classified, returning empty preview');
@@ -71,6 +71,7 @@ router.post('/upload-statement', upload.single('statement'), async (req, res) =>
         description: string;
         date: string;
         [key: string]: any;
+
       }
 
       interface ClassificationResult {
@@ -89,9 +90,16 @@ router.post('/upload-statement', upload.single('statement'), async (req, res) =>
       );
       // add custom category ID if it exists, otherwise default to 4
       const id = match ? match.category_id : 4;
+      let transaction_type: Transaction['transaction_type'];
+      if (t.direction === 'out')       transaction_type = 'expense';
+      else if (t.direction === 'in')    transaction_type = 'income';
+      else if (t.direction === 'transfer') transaction_type = 'transfer';
+      else throw new Error(`Invalid direction ${t.direction}`);
+
       return {
         accountId,
         ...t,
+        transaction_type,
         predicted_category: results[ i ].category,
         classification_source: results[ i ].source,
         category_id: id
@@ -106,15 +114,76 @@ router.post('/upload-statement', upload.single('statement'), async (req, res) =>
   }
 });
 
+// classifierRouter.ts (or wherever you handle POST /feedback)
+const db2model: Record<string,string> = {
+  'groceries':               'Groceries',
+  'transport':               'Transport',
+  'fuel':                    'Transport',
+  'utilities':               'Utilities',
+  'rent':                    'Rent & Mortgage',
+  'mortgage':                'Rent & Mortgage',
+  'internet':                'Utilities',
+  'phone':                   'Utilities',
+  'insurance':               'Insurance',
+  'medical':                 'Medical & Health',
+  'health':                  'Medical & Health',
+  'fitness':                 'Fitness',
+  'subscriptions':           'Subscriptions',
+  'entertainment':           'Entertainment',
+  'restaurants':             'Restaurants',
+  'clothing':                'Clothing',
+  'personal care':           'Personal Care',
+  'gifts':                   'Gifts & Charity',
+  'charity':                 'Gifts & Charity',
+  'taxes':                   'Taxes',
+  'savings':                 'Savings & Investments',
+  'investments':             'Savings & Investments',
+  'loan repayment':          'Loan Repayment & Debt',
+  'debt':                    'Loan Repayment & Debt',
+  'travel':                  'Travel & Accommodation',
+  'accommodation':           'Travel & Accommodation',
+  'salary':                  'Salary',
+  'freelance':               'Business Income & Expenses',
+  'bonus':                   'Business Income & Expenses',
+  'refund':                  'Business Income & Expenses',
+  'business income':         'Business Income & Expenses',
+  'business expense':        'Business Income & Expenses',
+  'transfer in':             'Wallet Transactions',
+  'transfer out':            'Wallet Transactions',
+  'cash withdrawal':         'Wallet Transactions',
+  'cash deposit':            'Wallet Transactions',
+  'wallet top-up':           'Wallet Transactions',
+  'wallet withdrawal':       'Wallet Transactions',
+  'maintenance':             'Home Improvement & Repairs',
+  'repairs':                 'Home Improvement & Repairs',
+  'home improvement':        'Home Improvement & Repairs',
+  'childcare':               'Childcare & Pets',
+  'pets':                    'Childcare & Pets',
+  'crypto purchase':         'Crypto & Forex',
+  'crypto sale':             'Crypto & Forex',
+  'forex':                   'Crypto & Forex',
+  'fees':                    'Fees',
+  'commissions':             'Fees',
+  'interest income':            'Fees',
+  'dividends':              'Fees'
+};
+
 router.post('/feedback', async (req, res) => {
-  const { feedback } = req.body as { feedback: Array<{ transactionId: number; categoryId: number }> };
+  const { feedback } = req.body as { feedback: Array<{ desc: string; corrected_category: string }> };
   if (!Array.isArray(feedback)) {
     res.status(400).json({ error: 'Missing feedback array' });
     return;
   }
 
+  const payload = feedback.map(f => {
+  const dbCat = f.corrected_category.toLowerCase();
+  const modelCat = db2model[dbCat] || 'Miscellaneous';        // fallback if you like
+  return { desc: f.desc,                            // make sure you also ship the txn description
+            corrected_category: modelCat };
+  });
+
   try {
-    const { data } = await axios.post('http://localhost:6000/feedback-train', { feedback });
+    const { data } = await axios.post('http://localhost:6000/feedback-train', { feedback: payload });
     const feedbackResponse = data as { status: string };
     res.json({ status: feedbackResponse.status });
     logger.info(`Feedback processed, retraining started: ${feedbackResponse.status}`);

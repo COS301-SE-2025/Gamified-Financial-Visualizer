@@ -136,7 +136,7 @@ const ImportPage = () => {
           originalType: tx.transaction_type,
         };
       });
-      console.log('Transactions to review:', txns);
+      console.log('Extracted transactions:', txns);
       setTransactions(txns);
       setShowReview(true);
     } catch (err) {
@@ -168,20 +168,21 @@ const ImportPage = () => {
     setIsImporting(true);
     setImportError(null);
 
-    const feedbacks = [];
 
     // build the minimal feedback array
     const payload = {
       feedbacks: transactions
         .filter(tx => tx.category !== tx.originalCategory)
         .map(tx => ({
-          transactionId: tx.id,
-          corrected_category: (categories.find(c => c.category_id === tx.category) || {}).category_name
+          desc: tx.description,
+          corrected_category: categories.find(c => c.category_id === tx.category)?.category_name || 'Uncategorized'
         }))
     };
 
     //  send corrections to /feedback
-    if (feedbacks.length) {
+    if (payload.feedbacks.length) {
+          console.log('Feedback payload:', payload.feedbacks);
+
       const fbRes = await fetch(
         `http://localhost:5000/api/classifier/feedback`,
         {
@@ -488,7 +489,7 @@ const ImportPage = () => {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             <select
                               value={transaction.category}
-                              onChange={(e) => handleCategoryChange(transaction.id, e.target.value)}
+                              onChange={(e) => handleCategoryChange(transaction.id, Number(e.target.value))}
                               className="border border-gray-300 rounded px-2 py-1"
                             >
                               {categories.map(category => (
@@ -498,12 +499,12 @@ const ImportPage = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             <select
-                              value={transaction.type}
+                              value={transaction.transaction_type}
                               onChange={(e) => handleTypeChange(transaction.id, e.target.value)}
                               className="border border-gray-300 rounded px-2 py-1"
                             >
                               {transactionTypes.map(type => (
-                                <option key={type} value={type}>{type.charAt(0).toUpperCase() + type.slice(1)}</option>
+                                <option key={type} value={type}>{type}</option>
                               ))}
                             </select>
                           </td>

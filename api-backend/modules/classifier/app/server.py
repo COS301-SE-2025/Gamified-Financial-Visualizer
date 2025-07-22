@@ -8,6 +8,7 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List
+from typing import Optional
 
 # ---- Service-layer functions ----
 from app.services.predict_classifier import classify_batch
@@ -29,17 +30,18 @@ class Transaction(BaseModel):
     description: str
     amount: float
     direction: str
-    balance: float
+    balance: Optional[float] = None
+    
 
 class BatchReq(BaseModel):
     transactions: List[Transaction]
 
 class FeedbackItem(BaseModel):
-    transactionId: int
-    categoryId:   int
+    desc: str
+    corrected_category:   str
 
 class FeedbackTrainReq(BaseModel):
-    feedbacks: List[FeedbackItem]
+    feedback: List[FeedbackItem]
 
 # ---- Endpoints ----
 @app.post("/predict", response_model=PredictRes)
@@ -54,7 +56,7 @@ def single_predict(req: PredictReq):
 def batch_predict(req: BatchReq):
     try:
         descriptions = [t.description for t in req.transactions]
-        results = classify_batch(descriptions)
+        results = classify_batch(descriptions, len(req.transactions))
         return [PredictRes(category=r["category"], source=r["source"]) for r in results]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -71,7 +73,8 @@ def retrain():
 def retrain_with_feedback(req: FeedbackTrainReq):
     try:
         # This will append the feedbacks to disk & kickoff a retrain
-        train_feedback([f.dict() for f in req.feedbacks])
+        payload = [item.dict() for item in req.feedback]
+        train_feedback(payload)
         return {"status": "feedback-based retraining started"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
