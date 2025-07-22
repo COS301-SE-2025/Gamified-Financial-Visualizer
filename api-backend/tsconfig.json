@@ -13,9 +13,6 @@
     "baseUrl": ".", 
    },
    "include": [
-       "src/**/*.ts",
-      "./services/transaction-service/src",
-      "./services/auth-services/src",
-      "./services/goal-service/src",
+       "src/**/*.ts"
    ],
 }
