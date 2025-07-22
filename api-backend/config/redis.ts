@@ -5,13 +5,16 @@ import { createClient } from 'redis';
 import Redis from 'ioredis';
 
 export const redisConnection: RedisOptions = {
-  host: process.env.REDIS_HOST || 'localhost',
+  host: process.env.REDISHOST,
   port: parseInt(process.env.REDIS_PORT || '6379', 10),
 };
 
 export const redisClient = createClient({
-  url: `redis://${redisConnection.host}:${redisConnection.port}`
-});
+socket: {
+    host: redisConnection.host,
+    port: redisConnection.port,
+  },
+  password: process.env.REDIS_PASSWORD,});
 
 redisClient.on('error', err => console.error('[Redis] Client Error', err));
 
