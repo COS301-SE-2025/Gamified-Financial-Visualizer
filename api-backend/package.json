@@ -2,6 +2,7 @@
   "name": "api-backend",
   "version": "1.0.0",
   "scripts": {
+    "build": "tsc",
     "start": "npx ts-node server.ts"
   },
   "dependencies": {
