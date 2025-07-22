@@ -12,8 +12,8 @@
     // Removed "rootDir" to allow sources from multiple service folders
     "baseUrl": ".", 
     "types": [
-      "node",
-      "jest"
+      "jest",
+      "node"
     ],
    },
    "include": [
