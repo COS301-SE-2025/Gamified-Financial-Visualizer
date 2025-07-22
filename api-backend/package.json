@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "build": "tsc",
-    "start": "npx ts-node server.ts"
+    "dev": "concurrently \"redis-server\" \"npx ts-node server.ts\""
   },
   "dependencies": {
     "cors": "^2.8.5",
