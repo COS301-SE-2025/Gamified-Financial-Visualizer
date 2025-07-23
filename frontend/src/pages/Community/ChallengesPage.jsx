@@ -214,8 +214,6 @@ const ChallengesPage = () => {
     <CommunityLayout>
       <Toaster position="top-right" />
       <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
-        <CommunityHeader />
-
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h2 className="text-2xl font-bold text-gray-600">Community Challenges</h2>

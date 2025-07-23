@@ -26,7 +26,6 @@ const CommunityList = () => {
     fetchUserCommunities();
   }, []);
 
-
   const handleDelete = (communityName, communityId) => {
     toast.custom((t) => (
       <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-lg max-w-sm w-full space-y-3">
@@ -73,8 +72,6 @@ const CommunityList = () => {
     <CommunityLayout>
       <Toaster position="top-right" />
       <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
-        <CommunityHeader />
-
         <div className="flex justify-end mb-4">
           <Link to="/community/create">
             <button className="flex items-center gap-2 bg-gradient-to-r from-[#AAD977] to-[#83AB55] text-white px-4 py-2 rounded-full text-sm font-medium shadow hover:shadow-md transition">

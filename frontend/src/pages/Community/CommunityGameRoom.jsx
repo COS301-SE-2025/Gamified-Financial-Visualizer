@@ -247,7 +247,6 @@ const CommunityGameRoom = () => {
         setPowerUps(prev => prev.filter(p => p.id !== powerUpId));
     };
 
-
     // Initialize socket connection with mock data
     useEffect(() => {
         // Mock socket connection
