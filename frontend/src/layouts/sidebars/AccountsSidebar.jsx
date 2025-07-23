@@ -282,15 +282,16 @@ const AccountsSidebar = () => {
   }, [userTransactions]);
 
   // Debug logging to help troubleshoot
-  useEffect(() => {
-    console.log('AccountsSidebar Debug:', {
-      userId,
-      categorySummary,
-      userTransactions,
-      performanceMetrics,
-      error
-    });
-  }, [userId, categorySummary, userTransactions, performanceMetrics, error]);
+
+  // useEffect(() => {
+  //   console.log('AccountsSidebar Debug:', {
+  //     userId,
+  //     categorySummary,
+  //     loading,
+  //     error
+  //   });
+  // }, [userId, categorySummary, loading, error]);
+
 
   // Process category data for display
   const categoryTotals = useMemo(() => {
