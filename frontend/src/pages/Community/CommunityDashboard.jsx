@@ -124,7 +124,6 @@ const CommunityDashboard = () => {
   return (
     <CommunityLayout>
       <div className="max-w-4xl mx-auto px-4 space-y-6">
-        <CommunityHeader />
         <Toaster position="top-center" />
 
         {/* Enhanced Game Feature Banner */}

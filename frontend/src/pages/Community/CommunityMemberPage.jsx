@@ -123,7 +123,6 @@ const CommunityMemberPage = () => {
   };
 
   const cancelRequest = async () => {
-
   }
 
   const removeFriend = async () => {
@@ -145,7 +144,6 @@ const CommunityMemberPage = () => {
       <CommunityLayout>
         <Toaster position="top-right" />
         <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
-          <CommunityHeader />
           <div className="text-center py-10">
             <p className="text-lg font-semibold text-gray-700">Loading profile data...</p>
           </div>
