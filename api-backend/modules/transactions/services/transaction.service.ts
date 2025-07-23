@@ -302,7 +302,7 @@ export async function updateTransactionDetails(
  * Fetch a specific account by account_id
  */
 export async function getAccountById(account_id: number) {
-  const sql = 'SELECT * FROM accounts WHERE account_id = $1';
+  const sql = 'SELECT * FROM accounts WHERE account_id = $1' ;
   try {
     const result = await pool.query(sql, [ account_id ]);
     return result.rows[ 0 ] || null;
