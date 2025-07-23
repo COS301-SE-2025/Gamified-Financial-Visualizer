@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../../components/AuthLayout';
 import logoImg from '../../assets/Images/Logo.png';
 import { FaEye, FaEyeSlash, FaLock } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -32,7 +33,10 @@ const Login = () => {
 
         if (idRes.ok && idResult.data?.user_id) {
           const userId = idResult.data.user_id;
-          localStorage.setItem('user', JSON.stringify({ username, id: userId }));
+          const token = result.data.token;
+          localStorage.setItem('user', JSON.stringify({ username, id: userId ,
+            token: token
+          }));
           navigate('/dashboard', { state: { userId } });
         } else {
           setError('Could not retrieve user ID after login.');
