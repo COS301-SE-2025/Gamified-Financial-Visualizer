@@ -3,7 +3,7 @@
 
 // import { getAuth } from "firebase-admin/auth";
 import { logger } from "../config/logger";
-import {createUser} from "../services/auth-services/src/services/auth.service"
+//import {createUser} from "../services/auth-services/src/services/auth.service"
 
 export async function initializeAuthUserListener() {
   /*

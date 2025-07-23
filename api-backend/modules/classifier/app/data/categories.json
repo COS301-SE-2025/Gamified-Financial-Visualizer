@@ -11,17 +11,17 @@
   "Fitness": ["gym", "planet fitness", "virgin active", "zone fitness", "personal trainer"],
   "Entertainment": ["cinema", "movies", "concert", "event tickets", "computicket", "ster-kinekor", "nu metro"],
   "Restaurants": ["nandos", "steers", "wimpy", "spur", "fishaways", "rocomamas", "ocean basket"],
-  "Clothing": ["mr price", "zara", "h&m", "cotton on", "foshini", "truworths", "edgars", "sportscene"],
+  "Clothing": ["mr price","MRP", "zara", "h&m", "cotton on", "foshini", "truworths", "edgars", "sportscene"],
   "Personal Care": ["salon", "barber", "spa", "beauty", "manicure", "pedicure", "sorbet"],
   "Gifts & Charity": ["donation", "gift", "fundraiser", "backabuddy", "givealittle", "thithe"],
-  "Taxes": ["sars", "tax payment", "vat", "customs duty"],
+  "Taxes": ["sars", "tax payment", "vat", "customs duty", "fees"],
   "Savings & Investments": ["savings", "investments", "stock purchase", "retirement fund", "jse", "easy equities"],
   "Loan Repayment & Debt": ["loan payment", "credit card bill", "debt settlement", "capitec loan", "absa loan", "standard bank loan"],
   "Travel & Accommodation": ["flight", "airbnb", "hotel", "booking.com", "kulula", "flysafair"],
   "Business Income & Expenses": ["business income", "business expense", "client payment", "invoice settlement", "sage accounting"],
   "Home Improvement & Repairs": ["maintenance", "repairs", "hardware store", "builders", "chamberlains", "buco"],
   "Childcare & Pets": ["daycare", "school fees", "pet store", "vet", "king price pet insurance", "animart"],
-  "Crypto & Forex": ["crypto purchase", "crypto sale", "forex trading", "luno", "valr"],
+  "Crypto & Forex": ["crypto purchase", "crypto sale", "forex trading", "luno", "valr", "binance", "forex broker"],
   "Wallet Transactions": ["wallet top-up", "wallet withdrawal", "cash deposit", "cash withdrawal", "e-wallet", "fnb e-wallet", "tymebank transfer"],
-   "Miscellaneous": ["miscellaneous", "other", "uncategorized", "unknown", "general expense", "unclassified"]
+  "Miscellaneous": ["miscellaneous", "other", "uncategorized", "unknown", "general expense", "unclassified"]
 }

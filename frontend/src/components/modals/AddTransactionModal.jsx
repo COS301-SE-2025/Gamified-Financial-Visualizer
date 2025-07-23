@@ -119,8 +119,6 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
 
       // If user entered a new category, we need to handle it
       if (form.newCategories && !form.categories) {
-        // For now, we'll pass it as transaction_name with a note
-        // You might want to create a custom category endpoint
         transactionData.transaction_name = `${form.name} (${form.newCategories})`;
       }
 

@@ -5,7 +5,7 @@ const AccountCard = ({
   bank,
   accountName,
   type,
-  available,
+  // available,
   balance,
   currency,
   bg = 'bg-pink-300',
@@ -36,15 +36,15 @@ const AccountCard = ({
 
           <p className="text-xl font-bold text-gray-800 mt-2">
             {symbol}
-            {available}
+            {typeof balance === 'number' ? balance.toFixed(2) : parseFloat(balance || 0).toFixed(2)}
           </p>
-          <p className="text-xs text-gray-500">Available</p>
+          <p className="text-xs text-gray-500">Balance</p>
 
-          <p className="text-sm text-gray-700 mt-1">
+          {/* <p className="text-sm text-gray-700 mt-1">
             {symbol}
             {balance}
           </p>
-          <p className="text-xs text-gray-400">Balance</p>
+          <p className="text-xs text-gray-400">Balance</p> */}
         </div>
 
         <div className="flex flex-col items-end ml-4">
