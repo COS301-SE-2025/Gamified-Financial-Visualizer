@@ -54,12 +54,12 @@ export async function createTransaction(txn: Transaction) {
 
     let balanceDelta = Math.abs(transaction_amount);
     const deducting = [ 'expense', 'withdrawal', 'fee' ].includes(transaction_type);
-    if (deducting) {
-      if (transaction_amount > currentBalance) {
-        throw new Error("Insufficient funds for this transaction.");
-      }
-      balanceDelta *= -1;
-    }
+    // if (deducting) {
+    //   if (transaction_amount > currentBalance) {
+    //     throw new Error("Insufficient funds for this transaction.");
+    //   }
+    //   balanceDelta *= -1;
+    // }
 
     const insertTxnSql = `
       INSERT INTO transactions (
@@ -189,7 +189,7 @@ export async function createTransaction(txn: Transaction) {
       type: transaction_type,
       timestamp: transaction_date
     });
-
+    
     return { transaction_id, updated_balance: updatedBalance };
   } catch (error) {
     await client.query('ROLLBACK');
@@ -341,6 +341,17 @@ export async function getTransactionByCategory(category_id: number) {
     return res.rows;
   } catch (error) {
     logger.error(`[TransactionService] Error fetching transactions for category ${category_id}:`, error);
+    throw error;
+  }
+}
+
+export async function getCategoryId(category_name: string) {
+  const sql = `SELECT category_id FROM categories WHERE category_name = $1;`;
+  try {
+    const res = await pool.query(sql, [ category_name ]);
+    return res.rows[ 0 ]?.category_id || null;
+  } catch (error) {
+    logger.error(`[TransactionService] Error fetching category ID for name ${category_name}:`, error);
     throw error;
   }
 }
