@@ -1,120 +1,135 @@
 import React from 'react';
-import avatar from '../../assets/Images/avatars/totoroAvatar.jpeg';
-
 import {
+  FaUsers,
   FaBolt,
-  FaChartBar,
-  FaHourglassHalf,
   FaCheck,
+  FaHourglassHalf,
+  FaChartBar,
   FaTimes,
-  FaBan,
+  FaBan
 } from 'react-icons/fa';
+import avatar from '../../assets/Images/avatars/sharkAvatar.jpeg';
 
-const SupportSidebar = () => {
+const performance = {
+  score: 350,
+  level: 'Lv 3: Silver',
+  label: 'Excellent',
+  progress: 70
+};
+
+const AccountsPerformanceHeader = () => {
   return (
-    <aside className="space-y-6">
-      {/* Goal Performance */}
-      <div className="bg-white rounded-2xl p-4 shadow text-center">
-        <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-3 py-1 rounded-full inline-block mb-2">
-          Overall Performance
-        </p>
-
-        {/* Progress Circle Styling */}
-        <div className="relative w-40 h-40 mx-auto">
-          <svg viewBox="0 0 100 100" className="w-full h-full">
-            {/* Background Circle */}
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              fill="none"
-              stroke="#E8F0FA"
-              strokeWidth="10"
-            />
-            {/* Foreground Arc */}
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              fill="none"
-              stroke="url(#gradient)"
-              strokeWidth="10"
-              strokeDasharray="270"  /* ~75% of 2πr */
-              strokeDashoffset="67"
-              strokeLinecap="round"
-              transform="rotate(-90 50 50)"
-            />
-            {/* Gradient definition */}
-            <defs>
-              <linearGradient id="gradient" x1="1" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#60A5FA" />
-                <stop offset="100%" stopColor="#93C5FD" />
-              </linearGradient>
-            </defs>
-          </svg>
-
-          {/* Center Content */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <p className="text-[24px] font-bold text-[#2D3748]">350</p>
-            <p className="text-sm text-[#718096]">Excellent</p>
-            <img
-              src={avatar}
-              alt="Silver Level"
-              className="w-8 h-8 mt-1 rounded-full object-cover"
-            />
-          </div>
-
-          {/* Top Blue Dot */}
-          <div className="absolute top-[6px] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full flex items-center justify-center">
-            <div className="w-4 h-4 bg-blue-400 rounded-full" />
-          </div>
+    <div className="flex flex-wrap justify-between gap-6 items-start w-full mb-6">
+      {/* Left Label */}
+      <div className="text-center lg:text-left">
+        <div className="flex items-center justify-center lg:justify-start gap-2 text-[#B4DFA4]">
+          <FaUsers className="text-6xl" />
+          <h1 className="text-5xl font-light">Accounts</h1>
         </div>
-        <p className="text-sm text-[#F56565] mt-2 font-medium">Lv 3: Silver</p>
+        <p className="text-lg text-gray-400 mt-1 max-w-xs mx-auto lg:mx-0">
+          View and manage all your linked accounts and track recent transactions in one place.
+        </p>
       </div>
 
-      {/* Goal Statistics */}
-      <div className="bg-white rounded-2xl p-4 shadow">
-        <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-4 py-1 rounded-full inline-block mb-4">
-          Overall Statistics
-        </p>
+      {/* Right Section (Performance Card + Stat Grid) */}
+      <div className="flex flex-col gap-4 flex-1">
+        {/* Center Performance Card */}
+        <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col sm:flex-row items-center justify-between gap-6">
+          {/* Avatar + Info */}
+          <div className="flex items-center gap-6">
+            <img src={avatar} className="w-16 h-16 rounded-full object-cover" alt="Avatar" />
+            <div>
+              <p className="text-2xl font-bold text-gray-800">{performance.score}</p>
+              <p className="text-sm text-gray-500">{performance.label}</p>
+              <p className="text-sm text-[#F97156] font-medium">{performance.level}</p>
+            </div>
+          </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          {[
-            { value: '14', label: 'Goals', icon: <FaBolt />, color: '#FF8A8A' },
-            { value: '83%', label: 'Completed', icon: <FaCheck />, color: '#7FDD53' },
-            { value: '12', label: 'Inactive', icon: <FaChartBar />, color: '#5FBFFF' },
-            { value: '14', label: 'In-Progress', icon: <FaHourglassHalf />, color: '#FFC541' },
-            { value: '56%', label: 'Incomplete', icon: <FaTimes />, color: '#F68D2B' },
-            { value: '7', label: 'Cancelled', icon: <FaBan />, color: '#FF7F9E' },
-          ].map(({ value, label, icon, color }, i) => (
-            <div key={i} className="relative bg-white rounded-xl shadow-md p-3 flex items-center justify-between">
-              {/* Icon Bubble */}
+          {/* Progress Bar */}
+          <div className="w-full">
+            <p className="text-sm font-medium text-[#7FBCE9] mb-1">Community Performance</p>
+            <div className="relative h-4 w-full rounded-full bg-[#f5f5f5] overflow-hidden">
               <div
-                className="w-10 h-10 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: color + '20' }} // Light version of color
-              >
-                <div className="text-white" style={{ color }}>
-                  {icon}
+                className="h-full rounded-full"
+                style={{
+                  width: `${performance.progress}%`,
+                  background: 'linear-gradient(to right, #4FC3F7, #B3E5FC)'
+                }}
+              />
+              <div
+                className="absolute top-1/2 w-5 h-5 bg-[#B3E5FC] rounded-full border-2 border-white shadow-md"
+                style={{
+                  left: `calc(${performance.progress}% - 10px)`,
+                  transform: 'translateY(-50%)'
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Stat Blocks*/}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 w-full">
+          {[
+            {
+              label: 'Goals',
+              value: 14,
+              icon: <FaBolt />,
+              color: '#B1E1FF'
+            },
+            {
+              label: 'Completed',
+              value: '83%',
+              icon: <FaCheck />,
+              color: '#7FDD53'
+            },
+            {
+              label: 'In-Progress',
+              value: 14,
+              icon: <FaHourglassHalf />,
+              color: '#FFC541'
+            },
+            {
+              label: 'Inactive',
+              value: 12,
+              icon: <FaChartBar />,
+              color: '#5FBFFF'
+            },
+            {
+              label: 'Incomplete',
+              value: '56%',
+              icon: <FaTimes />,
+              color: '#F68D2B'
+            },
+            {
+              label: 'Cancelled',
+              value: 7,
+              icon: <FaBan />,
+              color: '#FF8A8A'
+            }
+          ].map(({ label, value, icon, color }, index) => (
+            <div key={index} className="relative bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-3">
+                {/* Icon circle with soft background */}
+                <div className="w-10 h-10 flex items-center justify-center rounded-full" style={{ backgroundColor: `${color}20` }}>
+                  <span className="text-xl" style={{ color }}>{icon}</span>
+                </div>
+
+                {/* Stat content */}
+                <div className="text-right">
+                  <div className="text-lg font-bold text-gray-900">{value}</div>
+                  <div className="text-sm text-gray-500">{label}</div>
                 </div>
               </div>
 
-              {/* Stat Content */}
-              <div className="text-right">
-                <p className="text-lg font-bold text-gray-900">{value}</p>
-                <p className="text-sm text-gray-500">{label}</p>
-              </div>
-
-              {/* Bottom Bar */}
-              <div
-                className="absolute bottom-0 left-0 h-[5px] w-full rounded-b-xl"
-                style={{ backgroundColor: color }}
-              />
+              {/* Bottom colored bar */}
+              <div className="absolute bottom-0 left-0 h-[5px] w-full rounded-b-xl" style={{ backgroundColor: color }} />
             </div>
           ))}
         </div>
+
       </div>
-    </aside>
+    </div>
   );
 };
 
-export default SupportSidebar;
+export default AccountsPerformanceHeader;
