@@ -4,7 +4,7 @@ transactions.json
 classified_transactions.json
 data
 
-**/model/*
+
 tokenizer.json
 model.safetensors
 personal_transactions.csv
@@ -15,5 +15,7 @@ personal_transactions.csv
 
 **/results/
 __pycache__/
+/__pycache__
+*.pyc
 *.py[cod]
 *$py.class

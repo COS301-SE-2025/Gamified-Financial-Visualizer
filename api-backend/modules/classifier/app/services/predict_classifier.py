@@ -8,11 +8,11 @@ from pathlib import Path
 model_path = pathlib.Path("model")
 
 try:
-    tokenizer = AutoTokenizer.from_pretrained(str(model_path))
-    model = AutoModelForSequenceClassification.from_pretrained(str(model_path)).eval()
+   tokenizer = AutoTokenizer.from_pretrained(model_path)
+   model = AutoModelForSequenceClassification.from_pretrained(model_path).eval()
 except OSError:
-    tokenizer = AutoTokenizer.from_pretrained("CodeBlooded-capstone/fin-classifier", token=True)
-    model = AutoModelForSequenceClassification.from_pretrained("CodeBlooded-capstone/fin-classifier", token=True).eval()
+   tokenizer = AutoTokenizer.from_pretrained("CodeBlooded-capstone/fin-classifier", token=True)
+   model = AutoModelForSequenceClassification.from_pretrained("CodeBlooded-capstone/fin-classifier", token=True).eval()
    
 device    = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
