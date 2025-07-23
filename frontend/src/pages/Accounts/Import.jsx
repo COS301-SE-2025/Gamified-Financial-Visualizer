@@ -136,7 +136,6 @@ const ImportPage = () => {
           originalType: tx.transaction_type,
         };
       });
-      console.log('Extracted transactions:', txns);
       setTransactions(txns);
       setShowReview(true);
     } catch (err) {
@@ -179,21 +178,6 @@ const ImportPage = () => {
         }))
     };
 
-    //  send corrections to /feedback
-    if (payload.feedbacks.length) {
-          console.log('Feedback payload:', payload.feedbacks);
-
-      const fbRes = await fetch(
-        `http://localhost:5000/api/classifier/feedback`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ feedback: payload.feedbacks })
-        }
-      );
-      if (!fbRes.ok) throw new Error('Failed to save feedback');
-    }
-
     try {
       const res = await fetch(
         `http://localhost:5000/api/classifier/confirm-statement`,
@@ -217,11 +201,25 @@ const ImportPage = () => {
           })
         }
       );
+
       const body = await res.json();
       if (!res.ok) throw new Error(body.error || 'Feedback save failed');
 
       setImportSuccess(true);
       setShowReview(false);
+                
+      //  send corrections to /feedback
+      if (payload.feedbacks.length) {
+        console.log('Feedback payload:', payload.feedbacks);
+        fetch(
+          `http://localhost:5000/api/classifier/feedback`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ feedback: payload.feedbacks })
+          }
+        );
+      }
     } catch (err) {
       setImportError(err.message);
     } finally {

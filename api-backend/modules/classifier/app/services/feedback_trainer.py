@@ -10,6 +10,7 @@ from transformers import (
     Trainer,
 )
 from huggingface_hub import HfApi
+import os
 
 db2model = {
    'groceries':               'Groceries',
@@ -69,7 +70,6 @@ def main(feedbacks: list[dict] = None):
    model_dir     = base_dir / "model"
    labels_path   = base_dir / "app/model" / "categories.json"
    feedback_path = base_dir / "app/data" / "feedback_corrected.json"
-   hf_repo       = "CodeBlooded-capstone/fin-classifier"
 
    # 1) Load label map
    categories = json.loads((labels_path).read_text())
@@ -171,15 +171,32 @@ def main(feedbacks: list[dict] = None):
 
 
    print("Feedback training complete, evaluating...")
-   eval_results = trainer.evaluate()   
-   print(f"Evaluation results: {eval_results}")
-
    # 6) Save & optionally push to HF
    model.save_pretrained(model_dir)
    tok.save_pretrained(model_dir)
    print("Feedback training complete")
 
    # push up to Hugging Face
+   HF_REPO = "CodeBlooded-capstone/fin-classifier" 
+   hf_token = os.getenv("HF_TOKEN")
+   print(hf_token)
+
+   # Create repo if it doesn't exist
+   HfApi().create_repo(repo_id=HF_REPO, exist_ok=True)
+
+   # Push both model and tokenizer
+   model.push_to_hub(HF_REPO, token=hf_token)
+   tok.push_to_hub(HF_REPO, token=hf_token)
+
+   # push up to Hugging Face
+   from huggingface_hub import upload_folder
+   upload_folder(
+      repo_id=HF_REPO,
+      folder_path=model_dir,
+      token=hf_token,
+      repo_type="model"
+   )
+
 
 if __name__ == "__main__":
    main()

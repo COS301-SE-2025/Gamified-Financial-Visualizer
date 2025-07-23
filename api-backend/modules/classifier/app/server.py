@@ -1,5 +1,5 @@
 # api-backend/modules/classifier/app/server.py
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from typing import List
 import uvicorn
@@ -56,7 +56,7 @@ def single_predict(req: PredictReq):
 def batch_predict(req: BatchReq):
     try:
         descriptions = [t.description for t in req.transactions]
-        results = classify_batch(descriptions, len(req.transactions))
+        results = classify_batch(descriptions, 8)
         return [PredictRes(category=r["category"], source=r["source"]) for r in results]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -70,11 +70,11 @@ def retrain():
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/feedback-train")
-def retrain_with_feedback(req: FeedbackTrainReq):
+def retrain_with_feedback(req: FeedbackTrainReq, background_tasks: BackgroundTasks):
     try:
         # This will append the feedbacks to disk & kickoff a retrain
         payload = [item.dict() for item in req.feedback]
-        train_feedback(payload)
+        background_tasks.add_task(train_feedback, payload)
         return {"status": "feedback-based retraining started"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
