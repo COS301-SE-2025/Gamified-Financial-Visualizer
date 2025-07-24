@@ -1,13 +1,14 @@
+// src/classifier/strategies/NedbankExtractor.ts
 import { runProcess } from '../routes/classifierRouter';
 import path from 'path';
 import { ExtractorStrategy } from './extractor_strategy';
 import {logger} from '../../../config/logger';
 
-export class OldMutualExtractor implements ExtractorStrategy {
+export class NedbankExtractor implements ExtractorStrategy {
   async extract(filePath: string, outPath: string, password = '') {
-    logger.info(`Old Mutual Extractor: Extracting file ${filePath} to ${outPath}`);
+    logger.info(`Nedbank Extractor: Extracting file ${filePath} to ${outPath}`);
     await runProcess('python3', [
-      path.resolve(__dirname, '../app/services/extractors/old_mutual.py'),
+      path.resolve(__dirname, '../app/classifier/services/extractors/nedbank.py'),
       filePath,
       '--out', outPath,
       '--password', password

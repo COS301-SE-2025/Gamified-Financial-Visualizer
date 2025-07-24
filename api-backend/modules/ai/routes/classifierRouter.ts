@@ -46,7 +46,7 @@ router.post('/upload-statement', upload.single('statement'), async (req, res) =>
     logger.info(`Extracted ${transactions.length} transactions from ${file.originalname}`);
 
     // 3. classify
-    const { data } = await axios.post('http://localhost:6000/predict-batch', { transactions });
+    const { data } = await axios.post('http://localhost:6000/classifier/predict-batch', { transactions });
     const results = data as Array<{ category: string; source: string }>;
     if (!Array.isArray(results) || results.length !== transactions.length) {
       logger.error('Classifier mismatch', { expected: transactions.length, got: results.length });
@@ -164,7 +164,7 @@ const db2model: Record<string,string> = {
   'forex':                   'Crypto & Forex',
   'fees':                    'Fees',
   'commissions':             'Fees',
-  'interest income':            'Fees',
+  'interest income':          'Fees',
   'dividends':              'Fees'
 };
 
@@ -183,7 +183,7 @@ router.post('/feedback', async (req, res) => {
   });
 
   try {
-    const { data } = await axios.post('http://localhost:6000/feedback-train', { feedback: payload });
+    const { data } = await axios.post('http://localhost:6000/classifier/feedback-train', { feedback: payload });
     const feedbackResponse = data as { status: string };
     res.json({ status: feedbackResponse.status });
     logger.info(`Feedback processed, retraining started: ${feedbackResponse.status}`);

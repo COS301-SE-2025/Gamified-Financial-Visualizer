@@ -11,12 +11,13 @@ from typing import List
 from typing import Optional
 
 # ---- Service-layer functions ----
-from app.services.predict_classifier import classify_batch
-from app.services.train_classifier import main as train_model
-from app.services.feedback_trainer import main as train_feedback
+from app.classifier.services.predict_classifier import classify_batch
+from app.classifier.services.train_classifier import main as train_model
+from app.classifier.services.feedback_trainer import main as train_feedback
 
-app = FastAPI(title="Transaction Classifier")
+app = FastAPI(title="AI Service")
 
+# --- Classifier API ---
 # ---- Request/Response Schemas ----
 class PredictReq(BaseModel):
     description: str
@@ -44,7 +45,7 @@ class FeedbackTrainReq(BaseModel):
     feedback: List[FeedbackItem]
 
 # ---- Endpoints ----
-@app.post("/predict", response_model=PredictRes)
+@app.post("/classifier/predict", response_model=PredictRes)
 def single_predict(req: PredictReq):
     try:
         result = classify_batch([req.description])[0]
@@ -52,7 +53,7 @@ def single_predict(req: PredictReq):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/predict-batch", response_model=List[PredictRes])
+@app.post("/classifier/predict-batch", response_model=List[PredictRes])
 def batch_predict(req: BatchReq):
     try:
         descriptions = [t.description for t in req.transactions]
@@ -61,7 +62,7 @@ def batch_predict(req: BatchReq):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/train")
+@app.post("/classifier/train")
 def retrain():
     try:
         train_model()
@@ -69,7 +70,7 @@ def retrain():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/feedback-train")
+@app.post("/classifier/feedback-train")
 def retrain_with_feedback(req: FeedbackTrainReq, background_tasks: BackgroundTasks):
     try:
         # This will append the feedbacks to disk & kickoff a retrain
@@ -79,6 +80,8 @@ def retrain_with_feedback(req: FeedbackTrainReq, background_tasks: BackgroundTas
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+# --- insights ---
 # --- serve ---
 if __name__ == "__main__":
     uvicorn.run("server:app", host="0.0.0.0", port=6000, log_level="info")

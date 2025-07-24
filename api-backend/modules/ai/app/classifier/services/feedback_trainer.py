@@ -1,4 +1,4 @@
-# api-backend/modules/classifier/app/services/feedback_trainer.py
+# api-backend/modules/ai/app/classifier/services/feedback_trainer.py
 import json
 from pathlib import Path
 from datasets import Dataset
@@ -67,10 +67,10 @@ db2model = {
 
 def main(feedbacks: list[dict] = None):
    base_dir      = Path(__file__).resolve().parent.parent.parent
-   model_dir     = base_dir / "model"
-   labels_path   = base_dir / "app/model" / "categories.json"
-   feedback_path = base_dir / "app/data" / "feedback_corrected.json"
-
+   model_dir     = base_dir / "classifier/services/model"
+   labels_path   = base_dir / "classifier/data" / "categories.json"
+   feedback_path = base_dir / "classifier/data" / "feedback_corrected.json"
+   print(f"Model directory: {model_dir}")
    # 1) Load label map
    categories = json.loads((labels_path).read_text())
    cat2id     = {c:i for i,c in enumerate(categories)}

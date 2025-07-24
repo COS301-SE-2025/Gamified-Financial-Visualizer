@@ -19,8 +19,8 @@ model.to(device)
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent  # goes up from `services/`
-DATA_PATH = BASE_DIR / "app/data" / "categories.json"
-MODEL_DIR = BASE_DIR / "app/model" / "categories.json"
+DATA_PATH = BASE_DIR / "classifier/data" / "categories.json"
+MODEL_DIR = BASE_DIR / "classifier/model" / "categories.json"
 DATA_DIR = BASE_DIR / "data" 
 
 # ---------- Load internal keyword map ----------
