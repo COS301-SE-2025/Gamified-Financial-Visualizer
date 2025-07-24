@@ -16,15 +16,12 @@ import {
 } from 'react-icons/fa';
 
 const InsightsPage = () => {
-
-   const [prompt, setPrompt] = useState('');
+  const [prompt, setPrompt] = useState('');
   const [aiResponse, setAiResponse] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  
   const getAiAnalysis = async (userPrompt) => {
-  setIsLoading(true);
-    
+    setIsLoading(true);
     
     await new Promise(resolve => setTimeout(resolve, 1500));
     
@@ -52,8 +49,6 @@ const InsightsPage = () => {
     });
     setIsLoading(false);
   };
-
-
 
   // Comparative Analysis Data
   const comparisonData = {
@@ -94,20 +89,19 @@ const InsightsPage = () => {
   // Determine comparison status
   const getStatusIcon = (status) => {
     switch(status) {
-      case 'higher': return <FaArrowUp className="text-red-500" />;
-      case 'lower': return <FaArrowDown className="text-green-500" />;
+      case 'higher': return <FaArrowUp className="text-red-400" />;
+      case 'lower': return <FaArrowDown className="text-lime-600" />;
       default: return <FaCheckCircle className="text-gray-500" />;
     }
   };
 
   return (
     <AccountsLayout>
-      <div className="max-w-6xl mx-auto px-4 py-6 space-y-8">
-        
-         {/* AI Insights Section */}
-        <div className="bg-white p-6 rounded-2xl shadow border border-gray-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* AI Insights Section */}
+        <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
           <div className="flex items-center gap-3 mb-4">
-            <div className="bg-purple-100 p-3 rounded-lg text-purple-600">
+            <div className="bg-lime-100 p-3 rounded-lg text-lime-600">
               <FaRobot size={20} />
             </div>
             <h2 className="text-xl font-bold text-gray-800">AI Financial Advisor</h2>
@@ -125,12 +119,12 @@ const InsightsPage = () => {
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="E.g. 'How can I improve my savings rate?'"
-                className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="flex-1 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-lime-500 focus:border-transparent text-gray-700"
               />
               <button
                 onClick={() => getAiAnalysis(prompt)}
                 disabled={!prompt.trim() || isLoading}
-                className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50 hover:bg-purple-700 transition"
+                className="bg-lime-600 text-white px-6 py-3 rounded-lg flex items-center gap-2 disabled:opacity-50 hover:bg-lime-700 transition-colors duration-200"
               >
                 {isLoading ? 'Analyzing...' : (
                   <>
@@ -149,21 +143,21 @@ const InsightsPage = () => {
             <div className="border-t pt-4 mt-4">
               <div className="flex justify-between items-start mb-3">
                 <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                  <FaLightbulb className="text-yellow-500" /> Analysis for: "{aiResponse.prompt}"
+                  <FaLightbulb className="text-yellow-400" /> Analysis for: "{aiResponse.prompt}"
                 </h3>
                 <span className="text-xs text-gray-500">{aiResponse.generatedAt}</span>
               </div>
               
-              <div className="bg-blue-50 p-4 rounded-lg mb-4">
+              <div className="bg-sky-50 p-4 rounded-lg mb-4 border-l-4 border-sky-400">
                 <p className="text-gray-800">{aiResponse.analysis}</p>
               </div>
               
               <h4 className="font-medium text-gray-800 mb-2">Recommended Actions:</h4>
-              <ul className="space-y-2">
+              <ul className="space-y-2 pl-2">
                 {aiResponse.actionItems.map((item, index) => (
                   <li key={index} className="flex items-start gap-2">
-                    <FaCheckCircle className="text-green-500 mt-1 flex-shrink-0" />
-                    <span>{item}</span>
+                    <FaCheckCircle className="text-lime-500 mt-1 flex-shrink-0" />
+                    <span className="text-gray-700">{item}</span>
                   </li>
                 ))}
               </ul>
@@ -187,7 +181,7 @@ const InsightsPage = () => {
                       setPrompt(quickPrompt);
                       getAiAnalysis(quickPrompt);
                     }}
-                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm transition"
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1.5 rounded-lg text-sm transition-colors duration-200 border border-gray-200"
                   >
                     {quickPrompt}
                   </button>
@@ -200,9 +194,9 @@ const InsightsPage = () => {
         {/* Main Comparison Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Category Spending Comparison */}
-          <div className="bg-white p-6 rounded-2xl shadow border border-gray-100">
+          <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
             <div className="flex items-center gap-3 mb-4">
-              <div className="bg-blue-100 p-3 rounded-lg text-blue-600">
+              <div className="bg-sky-100 p-3 rounded-lg text-sky-500">
                 <FaChartBar size={20} />
               </div>
               <h2 className="text-xl font-bold text-gray-800">Category Spending</h2>
@@ -212,26 +206,26 @@ const InsightsPage = () => {
               <table className="w-full">
                 <thead>
                   <tr className="text-left text-sm text-gray-500 border-b">
-                    <th className="pb-2">Category</th>
-                    <th className="pb-2 text-right">You</th>
-                    <th className="pb-2 text-right">Average</th>
-                    <th className="pb-2 text-right">Difference</th>
+                    <th className="pb-3 font-medium">Category</th>
+                    <th className="pb-3 font-medium text-right">You</th>
+                    <th className="pb-3 font-medium text-right">Average</th>
+                    <th className="pb-3 font-medium text-right">Difference</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {comparisonData.categorySpending.map((item, index) => (
-                    <tr key={index} className={item.status === 'higher' ? 'bg-red-50' : ''}>
-                      <td className="py-3 font-medium">{item.category}</td>
-                      <td className="py-3 text-right">R{item.userSpent.toLocaleString()}</td>
+                    <tr key={index} className={item.status === 'higher' ? 'bg-red-50' : 'hover:bg-gray-50'}>
+                      <td className="py-3 font-medium text-gray-800">{item.category}</td>
+                      <td className="py-3 text-right font-medium">R{item.userSpent.toLocaleString()}</td>
                       <td className="py-3 text-right">R{item.avgSpent.toLocaleString()}</td>
                       <td className="py-3 text-right flex items-center justify-end gap-1">
                         {getStatusIcon(item.status)}
                         {item.status === 'higher' ? (
-                          <span className="text-red-600">
+                          <span className="text-red-400 font-medium">
                             +R{(item.userSpent - item.avgSpent).toLocaleString()}
                           </span>
                         ) : (
-                          <span className="text-green-600">
+                          <span className="text-lime-600 font-medium">
                             -R{(item.avgSpent - item.userSpent).toLocaleString()}
                           </span>
                         )}
@@ -241,15 +235,15 @@ const InsightsPage = () => {
                 </tbody>
               </table>
             </div>
-            <p className="text-sm text-gray-500 mt-3">
-              💡 You're spending less than average in {comparisonData.categorySpending.filter(x => x.status === 'lower').length} categories
+            <p className="text-sm text-gray-600 mt-4 bg-gray-50 p-2 rounded-lg">
+              You're spending less than average in {comparisonData.categorySpending.filter(x => x.status === 'lower').length} categories
             </p>
           </div>
 
           {/* Monthly Spending Comparison */}
-          <div className="bg-white p-6 rounded-2xl shadow border border-gray-100">
+          <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
             <div className="flex items-center gap-3 mb-4">
-              <div className="bg-purple-100 p-3 rounded-lg text-purple-600">
+              <div className="bg-sky-100 p-3 rounded-lg text-sky-300">
                 <FaUsers size={20} />
               </div>
               <h2 className="text-xl font-bold text-gray-800">Monthly Spending</h2>
@@ -257,83 +251,83 @@ const InsightsPage = () => {
             
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <span>Your Spending</span>
-                <span className="font-bold">R{comparisonData.monthlySpending.user.toLocaleString()}</span>
+                <span className="text-gray-700">Your Spending</span>
+                <span className="font-bold text-gray-800">R{comparisonData.monthlySpending.user.toLocaleString()}</span>
               </div>
               
               <div className="bg-gray-100 rounded-full h-8 relative">
                 <div 
-                  className="absolute bg-purple-500 rounded-full h-8 flex items-center justify-end pr-2 text-white text-sm"
+                  className="absolute bg-sky-300 rounded-full h-8 flex items-center justify-end pr-2 text-white text-sm font-medium"
                   style={{ 
-                    width: `${(comparisonData.monthlySpending.user / comparisonData.monthlySpending.allUsers) * 100}%`,
+                    width: `${Math.min((comparisonData.monthlySpending.user / comparisonData.monthlySpending.allUsers) * 100, 100)}%`,
                     maxWidth: '100%'
                   }}
                 >
-                  You
+                  {Math.round((comparisonData.monthlySpending.user / comparisonData.monthlySpending.allUsers) * 100)}%
                 </div>
               </div>
               
-              <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="bg-gray-50 p-2 rounded">
-                  <p className="text-xs text-gray-500">All Users</p>
-                  <p className="font-medium">R{comparisonData.monthlySpending.allUsers.toLocaleString()}</p>
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                  <p className="text-xs text-gray-500 mb-1">All Users</p>
+                  <p className="font-medium text-gray-800">R{comparisonData.monthlySpending.allUsers.toLocaleString()}</p>
                 </div>
-                <div className="bg-gray-50 p-2 rounded">
-                  <p className="text-xs text-gray-500">Your Age</p>
-                  <p className="font-medium">R{comparisonData.monthlySpending.ageGroup.toLocaleString()}</p>
+                <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                  <p className="text-xs text-gray-500 mb-1">Your Age</p>
+                  <p className="font-medium text-gray-800">R{comparisonData.monthlySpending.ageGroup.toLocaleString()}</p>
                 </div>
-                <div className="bg-gray-50 p-2 rounded">
-                  <p className="text-xs text-gray-500">Income Group</p>
-                  <p className="font-medium">R{comparisonData.monthlySpending.incomeBracket.toLocaleString()}</p>
+                <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                  <p className="text-xs text-gray-500 mb-1">Income Group</p>
+                  <p className="font-medium text-gray-800">R{comparisonData.monthlySpending.incomeBracket.toLocaleString()}</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* AI Score & Savings Rate */}
-          <div className="bg-white p-6 rounded-2xl shadow border border-gray-100">
+          <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
             <div className="flex items-center gap-3 mb-4">
-              <div className="bg-green-100 p-3 rounded-lg text-green-600">
+              <div className="bg-lime-100 p-3 rounded-lg text-lime-500">
                 <FaTrophy size={20} />
               </div>
               <h2 className="text-xl font-bold text-gray-800">Financial Health Score</h2>
             </div>
             
-            <div className="flex items-center justify-between bg-gradient-to-r from-green-100 to-blue-100 p-4 rounded-lg mb-4">
+            <div className="flex items-center justify-between bg-gradient-to-r from-lime-100 to-sky-100 p-5 rounded-lg mb-5 border border-lime-200">
               <div>
-                <p className="text-sm text-gray-600">Your AI Score</p>
-                <p className="text-3xl font-bold text-green-700">{comparisonData.aiScore.user}</p>
+                <p className="text-sm text-gray-600 font-medium">Your AI Score</p>
+                <p className="text-4xl font-bold text-lime-700">{comparisonData.aiScore.user}</p>
               </div>
               <div className="text-right">
-                <p className="text-sm">Average: {comparisonData.aiScore.allUsers}</p>
-                <p className="text-sm">Age Group: {comparisonData.aiScore.ageGroup}</p>
+                <p className="text-sm text-gray-600">Average: {comparisonData.aiScore.allUsers}</p>
+                <p className="text-sm text-gray-600">Age Group: {comparisonData.aiScore.ageGroup}</p>
               </div>
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div>
-                <p className="font-medium">Savings Rate Comparison</p>
-                <div className="flex items-center gap-4 mt-2">
+                <p className="font-medium text-gray-800 mb-3">Savings Rate Comparison</p>
+                <div className="flex items-center gap-4">
                   <div className="flex-1">
                     <div className="flex justify-between text-sm mb-1">
-                      <span>You</span>
-                      <span>{comparisonData.savingsRate.user}%</span>
+                      <span className="text-gray-600">You</span>
+                      <span className="font-medium text-gray-800">{comparisonData.savingsRate.user}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
                       <div 
-                        className="bg-green-500 h-2 rounded-full" 
+                        className="bg-lime-500 h-2.5 rounded-full" 
                         style={{ width: `${comparisonData.savingsRate.user}%` }}
                       ></div>
                     </div>
                   </div>
                   <div className="flex-1">
                     <div className="flex justify-between text-sm mb-1">
-                      <span>Average</span>
-                      <span>{comparisonData.savingsRate.average}%</span>
+                      <span className="text-gray-600">Average</span>
+                      <span className="font-medium text-gray-800">{comparisonData.savingsRate.average}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
                       <div 
-                        className="bg-blue-500 h-2 rounded-full" 
+                        className="bg-sky-500 h-2.5 rounded-full" 
                         style={{ width: `${comparisonData.savingsRate.average}%` }}
                       ></div>
                     </div>
@@ -342,39 +336,39 @@ const InsightsPage = () => {
               </div>
               
               <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-                <p className="text-sm text-yellow-800">
-                  🎉 You're saving better than {comparisonData.savingsRate.user - comparisonData.savingsRate.average}% more than average!
+                <p className="text-sm text-yellow-600 font-medium">
+                  You're saving better than {comparisonData.savingsRate.user - comparisonData.savingsRate.average}% more than average!
                 </p>
               </div>
             </div>
           </div>
 
           {/* Goal Progress & Leaderboards */}
-          <div className="bg-white p-6 rounded-2xl shadow border border-gray-100">
+          <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
             <div className="flex items-center gap-3 mb-4">
-              <div className="bg-orange-100 p-3 rounded-lg text-orange-600">
+              <div className="bg-orange-100 p-3 rounded-lg text-orange-500">
                 <FaRunning size={20} />
               </div>
               <h2 className="text-xl font-bold text-gray-800">Goal Achievement</h2>
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-5">
               {comparisonData.goalProgress.map((goal, index) => (
                 <div key={index} className="border-b pb-4 last:border-0 last:pb-0">
-                  <p className="font-medium">{goal.goal}</p>
-                  <div className="flex items-center justify-between mt-2">
+                  <p className="font-medium text-gray-800">{goal.goal}</p>
+                  <div className="flex items-center justify-between mt-3">
                     <div className="text-center">
                       <p className="text-xs text-gray-500">You</p>
-                      <p className="font-bold">{goal.userMonths} months</p>
+                      <p className="font-bold text-gray-800">{goal.userMonths} months</p>
                     </div>
                     <div className="text-center">
                       <p className="text-xs text-gray-500">Average</p>
-                      <p className="font-medium">{goal.avgMonths} months</p>
+                      <p className="font-medium text-gray-800">{goal.avgMonths} months</p>
                     </div>
                     <div className="text-center">
                       <p className="text-xs text-gray-500">Difference</p>
-                      <p className="font-bold text-green-600">
-                        -{goal.avgMonths - goal.userMonths} months
+                      <p className="font-bold text-lime-600">
+                        -{(goal.avgMonths - goal.userMonths).toFixed(1)} months
                       </p>
                     </div>
                   </div>
@@ -382,24 +376,24 @@ const InsightsPage = () => {
               ))}
             </div>
             
-            <div className="mt-6 pt-4 border-t border-gray-100">
-              <h3 className="font-medium mb-3">Your Leaderboard Positions</h3>
+            <div className="mt-6 pt-5 border-t border-gray-200">
+              <h3 className="font-medium text-gray-800 mb-4">Your Leaderboard Positions</h3>
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-gray-50 p-3 rounded-lg">
-                  <p className="text-xs text-gray-500">Entertainment</p>
-                  <p className="font-medium">
+                <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors duration-200">
+                  <p className="text-xs text-gray-500 mb-1">Entertainment</p>
+                  <p className="font-medium text-gray-800">
                     You spend {comparisonData.leaderboards.entertainment.direction} than {comparisonData.leaderboards.entertainment.percentile}%
                   </p>
                 </div>
-                <div className="bg-gray-50 p-3 rounded-lg">
-                  <p className="text-xs text-gray-500">Savings</p>
-                  <p className="font-medium">
+                <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors duration-200">
+                  <p className="text-xs text-gray-500 mb-1">Savings</p>
+                  <p className="font-medium text-gray-800">
                     Saving {comparisonData.leaderboards.savings.direction} than {comparisonData.leaderboards.savings.percentile}%
                   </p>
                 </div>
-                <div className="bg-gray-50 p-3 rounded-lg">
-                  <p className="text-xs text-gray-500">Financial Knowledge</p>
-                  <p className="font-medium">
+                <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors duration-200">
+                  <p className="text-xs text-gray-500 mb-1">Financial Knowledge</p>
+                  <p className="font-medium text-gray-800">
                     Top {comparisonData.leaderboards.quizScore.percentile}% in quiz score
                   </p>
                 </div>
@@ -409,43 +403,43 @@ const InsightsPage = () => {
         </div>
 
         {/* Motivational Summary */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 rounded-2xl shadow-lg text-white">
-          <h2 className="text-xl font-bold mb-2">Your Financial Standing</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <p className="text-sm opacity-90">Categories Spending Less Than Average</p>
+        <div className="bg-gradient-to-r from-sky-300 to-blue-300 p-6 rounded-xl shadow-lg text-white">
+          <h2 className="text-xl font-bold mb-4">Your Financial Standing</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white/10 p-4 rounded-lg backdrop-blur-sm">
+              <p className="text-sm opacity-90 mb-1">Categories Spending Less Than Average</p>
               <p className="text-2xl font-bold">
                 {comparisonData.categorySpending.filter(x => x.status === 'lower').length}
-                <span className="text-lg">/{comparisonData.categorySpending.length}</span>
+                <span className="text-lg font-normal">/{comparisonData.categorySpending.length}</span>
               </p>
             </div>
-            <div>
-              <p className="text-sm opacity-90">Financial Health Score</p>
+            <div className="bg-white/10 p-4 rounded-lg backdrop-blur-sm">
+              <p className="text-sm opacity-90 mb-1">Financial Health Score</p>
               <p className="text-2xl font-bold flex items-center">
                 {comparisonData.aiScore.user}
-                <span className="text-sm ml-2">
+                <span className="text-sm font-normal ml-2">
                   ({comparisonData.aiScore.user > comparisonData.aiScore.allUsers ? 'Above' : 'Below'} average)
                 </span>
               </p>
             </div>
-            <div>
-              <p className="text-sm opacity-90">Savings Rate Percentile</p>
+            <div className="bg-white/10 p-4 rounded-lg backdrop-blur-sm">
+              <p className="text-sm opacity-90 mb-1">Savings Rate Percentile</p>
               <p className="text-2xl font-bold">
                 Top {100 - Math.floor((comparisonData.savingsRate.user / comparisonData.savingsRate.topPercentile) * 100)}%
               </p>
             </div>
           </div>
-          <p className="mt-4 text-sm opacity-90">
+          <p className="mt-5 text-sm opacity-90 bg-white/10 p-3 rounded-lg">
             💪 Keep up the good work! You're making better financial decisions than most users in your demographic.
           </p>
         </div>
 
         {/* AI-Generated Monthly Summary */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 rounded-2xl shadow-lg text-white">
+        <div className="bg-gradient-to-r from-sky-300 to-blue-300 p-6 rounded-xl shadow-lg text-white">
           <div className="flex justify-between items-start">
             <div>
-              <h2 className="text-xl font-bold mb-2">AI-Generated Financial Summary</h2>
-              <p className="opacity-90 max-w-2xl">
+              <h2 className="text-xl font-bold mb-3">AI-Generated Financial Summary</h2>
+              <p className="opacity-90 max-w-2xl leading-relaxed">
                 Based on your June activity: Your savings rate improved by 2% from last month, 
                 but dining expenses increased by 18%. You're on track to complete your emergency 
                 fund goal 3 weeks early.
@@ -457,24 +451,23 @@ const InsightsPage = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            <div>
-              <p className="text-sm opacity-90">Financial Health Score</p>
+            <div className="bg-white/10 p-4 rounded-lg backdrop-blur-sm">
+              <p className="text-sm opacity-90 mb-1">Financial Health Score</p>
               <p className="text-2xl font-bold">82/100</p>
-              <p className="text-sm mt-1">↑ 5 points from May</p>
+              <p className="text-xs mt-1 opacity-80">↑ 5 points from May</p>
             </div>
-            <div>
-              <p className="text-sm opacity-90">Savings Potential</p>
+            <div className="bg-white/10 p-4 rounded-lg backdrop-blur-sm">
+              <p className="text-sm opacity-90 mb-1">Savings Potential</p>
               <p className="text-2xl font-bold">R1,200/mo</p>
-              <p className="text-sm mt-1">Through budget optimization</p>
+              <p className="text-xs mt-1 opacity-80">Through budget optimization</p>
             </div>
-            <div>
-              <p className="text-sm opacity-90">Goal Projection</p>
+            <div className="bg-white/10 p-4 rounded-lg backdrop-blur-sm">
+              <p className="text-sm opacity-90 mb-1">Goal Projection</p>
               <p className="text-2xl font-bold">2.1 years</p>
-              <p className="text-sm mt-1">To financial independence</p>
+              <p className="text-xs mt-1 opacity-80">To financial independence</p>
             </div>
           </div>
         </div>
-
       </div>
     </AccountsLayout>
   );
