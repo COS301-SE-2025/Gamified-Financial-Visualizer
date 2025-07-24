@@ -13,15 +13,10 @@ const LearnLayout = ({ children }) => {
   return (
     <div className="relative min-h-screen bg-gray-50">
       {/* Loader */}
-      {/* {isLoading && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-white">
-          <PacmanLoader />
-        </div>
-      )} */}
 
       <div className={`${isLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'} transition-opacity duration-500`}>
         {/* Top Learn Header */}
-        <div className="px-6 pt-6">
+        <div className="px-4 sm:px-6 pt-4">
           <LearnSidebar />
         </div>
 

@@ -33,30 +33,6 @@ const colorMap = {
   },
 };
 
-// Assign color category per badge
-const badgeColorCategory = {
-  'Cash Horder': 'red',
-  'OverAchiever': 'blue',
-  'Just Grow it': 'green',
-  'Money Major': 'red',
-  'Real Banker': 'blue',
-  'Stack Stacker': 'green',
-  'All My Friends': 'red',
-  'Target Chaser': 'blue',
-  'Building Wealth': 'green',
-  '#1 Investor': 'red',
-  'Goal Getter': 'red',
-  'Starter Saver': 'red',
-  'Halfway Hero': 'red',
-  'Goal Smasher': 'red',
-  'Consistent Closer': 'red',
-  'Challenge Champion': 'red',
-  'First Steps': 'green',
-  'Top Contributor': 'red',
-  'Streak Star': 'red',
-  'Transaction Master': 'green',
-};
-
 // mapping for the badge images 
 const getBadgeImage = (title) => {
   const lower = title.toLowerCase();
