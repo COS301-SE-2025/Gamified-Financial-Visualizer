@@ -7,18 +7,19 @@ const ImportPage = () => {
   const [files, setFiles] = useState([]);
   const [url, setUrl] = useState('');
   const [isDragging, setIsDragging] = useState(false);
-  
+
   // Import configuration state
   const [selectedAccount, setSelectedAccount] = useState('');
   const [selectedBank, setSelectedBank] = useState('');
   const [password, setPassword] = useState('');
-  
+
   // Import process state
   const [isImporting, setIsImporting] = useState(false);
   const [importError, setImportError] = useState(null);
   const [importSuccess, setImportSuccess] = useState(false);
   const [showReview, setShowReview] = useState(false);
-  
+  const [importProgress, setImportProgress] = useState(0);
+
   // Mock transaction data for review
   const [transactions, setTransactions] = useState([
     { id: 1, date: '2023-05-15', description: 'Grocery Store', amount: -85.32, category: 'Groceries', type: 'expense', originalCategory: 'Groceries', originalType: 'expense' },
@@ -43,8 +44,8 @@ const ImportPage = () => {
   ];
 
   const categories = [
-    'Income', 'Groceries', 'Dining', 'Shopping', 
-    'Utilities', 'Entertainment', 'Transportation', 
+    'Income', 'Groceries', 'Dining', 'Shopping',
+    'Utilities', 'Entertainment', 'Transportation',
     'Healthcare', 'Travel', 'Education'
   ];
 
@@ -63,14 +64,14 @@ const ImportPage = () => {
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
-    const droppedFiles = Array.from(e.dataTransfer.files).filter(file => 
+    const droppedFiles = Array.from(e.dataTransfer.files).filter(file =>
       file.type === 'application/pdf'
     );
     setFiles([...files, ...droppedFiles]);
   };
 
   const handleFileChange = (e) => {
-    const selectedFiles = Array.from(e.target.files).filter(file => 
+    const selectedFiles = Array.from(e.target.files).filter(file =>
       file.type === 'application/pdf'
     );
     setFiles([...files, ...selectedFiles]);
@@ -104,11 +105,27 @@ const ImportPage = () => {
     setIsImporting(true);
     setImportError(null);
     setImportSuccess(false);
+    setImportProgress(0);
 
     try {
+      // Simulate progress updates
+      const interval = setInterval(() => {
+        setImportProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(interval);
+            return prev;
+          }
+          return prev + 10;
+        });
+      }, 200);
+
       // Simulate API call to process the statement
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
+
+      // Complete the progress
+      setImportProgress(100);
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       // Show the review screen
       setShowReview(true);
     } catch (error) {
@@ -119,13 +136,13 @@ const ImportPage = () => {
   };
 
   const handleCategoryChange = (id, newCategory) => {
-    setTransactions(transactions.map(tx => 
+    setTransactions(transactions.map(tx =>
       tx.id === id ? { ...tx, category: newCategory } : tx
     ));
   };
 
   const handleTypeChange = (id, newType) => {
-    setTransactions(transactions.map(tx => 
+    setTransactions(transactions.map(tx =>
       tx.id === id ? { ...tx, type: newType } : tx
     ));
   };
@@ -144,7 +161,7 @@ const ImportPage = () => {
     }
   };
 
-  const hasChanges = transactions.some(tx => 
+  const hasChanges = transactions.some(tx =>
     tx.category !== tx.originalCategory || tx.type !== tx.originalType
   );
 
@@ -169,7 +186,7 @@ const ImportPage = () => {
                     {importError}
                   </div>
                 )}
-                
+
                 {importSuccess && (
                   <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
                     Statements imported successfully!
@@ -193,7 +210,7 @@ const ImportPage = () => {
                       ))}
                     </select>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Bank Statement From
@@ -209,7 +226,7 @@ const ImportPage = () => {
                       ))}
                     </select>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Statement Password (if required)
@@ -225,7 +242,7 @@ const ImportPage = () => {
                 </div>
 
                 {/* Drag & Drop Zone */}
-                <div 
+                <div
                   className={`border-2 border-dashed rounded-xl p-8 mb-6 text-center transition-all ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-blue-400'}`}
                   onDragEnter={handleDragEnter}
                   onDragOver={handleDragEnter}
@@ -243,11 +260,11 @@ const ImportPage = () => {
                       or
                     </p>
                     <label className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-                      <input 
-                        type="file" 
-                        className="hidden" 
-                        accept=".pdf" 
-                        multiple 
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept=".pdf"
+                        multiple
                         onChange={handleFileChange}
                       />
                       Browse Files
@@ -272,7 +289,7 @@ const ImportPage = () => {
                               <p className="text-xs text-gray-500">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
                             </div>
                           </div>
-                          <button 
+                          <button
                             onClick={() => removeFile(index)}
                             className="text-gray-400 hover:text-red-500"
                           >
@@ -298,7 +315,7 @@ const ImportPage = () => {
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
                     />
-                    <button 
+                    <button
                       className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
                       onClick={() => {
                         if (url) {
@@ -322,14 +339,14 @@ const ImportPage = () => {
                   </div>
 
                   <div className="flex justify-end space-x-3">
-                    <button 
+                    <button
                       onClick={handleDiscard}
                       className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
                       disabled={isImporting}
                     >
                       Discard
                     </button>
-                    <button 
+                    <button
                       onClick={handleImport}
                       className={`px-6 py-2 rounded-lg text-white transition flex items-center justify-center ${(files.length > 0 || url) && selectedAccount && selectedBank ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}`}
                       disabled={!(files.length > 0 || url) || !selectedAccount || !selectedBank || isImporting}
@@ -417,30 +434,21 @@ const ImportPage = () => {
                         </span>
                       )}
                     </div>
-                    <div className="flex space-x-3">
-                      <button 
-                        onClick={() => setShowReview(false)}
-                        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
-                      >
-                        Back
-                      </button>
-                      <button 
-                        onClick={handleConfirmChanges}
-                        className={`px-6 py-2 rounded-lg text-white transition flex items-center justify-center ${hasChanges ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'}`}
-                        disabled={isImporting}
+                    <div className="flex-1 max-w-md">
+                      <button
+                        onClick={handleImport}
+                        className={`px-6 py-2 rounded-lg text-white transition flex items-center justify-center w-full ${(files.length > 0 || url) && selectedAccount && selectedBank ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}`}
+                        disabled={!(files.length > 0 || url) || !selectedAccount || !selectedBank || isImporting}
                       >
                         {isImporting ? (
-                          <>
-                            <FaSpinner className="animate-spin mr-2" />
-                            Importing...
-                          </>
-                        ) : hasChanges ? (
-                          <>
-                            <FaCheck className="mr-2" />
-                            Confirm Changes
-                          </>
+                          <div className="w-full bg-gray-200 rounded-full h-2.5">
+                            <div
+                              className="bg-blue-600 h-2.5 rounded-full transition-all duration-300 ease-out"
+                              style={{ width: `${importProgress}%` }}
+                            ></div>
+                          </div>
                         ) : (
-                          'Import Transactions'
+                          'Process Statement'
                         )}
                       </button>
                     </div>
