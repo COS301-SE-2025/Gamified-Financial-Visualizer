@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaCrown, FaChartLine, FaEye, FaTrophy, FaStar } from 'react-icons/fa';
+import { FaCrown, FaChartLine, FaEye, FaTrophy, FaStar, FaHeart, FaRegComment, FaPlay } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
 // Profile banner
-import profileBanner from '../../assets/Images/banners/pixelCornerStore.gif';
+import profileBanner from '../../assets/Images/banners/pixelBalcony.gif';
 
 // Community banner images
 import comm1 from '../../assets/Images/banners/pixelApartment.gif';
@@ -33,45 +33,45 @@ const Overview = () => {
   const [levelProgress, setLevelProgress] = useState(null);
 
   useEffect(() => {
-  const user = JSON.parse(localStorage.getItem('user'));
-  if (!user?.id) return;
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user?.id) return;
 
-  // Fetch profile data
-  fetch(`http://localhost:5000/api/auth/top-bar/${user.id}`)
-    .then(res => res.json())
-    .then(res => setProfileData(res.data))
-    .catch(err => console.error('Failed to load profile bar:', err));
+    // Fetch profile data
+    fetch(`http://localhost:5000/api/auth/top-bar/${user.id}`)
+      .then(res => res.json())
+      .then(res => setProfileData(res.data))
+      .catch(err => console.error('Failed to load profile bar:', err));
 
-  // Fetch current goals
-  fetch(`http://localhost:5000/api/auth/profile/current-goals/${user.id}`)
-    .then(res => res.json())
-    .then(res => setGoals(res.data))
-    .catch(err => console.error('Failed to load goals:', err));
+    // Fetch current goals
+    fetch(`http://localhost:5000/api/auth/profile/current-goals/${user.id}`)
+      .then(res => res.json())
+      .then(res => setGoals(res.data))
+      .catch(err => console.error('Failed to load goals:', err));
 
-  // Fetch performance stats
-  fetch(`http://localhost:5000/api/auth/profile/performance-stats/${user.id}`)
-    .then(res => res.json())
-    .then(res => setPerformanceStats(res.data))
-    .catch(err => console.error('Failed to load performance stats:', err));
+    // Fetch performance stats
+    fetch(`http://localhost:5000/api/auth/profile/performance-stats/${user.id}`)
+      .then(res => res.json())
+      .then(res => setPerformanceStats(res.data))
+      .catch(err => console.error('Failed to load performance stats:', err));
 
-  // Fetch recent achievements
-  fetch(`http://localhost:5000/api/auth/profile/recent-achievements/${user.id}`)
-    .then(res => res.json())
-    .then(res => setRecentAchievements(res.data))
-    .catch(err => console.error('Failed to load achievements:', err));
+    // Fetch recent achievements
+    fetch(`http://localhost:5000/api/auth/profile/recent-achievements/${user.id}`)
+      .then(res => res.json())
+      .then(res => setRecentAchievements(res.data))
+      .catch(err => console.error('Failed to load achievements:', err));
 
-  // Fetch communities
-  fetch(`http://localhost:5000/api/auth/profile/communities/${user.id}`)
-    .then(res => res.json())
-    .then(res => setCommunityData(res.data))
-    .catch(err => console.error('Failed to load communities:', err));
+    // Fetch communities
+    fetch(`http://localhost:5000/api/auth/profile/communities/${user.id}`)
+      .then(res => res.json())
+      .then(res => setCommunityData(res.data))
+      .catch(err => console.error('Failed to load communities:', err));
 
-  // Fetch level progress
-  fetch(`http://localhost:5000/api/auth/profile/level-progress/${user.id}`)
-    .then(res => res.json())
-    .then(res => setLevelProgress(res.data))
-    .catch(err => console.error('Failed to load level progress:', err));
-}, []);
+    // Fetch level progress
+    fetch(`http://localhost:5000/api/auth/profile/level-progress/${user.id}`)
+      .then(res => res.json())
+      .then(res => setLevelProgress(res.data))
+      .catch(err => console.error('Failed to load level progress:', err));
+  }, []);
 
   // Community posts
   const userPosts = [
@@ -92,7 +92,7 @@ const Overview = () => {
         <img
           src={profileData ? `/assets/Images/${profileData.banner_image_path}` : profileBanner}
           alt="profile-banner"
-          className="w-full h-60 object-cover rounded-2xl"
+          className="w-full h-40 object-cover rounded-2xl"
         />
 
         {/* Avatar + Username container */}
@@ -108,7 +108,7 @@ const Overview = () => {
           {/* Username and Join date card */}
           <div className="bg-white shadow-md px-4 py-2 rounded-full flex items-center gap-3">
             <p className="text-lg font-medium text-gray-800">{profileData?.username || '...'}</p>
-            <p className="text-sm italic text-[#F28B82]">
+            <p className="text-sm italic text-[#5FBFFF]">
               Joined: <span className="font-medium">
                 {profileData && new Date(profileData.created_at).toLocaleDateString('en-GB', {
                   day: '2-digit',
@@ -125,54 +125,54 @@ const Overview = () => {
       <div className="h-4" />
 
       {/* Level Progress Card */}
-<div className="bg-white p-6 rounded-3xl shadow flex flex-col gap-4">
-  {/* Header Row */}
-  <div className="flex items-center justify-between">
-    {/* Current Level Circle */}
-    <div className="flex items-center gap-4">
-      <div className="w-10 h-10 rounded-full border-4 border-yellow-400 text-yellow-600 font-bold flex items-center justify-center shadow-sm">
-        {levelProgress?.level_number ?? '—'}
-      </div>
-      <div>
-        <p className="text-sm font-semibold text-gray-800">
-          Lv {levelProgress?.tier_status ?? '—'}
-        </p>
-        <p className="text-sm text-gray-500">
-          {levelProgress
-            ? `${levelProgress.points_to_next_tier} points to next tier`
-            : 'Loading...'}
-        </p>
-      </div>
-    </div>
+      <div className="bg-white p-6 rounded-3xl shadow flex flex-col gap-4">
+        {/* Header Row */}
+        <div className="flex items-center justify-between">
+          {/* Current Level Circle */}
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full border-4 border-[#FFD18C] text-[#FFCE51] font-bold flex items-center justify-center shadow-sm">
+              {levelProgress?.level_number ?? '—'}
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-800">
+                Lv {levelProgress?.tier_status ?? '—'}
+              </p>
+              <p className="text-sm text-gray-500">
+                {levelProgress
+                  ? `${levelProgress.points_to_next_tier} points to next tier`
+                  : 'Loading...'}
+              </p>
+            </div>
+          </div>
 
-    {/* Target Level Circle */}
-    <div className="w-10 h-10 rounded-full bg-[#f8e5b5] text-yellow-600 font-bold flex items-center justify-center shadow-sm">
-      {levelProgress?.next_level ?? '—'}
-    </div>
-  </div>
+          {/* Target Level Circle */}
+          <div className="w-10 h-10 rounded-full bg-[#f8e5b5] text-yellow-500 font-bold flex items-center justify-center shadow-sm">
+            {levelProgress?.next_level ?? '—'}
+          </div>
+        </div>
 
-  {/* Progress Bar */}
-  <div className="relative mt-2">
-    <div className="w-full h-6 bg-yellow-100 rounded-full overflow-hidden">
-      <div
-        className="h-full bg-gradient-to-r from-yellow-400 to-[#FFCE51] rounded-full"
-        style={{
-          width: levelProgress
-            ? `${Math.min(
-                (levelProgress.current_tier_xp / levelProgress.tier_xp_required) * 100,
-                100
-              ).toFixed(1)}%`
-            : '0%'
-        }}
-      />
-    </div>
-    <div className="absolute inset-0 flex justify-center items-center text-sm font-semibold text-yellow-700">
-      {levelProgress
-        ? `${levelProgress.current_tier_xp}/${levelProgress.tier_xp_required}`
-        : '...'}
-    </div>
-  </div>
-</div>
+        {/* Progress Bar */}
+        <div className="relative mt-2">
+          <div className="w-full h-6 bg-[#f8e5b5] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-[#FFD18C] to-[#FFCE51] rounded-full"
+              style={{
+                width: levelProgress
+                  ? `${Math.min(
+                    (levelProgress.current_tier_xp / levelProgress.tier_xp_required) * 100,
+                    100
+                  ).toFixed(1)}%`
+                  : '0%'
+              }}
+            />
+          </div>
+          <div className="absolute inset-0 flex justify-center items-center text-sm font-semibold text-yellow-600">
+            {levelProgress
+              ? `${levelProgress.current_tier_xp}/${levelProgress.tier_xp_required}`
+              : '...'}
+          </div>
+        </div>
+      </div>
 
 
       {/* Middle Row - Two Columns */}
@@ -213,7 +213,7 @@ const Overview = () => {
                 <div className="text-xs text-gray-500 mt-1">Challenges</div>
               </div>
               <div className="bg-gray-50 rounded-xl p-3 text-center hover:bg-gray-100 transition-colors">
-                <div className="text-2xl font-bold text-yellow-600">
+                <div className="text-2xl font-bold text-yellow-500">
                   {performanceStats
                     ? `${performanceStats.goals_completed}/${performanceStats.goals_total}`
                     : '—'}
@@ -239,7 +239,7 @@ const Overview = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4"> 
+            <div className="grid grid-cols-3 gap-4">
               {recentAchievements.length === 0 ? (
                 <p className="text-sm text-gray-500 italic text-center">No achievements yet.</p>
               ) : (
@@ -275,22 +275,22 @@ const Overview = () => {
           className="bg-[#ffffff] p-6 rounded-3xl shadow-md h-full"
         >
           <h2 className="text-xl font-bold text-[#1f2937] mb-4 flex items-center gap-2">
-            <FaStar className="text-[#FFBF1A]" /> Current Goals
+            <FaStar className="text-[#83AB55]" /> Current Goals
           </h2>
 
           <div className="space-y-4">
             {goals.length > 0 ? (
               goals.map((goal, i) => (
-                <div key={i} className="bg-[#fef9c3]/30 p-4 rounded-xl border border-[#fef08a]">
+                <div key={i} className="bg-[#F0F8EA] p-4 rounded-xl border border-[#B4CB98]">
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="font-medium text-gray-800">{goal.goal_name}</h3>
-                    <span className="text-xs bg-[#fef9c3] text-[#92400e] px-2 py-1 rounded-full border border-[#fde047]">
+                    <span className="text-xs bg-[#E6F4D8] text-[#4D7C0F] px-2 py-1 rounded-full border border-[#AAD977]">
                       +{goal.xp_reward} XP
                     </span>
                   </div>
                   <div className="w-full bg-[#f3f4f6] rounded-full h-2">
                     <div
-                      className="bg-gradient-to-r from-[#facc15] to-[#fb923c] h-2 rounded-full"
+                      className="bg-gradient-to-r from-[#B4CB98] to-[#83AB55] h-2 rounded-full"
                       style={{ width: `${goal.progress_percentage}%` }}
                     ></div>
                   </div>
@@ -305,12 +305,14 @@ const Overview = () => {
           </div>
 
           <button
-            className="mt-6 w-full px-4 py-2 bg-gradient-to-r from-[#FFBF1A] to-[#FFD18C] hover:from-[#f59e0b] hover:to-[#fbbf24] text-white font-medium rounded-full shadow transition-all"
+            className="mt-6 w-full px-4 py-2 bg-gradient-to-r from-[#AAD977] to-[#B4CB98] hover:from-[#83AB55] hover:to-[#AAD977] text-white font-medium rounded-full shadow-sm transition-all"
             onClick={() => navigate('/goals')}
           >
             View All Goals
           </button>
         </motion.div>
+
+
       </div>
 
       {/* Bottom Row - Active Communities */}
@@ -382,24 +384,48 @@ const Overview = () => {
 
       {/* Bottom Grid – User Posts */}
       <div className="bg-white p-6 rounded-3xl shadow-md">
-        <h2 className="text-lg font-bold text-[#1f2937] mb-4">My Posts</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold text-gray-800">My Posts</h2>
+          <button className="text-sm font-medium text-blue-500 hover:text-blue-600 transition-colors">
+            View All
+          </button>
+        </div>
 
-        <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-8 gap-1">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
           {userPosts.map((post) => (
             <div
               key={post.id}
-              className="relative group overflow-hidden rounded-xl shadow-sm max-w-[110px] mx-auto"
+              className="relative group overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
             >
               <img
                 src={post.image}
                 alt={`post-${post.id}`}
                 className="w-full h-full object-cover aspect-square transition-transform duration-300 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition duration-300" />
+              {/* Post engagement overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-2">
+                <div className="flex items-center space-x-2 text-white">
+                  <span className="flex items-center text-xs font-medium">
+                    <FaHeart className="w-3 h-3 mr-1" />
+                    {post.likes}
+                  </span>
+                  <span className="flex items-center text-xs font-medium">
+                    <FaRegComment className="w-3 h-3 mr-1" />
+                    {post.comments}
+                  </span>
+                </div>
+              </div>
+              {/* Video indicator for video posts */}
+              {post.type === 'video' && (
+                <div className="absolute top-2 right-2 bg-black/50 rounded-full p-1">
+                  <FaPlay className="w-3 h-3 text-white" />
+                </div>
+              )}
             </div>
           ))}
         </div>
       </div>
+
     </div>
   );
 };

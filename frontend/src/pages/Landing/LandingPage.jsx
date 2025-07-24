@@ -17,7 +17,7 @@ import avatar3 from '../../assets/Images/avatars/lilyAvatar.jpeg';
 
 // Banner header images 
 import heroGif from '../../assets/Images/banners/pixelOffice.gif';
-import gemImg from '../../assets/Images/Logo.png';
+import gemImg from '../../assets/Images/Logo1.png';
 
 const AchievementBadge = ({ title, description, icon, color }) => (
     <motion.div
