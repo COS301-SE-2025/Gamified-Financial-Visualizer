@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { FaPlus, FaSearch} from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaPlus, FaSearch } from 'react-icons/fa';
 import AccountCard from '../../components/cards/AccountCard';
 import AddAccountModal from '../../components/modals/AddAccountModal';
 import EditAccountModal from '../../components/modals/EditAccountModal';
@@ -12,11 +12,42 @@ const AccountsPage = () => {
   const [activeAccount, setActiveAccount] = useState(null);
   const [accounts, setAccounts] = useState([]);
   const [transactions, setTransactions] = useState([]);
-  const [categories, setCategories] = useState([]); // Add categories state
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingTransactions, setLoadingTransactions] = useState(false);
   const [error, setError] = useState(null);
   const transactionsRef = useRef(null);
+
+  // Transaction pagination (existing)
+  const [currentPage, setCurrentPage] = useState(1);
+  const [transactionsPerPage] = useState(10);
+
+  // Account pagination (new)
+  const [currentAccountPage, setCurrentAccountPage] = useState(1);
+  const [accountsPerPage] = useState(2); // Show only 2 accounts at a time
+
+  // Get current accounts
+  const indexOfLastAccount = currentAccountPage * accountsPerPage;
+  const indexOfFirstAccount = indexOfLastAccount - accountsPerPage;
+  const currentAccounts = accounts.slice(indexOfFirstAccount, indexOfLastAccount);
+
+  // Get current transactions (existing)
+  const indexOfLastTransaction = currentPage * transactionsPerPage;
+  const indexOfFirstTransaction = indexOfLastTransaction - transactionsPerPage;
+  const currentTransactions = transactions.slice(
+    indexOfFirstTransaction,
+    indexOfLastTransaction
+  );
+
+  // Change account page
+  const paginateAccounts = (pageNumber) => {
+    setCurrentAccountPage(pageNumber);
+    // Reset to first page when changing accounts
+    setCurrentPage(1);
+  };
+
+  // Change transaction page (existing)
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const userData = JSON.parse(localStorage.getItem('user') || '{}');
   const userId = userData?.id || null;
@@ -24,19 +55,18 @@ const AccountsPage = () => {
   // Helper function to get category name by ID
   const getCategoryName = (categoryId, customCategoryId) => {
     if (customCategoryId) {
-
       return `Custom Category ${customCategoryId}`;
     }
-    
+
     if (categoryId) {
       const category = categories.find(cat => cat.category_id === categoryId);
       return category ? category.category_name : 'Unknown Category';
     }
-    
+
     return 'Uncategorized';
   };
 
-  // Fetch all user transactions (across all accounts) - wrapped in useCallback
+  // Fetch all user transactions
   const fetchAllUserTransactions = useCallback(async () => {
     if (!userId) {
       setTransactions([]);
@@ -57,7 +87,7 @@ const AccountsPage = () => {
         category: txn.category_name || 'Uncategorized',
         amount: `${txn.transaction_amount >= 0 ? '' : '-'}${txn.transaction_amount >= 0 ? 'ZAR' : 'ZAR'}${Math.abs(txn.transaction_amount).toFixed(2)}`,
         account_id: txn.account_id,
-        account_name: txn.account_name, // Include account name for display
+        account_name: txn.account_name,
         transaction_id: txn.transaction_id,
         transaction_type: txn.transaction_type,
         original_amount: txn.transaction_amount,
@@ -66,6 +96,7 @@ const AccountsPage = () => {
       }));
 
       setTransactions(mapped);
+      setCurrentPage(1); // Reset to first page when transactions change
     } catch (err) {
       console.error(err);
       setError(err.message);
@@ -73,9 +104,9 @@ const AccountsPage = () => {
     } finally {
       setLoadingTransactions(false);
     }
-  }, [userId]); // Include userId as dependency
+  }, [userId]);
 
-  // Fetch categories when component mounts
+  // Fetch categories
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -85,13 +116,13 @@ const AccountsPage = () => {
         setCategories(data.data || []);
       } catch (err) {
         console.error('Error fetching categories:', err);
-        // Don't set error here as it's not critical for the main functionality
       }
     };
 
     fetchCategories();
   }, []);
 
+  // Fetch accounts and transactions on mount
   useEffect(() => {
     if (!userId) {
       setError('User not logged in. Please log in again.');
@@ -103,14 +134,14 @@ const AccountsPage = () => {
       try {
         setLoading(true);
         setError(null);
-        
+
         // Fetch accounts
         const accountsResponse = await fetch(`http://localhost:5000/api/accounts/user/${userId}`);
         if (!accountsResponse.ok) throw new Error('Failed to fetch accounts');
         const accountsData = await accountsResponse.json();
         setAccounts(accountsData.data || []);
 
-        // Fetch all user transactions
+        // Fetch transactions
         await fetchAllUserTransactions();
       } catch (err) {
         setError(err.message);
@@ -120,11 +151,11 @@ const AccountsPage = () => {
     };
 
     fetchAccountsAndTransactions();
-  }, [userId, fetchAllUserTransactions]); // Now include fetchAllUserTransactions
+  }, [userId, fetchAllUserTransactions]);
 
+  // Fetch transactions for specific account
   const fetchTransactionsForAccount = async (accountId) => {
     if (!accountId) {
-      // If no account selected, show all user transactions
       await fetchAllUserTransactions();
       return;
     }
@@ -140,20 +171,19 @@ const AccountsPage = () => {
       const mapped = (data.data || []).map(txn => ({
         name: txn.transaction_name,
         date: new Date(txn.transaction_date).toLocaleDateString(),
-        // Fix: Use proper category resolution
         category: getCategoryName(txn.category_id, txn.custom_category_id),
         amount: `${txn.transaction_amount >= 0 ? '' : '-'}${activeAccount?.currency + ' ' || 'ZAR'}${Math.abs(txn.transaction_amount).toFixed(2)}`,
         account_id: txn.account_id,
         transaction_id: txn.transaction_id,
         transaction_type: txn.transaction_type,
-        original_amount: txn.transaction_amount, // Keep original for calculations
-        category_id: txn.category_id, // Keep for editing
-        custom_category_id: txn.custom_category_id, // Keep for editing
-        // Add color property based on transaction type
+        original_amount: txn.transaction_amount,
+        category_id: txn.category_id,
+        custom_category_id: txn.custom_category_id,
         amountColor: (txn.transaction_type === 'income' || txn.transaction_type === 'transfer' || txn.transaction_type === 'deposit') ? 'bg-green-400' : (txn.transaction_type === 'expense' || txn.transaction_type === 'withdrawal' || txn.transaction_type === 'fee') ? 'bg-red-400' : 'bg-gray-400',
       }));
 
       setTransactions(mapped);
+      setCurrentPage(1); // Reset to first page when account changes
     } catch (err) {
       console.error(err);
       setError(err.message);
@@ -173,6 +203,7 @@ const AccountsPage = () => {
     }, 100);
   };
 
+  // Account CRUD operations
   const handleAddAccount = async (newAccount) => {
     if (!userId) {
       setError('User not logged in. Please log in again.');
@@ -199,6 +230,7 @@ const AccountsPage = () => {
       const data = await response.json();
       const newAccountWithId = { ...newAccount, account_id: data.data.account_id, user_id: userId };
       setAccounts((prev) => [...prev, newAccountWithId]);
+      setCurrentAccountPage(Math.ceil((accounts.length + 1) / accountsPerPage)); // Go to last page
       setShowModal(false);
     } catch (err) {
       setError(err.message);
@@ -225,6 +257,7 @@ const AccountsPage = () => {
         throw new Error(errorData.message || 'Failed to delete account');
       }
       setAccounts((prev) => prev.filter((_, index) => index !== indexToDelete));
+      setCurrentAccountPage(1); // reset the first page 
       if (activeAccount?.account_id === accountId) {
         setActiveAccount(null);
         setTransactions([]);
@@ -278,7 +311,7 @@ const AccountsPage = () => {
     }
   };
 
-  // Fixed: Add refresh function and pass to table
+  // Transaction operations
   const handleRefreshTransactions = async (accountId) => {
     if (accountId && activeAccount?.account_id === accountId) {
       await fetchTransactionsForAccount(accountId);
@@ -319,8 +352,6 @@ const AccountsPage = () => {
     }
   };
 
-  const filteredTransactions = transactions; // Show all transactions, whether filtered by account or not
-
   const transactionHeading = activeAccount
     ? `${activeAccount.account_name || activeAccount.accountName} Transactions`
     : 'Recent Transactions';
@@ -337,94 +368,113 @@ const AccountsPage = () => {
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-4 space-y-8 -ml-[10px]">
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-          <div className="flex">
-            <div className="text-red-400">⚠️</div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Error</h3>
-              <p className="mt-1 text-sm text-red-700">{error}</p>
-              <button
-                onClick={() => setError(null)}
-                className="mt-2 text-sm text-red-600 hover:text-red-500"
-              >
-                Dismiss
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="bg-white border border-gray-200 rounded-3xl shadow-md px-6 py-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-[#336699]">Accounts</h2>
+    <div className="flex gap-6 px-6 py-6 bg-[#F8F9FA] min-h-screen">
+      {/* Left Panel */}
+      <div className="w-[360px] flex-shrink-0">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-semibold text-[#1C3C78]">Accounts</h2>
           <button
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 px-4 py-1 bg-[#D8F5C5] text-[#467D35] text-sm font-medium rounded-full hover:bg-[#c8ecb4] transition"
+            className="flex items-center gap-1 px-4 py-1 bg-[#D8F5C5] text-[#467D35] text-sm font-semibold rounded-full hover:bg-[#c8ecb4]"
           >
             <FaPlus /> Add
           </button>
         </div>
 
-        {accounts.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 mb-4">No accounts found</p>
-              {/* onClick={() => setShowModal(true)} */}
+        {/* Render currentAccounts instead of accounts */}
+        <div className="space-y-4">
+          {currentAccounts.map((acc, idx) => (
+            <AccountCard
+              key={acc.account_id || idx}
+              bank={acc.bank_name}
+              accountName={acc.account_name}
+              type={acc.account_type}
+              available={acc.account_balance}
+              balance={acc.balance || '0.00'}
+              currency={acc.currency || 'ZAR'}
+              isActive={activeAccount?.account_id === acc.account_id}
+              onClick={() => handleCardClick(acc)}
+              onDelete={() => handleDeleteAccount(
+                indexOfFirstAccount + idx // Calculate the correct index in the full array
+              )}
+              onEdit={() => handleEditAccount(
+                indexOfFirstAccount + idx // Calculate the correct index in the full array
+              )}
+            />
+          ))}
+        </div>
+
+        {/* Account Pagination Controls */}
+        {accounts.length > accountsPerPage && (
+          <div className="flex justify-between items-center mt-4">
+            <button
+              onClick={() => paginateAccounts(Math.max(1, currentAccountPage - 1))}
+              disabled={currentAccountPage === 1}
+              className="flex items-center gap-1 px-3 py-1 text-sm text-[#1C3C78] disabled:opacity-50"
+            >
+              <FaChevronLeft /> Previous
+            </button>
+
+            <span className="text-sm text-gray-600">
+              Page {currentAccountPage} of {Math.ceil(accounts.length / accountsPerPage)}
+            </span>
+
+            <button
+              onClick={() => paginateAccounts(currentAccountPage + 1)}
+              disabled={currentAccountPage === Math.ceil(accounts.length / accountsPerPage)}
+              className="flex items-center gap-1 px-3 py-1 text-sm text-[#1C3C78] disabled:opacity-50"
+            >
+              Next <FaChevronRight />
+            </button>
           </div>
-        ) : (
-          <div className="flex space-x-6 px-1 overflow-x-auto">
-            {accounts.map((acc, idx) => (
-              <div className="snap-start" key={acc.account_id || idx}>
-                <AccountCard
-                  bank={acc.bank_name || acc.bankName}
-                  accountName={acc.account_name || acc.accountName}
-                  type={acc.account_type || acc.accountType}
-                  available={acc.account_balance || acc.available || '0.00'}
-                  balance={acc.balance || '0.00'}
-                  currency={acc.currency}
-                  bg={['bg-pink-300', 'bg-yellow-300', 'bg-green-300'][idx % 3]}
-                  overlay={['bg-pink-400', 'bg-yellow-400', 'bg-green-400'][idx % 3]}
-                  isActive={activeAccount?.account_id === acc.account_id}
-                  onClick={() => handleCardClick(acc)}
-                  onDelete={() => handleDeleteAccount(idx)}
-                  onEdit={() => handleEditAccount(idx)}
-                />
-              </div>
+        )}
+      </div>
+
+      {/* Right Panel */}
+      <div className="flex-1 space-y-6">
+        {/* Search */}
+        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm">
+          <FaSearch className="text-[#76B947] mr-2" />
+          <input
+            type="text"
+            placeholder="Search your transactions..."
+            className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70"
+          />
+        </div>
+
+        {/* Transactions */}
+        <div ref={transactionsRef}>
+          <RecentTransactionsTable
+            account={activeAccount}
+            transactions={currentTransactions}
+            heading={transactionHeading}
+            loading={loadingTransactions}
+            categories={categories}
+            onAdd={handleAddTransaction}
+            onEdit={handleEditTransaction}
+            onDelete={handleDeleteTransaction}
+            onRefresh={handleRefreshTransactions}
+          />
+        </div>
+
+        {/* Transaction Pagination */}
+        {transactions.length > transactionsPerPage && (
+          <div className="flex justify-center mt-4">
+            {Array.from({ length: Math.ceil(transactions.length / transactionsPerPage) }).map((_, index) => (
+              <button
+                key={index}
+                onClick={() => paginate(index + 1)}
+                className={`mx-1 px-3 py-1 rounded ${currentPage === index + 1 ? 'bg-[#B1E1FF] text-white' : 'bg-gray-200'}`}
+              >
+                {index + 1}
+              </button>
             ))}
           </div>
         )}
       </div>
 
-      <div className="flex items-center w-full max-w-9xl -ml-[8px] px-4 py-2 rounded-3xl border-2 border-[#E5794B] bg-white shadow-sm">
-        <FaSearch className="text-[#E5794B] mr-2" />
-        <input
-          type="text"
-          placeholder="Search your transactions..."
-          className="w-full outline-none bg-transparent text-sm text-[#E5794B] placeholder-[#E5794B]/70"
-        />
-      </div>
-
-      <div ref={transactionsRef}>
-        <RecentTransactionsTable
-          account={activeAccount}
-          transactions={filteredTransactions}
-          heading={transactionHeading}
-          loading={loadingTransactions}
-          categories={categories} // Pass categories to the table component
-          onAdd={handleAddTransaction}
-          onEdit={handleEditTransaction}
-          onDelete={handleDeleteTransaction}
-          onRefresh={handleRefreshTransactions}
-        />
-      </div>
-
-      <AddAccountModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        onAdd={handleAddAccount}
-      />
-
+      {/* Modals */}
+      <AddAccountModal isOpen={showModal} onClose={() => setShowModal(false)} onAdd={handleAddAccount} />
       <EditAccountModal
         isOpen={showEditModal}
         onClose={() => {

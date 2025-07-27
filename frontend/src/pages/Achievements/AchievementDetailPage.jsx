@@ -1,37 +1,53 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { FaBolt } from 'react-icons/fa';
+import { useParams, useNavigate } from 'react-router-dom';
+import { FaBolt, FaArrowLeft, FaChevronLeft } from 'react-icons/fa';
 import AchievementsLayout from '../../pages/Achievements/AchievementsLayout';
 import toast from 'react-hot-toast';
 
-// Badge icon mapping
-import badge1 from '../../assets/Images/badges/CoinStack.png';
-import badge2 from '../../assets/Images/badges/notesIcon.png';
-import badge3 from '../../assets/Images/badges/targetIcon.png';
-import badge4 from '../../assets/Images/badges/plantIcon.png';
-import badge5 from '../../assets/Images/badges/highFiveIcon.png';
-import badge6 from '../../assets/Images/badges/moneyBagIcon.png';
-import badge7 from '../../assets/Images/badges/moneyGrowIcon.png';
-import badge8 from '../../assets/Images/badges/mountainIcon.png';
-import badge9 from '../../assets/Images/badges/awardIcon.png';
+// Badge icons
+import badge1 from '../../assets/Images/badges/coin.png';
+import badge2 from '../../assets/Images/badges/banknote.png';
+import badge3 from '../../assets/Images/badges/target.png';
+import badge4 from '../../assets/Images/badges/growth.png';
+import badge5 from '../../assets/Images/badges/hi5.png';
+import badge6 from '../../assets/Images/badges/money-bag.png';
+import badge7 from '../../assets/Images/badges/investment.png';
+import badge8 from '../../assets/Images/badges/goal.png';
+import badge9 from '../../assets/Images/badges/trophy.png';
+import badge10 from '../../assets/Images/badges/bank.png';
 
-const colorMap = {
-  'Cash Horder': 'red',
-  'OverAchiever': 'blue',
-  'Just Grow it': 'green',
-  'Money Major': 'red',
-  'Real Banker': 'blue',
-  'Stack Stacker': 'green',
-  'All My Friends': 'red',
-  'Target Chaser': 'blue',
-  'Building Wealth': 'green',
-  '#1 Investor': 'red',
+// Dynamic icon detector
+const getBadgeImage = (title) => {
+  const lower = title.toLowerCase();
+  if (lower.includes('coin') || lower.includes('track') || lower.includes('halfway')) return badge1;
+  if (lower.includes('bank') || lower.includes('stack')) return badge2;
+  if (lower.includes('target') || lower.includes('top')) return badge3;
+  if (lower.includes('grow') || lower.includes('transaction')) return badge4;
+  if (lower.includes('friend') || lower.includes('closer') || lower.includes('hi5')) return badge5;
+  if (lower.includes('money') || lower.includes('challenge')) return badge6;
+  if (lower.includes('wealth') || lower.includes('first') || lower.includes('budget')) return badge7;
+  if (lower.includes('goal') || lower.includes('smasher')) return badge8;
+  if (lower.includes('investor') || lower.includes('quiz') || lower.includes('trophy')) return badge9;
+  if (lower.includes('banker')) return badge10;
+  return badge1;
 };
 
-const hexMap =  {
+// Dynamic color detector
+const detectColorKey = (title) => {
+  const lower = title.toLowerCase();
+  if (lower.includes('grow') || lower.includes('plant') || lower.includes('first') || lower.includes('friend') || lower.includes('master') || lower.includes('stock') || lower.includes('daily') || lower.includes('learn') || lower.includes('investment') || lower.includes('save') || lower.includes('wealth') || lower.includes('spend') || lower.includes('transaction')) {
+    return 'green';
+  }
+  if (lower.includes('bank') || lower.includes('top') || lower.includes('habits') || lower.includes('score') || lower.includes('secret') || lower.includes('data') || lower.includes('weekly') || lower.includes('milestone') || lower.includes('budget') || lower.includes('quiz') || lower.includes('target') || lower.includes('goal')) {
+    return 'blue';
+  }
+  return 'red';
+};
+
+const hexMap = {
   red: '#ED5E52',
   blue: '#5FBFFF',
-  green: '#88BC46'
+  green: '#88BC46',
 };
 
 const gradientMap = {
@@ -40,19 +56,15 @@ const gradientMap = {
   green: 'linear-gradient(to right, #88BC46, #CBEEA5)',
 };
 
-
 const BadgeTaskCard = ({ task, primaryColor, image, barGradient }) => {
   const progressPercent = (task.progress / task.total) * 100;
+
   return (
-    <div
-      className="flex items-center justify-between bg-white rounded-2xl p-4 shadow-md border"
-      style={{ borderColor: primaryColor }}
-    >
+    <div className="flex items-center justify-between bg-white rounded-2xl p-4 shadow-md border"
+         style={{ borderColor: primaryColor }}>
       <div className="flex items-center gap-4">
-        <div
-          className="w-14 h-14 flex items-center justify-center rounded-full bg-gradient-to-br"
-          style={{ border: `1.5px solid ${primaryColor}` }}
-        >
+        <div className="w-14 h-14 flex items-center justify-center rounded-full bg-gradient-to-br"
+             style={{ border: `1.5px solid ${primaryColor}` }}>
           <img src={image} alt={task.title} className="w-9 h-9 object-contain" />
         </div>
 
@@ -67,10 +79,7 @@ const BadgeTaskCard = ({ task, primaryColor, image, barGradient }) => {
           </div>
 
           <div className="w-64 bg-gray-200 h-2 rounded-full mt-2">
-            <div
-              className="h-2 rounded-full"
-              style={{ width: `${progressPercent}%`, background: barGradient }}
-            />
+            <div className="h-2 rounded-full" style={{ width: `${progressPercent}%`, background: barGradient }} />
           </div>
 
           <p className="text-xs mt-1" style={{ color: primaryColor }}>
@@ -82,27 +91,16 @@ const BadgeTaskCard = ({ task, primaryColor, image, barGradient }) => {
   );
 };
 
-const AchievementDetailPage  = () => {
+const AchievementDetailPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
+  const [error, setError] = useState(null);
 
-  // determine styling based on umbrella
-  const colorKey = colorMap[id] || 'red';
+  const colorKey = detectColorKey(id);
   const primaryColor = hexMap[colorKey];
   const barGradient = gradientMap[colorKey];
-  const badgeMap = {
-    'Cash Horder': badge1,
-    'OverAchiever': badge8,
-    'Just Grow it': badge4,
-    'Money Major': badge6,
-    'Real Banker': badge8,
-    'Stack Stacker': badge2,
-    'All My Friends': badge5,
-    'Target Chaser': badge3,
-    'Building Wealth': badge7,
-    '#1 Investor': badge9,
-  };
-  const badgeImage = badgeMap[id] || badge9;
+  const badgeImage = getBadgeImage(id);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -110,36 +108,61 @@ const AchievementDetailPage  = () => {
 
     const loadTasks = async () => {
       try {
-        console.log(`Fetching tasks for achievement: ${id} and user: ${user.id}`);
         const response = await fetch(`http://localhost:5000/api/achievements/task/${id}/${user.id}`);
         if (!response.ok) throw new Error('Failed to fetch achievement tasks');
         const data = await response.json();
         setTasks(data.data || []);
       } catch (error) {
         console.error(error);
+        setError(error.message);
         toast.error('Could not load achievement tasks');
       }
-    }
+    };
 
     loadTasks();
   }, [id]);
 
-  if (!tasks.length) {
+if (error) {
     return (
       <AchievementsLayout>
-        <div className="p-6 space-y-6 rounded-2xl -mt-6">
-          <div className="flex items-center justify-center h-64">
-            <FaBolt className="text-gray-400 text-6xl" />
+        <div className="max-w-6xl mx-auto p-4">
+          <div className="bg-red-50 border-l-4 border-[#FF8A8A] p-4 rounded-r-lg">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-[#FF8A8A]" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-[#FF8A8A]">Error loading achievement tasks</h3>
+                <div className="mt-2 text-sm text-[#FF8A8A]">
+                  <p>{error}</p>
+                </div>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="mt-3 inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#FF8A8A] hover:bg-[#FF6B6B] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF8A8A]"
+                >
+                  Try Again
+                </button>
+              </div>
+            </div>
           </div>
-          <p className="text-center text-gray-500">Loading achievement tasks...</p>
         </div>
       </AchievementsLayout>
     );
   }
 
   return (
-    <AchievementsLayout>
+ <AchievementsLayout>
       <div className="p-6 space-y-6 rounded-2xl -mt-6">
+        <button 
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 mb-4 px-4 py-2 rounded-full border border-gray-300 hover:bg-gray-50 transition-colors text-gray-700"
+        >
+          <FaChevronLeft className="text-gray-500" />
+          <span className="font-medium">Back</span>
+        </button>
+        
         <div>
           <div
             className="inline-block px-4 py-1 rounded-full border font-bold text-lg"
@@ -166,7 +189,6 @@ const AchievementDetailPage  = () => {
                   reward: task.points_awarded,
                   progress: task.progress,
                   total: task.total,
-                  status: task.status === 'complete' ? 'complete' : 'incomplete',
                 }}
                 primaryColor={primaryColor}
                 barGradient={barGradient}

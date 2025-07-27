@@ -56,8 +56,6 @@ const ChallengeDetail = () => {
     return (
         <CommunityLayout>
             <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
-                <CommunityHeader />
-
                 <div className="flex justify-between items-center">
                     <h2 className="text-2xl font-bold text-[#111827] flex items-center gap-2">
                         <FaCoins className="text-[#FBBF24]" /> Challenge Detail
