@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useRef} from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Button } from '../../components/ui/Button';
 import { motion } from "framer-motion";
-import { FaTrophy, FaUserFriends, FaChartLine, FaArrowUp, FaArrowDown, FaRocket, FaCoins, FaShieldAlt, FaArrowRight, FaMedal } from "react-icons/fa";
+import { FaTrophy, FaUserGraduate, FaPuzzlePiece, FaUserFriends, FaChartLine, FaArrowUp, FaArrowDown, FaRocket, FaCoins, FaShieldAlt, FaArrowRight, FaMedal } from "react-icons/fa";
 
 // Image imports
 import YohaliImg from '../../assets/Team Profiles/Malaika.png';
@@ -11,8 +11,8 @@ import NobuhleImg from '../../assets/Team Profiles/Nobuhle.png';
 import AundreaImg from '../../assets/Team Profiles/Aundrea.png';
 
 // Testimonial imports
-import avatar1 from '../../assets/Images/avatars/crossiontAvatar.jpeg';
-import avatar2 from '../../assets/Images/avatars/butterflyAvatar.jpeg';
+import avatar1 from '../../assets/Images/avatars/beachAvatar.jpeg';
+import avatar2 from '../../assets/Images/avatars/sharkAvatar.jpeg';
 import avatar3 from '../../assets/Images/avatars/lilyAvatar.jpeg';
 
 // Banner header images 
@@ -184,6 +184,28 @@ export default function LandingPage() {
         }
     ];
 
+    // about information
+    const explainerBoxes = [
+        {
+            title: "Who It's For",
+            color: "from-[#4B6343] to-[#AAD977]",
+            text: "Ideal for students, young professionals, and anyone ready to take control of their financial future — in a way that's motivating and fun.",
+            icon: <FaUserGraduate className="text-2xl" />
+        },
+        {
+            title: "How It Works",
+            color: "from-[#FFBF1A] to-[#FFD18C]",
+            text: "Set financial goals, log transactions, track your progress, and complete challenges to earn in-game rewards and XP.",
+            icon: <FaPuzzlePiece className="text-2xl" />
+        },
+        {
+            title: "What You’ll Achieve",
+            color: "from-[#3AADFA] to-[#B1E1FF]",
+            text: "Build lasting habits, grow your savings, crush debt, and improve financial literacy — all while progressing in your journey.",
+            icon: <FaChartLine className="text-2xl" />
+        }
+    ];
+
     React.useEffect(() => {
         const interval = setInterval(() => {
             setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
@@ -335,6 +357,45 @@ export default function LandingPage() {
                             <div className="text-sm opacity-90 mt-1">{stat.label}</div>
                         </motion.div>
                     ))}
+                </div>
+            </section>
+
+            {/* What gamified finance is about */}
+            <section className="py-20 px-6 bg-gray-50 border-t border-gray-100">
+                <div className="max-w-7xl mx-auto text-center">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6 }}
+                        viewport={{ once: true }}
+                    >
+                        <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                            What is <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#4B6343] to-[#AAD977]">Gamified Finance</span>?
+                        </h2>
+                        <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed mb-12">
+                            A fun, interactive platform where you complete real-life financial tasks — like saving, budgeting, and investing — to earn XP, unlock achievements, and level up your money skills.
+                        </p>
+                    </motion.div>
+
+                    <div className="grid md:grid-cols-3 gap-8 text-left">
+                        {explainerBoxes.map((box, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, delay: i * 0.2 }}
+                                viewport={{ once: true }}
+                                className="bg-white rounded-xl shadow-lg border-2 border-gray-100 p-6 hover:border-[#AAD977] transition-all"
+                            >
+                                <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${box.color} text-white flex items-center justify-center mb-4`}>
+                                    {box.icon}
+                                </div>
+                                <h3 className="text-xl font-semibold text-gray-800 mb-2">{box.title}</h3>
+                                <p className="text-gray-600">{box.text}</p>
+                            </motion.div>
+                        ))}
+                    </div>
+
                 </div>
             </section>
 
@@ -661,7 +722,7 @@ export default function LandingPage() {
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-16">
                         <h3 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                            Coming Soon: <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#4B6343] to-[#AAD977]">Next-Level Features</span>
+                            New: <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#4B6343] to-[#AAD977]">Next-Level Features</span>
                         </h3>
                         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
                             We're developing cutting-edge technologies to make financial management even more engaging and intuitive.
@@ -683,7 +744,7 @@ export default function LandingPage() {
                                     </div>
                                     <div>
                                         <h3 className="text-2xl font-bold">AI Smart Advisor</h3>
-                                        <p className="opacity-90">Coming Demo 3</p>
+                                        <p className="opacity-90">Intuitive AI features</p>
                                     </div>
                                 </div>
                             </div>
@@ -728,7 +789,7 @@ export default function LandingPage() {
                                     </div>
                                     <div>
                                         <h3 className="text-2xl font-bold">AR Financial World</h3>
-                                        <p className="opacity-90">Coming Demo 3</p>
+                                        <p className="opacity-90">Interactive financial city</p>
                                     </div>
                                 </div>
                             </div>
@@ -788,11 +849,11 @@ export default function LandingPage() {
                             { name: "Vercel", icon: "vercel", description: "Deployment" },
                             { name: "Jest", icon: "jest", description: "Testing" },
                             { name: "Cypress", icon: "cypress", description: "E2E testing" },
-                            { name:"Pytorch" ,icon: "pytorch", description: "AI model"},
-                            {name:"Tensorflow",icon: "tensorflow", description:"AI model"},
-                            {name:"Supabase" , icon:"supabase", description:"Deployment"},
-                            {name:"Kafka" , icon:"kafka" , description:"Event Bus"},
-                            {name:"Redis", icon:"redis",description:"Caching"}
+                            { name: "Pytorch", icon: "pytorch", description: "AI model" },
+                            { name: "Tensorflow", icon: "tensorflow", description: "AI model" },
+                            { name: "Supabase", icon: "supabase", description: "Deployment" },
+                            { name: "Kafka", icon: "kafka", description: "Event Bus" },
+                            { name: "Redis", icon: "redis", description: "Caching" }
                         ].map((tech, i) => (
                             <motion.div
                                 key={i}
@@ -946,7 +1007,7 @@ export default function LandingPage() {
                                 Start Your Free Quest <FaArrowRight />
                             </span>
                         </Button>
-                        <Button
+                        {/* <Button
                             variant="outline"
                             className="border-white text-white hover:bg-white/10 px-8 py-4 text-lg font-medium"
                             onClick={() => window.location.href = '/demo'}
@@ -954,7 +1015,7 @@ export default function LandingPage() {
                             <span className="flex items-center gap-2">
                                 Try Interactive Demo
                             </span>
-                        </Button>
+                        </Button> */}
                     </div>
 
                     <div className="mt-8 flex flex-wrap justify-center gap-4">

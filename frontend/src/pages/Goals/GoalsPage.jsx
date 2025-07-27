@@ -89,7 +89,6 @@ const GoalsPage = () => {
           </div>
         </div>
 
-
         {/*Search Input */}
         <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm">
           <FaSearch className="text-[#76B947] mr-2" />
