@@ -251,8 +251,6 @@ const eligible = useMemo(() => {
     <CommunityLayout>
       <Toaster position="top-right" />
       <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
-        <CommunityHeader />
-
         <div className="bg-white p-4 rounded-2xl shadow flex justify-between items-center border" style={{ borderColor: '#E5E7EB' }}>
           <div className="flex items-center gap-4">
             <img src={selectedBanner} className="w-16 h-16 rounded-full object-cover border" />

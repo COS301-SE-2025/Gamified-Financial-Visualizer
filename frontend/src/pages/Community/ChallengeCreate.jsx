@@ -200,7 +200,6 @@ const ChallengeCreate = () => {
     setShowConfirmation(false);
   };
 
-
   const today = new Date().toISOString().split('T')[0];
   const filteredFriends = mockFriends.filter(f => f.name.toLowerCase().includes(searchFriend.toLowerCase()));
 
@@ -208,7 +207,6 @@ const ChallengeCreate = () => {
     <CommunityLayout>
       <Toaster position="top-right" />
       <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
-        <CommunityHeader />
 
         {/* Confrimation popup */}
         {showConfirmation && (

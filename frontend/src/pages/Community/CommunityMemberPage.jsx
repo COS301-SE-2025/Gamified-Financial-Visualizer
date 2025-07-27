@@ -5,7 +5,7 @@ import toast, { Toaster } from 'react-hot-toast';
 
 import CommunityLayout from '../../pages/Community/CommunityLayout';
 import CommunityHeader from '../../layouts/headers/CommunityHeader';
-import { FaChartLine, FaStar, FaArrowLeft, FaCrown, FaEye, FaMedal, FaUserPlus, FaUserMinus, FaPaperPlane, FaTimes, FaCheck } from 'react-icons/fa';
+import { FaChartLine, FaArrowLeft, FaCrown, FaEye, FaMedal, FaUserMinus, FaPaperPlane, FaTimes, FaCheck } from 'react-icons/fa';
 
 const CommunityMemberPage = () => {
   const user = JSON.parse(localStorage.getItem('user'));
@@ -123,7 +123,6 @@ const CommunityMemberPage = () => {
   };
 
   const cancelRequest = async () => {
-
   }
 
   const removeFriend = async () => {
@@ -145,7 +144,6 @@ const CommunityMemberPage = () => {
       <CommunityLayout>
         <Toaster position="top-right" />
         <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
-          <CommunityHeader />
           <div className="text-center py-10">
             <p className="text-lg font-semibold text-gray-700">Loading profile data...</p>
           </div>

@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { FaTrophy } from 'react-icons/fa';
 
 // Medals
-import goldMedal from '../../assets/Images/badges/goldMedal.png';
-import silverMedal from '../../assets/Images/badges/silverMedal.png';
-import bronzeMedal from '../../assets/Images/badges/bronzeMedal.png';
+import goldMedal from '../../assets/Images/medals/goldMedal.png';
+import silverMedal from '../../assets/Images/medals/silverMedal.png';
+import bronzeMedal from '../../assets/Images/medals/bronzeMedal.png';
 
 // Utility for top 3 medals
 const getMedalIcon = (rank) => {
