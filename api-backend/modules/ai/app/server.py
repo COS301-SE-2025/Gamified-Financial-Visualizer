@@ -82,6 +82,14 @@ def retrain_with_feedback(req: FeedbackTrainReq, background_tasks: BackgroundTas
 
 
 # --- insights ---
+@app.get("/insights/userId")
+def get_insights(req: int):
+    """
+    Get AI score for userID
+    """
+    return {"insights": []}
+
+
 # --- serve ---
 if __name__ == "__main__":
     uvicorn.run("server:app", host="0.0.0.0", port=6000, log_level="info")
