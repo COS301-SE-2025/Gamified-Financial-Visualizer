@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   FaChevronRight, FaUser, FaCog, FaSignOutAlt, FaHome, FaWallet,
   FaBullseye, FaGraduationCap, FaMedal, FaUsers, FaQuestionCircle,
@@ -195,6 +195,7 @@ const Navbar = () => {
     };
   });
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -273,9 +274,12 @@ const Navbar = () => {
                 </NavLink>
               ) : (
                 <>
+                {/* Adds the button highlight */}
                   <button
                     onClick={() => toggleMenu(menu.label)}
-                    className={`flex items-center gap-1 text-sm font-semibold transition-colors ${activeMenu === menu.label ? 'text-[#83AB55]' : 'text-gray-700 hover:text-[#83AB55]'
+                    className={`flex items-center gap-1 text-sm font-semibold transition-colors ${menu.items.some(item => location.pathname.startsWith(item.to)) || activeMenu === menu.label
+                        ? 'text-[#83AB55]'
+                        : 'text-gray-700 hover:text-[#83AB55]'
                       }`}
                   >
                     {menu.icon}

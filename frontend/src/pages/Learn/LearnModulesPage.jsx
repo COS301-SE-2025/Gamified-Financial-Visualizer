@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaSearch, FaFilter } from 'react-icons/fa';
+import { FaSearch, FaFilter, FaCheckCircle } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import LearnLayout from '../../pages/Learn/LearnLayout';
 import CourseCard from '../../components/cards/CoursesCard';
@@ -87,18 +87,26 @@ const LearningPage = () => {
   return (
     <LearnLayout>
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">All Courses</h1>
+            <p className="text-gray-600">Find all and complete all your modules</p>
+          </div>
+        </div>
+
         {/* Search and Filter Section */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-6">
             {/* search section */}
             <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm">
-                      <FaSearch className="text-[#76B947] mr-2" />
-                      <input
-                        type="text"
-                        placeholder="Search your transactions..."
-                        className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70"
-                      />
-                    </div>
+              <FaSearch className="text-[#76B947] mr-2" />
+              <input
+                type="text"
+                placeholder="Search your transactions..."
+                className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70"
+              />
+            </div>
             {/* fiter button */}
             <button
               onClick={() => setShowFilters(!showFilters)}
