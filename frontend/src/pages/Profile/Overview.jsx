@@ -291,7 +291,7 @@ const Overview = () => {
                   <div className="w-full bg-[#f3f4f6] rounded-full h-2">
                     <div
                       className="bg-gradient-to-r from-[#B4CB98] to-[#83AB55] h-2 rounded-full"
-                      style={{ width: `${goal.progress_percentage}%` }}
+                      style={{ width: `${Math.min(goal.progress_percentage, 100)}%` }}
                     ></div>
                   </div>
                   <p className="text-xs text-gray-500 mt-1 text-right">
@@ -311,7 +311,6 @@ const Overview = () => {
             View All Goals
           </button>
         </motion.div>
-
 
       </div>
 

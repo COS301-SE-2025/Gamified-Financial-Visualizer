@@ -32,11 +32,6 @@ const CommunityLayout = ({ children }) => {
           <div className="flex-1">
             {children}
           </div>
-
-          {/* Leaderboard (right panel) */}
-          <div className="w-full lg:w-[320px]">
-            <LeaderboardPanel />
-          </div>
         </div>
       </div>
     </div>

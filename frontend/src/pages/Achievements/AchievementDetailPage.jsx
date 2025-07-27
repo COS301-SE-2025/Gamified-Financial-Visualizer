@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { FaBolt } from 'react-icons/fa';
+import { useParams, useNavigate } from 'react-router-dom';
+import { FaBolt, FaArrowLeft, FaChevronLeft } from 'react-icons/fa';
 import AchievementsLayout from '../../pages/Achievements/AchievementsLayout';
 import toast from 'react-hot-toast';
 
@@ -93,7 +93,9 @@ const BadgeTaskCard = ({ task, primaryColor, image, barGradient }) => {
 
 const AchievementDetailPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
+  const [error, setError] = useState(null);
 
   const colorKey = detectColorKey(id);
   const primaryColor = hexMap[colorKey];
@@ -112,6 +114,7 @@ const AchievementDetailPage = () => {
         setTasks(data.data || []);
       } catch (error) {
         console.error(error);
+        setError(error.message);
         toast.error('Could not load achievement tasks');
       }
     };
@@ -119,22 +122,47 @@ const AchievementDetailPage = () => {
     loadTasks();
   }, [id]);
 
-  if (!tasks.length) {
+if (error) {
     return (
       <AchievementsLayout>
-        <div className="p-6 space-y-6 rounded-2xl -mt-6">
-          <div className="flex items-center justify-center h-64">
-            <FaBolt className="text-gray-400 text-6xl" />
+        <div className="max-w-6xl mx-auto p-4">
+          <div className="bg-red-50 border-l-4 border-[#FF8A8A] p-4 rounded-r-lg">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-[#FF8A8A]" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-[#FF8A8A]">Error loading achievement tasks</h3>
+                <div className="mt-2 text-sm text-[#FF8A8A]">
+                  <p>{error}</p>
+                </div>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="mt-3 inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#FF8A8A] hover:bg-[#FF6B6B] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF8A8A]"
+                >
+                  Try Again
+                </button>
+              </div>
+            </div>
           </div>
-          <p className="text-center text-gray-500">Loading achievement tasks...</p>
         </div>
       </AchievementsLayout>
     );
   }
 
   return (
-    <AchievementsLayout>
+ <AchievementsLayout>
       <div className="p-6 space-y-6 rounded-2xl -mt-6">
+        <button 
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 mb-4 px-4 py-2 rounded-full border border-gray-300 hover:bg-gray-50 transition-colors text-gray-700"
+        >
+          <FaChevronLeft className="text-gray-500" />
+          <span className="font-medium">Back</span>
+        </button>
+        
         <div>
           <div
             className="inline-block px-4 py-1 rounded-full border font-bold text-lg"

@@ -202,7 +202,8 @@ const BudgetCard = ({
                   className="h-full rounded-full transition-all duration-500 ease-out"
                   style={{ 
                     width: `${percentageUsed}%`,
-                    background: 'linear-gradient(90deg, #CFDFBD 0%, #91BE59 100%)'
+                    background: 'linear-gradient(90deg, #5FBFFF 0%, #91BE59 100%)'
+                    // bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53]
                   }}
                 ></div>
               </div>

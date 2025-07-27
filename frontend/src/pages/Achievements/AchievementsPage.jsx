@@ -13,6 +13,23 @@ import badge7 from '../../assets/Images/badges/investment.png';
 import badge8 from '../../assets/Images/badges/goal.png';
 import badge9 from '../../assets/Images/badges/trophy.png';
 import badge10 from '../../assets/Images/badges/bank.png';
+import badge11 from '../../assets/Images/badges/balance-scale.png';
+import badge12 from '../../assets/Images/badges/brainstorming.png';
+import badge13 from '../../assets/Images/badges/customer.png';
+import badge14 from '../../assets/Images/badges/discussion.png';
+import badge15 from '../../assets/Images/badges/expense.png';
+import badge16 from '../../assets/Images/badges/idea.png';
+import badge17 from '../../assets/Images/badges/income.png';
+import badge18 from '../../assets/Images/badges/lighthouse.png';
+import badge19 from '../../assets/Images/badges/meeting.png';
+import badge20 from '../../assets/Images/badges/planing.png';
+import badge21 from '../../assets/Images/badges/presentation.png';
+import badge22 from '../../assets/Images/badges/profit.png';
+import badge23 from '../../assets/Images/badges/start-up.png';
+import badge24 from '../../assets/Images/badges/support.png';
+import badge25 from '../../assets/Images/badges/team.png';
+
+
 
 // Color system matching Figma card groups
 const colorMap = {
@@ -33,9 +50,23 @@ const colorMap = {
   },
 };
 
+const allBadges = [
+  badge1, badge2, badge3, badge4, badge5,
+  badge6, badge7, badge8, badge9, badge10, badge11, badge12,
+  badge13, badge14, badge15, badge16, badge17, badge18,
+  badge19, badge20, badge21, badge22, badge23, badge24, badge25
+];
+
+// Optional: Helper to get a random badge
+const getRandomBadge = () => {
+  const index = Math.floor(Math.random() * allBadges.length);
+  return allBadges[index];
+};
+
 // mapping for the badge images 
 const getBadgeImage = (title) => {
   const lower = title.toLowerCase();
+
   if (lower.includes('coin') || lower.includes('track') || lower.includes('halfway')) return badge1;
   if (lower.includes('bank') || lower.includes('stack')) return badge2;
   if (lower.includes('target') || lower.includes('top')) return badge3;
@@ -47,7 +78,8 @@ const getBadgeImage = (title) => {
   if (lower.includes('investor') || lower.includes('quiz') || lower.includes('trophy')) return badge9;
   if (lower.includes('banker')) return badge10;
 
-  return badge1; // default
+  // Default to a random badge if no keyword match
+  return getRandomBadge();
 };
 
 const detectColorKey = (title) => {

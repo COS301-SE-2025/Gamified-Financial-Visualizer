@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
-import { FaEye, FaSearch } from 'react-icons/fa';
+import { FaEye, FaPlus, FaSearch, FaUsers } from 'react-icons/fa';
 import CommunityLayout from '../../pages/Community/CommunityLayout';
-import CommunityHeader from '../../layouts/headers/CommunityHeader';
 
 const CommunityList = () => {
   const [communities, setCommunities] = useState([]);
@@ -72,25 +71,32 @@ const CommunityList = () => {
     <CommunityLayout>
       <Toaster position="top-right" />
       <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
-        <div className="flex justify-end mb-4">
+        {/* Create community button */}
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-[#1F2937] flex items-center gap-2">
+            <FaUsers className="text-[#72C1F5]" />
+            My Communities
+          </h2>
+
           <Link to="/community/create">
-            <button className="flex items-center gap-2 bg-gradient-to-r from-[#AAD977] to-[#83AB55] text-white px-4 py-2 rounded-full text-sm font-medium shadow hover:shadow-md transition">
-              <FaEye /> Create Community
+            <button className="inline-flex items-center gap-2 bg-[#AAD977] hover:bg-[#83AB55] text-white text-sm font-semibold px-5 py-2.5 rounded-full shadow transition-all">
+              <FaPlus className="text-base" />
+              Create Community
             </button>
           </Link>
         </div>
 
-        <div className="flex items-center w-full max-w-6xl -ml-[8px] px-4 py-2 rounded-3xl border-2 border-[#E5794B] bg-white shadow-sm">
-          <FaSearch className="text-[#E5794B] mr-2" />
+        {/* Search bar */}
+        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm">
+          <FaSearch className="text-[#76B947] mr-2" />
           <input
             type="text"
-            placeholder="Search your communities..."
-            className="w-full outline-none bg-transparent text-sm text-[#E5794B] placeholder-[#E5794B]/70"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search your transactions..."
+            className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70"
           />
         </div>
 
+        {/* Community details */}
         {communities
           .filter(c => c.community_name.toLowerCase().includes(searchTerm.toLowerCase()))
           .map((community, i) => (
@@ -101,9 +107,18 @@ const CommunityList = () => {
                   alt={community.community_name}
                   className="w-16 h-16 rounded-full object-cover shadow"
                 />
+
                 <div>
-                  <p className="text-lg font-medium text-gray-800">{community.community_name}</p>
-                  <div className="flex gap-2 mt-1">
+                  <p className="text-lg font-semibold text-gray-800">{community.community_name}</p>
+
+                  {/* DESCRIPTION BLOCK */}
+                  {community.description && (
+                    <p className="text-sm text-gray-500 italic mt-1 max-w-xs line-clamp-2">
+                      {community.description}
+                    </p>
+                  )}
+
+                  <div className="flex gap-2 mt-2">
                     <span className="bg-[#E0F2FE] text-[#72C1F5] text-xs font-medium px-3 py-1 rounded-full">
                       {community.member_count} Members
                     </span>
@@ -117,6 +132,8 @@ const CommunityList = () => {
                 </div>
               </div>
 
+
+              {/* Card Avatars */}
               <div className="flex items-center gap-4">
                 <div className="flex -space-x-2">
                   {community.preview_avatars?.map((src, index) => (
