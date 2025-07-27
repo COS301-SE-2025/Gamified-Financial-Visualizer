@@ -285,12 +285,12 @@ const eligible = useMemo(() => {
                   </button>
                 </>
               ) : (
-                <>
+                <div className="flex items-center gap-2">
                   <button
                     onClick={handleRequestMembers}
-                    className="flex items-center gap-2 bg-[#B1E1FF] text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-[#4BA5E6] transition"
+                    className="flex items-center gap-2 pr-4 bg-[#B1E1FF] text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-[#4BA5E6] transition"
                   >
-                    <FaUserPlus /> Request
+                    <FaUserPlus /> Request to Join
                   </button>
                   <button
                     onClick={() => setIsEditing(true)}
@@ -304,7 +304,7 @@ const eligible = useMemo(() => {
                   >
                     <FaArrowLeft /> Back
                   </button>
-                </>
+                </div>
               )}
             </div>
           </div>
@@ -512,12 +512,12 @@ const eligible = useMemo(() => {
           <div className="bg-white p-5 rounded-2xl shadow border" style={{ borderColor: '#E5E7EB' }}>
             <h4 className="text-sm font-semibold mb-2" style={{ color: '#1F2937' }}>XP Collected</h4>
             <div className="flex items-center justify-between">
-              <div className="w-full h-4 rounded-full overflow-hidden bg-white border border-[#FBBF24] mr-4">
+              <div className="w-full h-4 rounded-full overflow-hidden bg-white border border-[#5FBFFF] mr-4">
                 <div
                   className="h-full"
                   style={{
                     width: (communityData.xpCollected/communityData.xpGoal)*100 + '%',
-                    background: 'linear-gradient(to right, #FACC15, #FB923C)',
+                    background: 'linear-gradient(to right, #5FBFFF, #7FDD53)',
                     borderRadius: '9999px',
                   }}
                 />
@@ -533,12 +533,13 @@ const eligible = useMemo(() => {
           <div className="bg-white p-5 rounded-2xl shadow border" style={{ borderColor: '#E5E7EB' }}>
             <h4 className="text-sm font-semibold mb-2" style={{ color: '#1F2937' }}>Goals Completed</h4>
             <div className="flex items-center justify-between">
-              <div className="w-full h-4 rounded-full overflow-hidden bg-white border border-[#FBBF24] mr-4">
+              <div className="w-full h-4 rounded-full overflow-hidden bg-white border border-[#5FBFFF] mr-4">
                 <div
                   className="h-full"
                   style={{
                     width: (communityData.goalsCompleted/communityData.goalsTotal)*100 +  '%',
-                    background: 'linear-gradient(to right, #FACC15, #FB923C)',
+                    background: 'linear-gradient(to right, #5FBFFF, #7FDD53)',
+                     // bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53]
                     borderRadius: '9999px',
                   }}
                 />
