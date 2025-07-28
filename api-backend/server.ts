@@ -139,6 +139,11 @@ registerCommunityModule(app);
 registerAchievementModule(app);
 registerNotificationsModule(app);
 
+// Basic route to check if the server is running, i will remove this later
+app.get('/', (_req, res) => {
+  res.send('🚀 Gamified Finance API is running!');
+});
+
 // Health check
 app.get('/health', async (_req, res) => {
   try {
