@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState }  from 'react';
 import {
   FaUsers,
   FaBolt,
@@ -18,6 +18,40 @@ const performance = {
 };
 
 const AccountsPerformanceHeader = () => {
+   const [userStats, setUserStats] = useState(null);
+  const [numComplete, setNumComplete] = useState(null);
+  const [totalAchievements, setTotalAchievements] = useState(null);
+  const [levelProgress, setLevelProgress] = useState(null);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user?.id) return;
+
+    // Fetch user stats
+
+    fetch(`http://localhost:5000/api/achievements/performance/${user.id}`)
+      .then(res => res.json())
+      .then(data => setUserStats(data.data))
+      .catch(err => console.error('User stats error:', err));
+
+       
+    fetch(`http://localhost:5000/api/achievements/user/${user.id}`)
+      .then(res => res.json())
+      .then(data => {
+        const complete = data.data.filter(a => a.achievement_status === 'complete');
+        const total = data.data.length;
+        setTotalAchievements(total);
+        setNumComplete(complete.length);
+      });
+
+           // Fetch level progress
+    fetch(`http://localhost:5000/api/auth/profile/level-progress/${user.id}`)
+      .then(res => res.json())
+      .then(res => setLevelProgress(res.data))
+      .catch(err => console.error('Failed to load level progress:', err));
+  } , []);
+
+
   return (
     <div className="flex flex-wrap justify-between gap-6 items-start w-full mb-6">
       {/* Left Label */}
@@ -37,11 +71,11 @@ const AccountsPerformanceHeader = () => {
         <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col sm:flex-row items-center justify-between gap-6">
           {/* Avatar + Info */}
           <div className="flex items-center gap-6">
-            <img src={avatar} className="w-16 h-16 rounded-full object-cover" alt="Avatar" />
+            <img src={userStats?.avatar_url} className="w-16 h-16 rounded-full object-cover" alt="Avatar" />
             <div>
-              <p className="text-2xl font-bold text-gray-800">{performance.score}</p>
-              <p className="text-sm text-gray-500">{performance.label}</p>
-              <p className="text-sm text-[#F97156] font-medium">{performance.level}</p>
+              <p className="text-2xl font-bold text-gray-800">{userStats?.creditScore}</p>
+              <p className="text-sm text-gray-500">{userStats?.performanceLabel}</p>
+              <p className="text-sm text-[#F97156] font-medium">Lv {levelProgress?.level_number ?? '—'}: {levelProgress?.tier_status ?? '—'}</p>
             </div>
           </div>
 
@@ -52,14 +86,14 @@ const AccountsPerformanceHeader = () => {
               <div
                 className="h-full rounded-full"
                 style={{
-                  width: `${performance.progress}%`,
+                  width: `${userStats?.performance/500 *100}%`,
                   background: 'linear-gradient(to right, #4FC3F7, #B3E5FC)'
                 }}
               />
               <div
                 className="absolute top-1/2 w-5 h-5 bg-[#B3E5FC] rounded-full border-2 border-white shadow-md"
                 style={{
-                  left: `calc(${performance.progress}% - 10px)`,
+                  left: `calc(${userStats?.performance/500 *100}% - 10px)`,
                   transform: 'translateY(-50%)'
                 }}
               />
@@ -71,38 +105,38 @@ const AccountsPerformanceHeader = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 w-full">
           {[
             {
-              label: 'Goals',
-              value: 14,
+              label: 'Quizzes',
+              value: userStats?.quizzes, 
               icon: <FaBolt />,
               color: '#B1E1FF'
             },
             {
-              label: 'Completed',
-              value: '83%',
+              label: 'Accuracy', 
+              value: Math.floor(numComplete/totalAchievements*100) + '%', 
               icon: <FaCheck />,
               color: '#7FDD53'
             },
             {
-              label: 'In-Progress',
-              value: 14,
+              label: 'Achievement Leaderboard', 
+              value: '#' + userStats?.leaderboardRank, 
               icon: <FaHourglassHalf />,
               color: '#FFC541'
             },
             {
-              label: 'Inactive',
-              value: 12,
+              label:  'Total points',
+              value: userStats?.totalXp,
               icon: <FaChartBar />,
               color: '#5FBFFF'
             },
             {
-              label: 'Incomplete',
-              value: '56%',
+              label:  'Badges', 
+              value: numComplete , 
               icon: <FaTimes />,
               color: '#F68D2B'
             },
             {
-              label: 'Cancelled',
-              value: 7,
+              label:'Challenger', 
+              value: userStats?.challengesJoined, 
               icon: <FaBan />,
               color: '#FF8A8A'
             }

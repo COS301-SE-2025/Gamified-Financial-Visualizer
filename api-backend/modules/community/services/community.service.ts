@@ -525,10 +525,11 @@ export async function getCommunityStats(user_id: number) {
 
       // 3. Leaderboard rank (assumes 1 row per user)
       client.query(`
-        SELECT ranking FROM leaderboard_entries
+        SELECT ranking FROM (
+          SELECT user_id, RANK() OVER (ORDER BY total_points DESC) AS ranking
+          FROM user_points
+        ) ranked
         WHERE user_id = $1
-        ORDER BY created_at DESC
-        LIMIT 1
       `, [ user_id ]),
 
       // 4. Games played — from quiz attempts
