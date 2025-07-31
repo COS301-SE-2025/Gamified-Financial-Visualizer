@@ -122,10 +122,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
       return;
     }
 
-    if (!window.confirm('Are you sure you want to delete this transaction?')) {
-      return;
-    }
-
+  
     setLoading(true);
     setError('');
 
