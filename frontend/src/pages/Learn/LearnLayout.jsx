@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PacmanLoader } from 'react-spinners';
+// import { PacmanLoader } from 'react-spinners';
 import LearnSidebar from '../../layouts/sidebars/LearnSidebar';
 
 const LearnLayout = ({ children }) => {

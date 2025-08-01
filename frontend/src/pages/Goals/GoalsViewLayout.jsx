@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { PacmanLoader } from 'react-spinners';
 import GoalsSidebar from '../../layouts/sidebars/GoalsSidebar';
 
 const GoalsViewLayout = ({ children }) => {

@@ -317,7 +317,7 @@ const CommunityDetail = () => {
                   >
                     <FaArrowLeft /> Back
                   </button>
-                </div>
+                </>
               )}
             </div>
           </div>
