@@ -24,7 +24,7 @@ const GoalCard = ({ goalId, title, image, progress, target, dueDate }) => {
                 {/* Progress Bar */}
                 <div className="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
                     <div
-                        className="h-3 rounded-full bg-gradient-to-r from-[#FF4C28] via-[#FF8A3C] to-[#FFCE51]"
+                        className="h-3 rounded-full bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53]"
                         style={{ width: `${progress}%` }}
                     ></div>
                 </div>

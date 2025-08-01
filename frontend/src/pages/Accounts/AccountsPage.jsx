@@ -17,6 +17,7 @@ const AccountsPage = () => {
   const [loadingTransactions, setLoadingTransactions] = useState(false);
   const [error, setError] = useState(null);
   const transactionsRef = useRef(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Transaction pagination (existing)
   const [currentPage, setCurrentPage] = useState(1);
@@ -31,13 +32,23 @@ const AccountsPage = () => {
   const indexOfFirstAccount = indexOfLastAccount - accountsPerPage;
   const currentAccounts = accounts.slice(indexOfFirstAccount, indexOfLastAccount);
 
-  // Get current transactions (existing)
-  const indexOfLastTransaction = currentPage * transactionsPerPage;
-  const indexOfFirstTransaction = indexOfLastTransaction - transactionsPerPage;
-  const currentTransactions = transactions.slice(
-    indexOfFirstTransaction,
-    indexOfLastTransaction
+  // Get current transactions with search filtering
+const filteredTransactions = transactions.filter(txn => {
+  if (!searchQuery) return true;
+  const query = searchQuery.toLowerCase();
+  return (
+    (txn.name && txn.name.toLowerCase().includes(query)) ||
+    (txn.category && txn.category.toLowerCase().includes(query)) ||
+    (txn.amount && txn.amount.toString().toLowerCase().includes(query))
   );
+});
+
+const indexOfLastTransaction = currentPage * transactionsPerPage;
+const indexOfFirstTransaction = indexOfLastTransaction - transactionsPerPage;
+const currentTransactions = filteredTransactions.slice(
+  indexOfFirstTransaction,
+  indexOfLastTransaction
+);
 
   // Change account page
   const paginateAccounts = (pageNumber) => {
@@ -193,6 +204,7 @@ const AccountsPage = () => {
     }
   };
 
+  // handle the clicking of a specific account 
   const handleCardClick = (account) => {
     setActiveAccount(account);
     if (account.account_id) {
@@ -375,11 +387,12 @@ const AccountsPage = () => {
           <h2 className="text-2xl font-semibold text-[#1C3C78]">Accounts</h2>
           <button
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-1 px-4 py-1 bg-[#D8F5C5] text-[#467D35] text-sm font-semibold rounded-full hover:bg-[#c8ecb4]"
+            className="flex items-center gap-1 px-4 py-1 bg-[#D8F5C5] text-[#76B947] text-sm font-semibold rounded-full hover:bg-[#c8ecb4]"
           >
             <FaPlus /> Add
           </button>
         </div>
+        <p className="gap-6 pb-3 mb-2 text-sm text-gray-500">Click an account to view its transactions</p>
 
         {/* Render currentAccounts instead of accounts */}
         <div className="space-y-4">
@@ -439,6 +452,11 @@ const AccountsPage = () => {
             type="text"
             placeholder="Search your transactions..."
             className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1); // Reset to first page when searching
+            }}
           />
         </div>
 
@@ -458,9 +476,9 @@ const AccountsPage = () => {
         </div>
 
         {/* Transaction Pagination */}
-        {transactions.length > transactionsPerPage && (
+        {filteredTransactions.length > transactionsPerPage && (
           <div className="flex justify-center mt-4">
-            {Array.from({ length: Math.ceil(transactions.length / transactionsPerPage) }).map((_, index) => (
+            {Array.from({ length: Math.ceil(filteredTransactions.length / transactionsPerPage) }).map((_, index) => (
               <button
                 key={index}
                 onClick={() => paginate(index + 1)}

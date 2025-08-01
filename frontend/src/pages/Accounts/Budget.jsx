@@ -3,10 +3,11 @@ import AccountsLayout from './AccountsLayout';
 import {
   FaEdit, FaTrash, FaUtensils, FaBus, FaBolt, FaFilm, FaHeartbeat,
   FaPlane, FaBook, FaLaptop, FaUser, FaHandsHelping, FaTshirt,
-  FaDumbbell, FaMobileAlt, FaWifi, FaTv, FaHome, FaCar, FaShieldAlt,
-  FaCalendarAlt, FaGasPump, FaBuilding, FaUniversity, FaMoneyBillWave,
+  FaDumbbell, FaMobileAlt, FaWifi, FaTv, FaHome, FaShieldAlt,
+  FaGasPump, FaBuilding, FaUniversity, FaMoneyBillWave,
   FaPiggyBank, FaChartLine, FaChild, FaPaw, FaTools, FaWallet,
-  FaCoins, FaExchangeAlt, FaPlus, FaTimes, FaCheck
+  FaCoins, FaExchangeAlt, FaPlus, FaTimes, FaCheck,
+  FaSearch
 } from 'react-icons/fa';
 
 // Enhanced category icons with colors
@@ -61,7 +62,7 @@ const categoryIcons = {
 };
 
 const BudgetForm = ({
-  initialData = { budget_name: '', category_id: '', target_amount: 0 },
+  initialData = { budget_name: '', category_id: '', target_amount: '' }, // Changed default target_amount to empty string
   onSave,
   onCancel,
   categories = [],
@@ -76,7 +77,7 @@ const BudgetForm = ({
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'target_amount' || name === 'category_id' ? Number(value) : value
+      [name]: name === 'target_amount' || name === 'category_id' ? (value === '' ? '' : Number(value)) : value
     }));
   };
 
@@ -102,7 +103,7 @@ const BudgetForm = ({
                     name="budget_name"
                     value={formData.budget_name}
                     onChange={handleChange}
-                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#467D35] focus:border-[#467D35]"
+                    className="w-full p-3 border rounded-lg"
                     required
                     placeholder="Enter budget name"
                   />
@@ -115,7 +116,7 @@ const BudgetForm = ({
                       name="category_id"
                       value={formData.category_id}
                       onChange={handleChange}
-                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#467D35] focus:border-[#467D35]"
+                      className="w-full p-3 border rounded-lg"
                       required
                     >
                       <option value="">Select Category</option>
@@ -133,10 +134,11 @@ const BudgetForm = ({
                       name="target_amount"
                       value={formData.target_amount}
                       onChange={handleChange}
-                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#467D35] focus:border-[#467D35]"
+                      className="w-full p-3 border rounded-lg"
                       required
                       min="0"
                       step="0.01"
+                      placeholder="0.00"
                     />
                   </div>
                 </>
@@ -176,7 +178,7 @@ const BudgetCard = ({
   const targetAmount = Number(total_target) || 0;
   const usedAmount = Number(used) || 0;
   const remainingAmount = targetAmount - usedAmount;
-  
+
   const percentageUsed = targetAmount > 0 ? Math.min((usedAmount / targetAmount) * 100, 100) : 0;
   const categoryName = budget_name?.toLowerCase() || '';
   const iconData = categoryIcons[categoryName] || categoryIcons.default;
@@ -195,15 +197,15 @@ const BudgetCard = ({
               <span className="text-sm text-gray-600">Used: <span className="font-medium">R{usedAmount.toFixed(2)}</span></span>
               <span className="text-sm text-gray-600">Remaining: <span className="font-medium">R{remainingAmount.toFixed(2)}</span></span>
             </div>
-            
+
             <div className="mt-3 w-full">
               <div className="w-full h-2.5 rounded-full bg-gray-100 overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-500 ease-out"
-                  style={{ 
+                  style={{
                     width: `${percentageUsed}%`,
                     background: 'linear-gradient(90deg, #5FBFFF 0%, #91BE59 100%)'
-                    // bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53]
+                    // bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53] 
                   }}
                 ></div>
               </div>
@@ -212,19 +214,20 @@ const BudgetCard = ({
         </div>
 
         <div className="flex gap-2">
-        <button 
-          onClick={onEdit}
-          className="flex items-center gap-1 bg-sky-100 text-sky-500 px-4 py-1 rounded-full hover:bg-sky-200"
-        >
-          <FaEdit /> Edit
-        </button>
-        <button 
-          onClick={onDelete}
-          className="flex items-center gap-1 bg-red-100 text-red-400 px-4 py-1 rounded-full hover:bg-red-200"
-        >
-          <FaTrash /> Delete
-        </button>
-      </div>
+          {/* Removing this feature for the time being */}
+          {/* <button
+            onClick={onEdit}
+            className="flex items-center gap-1 bg-sky-100 text-sky-500 px-4 py-1 rounded-full hover:bg-sky-200"
+          >
+            <FaEdit /> Edit
+          </button> */}
+          <button
+            onClick={onDelete}
+            className="flex items-center gap-1 bg-red-100 text-red-400 px-4 py-1 rounded-full hover:bg-red-200"
+          >
+            <FaTrash /> Delete
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -237,6 +240,7 @@ const BudgetPage = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const user = localStorage.getItem('user');
   const userId = user ? JSON.parse(user).id : null;
@@ -253,7 +257,11 @@ const BudgetPage = () => {
       const result = await response.json();
 
       if (result.status === 'success') {
-        setBudgets(result.data);
+        // Sort budgets by creation date (newest first)
+        const sortedBudgets = result.data.sort((a, b) =>
+          new Date(b.created_at || 0) - new Date(a.created_at || 0)
+        );
+        setBudgets(sortedBudgets);
       } else {
         setError(result.message || 'Failed to fetch budgets');
       }
@@ -264,6 +272,11 @@ const BudgetPage = () => {
       setLoading(false);
     }
   };
+
+  // Filter budgets based on search term
+  const filteredBudgets = budgets.filter(budget =>
+    budget.budget_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const fetchCategories = async () => {
     try {
@@ -291,31 +304,31 @@ const BudgetPage = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this budget?')) {
-      return;
+  if (!window.confirm('Are you sure you want to delete this budget?')) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`http://localhost:5000/api/budget/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // Remove the body since your backend likely doesn't need it for DELETE
+    });
+
+    const result = await response.json();
+
+    if (result.status === 'success') {
+      setBudgets(budgets.filter(budget => budget.budget_id !== id));
+    } else {
+      setError(result.message || 'Failed to delete budget');
     }
-
-    try {
-      const response = await fetch(`http://localhost:5000/api/budget/user/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ user_id: userId }),
-      });
-
-      const result = await response.json();
-
-      if (result.status === 'success') {
-        setBudgets(budgets.filter(budget => budget.budget_id !== id));
-      } else {
-        setError(result.message || 'Failed to delete budget');
-      }
-    } catch (err) {
-      setError('Failed to delete budget');
-      console.error('Error deleting budget:', err);
-    }
-  };
+  } catch (err) {
+    setError('Failed to delete budget');
+    console.error('Error deleting budget:', err);
+  }
+};
 
   const handleSave = async (formData) => {
     try {
@@ -413,6 +426,20 @@ const BudgetPage = () => {
           </div>
         )}
 
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm">
+            <FaSearch className="text-[#76B947] mr-2" />
+            <input
+              type="text"
+              placeholder="Search your budgets..."
+              className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+
         <div className="space-y-4">
           {isCreating && (
             <BudgetForm
@@ -423,7 +450,7 @@ const BudgetPage = () => {
             />
           )}
 
-          {budgets.map((budget) => (
+          {filteredBudgets.map((budget) => (
             editingId === budget.budget_id ? (
               <BudgetForm
                 key={budget.budget_id}
@@ -459,6 +486,16 @@ const BudgetPage = () => {
               >
                 <FaPlus className="inline mr-2" /> Create Budget
               </button>
+            </div>
+          )}
+
+          {budgets.length > 0 && filteredBudgets.length === 0 && (
+            <div className="text-center py-12">
+              <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <FaSearch className="text-gray-400 text-3xl" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-700 mb-1">No budgets found</h3>
+              <p className="text-gray-500">Try adjusting your search term</p>
             </div>
           )}
         </div>

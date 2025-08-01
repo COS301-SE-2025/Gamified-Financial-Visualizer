@@ -317,7 +317,7 @@ const CommunityDetail = () => {
                   >
                     <FaArrowLeft /> Back
                   </button>
-                </>
+                </div>
               )}
             </div>
           </div>
@@ -525,7 +525,7 @@ const CommunityDetail = () => {
           <div className="bg-white p-5 rounded-2xl shadow border" style={{ borderColor: '#E5E7EB' }}>
             <h4 className="text-sm font-semibold mb-2" style={{ color: '#1F2937' }}>XP Collected</h4>
             <div className="flex items-center justify-between">
-              <div className="w-full h-4 rounded-full overflow-hidden bg-white border border-[#FBBF24] mr-4">
+              <div className="w-full h-4 rounded-full overflow-hidden bg-white border border-[#5FBFFF] mr-4">
                 <div
                   className="h-full"
                   style={{
@@ -546,12 +546,13 @@ const CommunityDetail = () => {
           <div className="bg-white p-5 rounded-2xl shadow border" style={{ borderColor: '#E5E7EB' }}>
             <h4 className="text-sm font-semibold mb-2" style={{ color: '#1F2937' }}>Goals Completed</h4>
             <div className="flex items-center justify-between">
-              <div className="w-full h-4 rounded-full overflow-hidden bg-white border border-[#FBBF24] mr-4">
+              <div className="w-full h-4 rounded-full overflow-hidden bg-white border border-[#5FBFFF] mr-4">
                 <div
                   className="h-full"
                   style={{
-                    width: (communityData.goalsCompleted / communityData.goalsTotal) * 100 + '%',
-                    background: 'linear-gradient(to right, #FACC15, #FB923C)',
+                    width: (communityData.goalsCompleted/communityData.goalsTotal)*100 +  '%',
+                    background: 'linear-gradient(to right, #5FBFFF, #7FDD53)',
+                     // bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53]
                     borderRadius: '9999px',
                   }}
                 />

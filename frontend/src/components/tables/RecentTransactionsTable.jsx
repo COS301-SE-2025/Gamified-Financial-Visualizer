@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { FaTrash, FaEdit, FaPlus } from 'react-icons/fa';
 import AddTransactionModal from '../modals/AddTransactionModal';
-import EditTransactionModal from '../modals/EditTransactionModal';
 
 const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, onEdit, onDelete, onRefresh }) => {
   const isAccountView = Boolean(account);
@@ -9,29 +8,23 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
   const [categoryFilter, setCategoryFilter] = useState('');
   const [dateFilter, setDateFilter] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
-  const [editTxnIndex, setEditTxnIndex] = useState(null);
-  const [editTxnData, setEditTxnData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [categories, setCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
+  const [editTransactionId, setEditTransactionId] = useState(null);
+  const [editValues, setEditValues] = useState({});
 
-  // Fetch categories from API
   useEffect(() => {
     const fetchCategories = async () => {
       setCategoriesLoading(true);
       try {
         const response = await fetch('http://localhost:5000/api/transactions/categories');
-        if (!response.ok) {
-          throw new Error('Failed to fetch categories');
-        }
+        if (!response.ok) throw new Error('Failed to fetch categories');
         const data = await response.json();
-        if (data.status === 'success') {
-          setCategories(data.data);
-        }
+        if (data.status === 'success') setCategories(data.data);
       } catch (err) {
         console.error('Error fetching categories:', err);
-        // Fallback to hardcoded categories if API fails
         setCategories([
           { category_id: 1, category_name: 'Food' },
           { category_id: 2, category_name: 'Transport' },
@@ -50,19 +43,12 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
 
   const filteredSortedTransactions = useMemo(() => {
     let filtered = [...transactions];
-
-    // Category filter
-    if (categoryFilter) {
-      filtered = filtered.filter(txn => txn.category === categoryFilter);
-    }
-
-    // Date filter
+    if (categoryFilter) filtered = filtered.filter(txn => txn.category === categoryFilter);
     if (dateFilter) {
       const today = new Date();
       filtered = filtered.filter(txn => {
         const txnDate = new Date(txn.date);
         const diffInDays = (today - txnDate) / (1000 * 60 * 60 * 24);
-
         if (dateFilter === '7 Days') return diffInDays <= 7;
         if (dateFilter === '10 Days') return diffInDays <= 10;
         if (dateFilter === 'Last Month') {
@@ -72,20 +58,12 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
           lastMonth.setMonth(lastMonth.getMonth() - 1);
           return txnMonth === lastMonth.getMonth() && txnYear === lastMonth.getFullYear();
         }
-
         return true;
       });
     }
-
-    // Sorting
-    if (sortBy === 'Name') {
-      filtered.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (sortBy === 'Amount') {
-      filtered.sort((a, b) => parseFloat(b.amount.replace(/[^\d.-]/g, '')) - parseFloat(a.amount.replace(/[^\d.-]/g, '')));
-    } else if (sortBy === 'Date') {
-      filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
-    }
-
+    if (sortBy === 'Name') filtered.sort((a, b) => a.name.localeCompare(b.name));
+    else if (sortBy === 'Amount') filtered.sort((a, b) => parseFloat(b.amount.replace(/[^\d.-]/g, '')) - parseFloat(a.amount.replace(/[^\d.-]/g, '')));
+    else if (sortBy === 'Date') filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
     return filtered;
   }, [transactions, sortBy, categoryFilter, dateFilter]);
 
@@ -93,9 +71,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
     try {
       setError('');
       await onAdd(newTransaction);
-      if (onRefresh) {
-        await onRefresh(account?.account_id);
-      }
+      if (onRefresh) await onRefresh(account?.account_id);
     } catch (err) {
       setError('Failed to add transaction');
       console.error('Error adding transaction:', err);
@@ -106,9 +82,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
     try {
       setError('');
       await onEdit(index, updatedTransaction);
-      if (onRefresh) {
-        await onRefresh(account?.account_id);
-      }
+      if (onRefresh) await onRefresh(account?.account_id);
     } catch (err) {
       setError('Failed to update transaction');
       console.error('Error updating transaction:', err);
@@ -125,25 +99,11 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
   
     setLoading(true);
     setError('');
-
     try {
-      const response = await fetch(`http://localhost:5000/api/transactions/${transaction.transaction_id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to delete transaction');
-      }
-
-      // Call the parent's onDelete function
+      const response = await fetch(`http://localhost:5000/api/transactions/${transaction.transaction_id}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error((await response.json()).message || 'Failed to delete transaction');
       onDelete(index);
-
-      // Refresh the transactions list
-      if (onRefresh) {
-        await onRefresh(account?.account_id);
-      }
-
+      if (onRefresh) await onRefresh(account?.account_id);
     } catch (err) {
       setError(err.message || 'Failed to delete transaction');
       console.error('Error deleting transaction:', err);
@@ -156,7 +116,6 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
     <div className="bg-white border border-gray-200 rounded-2xl shadow-md px-6 py-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-[#336699]">{heading}</h2>
-
         {isAccountView && (
           <div className="flex gap-2 items-center">
             <select className="border px-4 py-1 rounded-full text-sm" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
@@ -165,34 +124,22 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
               <option value="Amount">Amount</option>
               <option value="Date">Date</option>
             </select>
-
-            <select 
-              className="border px-4 py-1 rounded-full text-sm" 
-              value={categoryFilter} 
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              disabled={categoriesLoading}
-            >
-              <option value="">
-                {categoriesLoading ? 'Loading categories...' : 'Filter by categories'}
-              </option>
+            <select className="border px-4 py-1 rounded-full text-sm" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} disabled={categoriesLoading}>
+              <option value="">{categoriesLoading ? 'Loading categories...' : 'Filter by categories'}</option>
               {categories.map(category => (
-                <option key={category.category_id} value={category.category_name}>
-                  {category.category_name}
-                </option>
+                <option key={category.category_id} value={category.category_name}>{category.category_name}</option>
               ))}
             </select>
-
             <select className="border px-4 py-1 rounded-full text-sm" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
               <option value="">Filter by date</option>
               <option value="7 Days">Last 7 Days</option>
               <option value="10 Days">Last 10 Days</option>
               <option value="Last Month">Last Month</option>
             </select>
-
             <button
               onClick={() => setShowAddModal(true)}
               disabled={!account || loading}
-              className="flex items-center gap-2 px-4 py-1 bg-[#D8F5C5] text-[#467D35] text-sm font-medium rounded-full hover:bg-[#c8ecb4] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-1 bg-[#D8F5C5] text-[#76B947] text-sm font-medium rounded-full hover:bg-[#c8ecb4] transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <FaPlus /> Add
             </button>
@@ -203,12 +150,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
       {error && (
         <div className="bg-red-50 border border-red-200 rounded p-3 mb-4 text-red-700 text-sm">
           {error}
-          <button
-            onClick={() => setError('')}
-            className="ml-2 text-red-500 hover:text-red-700"
-          >
-            ×
-          </button>
+          <button onClick={() => setError('')} className="ml-2 text-red-500 hover:text-red-700">×</button>
         </div>
       )}
 
@@ -227,51 +169,127 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
             {filteredSortedTransactions.length === 0 ? (
               <tr>
                 <td colSpan="5" className="px-4 py-8 text-center text-gray-500">
-                  {isAccountView ? (
-                    account ? 'No transactions found for this account' : 'Select an account to view transactions'
-                  ) : (
-                    'No transactions available'
-                  )}
+                  {isAccountView ? (account ? 'No transactions found for this account' : 'Select an account to view transactions') : 'No transactions available'}
                 </td>
               </tr>
             ) : (
-              filteredSortedTransactions.map((txn, idx) => (
-                <tr key={txn.transaction_id || idx} className="border-b hover:bg-gray-50">
-                  <td className="px-4 py-2">{txn.name}</td>
-                  <td className="px-4 py-2">{txn.date}</td>
-                  <td className="px-4 py-2">{txn.category}</td>
-                  <td
-                    className={`px-4 py-2 font-semibold ${
-                      (txn.transaction_type === 'expense' || txn.transaction_type === 'withdrawal' || txn.transaction_type === 'fee')
-                        ? 'text-red-500'
-                        : (txn.transaction_type === 'income' || txn.transaction_type === 'transfer' || txn.transaction_type === 'deposit')
-                        ? 'text-lime-600'
-                        : ''
-                    }`}
-                  >
-                    {txn.amount}
-                  </td>
-                  <td className="px-4 py-2 flex gap-2">
-                    <button
-                      className="text-sm text-blue-500 hover:text-blue-600 disabled:opacity-50"
-                      disabled={loading}
-                      onClick={() => {
-                        setEditTxnIndex(idx);
-                        setEditTxnData(txn);
-                      }}
-                    >
-                      <FaEdit />
-                    </button>
-                    <button
-                      className="text-sm text-red-500 hover:text-red-600 disabled:opacity-50"
-                      disabled={loading}
-                      onClick={() => handleDeleteTransaction(idx)}
-                    >
-                      <FaTrash />
-                    </button>
-                  </td>
-                </tr>
-              ))
+              filteredSortedTransactions.map((txn, idx) => {
+                const isEditing = editTransactionId === txn.transaction_id;
+                // Determine color and sign based on transaction type
+                // Determine color and sign based on transaction type
+                const isExpense = ['expense', 'withdrawal', 'fee'].includes(txn.transaction_type);
+                const isIncome = ['income', 'deposit'].includes(txn.transaction_type);
+                const isTransfer = txn.transaction_type === 'Transfer';
+
+                const amountColor = isExpense ? 'text-red-500'
+                  : isIncome ? 'text-lime-600'
+                    : isTransfer ? 'text-blue-500'
+                      : '';
+
+                const amountSign = isExpense ? '-'
+                  : isIncome ? '+'
+                    : isTransfer ? '→'
+                      : '';
+
+                // In your JSX:
+                <td className={`px-4 py-2 font-semibold ${amountColor}`}>
+                  {amountSign} {txn.amount.replace(/[+-]/g, '')}
+                </td>
+
+                return (
+                  <tr key={txn.transaction_id || idx} className="border-b hover:bg-gray-50">
+                    <td className="px-4 py-2">
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editValues.name}
+                          onChange={(e) => setEditValues({ ...editValues, name: e.target.value })}
+                          className="border rounded px-2 py-1 w-full"
+                        />
+                      ) : txn.name}
+                    </td>
+                    <td className="px-4 py-2">
+                      {isEditing ? (
+                        <input
+                          type="date"
+                          value={editValues.date}
+                          onChange={(e) => setEditValues({ ...editValues, date: e.target.value })}
+                          className="border rounded px-2 py-1 w-full"
+                        />
+                      ) : txn.date}
+                    </td>
+                    <td className="px-4 py-2">
+                      {isEditing ? (
+                        <select
+                          value={editValues.category}
+                          onChange={(e) => setEditValues({ ...editValues, category: e.target.value })}
+                          className="border rounded px-2 py-1 w-full"
+                        >
+                          {categories.map((cat) => (
+                            <option key={cat.category_id} value={cat.category_name}>{cat.category_name}</option>
+                          ))}
+                        </select>
+                      ) : txn.category}
+                    </td>
+                    <td className={`px-4 py-2 font-semibold ${amountColor}`}>
+                      {isEditing ? (
+                        <input
+                          type="number"
+                          value={editValues.amount.replace(/[^\d.-]/g, '')}
+                          onChange={(e) => setEditValues({ ...editValues, amount: e.target.value })}
+                          className="border rounded px-2 py-1 w-full"
+                        />
+                      ) : (
+                        <>
+                          {amountSign} {isTransfer ? '' : txn.amount.replace(/[+-]/g, '')}
+                        </>
+                      )}
+                    </td>
+                    <td className="px-4 py-2 flex gap-2">
+                      {isEditing ? (
+                        <>
+                          <button
+                            className="text-green-600 hover:underline text-sm"
+                            onClick={() => {
+                              handleEditTransaction(idx, {
+                                ...txn,
+                                name: editValues.name,
+                                date: editValues.date,
+                                category: editValues.category,
+                                amount: editValues.amount
+                              });
+                              setEditTransactionId(null);
+                            }}
+                          >Save</button>
+                          <button
+                            className="text-gray-500 hover:underline text-sm"
+                            onClick={() => setEditTransactionId(null)}
+                          >Cancel</button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            className="text-blue-500 hover:text-blue-600 text-sm"
+                            onClick={() => {
+                              setEditTransactionId(txn.transaction_id);
+                              setEditValues({
+                                name: txn.name,
+                                date: txn.date.split('/').reverse().join('-'),
+                                category: txn.category,
+                                amount: txn.amount.replace(/[^\d.-]/g, '')
+                              });
+                            }}
+                          ><FaEdit /></button>
+                          <button
+                            className="text-red-500 hover:text-red-600 text-sm"
+                            onClick={() => handleDeleteTransaction(idx)}
+                          ><FaTrash /></button>
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
@@ -290,22 +308,6 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
         onAdd={handleAddTransaction}
         activeAccount={account}
       />
-
-      {editTxnData && (
-        <EditTransactionModal
-          isOpen={!!editTxnData}
-          transaction={editTxnData}
-          onClose={() => {
-            setEditTxnData(null);
-            setEditTxnIndex(null);
-          }}
-          onSave={(updatedTxn) => {
-            handleEditTransaction(editTxnIndex, updatedTxn);
-            setEditTxnData(null);
-            setEditTxnIndex(null);
-          }}
-        />
-      )}
     </div>
   );
 };

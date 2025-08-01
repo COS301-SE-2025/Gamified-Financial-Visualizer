@@ -30,7 +30,7 @@ const colorMap = {
 const ModuleLessonsPage = () => {
   const { moduleSlug, moduleId } = useParams();
   const navigate = useNavigate();
-  
+
   const user = localStorage.getItem('user');
   const userId = user ? JSON.parse(user).id : null;
 
@@ -51,21 +51,21 @@ const ModuleLessonsPage = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        
+
         const moduleResponse = await fetch(`http://localhost:5000/api/learning/${moduleId}`);
         if (!moduleResponse.ok) throw new Error('Failed to load module');
         const moduleData = await moduleResponse.json();
         setModuleTitle(moduleData.data.module_title);
         setModuleDescription(moduleData.data.module_description || 'Boost your financial knowledge with this module');
-        
+
         const lessonsResponse = await fetch(`http://localhost:5000/api/learning/${moduleId}/lessons`);
         if (!lessonsResponse.ok) throw new Error('Failed to load lessons');
         const lessonsData = await lessonsResponse.json();
-        
+
         const quizResponse = await fetch(`http://localhost:5000/api/learning/quizzes/${moduleId}`);
         if (!quizResponse.ok) throw new Error('Failed to load quiz');
         const quizData = await quizResponse.json();
-        
+
         setLessons(lessonsData.data.map((lesson, index) => ({
           id: lesson.lesson_id,
           title: lesson.lesson_title,
@@ -73,7 +73,7 @@ const ModuleLessonsPage = () => {
           content: lesson.content,
           estimated_duration: lesson.estimated_duration
         })));
-        
+
         setQuizData(quizData.data[0]);
       } catch (error) {
         console.error('Error:', error);
@@ -100,7 +100,7 @@ const ModuleLessonsPage = () => {
 
   const submitQuiz = async () => {
     if (!quizData) return;
-    
+
     let score = 0;
     quizData.questions_jsonb.forEach((question, index) => {
       if (quizAnswers[index] === question.correct_answer) {
@@ -124,10 +124,10 @@ const ModuleLessonsPage = () => {
     } catch (err) {
       console.error('Failed to submit quiz:', err);
     }
-    
+
     setQuizScore(score);
     setQuizSubmitted(true);
-    
+
     if (readLessons.length === lessons.length) {
       setShowCompletion(true);
     }
@@ -151,9 +151,9 @@ const ModuleLessonsPage = () => {
         <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-line">
           {lesson.content}
         </div>
-        
+
         <div className="pt-4 border-t border-gray-100">
-          <button 
+          <button
             onClick={() => toggleExpand(lesson.id)}
             className="text-sm text-gray-500 hover:text-gray-700 flex items-center transition-colors"
           >
@@ -234,7 +234,7 @@ const ModuleLessonsPage = () => {
           </div>
         </div>
       )}
-      
+
       <div className="max-w-6xl mx-auto px-6 py-6">
         {/* Module Header */}
         <div className="bg-gradient-to-r from-[#B1E1FF20] to-[#7FDD5320] rounded-xl p-6 mb-6 shadow-sm border border-gray-100">
@@ -251,8 +251,8 @@ const ModuleLessonsPage = () => {
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{moduleTitle}</h1>
               <p className="text-gray-600">{moduleDescription}</p>
             </div>
-            <button 
-              onClick={() => navigate(-1)} 
+            <button
+              onClick={() => navigate(-1)}
               className="px-5 py-2 bg-white border border-gray-200 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -272,8 +272,8 @@ const ModuleLessonsPage = () => {
             </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2.5">
-            <div 
-              className="h-full rounded-full bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53]" 
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53]"
               style={{ width: `${calculateProgress()}%` }}
             ></div>
           </div>
@@ -285,22 +285,20 @@ const ModuleLessonsPage = () => {
             <FaBookOpen className="text-[#B1E1FF]" />
             Lessons
           </h2>
-          
+
           {lessons.map((lesson) => (
             <div
               key={lesson.id}
-              className={`bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 ${
-                colorMap[lesson.color].border
-              } ${
-                expandedId === lesson.id ? `ring-2 ${colorMap[lesson.color].ring} shadow-md` : ''
-              }`}
+              className={`bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 ${colorMap[lesson.color].border
+                } ${expandedId === lesson.id ? `ring-2 ${colorMap[lesson.color].ring} shadow-md` : ''
+                }`}
             >
               <div
                 className="flex justify-between items-center p-5 cursor-pointer"
                 onClick={() => toggleExpand(lesson.id)}
               >
                 <div className="flex items-start gap-4">
-                  <div 
+                  <div
                     className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${colorMap[lesson.color].bg}`}
                   >
                     <span className={`text-lg font-bold ${colorMap[lesson.color].text}`}>
@@ -351,12 +349,10 @@ const ModuleLessonsPage = () => {
               </svg>
               Module Quiz
             </h2>
-            
-            <div className={`bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 ${
-              colorMap.purple.border
-            } ${
-              expandedId === 'quiz' ? `ring-2 ${colorMap.purple.ring} shadow-md` : ''
-            }`}>
+
+            <div className={`bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 ${colorMap.purple.border
+              } ${expandedId === 'quiz' ? `ring-2 ${colorMap.purple.ring} shadow-md` : ''
+              }`}>
               <div
                 className="flex justify-between items-center p-5 cursor-pointer"
                 onClick={() => setExpandedId(prev => prev === 'quiz' ? null : 'quiz')}
@@ -389,7 +385,7 @@ const ModuleLessonsPage = () => {
                   )}
                 </div>
               </div>
-              
+
               {expandedId === 'quiz' && (
                 <div className="px-5 pb-5">
                   {!quizSubmitted ? (
@@ -398,45 +394,46 @@ const ModuleLessonsPage = () => {
                         <div key={qIndex} className="bg-gray-50 p-5 rounded-lg border border-gray-100">
                           <h4 className="font-medium text-gray-800 mb-3">
                             <span className="text-gray-500 mr-2">Q{qIndex + 1}:</span>
-                            {question.question} 
+                            {question.question}
                             <span className="text-sm text-gray-500 ml-2">({question.points} point{question.points !== 1 ? 's' : ''})</span>
                           </h4>
                           <div className="space-y-3">
                             {question.options.map((option, oIndex) => (
-                              <label key={oIndex} className="flex items-center space-x-3 cursor-pointer group">
-                                <div className={`flex items-center justify-center w-5 h-5 rounded-full border-2 ${
-                                  quizAnswers[qIndex] === oIndex 
-                                    ? 'border-[#B1E1FF] bg-[#B1E1FF]' 
-                                    : 'border-gray-300 group-hover:border-[#B1E1FF80]'
-                                } transition-colors`}>
+                              <div
+                                key={oIndex}
+                                className="flex items-center space-x-3 cursor-pointer group p-3 rounded-lg hover:bg-gray-100 transition-colors"
+                                onClick={() => handleQuizAnswer(qIndex, oIndex)}
+                              >
+                                <div className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center ${quizAnswers[qIndex] === oIndex
+                                  ? 'border-[#5FBFFF] bg-[#5FBFFF]'
+                                  : 'border-gray-300'
+                                  }`}>
                                   {quizAnswers[qIndex] === oIndex && (
                                     <div className="w-2 h-2 rounded-full bg-white"></div>
                                   )}
                                 </div>
-                                <span className="text-gray-700 group-hover:text-gray-900 transition-colors">{option}</span>
-                              </label>
+                                <span className="text-gray-700">{option}</span>
+                              </div>
                             ))}
                           </div>
                         </div>
                       ))}
-                      
+
                       <button
                         onClick={submitQuiz}
                         disabled={Object.keys(quizAnswers).length !== quizData.questions_jsonb.length}
-                        className={`w-full mt-6 px-6 py-3 rounded-lg font-medium text-lg transition-all ${
-                          Object.keys(quizAnswers).length === quizData.questions_jsonb.length
-                            ? 'bg-gradient-to-r from-[#5FBFFF] to-[#B1E1FF] text-white hover:from-[#4FAFFF] hover:to-[#A1D1FF] shadow-md'
+                        className={`w-full mt-6 px-6 py-3 rounded-lg font-medium text-lg transition-all ${Object.keys(quizAnswers).length === quizData.questions_jsonb.length
+                            ? 'bg-[#5FBFFF] text-white hover:bg-[#4FAFFF] shadow-md'
                             : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                        }`}
+                          }`}
                       >
                         Submit Quiz
                       </button>
                     </div>
                   ) : (
                     <div className="bg-white p-6 rounded-lg text-center border border-gray-100">
-                      <div className={`text-5xl font-bold mb-3 ${
-                        quizScore >= quizData.pass_score ? 'text-[#7FDD53]' : 'text-[#FF8A8A]'
-                      }`}>
+                      <div className={`text-5xl font-bold mb-3 ${quizScore >= quizData.pass_score ? 'text-[#7FDD53]' : 'text-[#FF8A8A]'
+                        }`}>
                         {quizScore}/{quizData.max_score}
                       </div>
                       <div className="text-xl font-medium mb-4">
@@ -448,7 +445,7 @@ const ModuleLessonsPage = () => {
                       </div>
                       <div className="mb-6 text-gray-600 max-w-md mx-auto">
                         <p>
-                          {quizScore >= quizData.pass_score 
+                          {quizScore >= quizData.pass_score
                             ? "You've demonstrated a good understanding of this module's concepts."
                             : "Review the material and try again to improve your score."}
                         </p>

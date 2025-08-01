@@ -10,6 +10,7 @@ const AccountCard = ({
   currency,
   bg = 'bg-blue-300',
   overlay = 'bg-blue-500',
+  isActive = false, // Add this prop
   onClick = () => {},
   onEdit = () => {},
   onDelete = () => {},
@@ -26,7 +27,11 @@ const AccountCard = ({
   return (
     <div
       onClick={onClick}
-      className="w-full bg-white flex flex-col rounded-2xl shadow-md border border-gray-200 p-5 transition hover:shadow-lg cursor-pointer"
+      className={`w-full bg-white flex flex-col rounded-2xl shadow-md border-2 p-5 transition-all cursor-pointer ${
+        isActive 
+          ? 'border-[#7FBCE9] ring-2 ring-white bg-[#eef6f7]' 
+          : 'border-gray-200 hover:border-gray-300 hover:shadow-lg'
+      }`}
     >
       {/* Top row */}
       <div className="flex justify-between items-start w-full">
@@ -36,9 +41,13 @@ const AccountCard = ({
           <p className="text-sm text-gray-600">{accountName}</p>
 
           <div className="mt-2">
-            <p className="text-xl font-bold text-gray-800">{symbol}{parseFloat(available).toLocaleString()}</p>
+            <p className="text-xl font-bold text-gray-800">
+              {symbol}{parseFloat(available).toLocaleString()}
+            </p>
             <p className="text-sm text-gray-500">Available</p>
-            <p className="text-md text-gray-700 mt-1">{symbol}{parseFloat(balance).toFixed(2)}</p>
+            <p className="text-md text-gray-700 mt-1">
+              {symbol}{parseFloat(balance).toFixed(2)}
+            </p>
             <p className="text-sm text-gray-400">Balance</p>
           </div>
         </div>
@@ -47,7 +56,11 @@ const AccountCard = ({
         <div className="flex flex-col items-end ml-4">
           <div className="text-right">
             <p className="text-sm font-semibold text-black">{type}</p>
-            <p className="text-sm text-green-500">Active</p>
+            <p className={`text-sm ${
+              isActive ? 'text-[#76B947] font-bold' : 'text-gray-500'
+            }`}>
+              {isActive ? 'Active (Viewing)' : 'Active'}
+            </p>
           </div>
 
           <div className={`mt-3 w-[160px] h-[90px] ${bg} rounded-xl relative overflow-hidden shadow`}>

@@ -99,7 +99,7 @@ const menuItems = [
     icon: <FaMedal className="mr-1" />,
     items: [
       {
-        label: 'Your XP',
+        label: 'Achievements',
         sub: 'Progress & points',
         to: '/achievements',
         icon: <FaMedal className="text-[#B4CB98]" />
