@@ -46,8 +46,14 @@ const GoalsDetailPage = () => {
   if (!goal) return <div className="flex justify-center mt-6">Goal not found</div>;
 
   // Calculate progress percentage
-  const percentage = Math.round((goal.current_amount / goal.target_amount) * 100);
-  const amountLeft = goal.target_amount - goal.current_amount;
+  let percentage = Math.round((goal.current_amount / goal.target_amount) * 100);
+  if (percentage > 100) {
+    percentage = 100;
+  }
+  let amountLeft = goal.target_amount - goal.current_amount;
+  if (amountLeft < 0) {
+    amountLeft = 0;
+  }
 
   // Format dates
   const startDate = new Date(goal.start_date).toLocaleDateString('en-GB');

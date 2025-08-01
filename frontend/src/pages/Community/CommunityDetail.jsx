@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useMemo  } from 'react';
+import React, { useState, useEffect, useMemo, use } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -31,6 +31,7 @@ const CommunityDetail = () => {
   const [communityData, setCommunityData] = useState(null);
   const [members, setMembers] = useState([]);
   const [challengeData, setChallengeData] = useState(null);
+  const currentUser = JSON.parse(localStorage.getItem('user'));
 
   useEffect(() => {
     const fetchCommunityData = async () => {
@@ -57,10 +58,12 @@ const CommunityDetail = () => {
   const [searchFriend, setSearchFriend] = useState('');     // for filtering
   const [showAddMember, setShowAddMember] = useState(false);
 
+  const isMember = (userId) => {
+    return members.some(member => member.user_id === userId);
+  };
   // 1) when entering edit‐mode, fetch your friends
   useEffect(() => {
     if (!isEditing) return;
-    const currentUser = JSON.parse(localStorage.getItem('user'));
     fetch(`http://localhost:5000/api/community/friends/${currentUser.id}`)
       .then(r => r.json())
       .then(json => setFriends(json.data || []))
@@ -68,12 +71,12 @@ const CommunityDetail = () => {
   }, [isEditing]);
 
   // 2) build list of “eligible” friends: those not already members
-const eligible = useMemo(() => {
-  const memberIds = new Set(members.map(m => m.user_id));
-  return friends
-    .filter(f => !memberIds.has(f.user_id))
-    .filter(f => f.username.toLowerCase().includes(searchFriend.toLowerCase()));
-}, [members, friends, searchFriend]);
+  const eligible = useMemo(() => {
+    const memberIds = new Set(members.map(m => m.user_id));
+    return friends
+      .filter(f => !memberIds.has(f.user_id))
+      .filter(f => f.username.toLowerCase().includes(searchFriend.toLowerCase()));
+  }, [members, friends, searchFriend]);
 
   // 3) handler to actually add a friend to the community
   const handleAddMember = async (friend) => {
@@ -87,7 +90,7 @@ const eligible = useMemo(() => {
       );
       const json = await res.json();
       if (!res.ok) throw new Error(json.message || 'Failed to add member');
-      toast.success(`Added ${friend.username}`); 
+      toast.success(`Added ${friend.username}`);
       setMembers(m => [...m, friend]);      // append locally
       setShowAddMember(false);
       setSearchFriend('');
@@ -164,27 +167,27 @@ const eligible = useMemo(() => {
         <div className="flex gap-2">
           <button
             onClick={async () => {
-            toast.dismiss(t.id);
-            try {
-              const currentUser = JSON.parse(localStorage.getItem('user'));
-              // Kick off all requests in parallel:
-              await Promise.all(
-                members.map((m) =>
-                  fetch(
-                    `http://localhost:5000/api/community/friends/request/${currentUser.id}/${m.user_id}`,
-                    {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' }
-                    }
+              toast.dismiss(t.id);
+              try {
+                const currentUser = JSON.parse(localStorage.getItem('user'));
+                // Kick off all requests in parallel:
+                await Promise.all(
+                  members.map((m) =>
+                    fetch(
+                      `http://localhost:5000/api/community/friends/request/${currentUser.id}/${m.user_id}`,
+                      {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                      }
+                    )
                   )
-                )
-              );
-              toast.success('Friend requests sent to all community members!');
-            } catch (err) {
-              console.error(err);
-              toast.error('Failed to send some requests.');
-            }
-          }}
+                );
+                toast.success('Friend requests sent to all community members!');
+              } catch (err) {
+                console.error(err);
+                toast.error('Failed to send some requests.');
+              }
+            }}
             className="px-4 py-1 text-sm font-semibold text-white bg-[#5FBFFF] rounded-full hover:bg-[#3297E6]"
           >
             Confirm
@@ -285,19 +288,29 @@ const eligible = useMemo(() => {
                   </button>
                 </>
               ) : (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={handleRequestMembers}
-                    className="flex items-center gap-2 pr-4 bg-[#B1E1FF] text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-[#4BA5E6] transition"
-                  >
-                    <FaUserPlus /> Request to Join
-                  </button>
+                <>
+                  {!isMember(currentUser.id) && (
+                    <button
+                      onClick={handleRequestMembers}
+                      className="flex items-center gap-2 bg-[#B1E1FF] text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-[#4BA5E6] transition"
+                    >
+                      <FaUserPlus /> Request
+                    </button>
+                  )}
                   <button
                     onClick={() => setIsEditing(true)}
                     className="flex items-center gap-2 bg-[#B1E1FF] hover:bg-[#4BA5E6] text-white px-4 py-2 rounded-full text-sm font-semibold shadow-sm"
                   >
                     <FaEdit /> Edit
                   </button>
+                  {isMember(currentUser.id) && (
+                    <button
+                      onClick={() => removeMember(currentUser.id)}
+                      className="flex items-center gap-2 bg-red-100 text-red-600 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-red-200 transition"
+                    >
+                      <FaUserPlus /> Leave
+                    </button>
+                  )}
                   <button
                     onClick={() => navigate(-1)}
                     className="flex items-center gap-2 bg-[#E5E7EB] text-[#374151] px-4 py-1.5 rounded-full text-sm font-medium hover:bg-[#D1D5DB] transition"
@@ -348,41 +361,41 @@ const eligible = useMemo(() => {
             {/* Member Management */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Manage Members</label>
-               {/* === NEW Add‐Member UI === */}
-      <div className="mb-6">
-        <button
-          onClick={() => setShowAddMember(v => !v)}
-          className="mb-2 inline-flex items-center gap-2 text-sm text-white bg-[#5FBFFF] px-3 py-1 rounded-full hover:bg-[#3297E6]"
-        >
-          <FaPlus /> Add Member
-        </button>
-        {showAddMember && (
-          <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <input
-              type="text"
-              placeholder="Search friends…"
-              value={searchFriend}
-              onChange={e => setSearchFriend(e.target.value)}
-              className="w-full mb-2 px-3 py-1 border rounded"
-            />
-            <div className="max-h-40 overflow-y-auto">
-              {eligible.length
-                ? eligible.map((f) => (
-                    <div
-                      key={f.user_id}
-                      className="flex justify-between items-center py-1 hover:bg-gray-100 cursor-pointer"
-                      onClick={() => handleAddMember(f)}
-                    >
-                      <span>{f.username}</span>
-                      <FaUserPlus className="text-green-500" />
+              {/* === NEW Add‐Member UI === */}
+              <div className="mb-6">
+                <button
+                  onClick={() => setShowAddMember(v => !v)}
+                  className="mb-2 inline-flex items-center gap-2 text-sm text-white bg-[#5FBFFF] px-3 py-1 rounded-full hover:bg-[#3297E6]"
+                >
+                  <FaPlus /> Add Member
+                </button>
+                {showAddMember && (
+                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <input
+                      type="text"
+                      placeholder="Search friends…"
+                      value={searchFriend}
+                      onChange={e => setSearchFriend(e.target.value)}
+                      className="w-full mb-2 px-3 py-1 border rounded"
+                    />
+                    <div className="max-h-40 overflow-y-auto">
+                      {eligible.length
+                        ? eligible.map((f) => (
+                          <div
+                            key={f.user_id}
+                            className="flex justify-between items-center py-1 hover:bg-gray-100 cursor-pointer"
+                            onClick={() => handleAddMember(f)}
+                          >
+                            <span>{f.username}</span>
+                            <FaUserPlus className="text-green-500" />
+                          </div>
+                        ))
+                        : <p className="text-sm text-gray-500">No friends to add.</p>
+                      }
                     </div>
-                  ))
-                : <p className="text-sm text-gray-500">No friends to add.</p>
-              }
-            </div>
-          </div>
-        )}
-      </div>
+                  </div>
+                )}
+              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {members.map((member, i) => (
@@ -516,8 +529,8 @@ const eligible = useMemo(() => {
                 <div
                   className="h-full"
                   style={{
-                    width: (communityData.xpCollected/communityData.xpGoal)*100 + '%',
-                    background: 'linear-gradient(to right, #5FBFFF, #7FDD53)',
+                    width: (communityData.xpCollected / communityData.xpGoal) * 100 + '%',
+                    background: 'linear-gradient(to right, #FACC15, #FB923C)',
                     borderRadius: '9999px',
                   }}
                 />

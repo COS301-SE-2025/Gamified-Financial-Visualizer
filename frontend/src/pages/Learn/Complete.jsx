@@ -67,6 +67,9 @@ const LearningCompletePage = () => {
     setFilteredModules(filtered);
   }, [searchTerm, difficultyFilter, topicFilter, modulesData]);
 
+
+  // LOADER GOES HERE
+  /*
   if (isLoading) {
     return (
       <LearnLayout>
@@ -76,7 +79,7 @@ const LearningCompletePage = () => {
       </LearnLayout>
     );
   }
-
+*/
   if (error) {
     return (
       <LearnLayout>

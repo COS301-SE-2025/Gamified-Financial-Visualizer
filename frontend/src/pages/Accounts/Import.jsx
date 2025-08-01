@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect} from 'react';
 import AccountsLayout from './AccountsLayout';
 import { 
   FaUpload, FaFilePdf, FaLink, FaTrash, FaQuestionCircle, 
@@ -8,6 +8,9 @@ import {
 } from 'react-icons/fa';
 
 const ImportPage = () => {
+  const userData = JSON.parse(localStorage.getItem('user') || '{}');
+  const userId = userData?.id || null;
+
   // File upload state
   const [files, setFiles] = useState([]);
   const [url, setUrl] = useState('');
@@ -15,8 +18,12 @@ const ImportPage = () => {
 
   // Import configuration state
   const [selectedAccount, setSelectedAccount] = useState('');
+  const [accounts, setAccounts] = useState(null);
   const [selectedBank, setSelectedBank] = useState('');
   const [password, setPassword] = useState('');
+
+  const [transactions, setTransactions] = useState([]);
+  const [categories, setCategories] = useState([]);
 
   // Import process state
   const [isImporting, setIsImporting] = useState(false);
@@ -25,32 +32,14 @@ const ImportPage = () => {
   const [showReview, setShowReview] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
 
-  // Mock data
-  const [transactions, setTransactions] = useState([
-    { id: 1, date: '2023-05-15', description: 'Grocery Store', amount: -85.32, category: 'Groceries', type: 'expense' },
-    { id: 2, date: '2023-05-14', description: 'Salary Deposit', amount: 2500.00, category: 'Income', type: 'income' },
-    { id: 3, date: '2023-05-12', description: 'AMZN Purchase', amount: -42.99, category: 'Shopping', type: 'expense' },
-    { id: 4, date: '2023-05-10', description: 'Electric Bill', amount: -120.50, category: 'Utilities', type: 'expense' },
-    { id: 5, date: '2023-05-08', description: 'Restaurant', amount: -65.80, category: 'Dining', type: 'expense' },
-  ]);
 
-  const accounts = [
-    { id: 'acc1', name: 'Primary Checking (****3456)' },
-    { id: 'acc2', name: 'Savings Account (****7890)' },
-    { id: 'acc3', name: 'Credit Card (****4321)' },
-  ];
-
-  const banks = [
-    { id: 'bank1', name: 'Chase Bank' },
-    { id: 'bank2', name: 'Bank of America' },
-    { id: 'bank3', name: 'Wells Fargo' },
-    { id: 'bank4', name: 'Citibank' },
-  ];
-
-  const categories = [
-    'Income', 'Groceries', 'Dining', 'Shopping',
-    'Utilities', 'Entertainment', 'Transportation',
-    'Healthcare', 'Travel', 'Education'
+  const banks =  [
+    { id: 'bank1', name: 'Nedbank' },
+    { id: 'bank2', name: 'Standard Bank' },
+    { id: 'bank3', name: 'FNB' },
+    { id: 'bank4', name: 'Capitec' },
+    { id: 'bank5', name: 'Absa' },
+    { id: 'bank6', name: 'Old Mutual' }
   ];
 
   const transactionTypes = ['income', 'expense', 'transfer'];
@@ -117,21 +106,57 @@ const ImportPage = () => {
     setImportProgress(0);
 
     try {
-      // Simulate processing
-      const interval = setInterval(() => {
-        setImportProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(interval);
-            return prev;
+      let res, body;
+      if (files.length) {
+        const form = new FormData();
+        form.append('statement', files[0]);              // note: single-file
+        form.append('accountId', selectedAccount);
+        form.append('password', password);
+        form.append('bankName', selectedBank.toLowerCase());    
+              
+        res = await fetch(
+          `http://localhost:5000/api/classifier/upload-statement`,
+          { method: 'POST', body: form }
+        );
+      } else {
+        // if you support URL-based upload server-side:
+        res = await fetch(
+          `http://localhost:5000/api/classifier/upload-statement-url`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              url,
+              accountId: selectedAccount,
+              bankName: selectedBank,
+              password
+            })
           }
-          return prev + 10;
-        });
-      }, 200);
+        );
+      }
 
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setImportProgress(100);
-      await new Promise(resolve => setTimeout(resolve, 300));
+      body = await res.json();
+      if (!res.ok) throw new Error(body.error || 'Upload failed');
 
+      // Map your DB rows into UI-friendly shape
+      const txns = body.preview.map((tx) => {
+        const match = categories.find(c => c.category_name === tx.predicted_category.toLowerCase());
+        const id = match ? match.category_id : null;
+
+        return {
+          id: `${tx.accountId}-${tx.date}-${tx.description}-${Math.random().toString(36).substr(2, 9)}`, // unique ID
+          accountId: tx.accountId,
+          date: tx.date,
+          description: tx.description,
+          amount: tx.amount,
+          direction: tx.direction,
+          transaction_type: tx.transaction_type,
+          category: tx.category_id,         // numeric ID
+          originalCategory: id,
+          originalType: tx.transaction_type,
+        };
+      });
+      setTransactions(txns);
       setShowReview(true);
     } catch (error) {
       setImportError(error.message || 'Import failed. Please try again.');
@@ -161,14 +186,64 @@ const ImportPage = () => {
 
   const handleFinalImport = async () => {
     setIsImporting(true);
+    setIsImporting(true);
+    setImportError(null);
+
+
+    // build the minimal feedback array
+    const payload = {
+      feedbacks: transactions
+        .filter(tx => tx.category !== tx.originalCategory)
+        .map(tx => ({
+          desc: tx.description,
+          corrected_category: categories.find(c => c.category_id === tx.category)?.category_name || 'Uncategorized'
+        }))
+    };
+
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const res = await fetch(
+        `http://localhost:5000/api/classifier/confirm-statement`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            preview: transactions.map(tx => ({
+              accountId: tx.accountId,
+              date: tx.date,
+              description: tx.description,
+              amount: tx.amount,
+              direction: tx.direction,
+              balance: tx.balance,
+              predicted_category: tx.predicted_category,
+              classification_source: tx.classification_source,
+              category_id: tx.category,
+              transaction_type: tx.transaction_type
+            })),
+            recurringFlags: transactions.map(_ => false)  // or your real flags
+          })
+        }
+      );
+
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error || 'Feedback save failed');
+
       setImportSuccess(true);
       setShowReview(false);
-      setFiles([]);
-      setUrl('');
-    } catch (error) {
-      setImportError('Failed to save changes');
+                
+      //  send corrections to /feedback
+      if (payload.feedbacks.length) {
+        console.log('Feedback payload:', payload.feedbacks);
+        fetch(
+          `http://localhost:5000/api/classifier/feedback`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ feedback: payload.feedbacks })
+          }
+        );
+      }
+    } catch (err) {
+      setImportError(err.message);
     } finally {
       setIsImporting(false);
     }
@@ -177,6 +252,31 @@ const ImportPage = () => {
   const hasChanges = transactions.some(tx => 
     tx.category !== tx.originalCategory || tx.type !== tx.originalType
   );
+
+  useEffect(() => {
+    fetch(`http://localhost:5000/api/accounts/user/${userId}`)
+      .then(r => r.json())
+      .then(j => setAccounts(j.data))
+      .catch(() => setAccounts([]));
+
+    fetch(`http://localhost:5000/api/transactions/categories`)
+      .then(r => r.json())
+      .then(j => setCategories(j.data))
+      .catch(() => setCategories([]));
+  }, [userId]);
+
+  if (!accounts) {
+    return (
+      <AccountsLayout>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">Loading accounts...</h1>
+            <p className="text-gray-600">Please wait while we fetch your accounts.</p>
+          </div>
+        </div>
+      </AccountsLayout>
+    );
+  }
 
   return (
     <AccountsLayout>

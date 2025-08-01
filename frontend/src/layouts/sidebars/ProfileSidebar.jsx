@@ -1,23 +1,43 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   FaUsers,
-  FaClipboardList,
-  FaBullseye,
-  FaTrophy,
-  FaFlagCheckered,
-  FaMedal,
-  FaFireAlt
+  FaBolt,
+  FaChartBar,
+  FaHourglassHalf,
+  FaCheck,
+  FaTimes,
+  FaBan,
 } from 'react-icons/fa';
 import avatar from '../../assets/Images/avatars/sharkAvatar.jpeg';
 
-const performance = {
-  score: 350,
-  level: 'Lv 3: Silver',
-  label: 'Excellent',
-  progress: 70
-};
-
 const AccountsPerformanceHeader = () => {
+  const [sidebarStats, setSidebarStats] = useState(null);
+  const [performanceSummary, setPerformanceSummary] = useState(null);
+
+  const fetchSidebarData = () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user?.id) return;
+
+    fetch(`http://localhost:5000/api/auth/sidebar/${user.id}`)
+      .then(res => res.json())
+      .then(data => setSidebarStats(data.data))
+      .catch(err => console.error('Sidebar stats error:', err));
+
+    fetch(`http://localhost:5000/api/auth/profile/performance-summary/${user.id}`)
+      .then(res => res.json())
+      .then(data => setPerformanceSummary(data.data))
+      .catch(err => console.error('Performance summary error:', err));
+  };
+
+  useEffect(() => {
+    fetchSidebarData();
+
+    const handleUserUpdated = () => fetchSidebarData();
+    window.addEventListener('userUpdated', handleUserUpdated);
+
+    return () => window.removeEventListener('userUpdated', handleUserUpdated);
+  }, []);
+
   return (
     <div className="flex flex-wrap justify-between gap-6 items-start w-full mb-6">
       {/* Left Label */}
@@ -37,11 +57,15 @@ const AccountsPerformanceHeader = () => {
         <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col sm:flex-row items-center justify-between gap-6">
           {/* Avatar + Info */}
           <div className="flex items-center gap-6">
-            <img src={avatar} className="w-16 h-16 rounded-full object-cover" alt="Avatar" />
+            <img src={
+                performanceSummary?.avatar_image_path
+                  ? `/assets/Images/${performanceSummary.avatar_image_path}`
+                  : avatar
+              } className="w-16 h-16 rounded-full object-cover" alt="Avatar" />
             <div>
-              <p className="text-2xl font-bold text-gray-800">{performance.score}</p>
-              <p className="text-sm text-gray-500">{performance.label}</p>
-              <p className="text-sm text-[#F97156] font-medium">{performance.level}</p>
+              <p className="text-2xl font-bold text-gray-800">{performanceSummary?.performance_score}</p>
+              <p className="text-sm text-gray-500">{performanceSummary?.performance_label }</p>
+              <p className="text-sm text-[#F97156] font-medium">Lv {performanceSummary?.level_number ?? '?'}: {performanceSummary?.tier_level ?? '0'}</p>
             </div>
           </div>
 
@@ -52,14 +76,14 @@ const AccountsPerformanceHeader = () => {
               <div
                 className="h-full rounded-full"
                 style={{
-                  width: `${performance.progress}%`,
+                  width: `${performanceSummary?.performance_score/500 *100}%`,
                   background: 'linear-gradient(to right, #4FC3F7, #B3E5FC)'
                 }}
               />
               <div
                 className="absolute top-1/2 w-5 h-5 bg-[#B3E5FC] rounded-full border-2 border-white shadow-md"
                 style={{
-                  left: `calc(${performance.progress}% - 10px)`,
+                  left: `calc(${performanceSummary?.performance_score/500 *100}% - 10px)`,
                   transform: 'translateY(-50%)'
                 }}
               />
@@ -70,42 +94,12 @@ const AccountsPerformanceHeader = () => {
         {/* Stat Blocks*/}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 w-full">
           {[
-            {
-              label: 'Quizzes',
-              value: 14,
-              icon: <FaClipboardList />,
-              color: '#B1E1FF'
-            },
-            {
-              label: 'Accuracy',
-              value: '83%',
-              icon: <FaBullseye />,
-              color: '#7FDD53'
-            },
-            {
-              label: 'Leaderboard',
-              value: 9,
-              icon: <FaTrophy />,
-              color: '#FFC541'
-            },
-            {
-              label: 'Goals',
-              value: 12,
-              icon: <FaFlagCheckered />,
-              color: '#5FBFFF'
-            },
-            {
-              label: 'Badges',
-              value: '56%',
-              icon: <FaMedal />,
-              color: '#F68D2B'
-            },
-            {
-              label: 'Challenger',
-              value: 7,
-              icon: <FaFireAlt/>,
-              color: '#FF8A8A'
-            }
+            { value: sidebarStats?.total_goals ?? '...', label: 'Goals', icon: <FaBolt />, color: '#FF8A8A' },
+            { value: `${sidebarStats?.achievement_percentage ?? '...'}%`, label: 'Achievements', icon: <FaCheck />, color: '#7FDD53' },
+            { value: sidebarStats?.total_accounts ?? '...', label: 'Accounts', icon: <FaChartBar />, color: '#5FBFFF' },
+            { value: sidebarStats?.recent_transactions ?? '...', label: 'Recent Transactions', icon: <FaHourglassHalf />, color: '#FFC541' },
+            { value: `${sidebarStats?.lessons_completed_percentage ?? '...'}%`, label: 'Lessons', icon: <FaTimes />, color: '#F68D2B' },
+            { value: sidebarStats?.total_communities ?? '...', label: 'Communities', icon: <FaBan />, color: '#FF7F9E' },
           ].map(({ label, value, icon, color }, index) => (
             <div key={index} className="relative bg-white rounded-xl shadow-sm overflow-hidden">
               <div className="flex items-center justify-between px-4 py-3">

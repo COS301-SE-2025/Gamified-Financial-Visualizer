@@ -184,6 +184,7 @@ const Navbar = () => {
   const [activeMenu, setActiveMenu] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [performance, setPerformance] = useState(null);
   const [notifications, setNotifications] = useState(0);
   const [user, setUser] = useState(() => {
     const userData = localStorage.getItem('user');
@@ -238,6 +239,11 @@ const Navbar = () => {
         console.error('Failed to load notifications:', err);
       }
     };
+
+    fetch(`http://localhost:5000/api/community/performance-summary/${user.id}`)
+    .then(res => res.json())
+    .then(data => setPerformance(data?.data))
+    .catch(err => console.error('Community performance summary error:', err));
 
     fetchNotifications();
 
@@ -349,7 +355,9 @@ const Navbar = () => {
                 <p className="text-xs text-gray-400">{user.tier}</p>
               </div>
               <img
-                src={user.avatar || avatar}
+                src={performance?.avatar_image_path
+                  ? `/assets/Images/${performance.avatar_image_path}`
+                  : avatar}
                 alt="avatar"
                 className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
               />

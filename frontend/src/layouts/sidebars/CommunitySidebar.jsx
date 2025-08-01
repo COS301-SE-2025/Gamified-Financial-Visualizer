@@ -1,22 +1,46 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {
-  FaUsers,
   FaUserFriends,
-  FaCommentDots,
   FaTrophy,
   FaGamepad,
-  FaFire
+  FaUsers,
+  FaMedal,
+  FaFire,
+  FaCommentDots,
+  FaHandshake
 } from 'react-icons/fa';
 import avatar from '../../assets/Images/avatars/sharkAvatar.jpeg';
 
-const performance = {
-  score: 350,
-  level: 'Lv 3: Silver',
-  label: 'Excellent',
-  progress: 70
-};
-
 const AccountsPerformanceHeader = () => {
+  const [stats, setStats] = useState(null);
+  const [performance, setPerformance] = useState(null);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user?.id) return;
+
+    fetch(`http://localhost:5000/api/community/stats/${user.id}`)
+      .then(res => res.json())
+      .then(data => setStats(data.data))
+      .catch(err => console.error('Community stats error:', err));
+
+    fetch(`http://localhost:5000/api/community/performance-summary/${user.id}`)
+      .then(res => res.json())
+      .then(data => setPerformance(data.data))
+      .catch(err => console.error('Community performance summary error:', err));
+  }, []);
+
+  const progressPercent = performance?.performance_score/500 *100 || 0;
+
+  const metrics = [
+    { value: stats?.communities, label: 'Communities', icon: <FaUsers />, color: '#FF8A8A' },
+    { value: stats?.challenges, label: 'Challenges', icon: <FaFire />, color: '#7FDD53' },
+    { value: '#' + (stats?.leaderboard ?? '-'), label: 'Leaderboard', icon: <FaMedal />, color: '#5FBFFF' },// review backend logic for leaderboard
+    { value: stats?.gamesPlayed, label: 'Games Played', icon: <FaGamepad />, color: '#FFC541' },
+    { value: stats?.friends, label: 'Friends', icon: <FaHandshake />, color: '#F68D2B' },
+    { value: stats?.socialPosts, label: 'Social Post', icon: <FaCommentDots />, color: '#FF7F9E' },
+  ];
+
   return (
     <div className="flex flex-wrap justify-between gap-6 items-start w-full mb-6">
       {/* Left Label */}
@@ -36,11 +60,15 @@ const AccountsPerformanceHeader = () => {
         <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col sm:flex-row items-center justify-between gap-6">
           {/* Avatar + Info */}
           <div className="flex items-center gap-6">
-            <img src={avatar} className="w-16 h-16 rounded-full object-cover" alt="Avatar" />
+            <img  src={
+                performance?.avatar_image_path
+                  ? `/assets/Images/${performance?.avatar_image_path}`
+                  : avatar
+              } className="w-16 h-16 rounded-full object-cover" alt="Avatar" />
             <div>
-              <p className="text-2xl font-bold text-gray-800">{performance.score}</p>
-              <p className="text-sm text-gray-500">{performance.label}</p>
-              <p className="text-sm text-[#F97156] font-medium">{performance.level}</p>
+              <p className="text-2xl font-bold text-gray-800"> {performance?.performance_score}</p>
+              <p className="text-sm text-gray-500">{performance?.performance_label}</p>
+              <p className="text-sm text-[#F97156] font-medium">Lv {performance?.level_number}: {performance?.tier_level}</p>
             </div>
           </div>
 
@@ -51,14 +79,14 @@ const AccountsPerformanceHeader = () => {
               <div
                 className="h-full rounded-full"
                 style={{
-                  width: `${performance.progress}%`,
+                  width: `${progressPercent}%`,
                   background: 'linear-gradient(to right, #4FC3F7, #B3E5FC)'
                 }}
               />
               <div
                 className="absolute top-1/2 w-5 h-5 bg-[#B3E5FC] rounded-full border-2 border-white shadow-md"
                 style={{
-                  left: `calc(${performance.progress}% - 10px)`,
+                  left: `calc(${progressPercent}% - 10px)`,
                   transform: 'translateY(-50%)'
                 }}
               />
@@ -68,44 +96,7 @@ const AccountsPerformanceHeader = () => {
 
         {/* Stat Blocks*/}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 w-full">
-          {[
-            {
-              label: 'Communities',
-              value: 2,
-              icon: <FaUsers />,
-              color: '#B1E1FF'
-            },
-            {
-              label: 'Challenges',
-              value: 14,
-              icon: <FaFire />,
-              color: '#7FDD53'
-            },
-            {
-              label: 'Leaderboard',
-              value: 9,
-              icon: <FaTrophy />,
-              color: '#FFC541'
-            },
-            {
-              label: 'Games Played',
-              value: 2,
-              icon: <FaGamepad />,
-              color: '#5FBFFF'
-            },
-            {
-              label: 'Friends',
-              value: 5,
-              icon: <FaUserFriends />,
-              color: '#F68D2B'
-            },
-            {
-              label: 'Social Posts',
-              value: 7,
-              icon: <FaCommentDots />,
-              color: '#FF8A8A'
-            }
-          ].map(({ label, value, icon, color }, index) => (
+          {metrics.map(({ label, value, icon, color }, index) => (
             <div key={index} className="relative bg-white rounded-xl shadow-sm overflow-hidden">
               <div className="flex items-center justify-between px-4 py-3">
                 {/* Icon circle with soft background */}
