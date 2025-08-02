@@ -58,14 +58,14 @@ const AchievementCard = ({ ach }) => {
 
   return (
     <div onClick={() => navigate(`/achievements/${achievement_title}`)}
-      className={`cursor-pointer border-2 ${border} rounded-xl px-4 pt-4 pb-3 bg-white flex flex-col items-center gap-2`}>
+      className={`cursor-pointer border-2 ${border} rounded-xl px-4 pt-4 pb-3 bg-white flex flex-col items-center gap-2 dark:bg-gray-800`}>
       <h3 className={`text-sm font-semibold ${text} text-center`}>{achievement_title}</h3>
       <img src={image} alt={achievement_title} className="w-14 h-14 object-contain" />
       <div className="w-full mt-1">
         <div className="h-2 bg-gray-200 rounded-full">
           <div className={`${fill} h-2 rounded-full`} style={{ width: `${percent}%` }} />
         </div>
-        <div className="flex justify-between text-xs text-gray-600 font-medium pt-1">
+        <div className="flex justify-between text-xs text-gray-600 font-medium pt-1 dark:text-gray-200">
           <span>{points_awarded} XP</span>
           <span>{progress_value}/{total}</span>
         </div>

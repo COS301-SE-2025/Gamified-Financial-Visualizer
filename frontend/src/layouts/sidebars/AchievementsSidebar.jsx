@@ -68,13 +68,13 @@ const AccountsPerformanceHeader = () => {
       {/* Right Section (Performance Card + Stat Grid) */}
       <div className="flex flex-col gap-4 flex-1">
         {/* Center Performance Card */}
-        <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col sm:flex-row items-center justify-between gap-6 dark:bg-gray-800">
           {/* Avatar + Info */}
           <div className="flex items-center gap-6">
             <img src={userStats?.avatar_url} className="w-16 h-16 rounded-full object-cover" alt="Avatar" />
             <div>
-              <p className="text-2xl font-bold text-gray-800">{userStats?.creditScore}</p>
-              <p className="text-sm text-gray-500">{userStats?.performanceLabel}</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">{userStats?.creditScore}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{userStats?.performanceLabel}</p>
               <p className="text-sm text-[#F97156] font-medium">Lv {levelProgress?.level_number ?? '—'}: {levelProgress?.tier_status ?? '—'}</p>
             </div>
           </div>
@@ -141,17 +141,17 @@ const AccountsPerformanceHeader = () => {
               color: '#FF8A8A'
             }
           ].map(({ label, value, icon, color }, index) => (
-            <div key={index} className="relative bg-white rounded-xl shadow-sm overflow-hidden">
+            <div key={index} className="relative bg-white rounded-xl shadow-sm overflow-hidden dark:bg-gray-800">
               <div className="flex items-center justify-between px-4 py-3">
                 {/* Icon circle with soft background */}
-                <div className="w-10 h-10 flex items-center justify-center rounded-full" style={{ backgroundColor: `${color}20` }}>
+                <div className="w-10 h-10 flex items-center justify-center rounded-full dark:text-gray-400" style={{ backgroundColor: `${color}20` }}>
                   <span className="text-xl" style={{ color }}>{icon}</span>
                 </div>
 
                 {/* Stat content */}
                 <div className="text-right">
-                  <div className="text-lg font-bold text-gray-900">{value}</div>
-                  <div className="text-sm text-gray-500">{label}</div>
+                  <div className="text-lg font-bold text-gray-900 dark:text-gray-200">{value}</div>
+                  <div className="text-sm text-gray-500 ark:text-gray-200">{label}</div>
                 </div>
               </div>
 

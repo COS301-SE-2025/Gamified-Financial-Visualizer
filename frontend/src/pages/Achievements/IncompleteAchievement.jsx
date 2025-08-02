@@ -110,10 +110,10 @@ const CompleteAchievement = () => {
   return (
     <AchievementsLayout>
       <div className="space-y-6 px-6 pt-10 pb-6 -mt-8">
-        <h2 className="text-xl font-semibold text-cyan-500 bg-blue-50 inline-block px-4 py-1 rounded-full shadow-sm">
+        <h2 className="text-xl font-semibold text-cyan-500 bg-blue-50 inline-block px-4 py-1 rounded-full shadow-sm ">
           Incomplete Achievements
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 dark:bg-gray-800">
           {achievements.map((ach, idx) => (
             <AchievementCard key={idx} ach={ach} />
           ))}
