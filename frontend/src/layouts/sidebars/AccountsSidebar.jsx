@@ -128,10 +128,7 @@ const AccountsPerformanceHeader = () => {
     const getUserFromStorage = () => {
       try {
         // Try different possible keys for user data in localStorage
-        const userData = localStorage.getItem('user') || 
-                        localStorage.getItem('currentUser') || 
-                        localStorage.getItem('userData') ||
-                        localStorage.getItem('authUser');
+        const userData = localStorage.getItem('user') ;
         
         if (userData) {
           const parsedUser = JSON.parse(userData);

@@ -238,7 +238,7 @@ const currentTransactions = filteredTransactions.slice(
           account_name: newAccount.accountName,
           account_type: newAccount.accountType,
           currency: newAccount.currency,
-          account_balance: parseFloat(newAccount.balance) || 0,
+          account_balance: parseFloat(newAccount.balance),
         }),
       });
       if (!response.ok) {

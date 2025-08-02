@@ -159,6 +159,12 @@ export async function getCommunityByTitle(name: string) {
   const { rows } = await pool.query(query, [
     `%${name}%`
   ]);
+   
+  // add member contributions
+  if (rows.length) {
+    const contributions = await getContributionScoresByCommunity(rows[0].community_id);
+    rows[0].contributions = contributions;
+  }
   if (!rows.length) throw new Error(`No community "${name}"`);
   return rows[0];
 }
@@ -275,8 +281,7 @@ export async function getRecommendedCommunities(user_id: number) {
     WHERE c.community_id NOT IN (
       SELECT community_id FROM community_members WHERE user_id = $1
     )
-    GROUP BY c.community_id, b.banner_image_path
-    LIMIT 10;
+    GROUP BY c.community_id, b.banner_image_path;
   `;
 
 
@@ -350,6 +355,55 @@ export async function getPendingInvites(user_id: number) {
     return result.rows;
   } catch (err) {
     logger.error(`[CommunityService] Failed to fetch pending invites for user ID ${user_id}:`, err);
+    throw err;
+  }
+}
+
+export async function getCommunityInvites(community_id: number) {
+  const query = `
+    SELECT u.user_id, u.username, m.membership_status, ai.avatar_image_path, up2.total_points
+    FROM community_members m
+    INNER JOIN users u ON m.user_id = u.user_id
+    JOIN user_preferences up ON u.user_id = up.user_id
+    JOIN avatar_images ai ON up.avatar_id = ai.avatar_id
+    JOIN user_points up2 ON u.user_id = up2.user_id
+    WHERE m.community_id = $1 AND m.membership_status IN ('invited', 'requested')
+  `;
+  try {
+    const result = await pool.query(query, [ community_id ]);
+    logger.info(`[CommunityService] Fetched invites for community ID ${community_id}`);
+    return result.rows;
+  } catch (err) {
+    logger.error(`[CommunityService] Failed to fetch invites for community ID ${community_id}:`, err);
+    throw err;
+  }
+}
+
+export async function respondToInvite(community_id: number, user_id: number, response: 'accepted' | 'declined') {
+  const query = `
+    UPDATE community_members
+    SET membership_status = $1
+    WHERE community_id = $2 AND user_id = $3
+  `;
+  try {
+    await pool.query(query, [ response, community_id, user_id ]);
+    logger.info(`[CommunityService] Updated invite response for user ID ${user_id} in community ID ${community_id} to ${response}`);
+  } catch (err) {
+    logger.error(`[CommunityService] Failed to update invite response for user ID ${user_id} in community ID ${community_id}:`, err);
+    throw err;
+  }
+}
+
+export async function requestCommunityMembership(community_id: number, user_id: number) {
+  const query = `
+    INSERT INTO community_members (community_id, user_id, membership_status)
+    VALUES ($1, $2, 'requested')
+  `;
+  try {
+    await pool.query(query, [ community_id, user_id ]);
+    logger.info(`[CommunityService] User ID ${user_id} requested membership for community ID ${community_id}`);
+  } catch (err) {
+    logger.error(`[CommunityService] Failed to request membership for user ID ${user_id} in community ID ${community_id}:`, err);
     throw err;
   }
 }
@@ -630,6 +684,39 @@ export async function getCommunityStats(user_id: number) {
     throw err;
   }
 }
+
+async function getContributionScoresByCommunity(communityId: number) {
+  try {
+  const query = `
+    SELECT
+      cp.user_id,
+      u.username AS name,
+      SUM(cp.progress_amount) AS total_user_progress,
+      SUM(c.target_amount) AS total_target
+    FROM challenge_progress cp
+    JOIN challenges c ON cp.challenge_id = c.challenge_id
+    JOIN users u ON cp.user_id = u.user_id
+    WHERE c.community_id = $1
+      AND cp.participation_status = 'joined'
+      AND c.challenge_status = 'active'
+    GROUP BY cp.user_id, u.username
+    ORDER BY total_user_progress DESC
+  `;
+
+  const { rows } = await pool.query(query, [communityId]);
+
+  return rows.map(row => ({
+    userId: row.user_id,
+    name: row.name,
+    score: Math.min(100, Number(((row.total_user_progress / row.total_target) * 100).toFixed(2))),
+  }));
+  } catch (err) {
+    logger.error(`[CommunityService] Failed to fetch contribution scores for community ${communityId}:`, err);
+    throw new Error("Could not fetch contribution scores.");
+  }
+}
+
+
 
 // Get community performance summary for a user
 export async function getCommunityPerformanceSummary(user_id: number) {

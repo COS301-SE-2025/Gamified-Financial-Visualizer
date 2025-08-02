@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import AccountsLayout from './AccountsLayout';
 import {
   FaEdit, FaTrash, FaUtensils, FaBus, FaBolt, FaFilm, FaHeartbeat,
@@ -9,6 +9,8 @@ import {
   FaCoins, FaExchangeAlt, FaPlus, FaTimes, FaCheck,
   FaSearch
 } from 'react-icons/fa';
+
+import toast, { Toaster } from 'react-hot-toast';
 
 // Enhanced category icons with colors
 const categoryIcons = {
@@ -185,6 +187,7 @@ const BudgetCard = ({
 
   return (
     <div className="bg-white rounded-2xl shadow-sm p-6 mb-4 border border-gray-100 hover:shadow-md transition w-full">
+      <Toaster position="top-center" />
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4 w-full">
           <div className={`w-12 h-12 ${iconData.color} rounded-xl flex items-center justify-center text-xl`}>
@@ -242,13 +245,10 @@ const BudgetPage = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const user = localStorage.getItem('user');
-  const userId = user ? JSON.parse(user).id : null;
+  const user = JSON.parse(localStorage.getItem('user'));
 
-  useEffect(() => {
-    fetchBudgets();
-    fetchCategories();
-  }, []);
+  const userId = user?.id;
+
 
   const fetchBudgets = async () => {
     try {
@@ -303,32 +303,70 @@ const BudgetPage = () => {
     setIsCreating(false);
   };
 
-  const handleDelete = async (id) => {
-  if (!window.confirm('Are you sure you want to delete this budget?')) {
-    return;
-  }
+  useEffect(() => {
+    fetchBudgets();
+    fetchCategories();
+  }, []);
 
-  try {
-    const response = await fetch(`http://localhost:5000/api/budget/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      // Remove the body since your backend likely doesn't need it for DELETE
+
+  function handleDeleteWithConfirm(budget_id) {
+    toast.custom((t) => (
+      <div
+        className={`max-w-sm w-full bg-white rounded-2xl shadow-lg border border-gray-200 px-5 py-4 text-sm transition-all ${t.visible ? 'animate-enter' : 'animate-leave'
+          }`}
+      >
+        <p className="text-gray-800 mb-3">
+          Are you sure you want to delete this budget?
+        </p>
+        <div className="flex justify-end gap-2">
+          <button
+            className="px-4 py-1.5 bg-red-500 text-white rounded-full text-sm font-medium hover:bg-red-600 transition"
+            onClick={() => {
+              handleDelete(budget_id);
+              toast.success('Budget deleted');
+              toast.dismiss(t.id);
+            }}
+          >
+            Delete
+          </button>
+          <button
+            className="px-4 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200 transition"
+            onClick={() => toast.dismiss(t.id)}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    ), {
+      duration: 10000,
     });
-
-    const result = await response.json();
-
-    if (result.status === 'success') {
-      setBudgets(budgets.filter(budget => budget.budget_id !== id));
-    } else {
-      setError(result.message || 'Failed to delete budget');
-    }
-  } catch (err) {
-    setError('Failed to delete budget');
-    console.error('Error deleting budget:', err);
   }
-};
+  const handleDelete = async (id) => {
+    // Show a confirmation toast instead of window.confirm
+    // We'll use a simple state to handle confirmation
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/budget/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ user_id: userId }),  // Pass user_id if needed
+        // Remove the body since your backend likely doesn't need it for DELETE
+      });
+
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        setBudgets(budgets.filter(budget => budget.budget_id !== id));
+      } else {
+        setError(result.message || 'Failed to delete budget');
+      }
+    } catch (err) {
+      setError('Failed to delete budget');
+      console.error('Error deleting budget:', err);
+    }
+  };
 
   const handleSave = async (formData) => {
     try {
@@ -468,7 +506,7 @@ const BudgetPage = () => {
                 total_target={budget.total_target}
                 used={budget.used}
                 onEdit={() => handleEdit(budget.budget_id)}
-                onDelete={() => handleDelete(budget.budget_id)}
+                onDelete={() => handleDeleteWithConfirm(budget.budget_id)}
               />
             )
           ))}

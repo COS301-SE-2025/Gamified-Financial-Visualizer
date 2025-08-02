@@ -84,7 +84,8 @@ const CommunityList = () => {
 
   const communityList = searchTerm ? communities.filter(c => c.community_name.toLowerCase().includes(searchTerm.toLowerCase())) : communities;
   const recommendationsList = searchTerm ? recommendations.filter(c => c.community_name.toLowerCase().includes(searchTerm.toLowerCase())) : recommendations;
-
+// limit the number of recommendations displayed and randomize them
+  const limitedRecommendations = recommendationsList.slice(0, 10).sort(() => Math.random() - 0.5);
 
   return (
     <CommunityLayout>
@@ -195,12 +196,12 @@ const CommunityList = () => {
           <FaUsers className="text-[#72C1F5]" />
           Discover Communities
         </h2>
-        {recommendationsList.length === 0 ? (
+        {limitedRecommendations.length === 0 ? (
           <p className="text-sm text-gray-500 text-center py-4">
             {searchTerm ? `No communities found matching "${searchTerm}"` : "No communities found."}
           </p>
         ) : (
-          recommendationsList.map((community, i) => (
+          limitedRecommendations.map((community, i) => (
             <div key={i} className="flex justify-between items-center bg-white shadow-md rounded-2xl px-4 py-4">
               <div className="flex items-center gap-4">
                 <img

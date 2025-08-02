@@ -106,7 +106,7 @@ const CommunityCreate = () => {
         setInvitedFriends([]);
 
         setTimeout(() => {
-          navigate('/community');
+          navigate('/community/list');
         }, 1500);
       } else {
         toast.error(result.message || 'Failed to create community.');
