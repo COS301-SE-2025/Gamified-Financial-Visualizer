@@ -87,19 +87,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
     }
   };
 
-  const fetchChallenges = async () => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (!user?.id) return;
-    try {
-      const response = await fetch(`http://localhost:5000/api/community/challenges/user/${user.id}`);
-      if (!response.ok) throw new Error('Failed to fetch challenges');
-      const data = await response.json(); 
-      setChallenges(data.data.active || []);
-    } catch (err) {
-      console.error('Error fetching challenges:', err);
-      setChallenges([]);
-    }
-  };
+
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });

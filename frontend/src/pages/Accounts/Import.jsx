@@ -1,3 +1,4 @@
+
 import React, { useState , useEffect} from 'react';
 import AccountsLayout from './AccountsLayout';
 import { 
@@ -17,8 +18,6 @@ const ImportPage = () => {
   const [isDragging, setIsDragging] = useState(false);
 
   // Import configuration state
-  const [accounts, setAccounts] = useState(null);
-  const [categories, setCategories] = useState([]); // Add categories state
   const [selectedAccount, setSelectedAccount] = useState('');
   const [accounts, setAccounts] = useState(null);
   const [selectedBank, setSelectedBank] = useState('');
@@ -176,7 +175,6 @@ const contentType = res.headers.get('content-type');
     }
   };
 
-
   // Transaction editing
   const handleCategoryChange = (id, newCategory) => {
     setTransactions(transactions.map(tx =>
@@ -198,12 +196,6 @@ const contentType = res.headers.get('content-type');
 
   const handleFinalImport = async () => {
     setIsImporting(true);
-  const hasChanges = transactions.some(tx =>
-    tx.category !== tx.originalCategory || tx.type !== tx.originalType
-  );
-
-  // 2) send back just the changed rows as feedback
-  const handleConfirmChanges = async () => {
     setIsImporting(true);
     setImportError(null);
 
@@ -247,21 +239,6 @@ const contentType = res.headers.get('content-type');
 
       setImportSuccess(true);
       setShowReview(false);
-                
-      //  send corrections to /feedback
-      if (payload.feedbacks.length) {
-        console.log('Feedback payload:', payload.feedbacks);
-        fetch(
-          `http://localhost:5000/api/classifier/feedback`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ feedback: payload.feedbacks })
-          }
-        );
-      }
-    } catch (err) {
-      setImportError(err.message);
                 
       //  send corrections to /feedback
       if (payload.feedbacks.length) {
@@ -396,7 +373,7 @@ const contentType = res.headers.get('content-type');
                         >
                           <option value="">Select your bank</option>
                           {banks.map(bank => (
-                            <option key={bank.id} value={bank.id}>{bank.name}</option>
+                            <option key={bank.id} value={bank.name}>{bank.name}</option>
                           ))}
                         </select>
                       </div>
@@ -599,26 +576,26 @@ const contentType = res.headers.get('content-type');
                                 {transaction.amount < 0 ? `-$${Math.abs(transaction.amount).toFixed(2)}` : `$${transaction.amount.toFixed(2)}`}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <select
-                                  value={transaction.category}
-                                  onChange={(e) => handleCategoryChange(transaction.id, e.target.value)}
-                                  className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:ring-sky-400 focus:border-sky-500"
-                                >
-                                  {categories.map(category => (
-                                    <option key={category} value={category}>{category}</option>
-                                  ))}
-                                </select>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <select
-                                  value={transaction.type}
-                                  onChange={(e) => handleTypeChange(transaction.id, e.target.value)}
-                                  className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:ring-sky-400 focus:border-sky-400"
-                                >
-                                  {transactionTypes.map(type => (
-                                    <option key={type} value={type}>{type.charAt(0).toUpperCase() + type.slice(1)}</option>
-                                  ))}
-                                </select>
+                              <select
+                              value={transaction.category}
+                              onChange={(e) => handleCategoryChange(transaction.id, Number(e.target.value))}
+                              className="border border-gray-300 rounded px-2 py-1"
+                            >
+                              {categories.map(category => (
+                                <option key={category.category_id} value={category.category_id}>{category.category_name}</option>
+                              ))}
+                            </select>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <select
+                              value={transaction.transaction_type}
+                              onChange={(e) => handleTypeChange(transaction.id, e.target.value)}
+                              className="border border-gray-300 rounded px-2 py-1"
+                            >
+                              {transactionTypes.map(type => (
+                                <option key={type} value={type}>{type}</option>
+                              ))}
+                            </select>
                               </td>
                             </tr>
                           ))}
