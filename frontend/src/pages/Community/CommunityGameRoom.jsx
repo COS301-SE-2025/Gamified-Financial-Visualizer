@@ -247,7 +247,6 @@ const CommunityGameRoom = () => {
         setPowerUps(prev => prev.filter(p => p.id !== powerUpId));
     };
 
-
     // Initialize socket connection with mock data
     useEffect(() => {
         // Mock socket connection
@@ -271,6 +270,7 @@ const CommunityGameRoom = () => {
             }]);
         });
 
+        // Player joining a game socekt
         socket.on('playerJoined', (playerList) => {
             console.log('Mock players joined:', playerList);
             setPlayers(mockPlayers.slice(0, 3).concat([{
@@ -283,6 +283,7 @@ const CommunityGameRoom = () => {
             }]));
         });
 
+        // Game startign
         socket.on('gameStarted', (questions) => {
             console.log('Mock game started with questions:', questions);
             setGameState('playing');
@@ -290,6 +291,7 @@ const CommunityGameRoom = () => {
             startTimer(sampleQuestions[0].timeLimit);
         });
 
+        // How the player answers 
         socket.on('playerAnswered', (data) => {
             console.log('Mock player answered:', data);
             setPlayers(prev => prev.map(p =>
@@ -297,6 +299,7 @@ const CommunityGameRoom = () => {
             ));
         });
 
+        // the next question 
         socket.on('nextQuestion', (questionIndex) => {
             console.log('Mock next question:', questionIndex);
             setCurrentQuestion(questionIndex);
@@ -304,6 +307,7 @@ const CommunityGameRoom = () => {
             startTimer(sampleQuestions[questionIndex]?.timeLimit || gameSettings.timePerQuestion);
         });
 
+        // Ended the game 
         socket.on('gameEnded', (finalLeaderboard) => {
             console.log('Mock game ended with leaderboard:', finalLeaderboard);
             setLeaderboard(mockLeaderboard);
@@ -311,6 +315,7 @@ const CommunityGameRoom = () => {
             setStep('results');
         });
 
+        // the time limit updating
         socket.on('timeUpdate', (time) => {
             console.log('Mock time update:', time);
             setTimeLeft(time);
@@ -461,7 +466,6 @@ const CommunityGameRoom = () => {
     return (
         <CommunityLayout>
             <div className="max-w-4xl mx-auto px-4 space-y-6">
-                <CommunityHeader />
 
                 {/* Select Game Mode */}
                 {step === 'mode' && (

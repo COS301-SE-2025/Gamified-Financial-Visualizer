@@ -39,8 +39,12 @@ const ChallengeDetail = () => {
         }
     }, [id, navigate]);
 
-    console.log('Challenge Data:', challengeData);
-    const handleJoin = () => setJoined(true);
+    const handleJoin = () => {
+        setJoined(true);
+        // navigate(`/transactions/${challengeData.challenge_id}`); // Redirect to transactions page with challenge ID
+        // For now, redirect to transactions page without challenge ID
+        navigate(`/transactions`);
+    }
     const handleEdit = () => navigate(`/community/challenges/${challengeData.challenge_id}/edit`); // Challenge editing needs to be revisited
 
     if (!challengeData) {
@@ -52,12 +56,10 @@ const ChallengeDetail = () => {
             </CommunityLayout>
         );
     }
-    
+
     return (
         <CommunityLayout>
             <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
-                <CommunityHeader />
-
                 <div className="flex justify-between items-center">
                     <h2 className="text-2xl font-bold text-[#111827] flex items-center gap-2">
                         <FaCoins className="text-[#FBBF24]" /> Challenge Detail
@@ -87,7 +89,7 @@ const ChallengeDetail = () => {
                         <div className="flex flex-wrap gap-3 mt-4">
                             <span className="bg-[#FFD18C] text-[#FFFFFF] px-3 py-1 text-xs font-medium rounded-full">{challengeData.reward}</span>
                             <span className="bg-[#B1E1FF] text-[#FFFFFF] px-3 py-1 text-xs font-medium rounded-full">{challengeData.challenge_status}</span>
-                            <span className="bg-[#FE9B90] text-[#FFFFFF] px-3 py-1 text-xs font-medium rounded-full">{ challengeData.days_until_due < 0 ?  Math.abs( challengeData.days_until_due) + ` days OVERDUE` : challengeData.days_until_due + ` days left`}</span>
+                            <span className="bg-[#FE9B90] text-[#FFFFFF] px-3 py-1 text-xs font-medium rounded-full">{challengeData.days_until_due < 0 ? Math.abs(challengeData.days_until_due) + ` days OVERDUE` : challengeData.days_until_due + ` days left`}</span>
                             <span className="bg-[#AAD977] text-[#FFFFFF] px-3 py-1 text-xs font-medium rounded-full">{challengeData.difficulty} difficulty</span>
                         </div>
                     </div>
@@ -102,7 +104,7 @@ const ChallengeDetail = () => {
                                 <div
                                     className="h-full"
                                     style={{
-                                        width: (challengeData.current_amount / challengeData.target_amount) * 100  + '%',
+                                        width: (challengeData.current_amount / challengeData.target_amount) * 100 + '%',
                                         background: 'linear-gradient(to right, #FACC15, #FB923C)',
                                         borderRadius: '9999px',
                                     }}
@@ -110,7 +112,7 @@ const ChallengeDetail = () => {
                             </div>
                             <span className="text-sm font-semibold text-[#F97316]">{challengeData.target_amount}</span>
                         </div>
-                        <p className="text-xs mt-1 text-right text-[#6B7280]">Savings Target</p>
+                        <p className="text-xs mt-1 text-right text-[#6B7280]">Spending Target</p>
                     </div>
 
                     {/* Deadline details */}
@@ -118,12 +120,12 @@ const ChallengeDetail = () => {
                         <h4 className="text-sm font-semibold mb-2 text-[#1F2937]">Deadline</h4>
                         <div className="flex items-center gap-2 text-sm text-[#374151]">
                             <FaCalendarAlt /> <span> {challengeData.target_date
-                                    ? new Date(challengeData.target_date).toLocaleDateString('en-ZA', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric',
-                                    })
-                                    : 'N/A'}</span>
+                                ? new Date(challengeData.target_date).toLocaleDateString('en-ZA', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                })
+                                : 'N/A'}</span>
                         </div>
                         <p className="text-xs mt-1 text-[#6B7280]">Auto-expires at midnight</p>
                     </div>
@@ -145,22 +147,20 @@ const ChallengeDetail = () => {
                     </div>
                 </div>
 
-                <div className="flex gap-4">
-                    {!joined ? (
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-6">
+                    {!joined && (
                         <button
                             onClick={handleJoin}
                             className="flex items-center gap-2 bg-[#72C1F5] text-white px-4 py-2 rounded-full font-medium hover:bg-[#4CA9DB] transition"
                         >
                             <FaPlus /> Join Challenge
                         </button>
-                    ) : (
-                        <button
-                            onClick={handleEdit}
-                            className="flex items-center gap-2 bg-[#AAD977] text-white px-4 py-2 rounded-full font-medium hover:bg-[#83AB55] transition"
-                        >
-                            <FaEdit /> Edit Goal
-                        </button>
                     )}
+
+                    <p className="text-sm text-[#374151] max-w-xl">
+                        To make progress towards this challenge, you can link transactions in the <span className="font-semibold">Transactions</span> page.
+                        Once you reach the target amount, you will be able to claim your reward.
+                    </p>
                 </div>
             </div>
         </CommunityLayout>

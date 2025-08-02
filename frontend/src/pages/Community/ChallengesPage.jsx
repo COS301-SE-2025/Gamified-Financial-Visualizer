@@ -214,8 +214,6 @@ const ChallengesPage = () => {
     <CommunityLayout>
       <Toaster position="top-right" />
       <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
-        <CommunityHeader />
-
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h2 className="text-2xl font-bold text-gray-600">Community Challenges</h2>
@@ -223,21 +221,20 @@ const ChallengesPage = () => {
           </div>
           <Link to="/community/challenges/create">
             <button className="flex items-center gap-2 bg-gradient-to-r from-[#72C1F5] to-[#B1E1FF] text-white px-4 py-2 rounded-full text-sm font-medium shadow hover:shadow-md transition">
-              <FaTrophy /> Create Challenge
+              <FaTrophy /> Create Challenge 
             </button>
           </Link>
         </div>
 
-        <div className="flex items-center w-full max-w-4xl -ml-[8px] px-4 py-2 rounded-3xl border-2 border-[#E5794B] bg-white shadow-sm">
-          <FaSearch className="text-[#E5794B] mr-2" />
-          <input
-            type="text"
-            placeholder="Search for challenges..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full outline-none bg-transparent text-sm text-[#E5794B] placeholder-[#E5794B]/70"
-          />
-        </div>
+{/* Search bar */}
+        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm">
+                  <FaSearch className="text-[#76B947] mr-2" />
+                  <input
+                    type="text"
+                    placeholder="Search your challenges..."
+                    className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70"
+                  />
+                </div>
 
         <Section title="Active" icon={<FaFire />} color="text-orange-500" data={challenges.active} />
         <Section title="Upcoming" icon={<FaClock />} color="text-yellow-500" data={challenges.upcoming} />

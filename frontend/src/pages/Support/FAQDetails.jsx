@@ -18,7 +18,7 @@ const faqData = {
     'Compete on leaderboards',
     'Showcase your achievements'
   ],
-  'Accounts Vault': [
+  'Accounts & Transactions': [
     'How to add a transaction',
     'Edit or delete entries',
     'Auto-categorize expenses',
@@ -26,21 +26,21 @@ const faqData = {
     'Track monthly budgets',
     'Use insights and trends'
   ],
-  'Trophy Room': [
+  'Achievements': [
     'Unlocking new badges',
     'Track milestone progression',
     'Understand badge rarity',
     'Collect full categories',
     'See your XP analytics'
   ],
-  "Knowledge Path": [
+  "Fainancial Literacy": [
     'Start an interactive lesson',
     'Take and retake quizzes',
     'View your learning path',
     'Earn XP by completing tracks',
     'Track lesson history'
   ],
-  'Character Profile': [
+  'Your Profile': [
     'Customize your avatar',
     'Track personal progress',
     'View XP breakdown',

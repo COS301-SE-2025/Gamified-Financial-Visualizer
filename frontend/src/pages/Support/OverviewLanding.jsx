@@ -23,7 +23,7 @@ const OverviewLanding = () => {
   const sections = [
     { 
       id: 'dashboard', 
-      label: 'Mission Control', 
+      label: 'Home Dashboard', 
       icon: <FaShieldAlt className="text-xl" />, 
       color: '#72C1F5',
       desc: 'Your command center for tracking XP and quests',
@@ -31,7 +31,7 @@ const OverviewLanding = () => {
     },
     { 
       id: 'transactions', 
-      label: 'Account Vault', 
+      label: 'Accounts', 
       icon: <FaCoins className="text-xl" />, 
       color: '#FFA726',
       desc: 'Manage your treasury and track gold flow',
@@ -39,7 +39,7 @@ const OverviewLanding = () => {
     },
     { 
       id: 'goals', 
-      label: 'Goal Quests', 
+      label: 'Goals', 
       icon: <FaScroll className="text-xl" />, 
       color: '#88BC46',
       desc: 'Accept challenges and earn XP',
@@ -47,7 +47,7 @@ const OverviewLanding = () => {
     },
     { 
       id: 'community', 
-      label: 'Community Adventures', 
+      label: 'Community', 
       icon: <FaDragon className="text-xl" />, 
       color: '#9575CD',
       desc: 'Join forces with fellow adventurers',
@@ -55,7 +55,7 @@ const OverviewLanding = () => {
     },
     { 
       id: 'learn', 
-      label: "Knowledge Path", 
+      label: "Learn", 
       icon: <FaHatWizard className="text-xl" />, 
       color: '#FF7043',
       desc: 'Level up your financial magic',
@@ -63,7 +63,7 @@ const OverviewLanding = () => {
     },
     { 
       id: 'achievements', 
-      label: 'Trophy Room', 
+      label: 'Achievements', 
       icon: <FaCrown className="text-xl" />, 
       color: '#FF4080',
       desc: 'Display your hard-earned badges',
@@ -71,7 +71,7 @@ const OverviewLanding = () => {
     },
     { 
       id: 'profile', 
-      label: 'Character Profile', 
+      label: 'Profile', 
       icon: <FaUser className="text-xl" />, 
       color: '#26C6DA',
       desc: 'Customize your avatar and journey',
@@ -110,13 +110,13 @@ const OverviewLanding = () => {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="bg-white p-6 rounded-3xl shadow-md border-l-8 border-t-2 border-r-2 border-b-2 border-[#FFD18C] relative overflow-hidden"
+        className="bg-white p-6 rounded-3xl shadow-md border-l-8 border-t-2 border-r-2 border-b-2 border-[#72C1F5] relative overflow-hidden"
       >
-        <div className="absolute top-0 right-0 w-32 h-32 bg-[#fef9c3] rounded-full filter blur-3xl opacity-40 -mr-10 -mt-10"></div>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-[#c3fafe] rounded-full filter blur-3xl opacity-40 -mr-10 -mt-10"></div>
         
         <div className="relative z-10 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-[#FFBF1A] mb-1">Adventure Guide</h1>
+            <h1 className="text-2xl font-bold text-sky-300 mb-1">Adventure Guide</h1>
             <p className="text-gray-600 mb-4">Explore different areas of your financial journey</p>
             
             <div className="flex gap-3">

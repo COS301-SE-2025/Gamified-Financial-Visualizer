@@ -330,6 +330,23 @@ router.put('/:communityId', async (req, res) => {
   }
 });
 
+router.get('/recommended/:userId', async (req, res) => {
+  const userId = Number(req.params.userId);
+
+  if (isNaN(userId)) {
+    res.status(400).json({ status: 'error', message: 'Invalid user ID.' });
+    return;
+  }
+
+  try {
+    const recommendations = await communityService.getRecommendedCommunities(userId);
+    res.status(200).json({ status: 'success', data: recommendations });
+  } catch (err) {
+    logger.error(`[Community] Failed to get recommended communities for user ID ${userId}:`, err);
+    res.status(500).json({ status: 'error', message: 'Could not fetch recommended communities.' });
+  }
+});
+
 router.delete('/:communityId/members/:userId', async (req, res) => {
   const communityId = Number(req.params.communityId);
   const userId = Number(req.params.userId);
@@ -424,6 +441,70 @@ router.post('/friends/request/:sender_id/:receiver_id', async (req: Request, res
   } catch (err) {
     logger.error(`[Community] Failed to send friend request:`, err);
     res.status(500).json({ status: 'error', message: 'Could not send friend request.' });
+  }
+});
+
+router.post('/membership/request', async (req: Request, res: Response) => {
+  const { community_id, user_id } = req.body;
+
+  if (!community_id || !user_id) {
+    res.status(400).json({ status: 'error', message: 'Missing community ID or user ID.' });
+    return;
+  }
+
+  try {
+    const request = await communityService.requestCommunityMembership(community_id, user_id);
+    res.status(200).json({ status: 'success', message: 'Membership requested.' });
+  } catch (err) {
+    logger.error(`[Community] Failed to request membership for user ID ${user_id} in community ID ${community_id}:`, err);
+    res.status(500).json({ status: 'error', message: 'Could not request membership.' });
+  }
+});
+
+router.get('/membership/requests/:communityId', async (req: Request, res: Response) => {
+  const communityId = Number(req.params.communityId);
+
+  if (isNaN(communityId)) {
+    res.status(400).json({ status: 'error', message: 'Invalid community ID.' });
+    return;
+  }
+
+  try {
+    const requests = await communityService.getCommunityInvites(communityId);
+    res.status(200).json({ status: 'success', data: requests });
+  } catch (err) {
+    logger.error(`[Community] Failed to fetch membership requests for community ID ${communityId}:`, err);
+    res.status(500).json({ status: 'error', message: 'Could not fetch membership requests.' });
+  }
+});
+
+router.post('/membership/respond', async (req: Request, res: Response) => {
+  const { community_id, user_id, action } = req.body;
+  
+  if (!community_id || !user_id || !action) {
+    res.status(400).json({ status: 'error', message: 'Missing required fields.' });
+    return;
+  }
+
+  // c
+
+  if (action !== 'accepted' && action !== 'declined') {
+    res.status(400).json({ status: 'error', message: 'Invalid action.' });
+    return;
+  }
+
+  try {
+    const response = await communityService.respondToInvite(community_id, user_id, action);
+    res.status(200).json({ status: 'success', message: `Membership request ${action}.`, data: response });
+
+    // Notify the user about the membership response
+    await notifyUser(user_id, `membership_request_${action}`, {
+      community_id,
+      action,
+    });
+  } catch (err) {
+    logger.error(`[Community] Failed to respond to membership request for user ID ${user_id} in community ID ${community_id}:`, err);
+    res.status(500).json({ status: 'error', message: 'Could not respond to membership request.' });
   }
 });
 
