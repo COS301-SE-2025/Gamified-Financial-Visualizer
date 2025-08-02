@@ -66,6 +66,7 @@ const AccountsPerformanceHeader = () => {
   };
   const progressPercentage = summary ? normalizeScore(summary.score) : 0;
 
+  const userAvatar = userPerformance ? userPerformance.avatar_image_path : avatar;
   return (
     <div className="flex flex-wrap justify-between gap-6 items-start w-full mb-6">
       {/* Left Label */}
@@ -86,14 +87,13 @@ const AccountsPerformanceHeader = () => {
           {/* Avatar + Info */}
           <div className="flex items-center gap-6">
             <img src={
-                userPerformance
-                  ? `../../assets/Images/${userPerformance.avatar_image_path}`
-                  : { avatar }
+                `/assets/Images/${userPerformance?.avatar_image_path}`
               } className="w-16 h-16 rounded-full object-cover" alt="Avatar" />
             <div>
+              <p className="text-sm text-gray-500">Score</p>
               <p className="text-2xl font-bold text-gray-800">{summary ? summary.score : '--'}</p>
               <p className="text-sm text-gray-500">{performance.label}</p>
-              <p className="text-sm text-[#F97156] font-medium">{performance.level}</p>
+              <p className="text-sm text-[#F97156] font-medium"> Lv {levelProgress?.level_number ?? '—'}: {levelProgress?.tier_status ?? '—'}</p>
             </div>
           </div>
 

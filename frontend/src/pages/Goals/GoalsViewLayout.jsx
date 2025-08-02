@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import GoalsSidebar from '../../layouts/sidebars/GoalsSidebar';
+import PacmanLoader from '../../components/loaders/PacmanLoader';
 
 const GoalsViewLayout = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -12,11 +13,11 @@ const GoalsViewLayout = ({ children }) => {
   return (
     <div className="relative min-h-screen bg-gray-50">
       {/* Loading Animation */}
-      {/* {isLoading && (
+      {isLoading && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-white">
           <PacmanLoader />
         </div>
-      )} */}
+      )} 
 
       <div className={`${isLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'} transition-opacity duration-500`}>
         {/* Top Header */}

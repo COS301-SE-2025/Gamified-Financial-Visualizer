@@ -340,10 +340,9 @@ const AccountsPerformanceHeader = () => {
         <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col sm:flex-row items-center justify-between gap-6">
           {/* Avatar + Info */}
           <div className="flex items-center gap-6">
-            <img src={performanceSummary?.avatar_image_path
-                  ? `/assets/Images/${performanceSummary.avatar_image_path}`
-                  : avatar} className="w-16 h-16 rounded-full object-cover" alt="Avatar" />
+            <img src={`/assets/Images/${performanceSummary?.avatar_image_path}`} className="w-16 h-16 rounded-full object-cover" alt="Avatar" />
             <div>
+              <p className="text-sm text-gray-500">Score</p>
               <p className="text-2xl font-bold text-gray-800">{performanceMetrics.score}</p>
               <p className="text-sm text-gray-500">{performanceMetrics.description}</p>
               <p className="text-sm text-[#F97156] font-medium">Lv {performanceMetrics.levelNumber}: {performanceMetrics.level}</p>

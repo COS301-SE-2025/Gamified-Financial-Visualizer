@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 
 import CommunityLayout from '../../pages/Community/CommunityLayout';
-import CommunityHeader from '../../layouts/headers/CommunityHeader';
+
 import { FaChartLine, FaArrowLeft, FaCrown, FaEye, FaMedal, FaUserMinus, FaPaperPlane, FaTimes, FaCheck } from 'react-icons/fa';
 
 const CommunityMemberPage = () => {
@@ -196,10 +196,8 @@ const CommunityMemberPage = () => {
     <CommunityLayout>
       <Toaster position="top-right" />
       <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
-        {/* Search bar */}
 
-        <CommunityHeader />
-
+  
         {/* Profile Banner */}
         <div className="relative">
           <img src={`/assets/Images/${profileData.banner_image_path}`} alt="banner" className="w-full h-40 object-cover rounded-2xl" />

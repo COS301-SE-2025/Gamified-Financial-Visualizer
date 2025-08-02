@@ -2,6 +2,7 @@
   "dependencies": {
     "@types/axios": "^0.9.36",
     "@types/winston": "^2.4.4",
+    "@web3icons/react": "^4.0.19",
     "argon2": "^0.43.0",
     "axios": "^1.9.0",
     "bullmq": "^5.56.4",

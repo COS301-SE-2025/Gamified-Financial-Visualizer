@@ -6,6 +6,7 @@ import CommunityLayout from '../../pages/Community/CommunityLayout';
 
 const CommunityList = () => {
   const [communities, setCommunities] = useState([]);
+  const [recommendations, setRecommendations] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
 
   const fetchUserCommunities = async () => {
@@ -21,8 +22,22 @@ const CommunityList = () => {
     }
   };
 
+  const fetchRecommendations = async () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user?.id) return;
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/community/recommended/${user.id}`);
+      const data = await res.json();
+      setRecommendations(data.data || []);
+    } catch (err) {
+      console.error('Failed to load recommendations:', err);
+    }
+  };
+
   useEffect(() => {
     fetchUserCommunities();
+    fetchRecommendations();
   }, []);
 
   const handleDelete = (communityName, communityId) => {
@@ -67,10 +82,26 @@ const CommunityList = () => {
     ), { duration: 10000, position: 'top-center' });
   };
 
+  const communityList = searchTerm ? communities.filter(c => c.community_name.toLowerCase().includes(searchTerm.toLowerCase())) : communities;
+  const recommendationsList = searchTerm ? recommendations.filter(c => c.community_name.toLowerCase().includes(searchTerm.toLowerCase())) : recommendations;
+
+
   return (
     <CommunityLayout>
       <Toaster position="top-right" />
       <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
+        {/* Search bar */}
+        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm">
+          <FaSearch className="text-[#76B947] mr-2" />
+          <input
+            type="text"
+            placeholder="Search your communities..."
+            className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
         {/* Create community button */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-[#1F2937] flex items-center gap-2">
@@ -86,20 +117,90 @@ const CommunityList = () => {
           </Link>
         </div>
 
-        {/* Search bar */}
-        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm">
-          <FaSearch className="text-[#76B947] mr-2" />
-          <input
-            type="text"
-            placeholder="Search your communities..."
-            className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70"
-          />
-        </div>
-
         {/* Community details */}
-        {communities
-          .filter(c => c.community_name.toLowerCase().includes(searchTerm.toLowerCase()))
-          .map((community, i) => (
+        {communityList.length === 0 ? (
+          <p className="text-sm text-gray-500 text-center py-4">
+            {searchTerm ? `No communities found matching "${searchTerm}"` : "You haven't joined any communities yet."}
+          </p>
+        ) : (
+          communityList
+            .filter(c => c.community_name.toLowerCase().includes(searchTerm.toLowerCase()))
+            .map((community, i) => (
+              <div key={i} className="flex justify-between items-center bg-white shadow-md rounded-2xl px-4 py-4">
+                <div className="flex items-center gap-4">
+                  <img
+                    src={`/assets/Images/${community.banner}`}
+                    alt={community.community_name}
+                    className="w-16 h-16 rounded-full object-cover shadow"
+                  />
+
+                  <div>
+                    <p className="text-lg font-semibold text-gray-800">{community.community_name}</p>
+
+                    {/* DESCRIPTION BLOCK */}
+                    {community.description && (
+                      <p className="text-sm text-gray-500 italic mt-1 max-w-xs line-clamp-2">
+                        {community.description}
+                      </p>
+                    )}
+
+                    <div className="flex gap-2 mt-2">
+                      <span className="bg-[#E0F2FE] text-[#72C1F5] text-xs font-medium px-3 py-1 rounded-full">
+                        {community.member_count} Members
+                      </span>
+                      <span className="bg-[#E0F2FE] text-[#72C1F5] text-xs font-medium px-3 py-1 rounded-full">
+                        {community.challenge_count} Challenges
+                      </span>
+                      <span className="bg-[#FEF9C3] text-[#FBBF24] text-xs font-medium px-3 py-1 rounded-full">
+                        {Math.round(community.xp_total)} XP
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+
+                {/* Card Avatars */}
+                <div className="flex items-center gap-4">
+                  <div className="flex -space-x-2">
+                    {community.preview_avatars?.map((src, index) => (
+                      <img
+                        key={index}
+                        src={`/assets/Images/${src}`}
+                        alt="avatar"
+                        className="w-8 h-8 rounded-full border-2 border-white"
+                      />
+                    ))}
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-end gap-2">
+                    <Link to={`/community/details/${community.community_name.replace(/\s+/g, '_')}`}>
+                      <button className="bg-[#AAD977] text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-[#83AB55] transition whitespace-nowrap">
+                        <FaEye className="inline-block mr-1" /> View
+                      </button>
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(community.community_name, community.community_id)}
+                      className="bg-[#FE9B90] text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-[#ED5E52] transition whitespace-nowrap"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )))}
+
+
+        {/* Discover communities */}
+        <h2 className="text-2xl font-bold text-[#1F2937] mb-4 flex items-center gap-2">
+          <FaUsers className="text-[#72C1F5]" />
+          Discover Communities
+        </h2>
+        {recommendationsList.length === 0 ? (
+          <p className="text-sm text-gray-500 text-center py-4">
+            {searchTerm ? `No communities found matching "${searchTerm}"` : "No communities found."}
+          </p>
+        ) : (
+          recommendationsList.map((community, i) => (
             <div key={i} className="flex justify-between items-center bg-white shadow-md rounded-2xl px-4 py-4">
               <div className="flex items-center gap-4">
                 <img
@@ -152,24 +253,12 @@ const CommunityList = () => {
                       <FaEye className="inline-block mr-1" /> View
                     </button>
                   </Link>
-                  <button
-                    onClick={() => handleDelete(community.community_name, community.community_id)}
-                    className="bg-[#FE9B90] text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-[#ED5E52] transition whitespace-nowrap"
-                  >
-                    Delete
-                  </button>
                 </div>
               </div>
             </div>
-          ))}
+          ))
+        )}
 
-        {communities.filter(c =>
-          c.community_name.toLowerCase().includes(searchTerm.toLowerCase())
-        ).length === 0 && (
-            <div className="text-center text-gray-500 mt-6 text-sm">
-              No matching communities found.
-            </div>
-          )}
       </div>
     </CommunityLayout>
   );

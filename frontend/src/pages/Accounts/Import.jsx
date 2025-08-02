@@ -116,7 +116,10 @@ const ImportPage = () => {
               
         res = await fetch(
           `http://localhost:5000/api/classifier/upload-statement`,
-          { method: 'POST', body: form }
+          { method: 'POST',
+           headers: { 'Accept': 'application/json' }, 
+           body: form
+         }
         );
       } else {
         // if you support URL-based upload server-side:
@@ -134,6 +137,12 @@ const ImportPage = () => {
           }
         );
       }
+const contentType = res.headers.get('content-type');
+
+      if (!contentType || !contentType.includes('application/json')) {
+  const text = await res.text();
+  throw new Error(`Expected JSON, got: ${text.slice(0, 100)}`);
+}
 
       body = await res.json();
       if (!res.ok) throw new Error(body.error || 'Upload failed');
@@ -305,7 +314,7 @@ const ImportPage = () => {
                       Import Bank Statements
                     </h1>
                     <p className="text-gray-600">
-                      Upload PDF statements to automatically extract and categorize transactions
+                      Upload PDF statements to automatically extract and categorize transactions with <span className="font-bold text-[#83AB55]">AI</span>
                     </p>
                   </div>
 
@@ -346,7 +355,7 @@ const ImportPage = () => {
                         >
                           <option value="">Select an account</option>
                           {accounts.map(account => (
-                            <option key={account.id} value={account.id}>{account.name}</option>
+                            <option key={account.account_id} value={account.account_id}>{account.account_name}</option>
                           ))}
                         </select>
                       </div>
@@ -489,8 +498,8 @@ const ImportPage = () => {
                       <div>
                         <p className="font-medium text-gray-700 mb-1">Need help?</p>
                         <p>
-                          We support PDFs from most major banks.
-                          <a href="#" className="text-sky-500 hover:underline ml-1">View supported banks</a>
+                          We support PDFs from most major banks. If your bank is not listed, please contact support. <br />
+                          All statements are processed securely, privately and never stored on the system nor shared to third parties.<br />
                         </p>
                       </div>
                     </div>

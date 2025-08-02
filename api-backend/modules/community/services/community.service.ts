@@ -73,6 +73,7 @@ export async function getCommunityByTitle(name: string) {
           'title',            ch.challenge_title,
           'challenge_type',   ch.challenge_type,
           'measurement_type', ch.measurement_type,
+          'challenge_status',  ch.challenge_status,
           'xp',               GREATEST(10, FLOOR(ch.target_amount/100)),
           'deadline',         to_char(ch.target_date,'YYYY-MM-DD'),
 
@@ -216,6 +217,74 @@ export async function listCommunitiesByUser(user_id: number) {
     return result.rows;
   } catch (err) {
     logger.error(`[CommunityService] Failed to list communities for user ID ${user_id}:`, err);
+    throw err;
+  }
+}
+
+export async function getRecommendedCommunities(user_id: number) {
+
+  const query = `
+    SELECT
+      c.community_id,
+      c.community_name,
+      c.description,
+      b.banner_image_path AS banner,
+
+      -- Total XP from challenge_progress for that community
+      COALESCE((
+        SELECT SUM(cp.progress_amount)
+        FROM challenges ch
+        JOIN challenge_progress cp ON ch.challenge_id = cp.challenge_id
+        WHERE ch.community_id = c.community_id
+          AND cp.participation_status = 'joined'
+      ), 0) AS xp_total,
+
+      -- Total accepted members
+      (
+        SELECT COUNT(*) FROM community_members cm
+        WHERE cm.community_id = c.community_id
+          AND cm.membership_status = 'accepted'
+      ) AS member_count,
+
+      -- Total goals linked to accepted members
+      (
+        SELECT COUNT(*) FROM goals g
+        WHERE g.user_id IN (
+          SELECT cm.user_id FROM community_members cm
+          WHERE cm.community_id = c.community_id AND cm.membership_status = 'accepted'
+        )
+      ) AS challenge_count,
+
+      -- Preview avatars of up to 5 accepted members
+      (
+        SELECT json_agg(ai.avatar_image_path)
+        FROM (
+          SELECT a.avatar_image_path
+          FROM community_members cm
+          JOIN user_preferences up ON cm.user_id = up.user_id
+          JOIN avatar_images a ON up.avatar_id = a.avatar_id
+          WHERE cm.community_id = c.community_id
+            AND cm.membership_status = 'accepted'
+          LIMIT 5
+        ) AS ai
+      ) AS preview_avatars
+
+    FROM communities c
+    INNER JOIN community_members m ON c.community_id = m.community_id
+    JOIN banner_images b ON c.banner_id = b.banner_id
+    WHERE c.community_id NOT IN (
+      SELECT community_id FROM community_members WHERE user_id = $1
+    )
+    GROUP BY c.community_id, b.banner_image_path
+    LIMIT 10;
+  `;
+
+
+  try {
+    const result = await pool.query(query, [ user_id ]);
+    return result.rows;
+  } catch (err) {
+    logger.error(`[CommunityService] Failed to fetch recommended communities for user ID ${user_id}:`, err);
     throw err;
   }
 }
@@ -809,9 +878,31 @@ export async function getFriendRecommendations(user_id: number, limit: number = 
 }
 
 export async function sendFriendRequest(sender_id: number, receiver_id: number) {
-  const [ user1, user2 ] = sender_id < receiver_id
-    ? [ sender_id, receiver_id ]
-    : [ receiver_id, sender_id ];
+  // check if sender and receiver are not the same
+  if (sender_id === receiver_id) {
+    throw new Error("You cannot send a friend request to yourself silly.");
+  }
+
+  // check if a friendship already exists
+  const existingQuery = `
+    SELECT * FROM friendships
+    WHERE (user_id = $1 AND friend_id = $2)
+       OR (user_id = $2 AND friend_id = $1);
+  `;
+  
+  const existingResult = await pool.query(existingQuery, [ sender_id, receiver_id ]);
+
+  if ((existingResult?.rowCount ?? 0) > 0) {
+    const existingFriendship = existingResult.rows[ 0 ];
+    
+    if (existingFriendship.relationship_status === 'accepted') {
+      throw new Error("You are already friends with this user.");
+    } else if (existingFriendship.relationship_status === 'pending') {
+      throw new Error("A friend request is already pending.");
+    } else if (existingFriendship.relationship_status === 'declined') {
+      throw new Error("You cannot send a new request after it was declined.");
+    }
+  }
 
   const query = `
     INSERT INTO friendships (user_id, friend_id, relationship_status)
@@ -823,8 +914,8 @@ export async function sendFriendRequest(sender_id: number, receiver_id: number) 
   `;
 
   try {
-    const result = await pool.query(query, [ user1, user2 ]);
-    logger.info(`[CommunityService] Friend request recorded between ${user1} and ${user2}`);
+    const result = await pool.query(query, [ sender_id, receiver_id ]);
+    logger.info(`[CommunityService] Friend request recorded between ${sender_id} and ${receiver_id}`);
     return result.rows[ 0 ];
   } catch (err) {
     logger.error(`[CommunityService] Failed to send friend request:`, err);
@@ -834,8 +925,6 @@ export async function sendFriendRequest(sender_id: number, receiver_id: number) 
 
 
 export async function deleteFriend(user_id: number, friend_id: number) {
-  const [ u1, u2 ] = user_id < friend_id ? [ user_id, friend_id ] : [ friend_id, user_id ];
-
   const query = `
     DELETE FROM friendships
     WHERE user_id = $1 AND friend_id = $2
@@ -843,23 +932,19 @@ export async function deleteFriend(user_id: number, friend_id: number) {
   `;
 
   try {
-    const result = await pool.query(query, [ u1, u2 ]);
+    const result = await pool.query(query, [user_id, friend_id]);
     if (result.rowCount === 0) {
-      throw new Error(`No friendship found between ${u1} and ${u2}`);
+      throw new Error(`No friendship found between ${user_id} and ${friend_id}`);
     }
-    logger.info(`[CommunityService] Friendship deleted between ${u1} and ${u2}`);
-    return result.rows[ 0 ];
+    logger.info(`[CommunityService] Friendship deleted between ${user_id} and ${friend_id}`);
+    return result.rows[0];
   } catch (err) {
-    logger.error(`[CommunityService] Failed to delete friend between ${u1} and ${u2}:`, err);
+    logger.error(`[CommunityService] Failed to delete friend between ${user_id} and ${friend_id}:`, err);
     throw err;
   }
 }
 
 export async function getFriendshipStatus(user_id: number, friend_id: number) {
-const [u1,u2] = user_id < friend_id
-  ? [user_id, friend_id]
-  : [friend_id, user_id];
-
   const query = `
     SELECT user_id, friend_id, relationship_status AS status
     FROM friendships
@@ -868,7 +953,7 @@ const [u1,u2] = user_id < friend_id
   `;
 
   try {
-    const result = await pool.query(query,[ u1, u2]);
+    const result = await pool.query(query,[ user_id, friend_id]);
     logger.info(`[CommunityService] Fetched friend request `);
     return result.rows[0];
   } catch (error) {
@@ -878,9 +963,6 @@ const [u1,u2] = user_id < friend_id
 }
 
 export async function respondToFriendRequests(userId: number, receiver_id: number, response: string) {
-  const [u1,u2] = userId < receiver_id
-  ? [userId, receiver_id]
-  : [receiver_id, userId];
 
   const query = `
     UPDATE friendships
@@ -891,11 +973,11 @@ export async function respondToFriendRequests(userId: number, receiver_id: numbe
   `;
 
   try {
-    const res = await pool.query(query, [response, u1, u2]);
+    const res = await pool.query(query, [response, userId, receiver_id]);
     if (res.rowCount === 0) throw new Error('No such friendship');
     return res.rows[0];
   } catch (err) {
-    logger.error(`[CommunityService] Friend requests for userID ${userId} updated with ${response}failed`);
+    logger.error(`[CommunityService] Friend requests for userID ${userId} updated with ${response} failed`);
     throw err;
   }
 }

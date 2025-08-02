@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-// import { PacmanLoader } from 'react-spinners';
+import PacmanLoader from '../../components/loaders/PacmanLoader';
 import AchievementsSidebar from '../../layouts/sidebars/AchievementsSidebar'; // rename if needed
 
 const AchievementsLayout = ({ children }) => {

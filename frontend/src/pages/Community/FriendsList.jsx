@@ -141,12 +141,14 @@ const FriendsList = () => {
             type="text"
             placeholder="Search your friends..."
             className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
         </div>
 
         {/* Your Friends */}
         <div>
-          <h3 className="text-lg font-semibold text-[#333333] mb-3">Your Friends</h3>
+          <h2 className="text-lg font-semibold text-[#333333] mb-3">Your Friends</h2>
           <div className="bg-white rounded-xl shadow p-4 space-y-2 border border-[#E5E7EB]">
             {filteredFriends.length === 0 ? (
               <p className="text-sm text-gray-500 text-center py-4">

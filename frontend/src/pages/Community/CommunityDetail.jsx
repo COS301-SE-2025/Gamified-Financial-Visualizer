@@ -15,6 +15,7 @@ import banner from '../../assets/Images/banners/pixelStudents.jpeg';
 import banner1 from '../../assets/Images/banners/pixelGirlAlly.gif';
 import banner2 from '../../assets/Images/banners/pixelApartment.gif';
 import banner3 from '../../assets/Images/banners/pixelStore.gif';
+import { FaTrophy } from 'react-icons/fa';
 
 const bannerOptions = [
   { id: 1, label: 'Pixel Students', src: banner },
@@ -267,7 +268,10 @@ const CommunityDetail = () => {
                 style={{ color: '#66BFBF' }}
               />
             ) : (
-              <h2 className="text-2xl font-bold" style={{ color: '#66BFBF' }}>{communityData.community_name}</h2>
+              <div className="flex flex-col">
+                <h2 className="text-2xl font-bold" style={{ color: '#66BFBF' }}>{communityData.community_name}</h2>
+                <p className="text-sm text-gray-500">{communityData.description}</p>
+              </div>
             )}
           </div>
           <div className="flex items-center gap-4">
@@ -297,19 +301,21 @@ const CommunityDetail = () => {
                       <FaUserPlus /> Request
                     </button>
                   )}
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="flex items-center gap-2 bg-[#B1E1FF] hover:bg-[#4BA5E6] text-white px-4 py-2 rounded-full text-sm font-semibold shadow-sm"
-                  >
-                    <FaEdit /> Edit
-                  </button>
                   {isMember(currentUser.id) && (
-                    <button
-                      onClick={() => removeMember(currentUser.id)}
-                      className="flex items-center gap-2 bg-red-100 text-red-600 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-red-200 transition"
-                    >
-                      <FaUserPlus /> Leave
-                    </button>
+                    <>
+                      <button
+                        onClick={() => setIsEditing(true)}
+                        className="flex items-center gap-2 bg-[#B1E1FF] hover:bg-[#4BA5E6] text-white px-4 py-2 rounded-full text-sm font-semibold shadow-sm"
+                      >
+                        <FaEdit /> Edit
+                      </button>
+                      <button
+                        onClick={() => removeMember(currentUser.id)}
+                        className="flex items-center gap-2 bg-red-100 text-red-600 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-red-200 transition"
+                      >
+                        <FaUserPlus /> Leave
+                      </button>
+                    </>
                   )}
                   <button
                     onClick={() => navigate(-1)}
@@ -451,7 +457,19 @@ const CommunityDetail = () => {
         </div>
 
         {/* Community Challenges */}
-        <h3 className="text-sm font-semibold mb-3" style={{ color: '#4B5563' }}>Community Challenges</h3>
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-sm font-semibold" style={{ color: '#4B5563' }}>
+            Community Challenges
+          </h3>
+          {isMember(currentUser.id) && (
+            <Link to="/community/challenges/create">
+              <button className="flex items-center gap-2 bg-gradient-to-r from-[#72C1F5] to-[#B1E1FF] text-white px-4 py-2 rounded-full text-sm font-medium shadow hover:shadow-md transition">
+                <FaTrophy /> Create Challenge
+              </button>
+            </Link>
+          )}
+        </div>
+
         <div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
             {challengeData.map((challenge, i) => (
@@ -467,18 +485,33 @@ const CommunityDetail = () => {
                   className="absolute -top-8 left-4 w-20 h-20 rounded-full object-cover border-4 border-white shadow"
                 />
 
-                {/* Title + Deadline + Status + Tags */}
                 <div className="flex justify-between items-start">
                   <div>
                     <h4 className="text-lg font-semibold text-[#111827]">{challenge.title}</h4>
-                    <p className="text-sm text-[#ED5E52] font-medium mt-1">{challenge.current_amount}/{challenge.target_amount} ZAR</p>
-                    <p className="text-sm text-[#374151]">{challenge.target_amount - challenge.current_amount} ZAR Left</p>
-                    <p className="text-sm text-[#6B7280] mt-1">Goal should be accomplished on <span className="text-[#ED5E52] font-semibold">{challenge.deadline}</span></p>
+                    <p
+                      className={`text-sm font-medium mt-1 ${
+                        challenge.current_amount >= challenge.target_amount
+                          ? 'text-green-400'
+                          : 'text-[#ED5E52]'
+                      }`}
+                    >
+                      {challenge.current_amount}/{challenge.target_amount} ZAR
+                    </p>
+                    <p className="text-sm text-[#374151]">
+                      {(challenge.target_amount - challenge.current_amount) < 0
+                        ? 0
+                        : (challenge.target_amount - challenge.current_amount)}{' '}
+                      ZAR Left
+                    </p>
+                    <p className="text-sm text-[#6B7280] mt-1">
+                      Goal should be accomplished on{' '}
+                      <span className="text-[#ED5E52] font-semibold">{challenge.deadline}</span>
+                    </p>
                   </div>
 
                   {/* Tags */}
                   <div className="flex flex-col items-end gap-2 ml-4">
-                    <span className="text-xs px-4 py-1 rounded-full bg-[#B1E1FF] text-[#4B82A2] font-medium">In-Progress</span>
+                    <span className="text-xs px-4 py-1 rounded-full bg-[#B1E1FF] text-[#4B82A2] font-medium">{challenge.challenge_status}</span>
                     <span className="text-xs px-3 py-1 rounded-full bg-[#FFD18C] text-[#FFFFFF] font-medium">{challenge.challenge_type}</span>
                     <span className="text-xs px-3 py-1 rounded-full bg-[#FFD18C] text-[#FFFFFF] font-semibold">{challenge.xp} XP</span>
                   </div>
@@ -550,9 +583,9 @@ const CommunityDetail = () => {
                 <div
                   className="h-full"
                   style={{
-                    width: (communityData.goalsCompleted/communityData.goalsTotal)*100 +  '%',
+                    width: (communityData.goalsCompleted / communityData.goalsTotal) * 100 + '%',
                     background: 'linear-gradient(to right, #5FBFFF, #7FDD53)',
-                     // bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53]
+                    // bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53]
                     borderRadius: '9999px',
                   }}
                 />

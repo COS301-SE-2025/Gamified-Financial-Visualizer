@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PacmanLoader } from 'react-spinners';
+import PacmanLoader from '../../components/loaders/PacmanLoader';
 import CommunitySidebar from '../../layouts/sidebars/CommunitySidebar';
 import LeaderboardPanel from '../../components/community/LeaderboardPanel';
 

@@ -1,6 +1,8 @@
 import React from 'react';
 import { FaTrash, FaEdit } from 'react-icons/fa';
 
+
+
 const AccountCard = ({
   bank,
   accountName,
@@ -15,11 +17,20 @@ const AccountCard = ({
   onEdit = () => {},
   onDelete = () => {},
 }) => {
-  const currencySymbols = {
+  const currencySymbols = { // fetch currency symbols dynamically if needed
     ZAR: 'R',
     USD: '$',
     EUR: '€',
     GBP: '£',
+    BTC: '₿',
+    ETH: 'Ξ',
+    USDT: '₮',
+    LTC: 'Ł',
+    XRP: '✕',
+    SOL: '◎',
+    ADA: '₳',
+    DOGE: 'Ð',
+    USDC: '∩',
   };
 
   const symbol = currencySymbols[currency] || '';
@@ -44,11 +55,7 @@ const AccountCard = ({
             <p className="text-xl font-bold text-gray-800">
               {symbol}{parseFloat(available).toLocaleString()}
             </p>
-            <p className="text-sm text-gray-500">Available</p>
-            <p className="text-md text-gray-700 mt-1">
-              {symbol}{parseFloat(balance).toFixed(2)}
-            </p>
-            <p className="text-sm text-gray-400">Balance</p>
+            <p className="text-sm text-gray-500">Balance</p>
           </div>
         </div>
 

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { FaTrash, FaEdit, FaPlus } from 'react-icons/fa';
+import { FaTrash, FaEdit, FaPlus, FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import AddTransactionModal from '../modals/AddTransactionModal';
 
 const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, onEdit, onDelete, onRefresh }) => {
@@ -7,6 +7,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
   const [sortBy, setSortBy] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [dateFilter, setDateFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -41,9 +42,12 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
     fetchCategories();
   }, []);
 
+  const toTitleCase = (str) => str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+
   const filteredSortedTransactions = useMemo(() => {
     let filtered = [...transactions];
     if (categoryFilter) filtered = filtered.filter(txn => txn.category === categoryFilter);
+    if (typeFilter) filtered = filtered.filter(txn => txn.transaction_type === typeFilter);
     if (dateFilter) {
       const today = new Date();
       filtered = filtered.filter(txn => {
@@ -62,10 +66,12 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
       });
     }
     if (sortBy === 'Name') filtered.sort((a, b) => a.name.localeCompare(b.name));
-    else if (sortBy === 'Amount') filtered.sort((a, b) => parseFloat(b.amount.replace(/[^\d.-]/g, '')) - parseFloat(a.amount.replace(/[^\d.-]/g, '')));
+    else if (sortBy === 'AmountAsc') filtered.sort((a, b) => parseFloat(a.amount.replace(/[^\d.-]/g, '')) - parseFloat(b.amount.replace(/[^\d.-]/g, '')));
+    else if (sortBy === 'AmountDsc') filtered.sort((a, b) => parseFloat(b.amount.replace(/[^\d.-]/g, '')) - parseFloat(a.amount.replace(/[^\d.-]/g, '')));
+
     else if (sortBy === 'Date') filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
     return filtered;
-  }, [transactions, sortBy, categoryFilter, dateFilter]);
+  }, [transactions, sortBy, categoryFilter, dateFilter, typeFilter]);
 
   const handleAddTransaction = async (newTransaction) => {
     try {
@@ -116,18 +122,19 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
     <div className="bg-white border border-gray-200 rounded-2xl shadow-md px-6 py-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-[#336699]">{heading}</h2>
-        {isAccountView && (
+        {(
           <div className="flex gap-2 items-center">
             <select className="border px-4 py-1 rounded-full text-sm" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
               <option value="">Sort by</option>
               <option value="Name">Name</option>
-              <option value="Amount">Amount</option>
+              <option value="AmountAsc">Amount Asc</option>
+              <option value="AmountDsc">Amount Dsc</option>
               <option value="Date">Date</option>
             </select>
             <select className="border px-4 py-1 rounded-full text-sm" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} disabled={categoriesLoading}>
               <option value="">{categoriesLoading ? 'Loading categories...' : 'Filter by categories'}</option>
               {categories.map(category => (
-                <option key={category.category_id} value={category.category_name}>{category.category_name}</option>
+                <option key={category.category_id} value={category.category_name}>{toTitleCase(category.category_name)}</option>
               ))}
             </select>
             <select className="border px-4 py-1 rounded-full text-sm" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
@@ -136,13 +143,24 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
               <option value="10 Days">Last 10 Days</option>
               <option value="Last Month">Last Month</option>
             </select>
-            <button
-              onClick={() => setShowAddModal(true)}
-              disabled={!account || loading}
-              className="flex items-center gap-2 px-4 py-1 bg-[#D8F5C5] text-[#76B947] text-sm font-medium rounded-full hover:bg-[#c8ecb4] transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <FaPlus /> Add
-            </button>
+            <select className="border px-4 py-1 rounded-full text-sm" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+              <option value="">Filter by type</option>
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+              <option value="deposit">Deposit</option>
+              <option value="withdrawal">Withdrawal</option>
+              <option value="fee">Fee</option>
+              <option value="transfer">Transfer</option>
+            </select>
+            {isAccountView && (
+              <button
+                onClick={() => setShowAddModal(true)}
+                disabled={!account || loading}
+                className="flex items-center gap-2 px-4 py-1 bg-[#D8F5C5] text-[#76B947] text-sm font-medium rounded-full hover:bg-[#c8ecb4] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <FaPlus /> Add
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -229,7 +247,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
                             <option key={cat.category_id} value={cat.category_name}>{cat.category_name}</option>
                           ))}
                         </select>
-                      ) : txn.category}
+                      ) : toTitleCase(txn.category)}
                     </td>
                     <td className={`px-4 py-2 font-semibold ${amountColor}`}>
                       {isEditing ? (

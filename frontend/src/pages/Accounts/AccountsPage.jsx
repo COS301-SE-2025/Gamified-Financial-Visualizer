@@ -32,6 +32,8 @@ const AccountsPage = () => {
   const indexOfFirstAccount = indexOfLastAccount - accountsPerPage;
   const currentAccounts = accounts.slice(indexOfFirstAccount, indexOfLastAccount);
 
+
+
   // Get current transactions with search filtering
 const filteredTransactions = transactions.filter(txn => {
   if (!searchQuery) return true;
@@ -42,6 +44,10 @@ const filteredTransactions = transactions.filter(txn => {
     (txn.amount && txn.amount.toString().toLowerCase().includes(query))
   );
 });
+
+  const pageLimit = 17; // Number of page buttons to show
+  const totalPages = Math.ceil(filteredTransactions.length / transactionsPerPage);
+  const [pageWindowStart, setPageWindowStart] = useState(0); // Index of first page in window
 
 const indexOfLastTransaction = currentPage * transactionsPerPage;
 const indexOfFirstTransaction = indexOfLastTransaction - transactionsPerPage;
@@ -476,19 +482,43 @@ const currentTransactions = filteredTransactions.slice(
         </div>
 
         {/* Transaction Pagination */}
-        {filteredTransactions.length > transactionsPerPage && (
-          <div className="flex justify-center mt-4">
-            {Array.from({ length: Math.ceil(filteredTransactions.length / transactionsPerPage) }).map((_, index) => (
+     {filteredTransactions.length > transactionsPerPage && (
+        <div className="flex justify-center mt-4 items-center gap-1">
+          {/* Prev Window */}
+          {pageWindowStart > 0 && (
+            <button
+              onClick={() => setPageWindowStart(pageWindowStart - pageLimit)}
+              className="px-2 py-1 bg-gray-300 rounded"
+            >
+             < FaChevronLeft className='text-[#FFFFFF]'/>
+            </button>
+          )}
+
+          {/* Page Buttons */}
+          {Array.from({ length: Math.min(pageLimit, totalPages - pageWindowStart) }).map((_, i) => {
+            const pageNumber = pageWindowStart + i + 1;
+            return (
               <button
-                key={index}
-                onClick={() => paginate(index + 1)}
-                className={`mx-1 px-3 py-1 rounded ${currentPage === index + 1 ? 'bg-[#B1E1FF] text-white' : 'bg-gray-200'}`}
+                key={pageNumber}
+                onClick={() => paginate(pageNumber)}
+                className={`px-3 py-1 rounded ${currentPage === pageNumber ? 'bg-[#B1E1FF] text-white' : 'bg-gray-200'}`}
               >
-                {index + 1}
+                {pageNumber}
               </button>
-            ))}
-          </div>
-        )}
+            );
+          })}
+
+          {/* Next Window */}
+          {pageWindowStart + pageLimit < totalPages && (
+            <button
+              onClick={() => setPageWindowStart(pageWindowStart + pageLimit)}
+              className="px-2 py-1 bg-gray-300 rounded"
+            >
+              <FaChevronRight className='text-[#FFFFFF]'/>
+            </button>
+          )}
+        </div>
+      )}
       </div>
 
       {/* Modals */}

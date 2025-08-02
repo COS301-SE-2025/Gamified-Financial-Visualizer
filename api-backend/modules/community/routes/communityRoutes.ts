@@ -330,6 +330,23 @@ router.put('/:communityId', async (req, res) => {
   }
 });
 
+router.get('/recommended/:userId', async (req, res) => {
+  const userId = Number(req.params.userId);
+
+  if (isNaN(userId)) {
+    res.status(400).json({ status: 'error', message: 'Invalid user ID.' });
+    return;
+  }
+
+  try {
+    const recommendations = await communityService.getRecommendedCommunities(userId);
+    res.status(200).json({ status: 'success', data: recommendations });
+  } catch (err) {
+    logger.error(`[Community] Failed to get recommended communities for user ID ${userId}:`, err);
+    res.status(500).json({ status: 'error', message: 'Could not fetch recommended communities.' });
+  }
+});
+
 router.delete('/:communityId/members/:userId', async (req, res) => {
   const communityId = Number(req.params.communityId);
   const userId = Number(req.params.userId);
