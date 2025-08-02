@@ -122,7 +122,6 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
       return;
     }
 
-  
     setLoading(true);
     setError('');
 
@@ -136,10 +135,8 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
         throw new Error(errorData.message || 'Failed to delete transaction');
       }
 
-      // Call the parent's onDelete function
       onDelete(index);
 
-      // Refresh the transactions list
       if (onRefresh) {
         await onRefresh(account?.account_id);
       }
@@ -153,13 +150,17 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-md px-6 py-6">
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-md px-6 py-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold text-[#336699]">{heading}</h2>
+        <h2 className="text-xl font-semibold text-[#336699] dark:text-blue-400">{heading}</h2>
 
         {isAccountView && (
           <div className="flex gap-2 items-center">
-            <select className="border px-4 py-1 rounded-full text-sm" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+            <select 
+              className="border dark:border-gray-600 px-4 py-1 rounded-full text-sm dark:bg-gray-700 dark:text-gray-300" 
+              value={sortBy} 
+              onChange={(e) => setSortBy(e.target.value)}
+            >
               <option value="">Sort by</option>
               <option value="Name">Name</option>
               <option value="Amount">Amount</option>
@@ -167,7 +168,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
             </select>
 
             <select 
-              className="border px-4 py-1 rounded-full text-sm" 
+              className="border dark:border-gray-600 px-4 py-1 rounded-full text-sm dark:bg-gray-700 dark:text-gray-300" 
               value={categoryFilter} 
               onChange={(e) => setCategoryFilter(e.target.value)}
               disabled={categoriesLoading}
@@ -182,7 +183,11 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
               ))}
             </select>
 
-            <select className="border px-4 py-1 rounded-full text-sm" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
+            <select 
+              className="border dark:border-gray-600 px-4 py-1 rounded-full text-sm dark:bg-gray-700 dark:text-gray-300" 
+              value={dateFilter} 
+              onChange={(e) => setDateFilter(e.target.value)}
+            >
               <option value="">Filter by date</option>
               <option value="7 Days">Last 7 Days</option>
               <option value="10 Days">Last 10 Days</option>
@@ -192,7 +197,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
             <button
               onClick={() => setShowAddModal(true)}
               disabled={!account || loading}
-              className="flex items-center gap-2 px-4 py-1 bg-[#D8F5C5] text-[#467D35] text-sm font-medium rounded-full hover:bg-[#c8ecb4] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-1 bg-[#D8F5C5] dark:bg-green-800 text-[#467D35] dark:text-green-100 text-sm font-medium rounded-full hover:bg-[#c8ecb4] dark:hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <FaPlus /> Add
             </button>
@@ -201,11 +206,11 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded p-3 mb-4 text-red-700 text-sm">
+        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded p-3 mb-4 text-red-700 dark:text-red-300 text-sm">
           {error}
           <button
             onClick={() => setError('')}
-            className="ml-2 text-red-500 hover:text-red-700"
+            className="ml-2 text-red-500 dark:text-red-300 hover:text-red-700 dark:hover:text-red-400"
           >
             ×
           </button>
@@ -213,8 +218,8 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
       )}
 
       <div className="overflow-x-auto">
-        <table className="min-w-full text-sm text-left text-gray-700">
-          <thead className="border-b">
+        <table className="min-w-full text-sm text-left text-gray-700 dark:text-gray-300">
+          <thead className="border-b dark:border-gray-700">
             <tr>
               <th className="px-4 py-2">Name</th>
               <th className="px-4 py-2">Date</th>
@@ -226,7 +231,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
           <tbody>
             {filteredSortedTransactions.length === 0 ? (
               <tr>
-                <td colSpan="5" className="px-4 py-8 text-center text-gray-500">
+                <td colSpan="5" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                   {isAccountView ? (
                     account ? 'No transactions found for this account' : 'Select an account to view transactions'
                   ) : (
@@ -236,16 +241,16 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
               </tr>
             ) : (
               filteredSortedTransactions.map((txn, idx) => (
-                <tr key={txn.transaction_id || idx} className="border-b hover:bg-gray-50">
+                <tr key={txn.transaction_id || idx} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td className="px-4 py-2">{txn.name}</td>
                   <td className="px-4 py-2">{txn.date}</td>
                   <td className="px-4 py-2">{txn.category}</td>
                   <td
                     className={`px-4 py-2 font-semibold ${
                       (txn.transaction_type === 'expense' || txn.transaction_type === 'withdrawal' || txn.transaction_type === 'fee')
-                        ? 'text-red-500'
+                        ? 'text-red-500 dark:text-red-400'
                         : (txn.transaction_type === 'income' || txn.transaction_type === 'transfer' || txn.transaction_type === 'deposit')
-                        ? 'text-lime-600'
+                        ? 'text-lime-600 dark:text-green-400'
                         : ''
                     }`}
                   >
@@ -253,7 +258,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
                   </td>
                   <td className="px-4 py-2 flex gap-2">
                     <button
-                      className="text-sm text-blue-500 hover:text-blue-600 disabled:opacity-50"
+                      className="text-sm text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 disabled:opacity-50"
                       disabled={loading}
                       onClick={() => {
                         setEditTxnIndex(idx);
@@ -263,7 +268,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
                       <FaEdit />
                     </button>
                     <button
-                      className="text-sm text-red-500 hover:text-red-600 disabled:opacity-50"
+                      className="text-sm text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 disabled:opacity-50"
                       disabled={loading}
                       onClick={() => handleDeleteTransaction(idx)}
                     >
@@ -279,8 +284,8 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
 
       {loading && (
         <div className="flex justify-center items-center py-4">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#336699]"></div>
-          <span className="ml-2 text-gray-600">Processing...</span>
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#336699] dark:border-blue-400"></div>
+          <span className="ml-2 text-gray-600 dark:text-gray-400">Processing...</span>
         </div>
       )}
 

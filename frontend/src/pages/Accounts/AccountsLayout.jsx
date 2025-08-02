@@ -18,7 +18,7 @@ const AccountsLayout = ({ children }) => {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-gray-50">
+    <div className="relative min-h-screen bg-gray-50  dark:bg-gray-900">
       {isLoading && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-white">
           <PacmanLoader />
@@ -33,7 +33,7 @@ const AccountsLayout = ({ children }) => {
 
         {/* Main Page Content */}
         <div className="flex">
-          <div className="flex-1 flex flex-col h-full pr-6">
+          <div className="flex-1 flex flex-col h-full pr-6 ">
             <div className="flex-1 px-6 pb-6 overflow-y-auto min-h-0">
               {children}
             </div>

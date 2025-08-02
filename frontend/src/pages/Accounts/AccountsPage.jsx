@@ -18,20 +18,20 @@ const AccountsPage = () => {
   const [error, setError] = useState(null);
   const transactionsRef = useRef(null);
 
-  // Transaction pagination (existing)
+  // Transaction pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [transactionsPerPage] = useState(10);
 
-  // Account pagination (new)
+  // Account pagination
   const [currentAccountPage, setCurrentAccountPage] = useState(1);
-  const [accountsPerPage] = useState(2); // Show only 2 accounts at a time
+  const [accountsPerPage] = useState(2);
 
   // Get current accounts
   const indexOfLastAccount = currentAccountPage * accountsPerPage;
   const indexOfFirstAccount = indexOfLastAccount - accountsPerPage;
   const currentAccounts = accounts.slice(indexOfFirstAccount, indexOfLastAccount);
 
-  // Get current transactions (existing)
+  // Get current transactions
   const indexOfLastTransaction = currentPage * transactionsPerPage;
   const indexOfFirstTransaction = indexOfLastTransaction - transactionsPerPage;
   const currentTransactions = transactions.slice(
@@ -42,11 +42,10 @@ const AccountsPage = () => {
   // Change account page
   const paginateAccounts = (pageNumber) => {
     setCurrentAccountPage(pageNumber);
-    // Reset to first page when changing accounts
     setCurrentPage(1);
   };
 
-  // Change transaction page (existing)
+  // Change transaction page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const userData = JSON.parse(localStorage.getItem('user') || '{}');
@@ -96,7 +95,7 @@ const AccountsPage = () => {
       }));
 
       setTransactions(mapped);
-      setCurrentPage(1); // Reset to first page when transactions change
+      setCurrentPage(1);
     } catch (err) {
       console.error(err);
       setError(err.message);
@@ -183,7 +182,7 @@ const AccountsPage = () => {
       }));
 
       setTransactions(mapped);
-      setCurrentPage(1); // Reset to first page when account changes
+      setCurrentPage(1);
     } catch (err) {
       console.error(err);
       setError(err.message);
@@ -230,7 +229,7 @@ const AccountsPage = () => {
       const data = await response.json();
       const newAccountWithId = { ...newAccount, account_id: data.data.account_id, user_id: userId };
       setAccounts((prev) => [...prev, newAccountWithId]);
-      setCurrentAccountPage(Math.ceil((accounts.length + 1) / accountsPerPage)); // Go to last page
+      setCurrentAccountPage(Math.ceil((accounts.length + 1) / accountsPerPage));
       setShowModal(false);
     } catch (err) {
       setError(err.message);
@@ -257,7 +256,7 @@ const AccountsPage = () => {
         throw new Error(errorData.message || 'Failed to delete account');
       }
       setAccounts((prev) => prev.filter((_, index) => index !== indexToDelete));
-      setCurrentAccountPage(1); // reset the first page 
+      setCurrentAccountPage(1);
       if (activeAccount?.account_id === accountId) {
         setActiveAccount(null);
         setTransactions([]);
@@ -316,15 +315,11 @@ const AccountsPage = () => {
     if (accountId && activeAccount?.account_id === accountId) {
       await fetchTransactionsForAccount(accountId);
     } else {
-      // If no specific account, refresh all user transactions
       await fetchAllUserTransactions();
     }
   };
 
-  // Fixed: Handle transaction operations with proper refresh
   const handleAddTransaction = async (newTransaction) => {
-    // The transaction was already added to database in AddTransactionModal
-    // Refresh the appropriate transactions list
     if (activeAccount?.account_id) {
       await fetchTransactionsForAccount(activeAccount.account_id);
     } else {
@@ -333,8 +328,6 @@ const AccountsPage = () => {
   };
 
   const handleEditTransaction = async (index, updatedTransaction) => {
-    // The transaction was already updated in database in EditTransactionModal
-    // Refresh the appropriate transactions list
     if (activeAccount?.account_id) {
       await fetchTransactionsForAccount(activeAccount.account_id);
     } else {
@@ -343,8 +336,6 @@ const AccountsPage = () => {
   };
 
   const handleDeleteTransaction = async (index) => {
-    // The transaction was already deleted in database in RecentTransactionsTable
-    // Refresh the appropriate transactions list
     if (activeAccount?.account_id) {
       await fetchTransactionsForAccount(activeAccount.account_id);
     } else {
@@ -358,30 +349,30 @@ const AccountsPage = () => {
 
   if (loading) {
     return (
-      <div className="w-full max-w-6xl mx-auto p-4 flex justify-center items-center min-h-[400px]">
+      <div className="w-full max-w-6xl mx-auto p-4 flex justify-center items-center min-h-[400px] dark:bg-gray-900">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#336699] mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading accounts...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#336699] dark:border-blue-400 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading accounts...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex gap-6 px-6 py-6 bg-[#F8F9FA] min-h-screen">
+    <div className="flex gap-6 px-6 py-6 bg-[#F8F9FA] min-h-screen dark:bg-gray-900">
       {/* Left Panel */}
       <div className="w-[360px] flex-shrink-0">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-semibold text-[#1C3C78]">Accounts</h2>
+          <h2 className="text-2xl font-semibold text-[#1C3C78] dark:text-blue-300">Accounts</h2>
           <button
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-1 px-4 py-1 bg-[#D8F5C5] text-[#467D35] text-sm font-semibold rounded-full hover:bg-[#c8ecb4]"
+            className="flex items-center gap-1 px-4 py-1 bg-[#D8F5C5] dark:bg-[#A1E358] text-[#467D35] dark:text-green-100 text-sm font-semibold rounded-full hover:bg-[#c8ecb4] dark:hover:bg-green-700 transition-colors"
           >
             <FaPlus /> Add
           </button>
         </div>
 
-        {/* Render currentAccounts instead of accounts */}
+        {/* Render currentAccounts */}
         <div className="space-y-4">
           {currentAccounts.map((acc, idx) => (
             <AccountCard
@@ -395,10 +386,10 @@ const AccountsPage = () => {
               isActive={activeAccount?.account_id === acc.account_id}
               onClick={() => handleCardClick(acc)}
               onDelete={() => handleDeleteAccount(
-                indexOfFirstAccount + idx // Calculate the correct index in the full array
+                indexOfFirstAccount + idx
               )}
               onEdit={() => handleEditAccount(
-                indexOfFirstAccount + idx // Calculate the correct index in the full array
+                indexOfFirstAccount + idx
               )}
             />
           ))}
@@ -410,19 +401,19 @@ const AccountsPage = () => {
             <button
               onClick={() => paginateAccounts(Math.max(1, currentAccountPage - 1))}
               disabled={currentAccountPage === 1}
-              className="flex items-center gap-1 px-3 py-1 text-sm text-[#1C3C78] disabled:opacity-50"
+              className="flex items-center gap-1 px-3 py-1 text-sm text-[#1C3C78] dark:text-blue-300 disabled:opacity-50"
             >
               <FaChevronLeft /> Previous
             </button>
 
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-gray-600 dark:text-gray-300">
               Page {currentAccountPage} of {Math.ceil(accounts.length / accountsPerPage)}
             </span>
 
             <button
               onClick={() => paginateAccounts(currentAccountPage + 1)}
               disabled={currentAccountPage === Math.ceil(accounts.length / accountsPerPage)}
-              className="flex items-center gap-1 px-3 py-1 text-sm text-[#1C3C78] disabled:opacity-50"
+              className="flex items-center gap-1 px-3 py-1 text-sm text-[#1C3C78] dark:text-blue-300 disabled:opacity-50"
             >
               Next <FaChevronRight />
             </button>
@@ -433,12 +424,12 @@ const AccountsPage = () => {
       {/* Right Panel */}
       <div className="flex-1 space-y-6">
         {/* Search */}
-        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm">
-          <FaSearch className="text-[#76B947] mr-2" />
+        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] dark:border-green-600 rounded-full bg-white dark:bg-gray-800 shadow-sm">
+          <FaSearch className="text-[#76B947] dark:text-green-400 mr-2" />
           <input
             type="text"
             placeholder="Search your transactions..."
-            className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70"
+            className="w-full outline-none bg-transparent text-sm text-[#76B947] dark:text-green-200 placeholder-[#76B947]/70 dark:placeholder-green-400/70"
           />
         </div>
 
@@ -464,7 +455,11 @@ const AccountsPage = () => {
               <button
                 key={index}
                 onClick={() => paginate(index + 1)}
-                className={`mx-1 px-3 py-1 rounded ${currentPage === index + 1 ? 'bg-[#B1E1FF] text-white' : 'bg-gray-200'}`}
+                className={`mx-1 px-3 py-1 rounded ${
+                  currentPage === index + 1 
+                    ? 'bg-[#B1E1FF] dark:bg-blue-600 text-white' 
+                    : 'bg-gray-200 dark:bg-gray-700 dark:text-gray-300'
+                }`}
               >
                 {index + 1}
               </button>

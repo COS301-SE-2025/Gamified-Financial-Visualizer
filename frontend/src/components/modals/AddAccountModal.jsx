@@ -45,45 +45,48 @@ const AddAccountModal = ({ isOpen, onClose, onAdd }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl relative">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md shadow-xl relative">
         {/* Close Icon */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
         >
           <FaTimes size={18} />
         </button>
 
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Add Account</h2>
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Add Account</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {[
             { label: 'Bank Name', name: 'bankName', placeholder: 'FNB' },
             { label: 'Account Name', name: 'accountName', placeholder: 'Private Account' },
             { label: 'Available Amount', name: 'available', placeholder: '10000' },
-            //{ label: 'Balance', name: 'balance', placeholder: '500' },
           ].map((field) => (
             <div key={field.name}>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {field.label}
+              </label>
               <input
                 type="text"
                 name={field.name}
                 value={formData[field.name]}
                 onChange={handleChange}
                 placeholder={field.placeholder}
-                className="w-full px-3 py-2 border rounded-md text-sm"
+                className="w-full px-3 py-2 border dark:border-gray-700 rounded-md text-sm dark:bg-gray-700 dark:text-gray-200"
               />
             </div>
           ))}
 
           {/* Currency Select */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Currency
+            </label>
             <select
               name="currency"
               value={formData.currency}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md text-sm"
+              className="w-full px-3 py-2 border dark:border-gray-700 rounded-md text-sm dark:bg-gray-700 dark:text-gray-200"
             >
               <option value="ZAR">ZAR (R)</option>
               <option value="USD">USD ($)</option>
@@ -94,12 +97,14 @@ const AddAccountModal = ({ isOpen, onClose, onAdd }) => {
 
           {/* Account Type Dropdown */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Account Type</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Account Type
+            </label>
             <select
               name="accountType"
               value={formData.accountType}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md text-sm"
+              className="w-full px-3 py-2 border dark:border-gray-700 rounded-md text-sm dark:bg-gray-700 dark:text-gray-200"
               required
             >
               <option value="">Select type</option>
@@ -122,8 +127,14 @@ const AddAccountModal = ({ isOpen, onClose, onAdd }) => {
 
         <div className="flex justify-end gap-3 mt-6">
           <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition"
+          >
+            Cancel
+          </button>
+          <button
             onClick={handleSubmit}
-            className="flex items-center gap-3 px-6 py-2 bg-[#D8F5C5] text-[#467D35] text-sm font-semibold rounded-full hover:bg-[#c8ecb4] transition shadow-md"
+            className="flex items-center gap-3 px-6 py-2 bg-[#D8F5C5] dark:bg-green-700 text-[#467D35] dark:text-green-100 text-sm font-semibold rounded-full hover:bg-[#c8ecb4] dark:hover:bg-green-600 transition shadow-md"
           >
             Add Account
           </button>
