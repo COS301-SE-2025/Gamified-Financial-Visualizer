@@ -28,7 +28,7 @@ const DonutChart = () => {
   const total = data.reduce((sum, item) => sum + item.value, 0);
 
   return (
-   <div className="bg-white rounded-2xl shadow-md p-4 w-full h-full">
+   <div className="bg-white rounded-2xl shadow-md p-4 w-full h-full dark:bg-gray-800 dark:text-gray-400">
       <h3 className="text-md font-semibold text-gray-600 mb-2 text-center">Category Breakdown</h3>
 
       {/* Donut Chart */}

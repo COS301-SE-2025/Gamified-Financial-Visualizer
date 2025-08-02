@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import avatar from '../../assets/Images/avatars/totoroAvatar.jpeg';
-
 import { FaCoins } from 'react-icons/fa';
 
 const GoalOverviewCards = () => {
@@ -27,7 +26,7 @@ const GoalOverviewCards = () => {
 
   if (!user) {
     return (
-      <div className="bg-white rounded-2xl shadow p-4 text-center text-sm text-gray-500">
+      <div className="bg-white dark:bg-gray-700 rounded-2xl shadow p-4 text-center text-sm text-gray-500 dark:text-gray-300">
         Loading user info...
       </div>
     );
@@ -36,20 +35,19 @@ const GoalOverviewCards = () => {
   return (
     <div className="space-y-6">
       {/* ZAR Value Target */}
-      <div className="bg-white rounded-2xl shadow p-4 flex items-center justify-between">
+      <div className="bg-white dark:bg-gray-700 rounded-2xl shadow p-4 flex items-center justify-between">
         <div>
-          <p className="text-sm text-gray-500">Total Goal Target Value</p>
-          <p className="text-2xl font-bold text-[#88BC46]">R{data.total_goal_value_target}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-300">Total Goal Target Value</p>
+          <p className="text-2xl font-bold text-[#88BC46] dark:text-[#a8d86c]">R{data.total_goal_value_target}</p>
         </div>
         <FaCoins className="text-[#FF955A] text-3xl" />
       </div>
- 
 
       {/* ZAR Value */}
-      <div className="bg-white rounded-2xl shadow p-4 flex items-center justify-between">
+      <div className="bg-white dark:bg-gray-700 rounded-2xl shadow p-4 flex items-center justify-between">
         <div>
-          <p className="text-sm text-gray-500">Total Goal Current Value</p>
-          <p className="text-2xl font-bold text-[#88BC46]">R{data.total_goal_value}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-300">Total Goal Current Value</p>
+          <p className="text-2xl font-bold text-[#88BC46] dark:text-[#a8d86c]">R{data.total_goal_value}</p>
         </div>
         <FaCoins className="text-[#FF955A] text-3xl" />
       </div>

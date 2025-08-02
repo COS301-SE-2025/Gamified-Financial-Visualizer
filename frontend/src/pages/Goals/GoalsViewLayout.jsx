@@ -11,7 +11,7 @@ const GoalsViewLayout = ({ children }) => {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-gray-50">
+    <div className="relative min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Loading Animation */}
       {/* {isLoading && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-white">
