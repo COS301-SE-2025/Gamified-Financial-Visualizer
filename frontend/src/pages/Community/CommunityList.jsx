@@ -27,8 +27,8 @@ const CommunityList = () => {
 
   const handleDelete = (communityName, communityId) => {
     toast.custom((t) => (
-      <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-lg max-w-sm w-full space-y-3">
-        <p className="text-sm font-semibold text-gray-800">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 rounded-xl shadow-lg max-w-sm w-full space-y-3">
+        <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
           Delete <span className="text-[#ED5E52]">"{communityName}"</span> community?
         </p>
         <div className="flex gap-2 justify-end">
@@ -70,10 +70,10 @@ const CommunityList = () => {
   return (
     <CommunityLayout>
       <Toaster position="top-right" />
-      <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
+      <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4 dark:bg-gray-900">
         {/* Create community button */}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-[#1F2937] flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-[#1F2937] dark:text-gray-300 flex items-center gap-2">
             <FaUsers className="text-[#72C1F5]" />
             My Communities
           </h2>
@@ -87,12 +87,14 @@ const CommunityList = () => {
         </div>
 
         {/* Search bar */}
-        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm">
+        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white dark:bg-gray-800 shadow-sm">
           <FaSearch className="text-[#76B947] mr-2" />
           <input
             type="text"
-            placeholder="Search your transactions..."
-            className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70"
+            placeholder="Search your communities..."
+            className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70 dark:placeholder-[#76B947]/50"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
@@ -100,38 +102,37 @@ const CommunityList = () => {
         {communities
           .filter(c => c.community_name.toLowerCase().includes(searchTerm.toLowerCase()))
           .map((community, i) => (
-            <div key={i} className="flex justify-between items-center bg-white shadow-md rounded-2xl px-4 py-4">
+            <div key={i} className="flex justify-between items-center bg-white dark:bg-gray-800 shadow-md rounded-2xl px-4 py-4">
               <div className="flex items-center gap-4">
                 <img
                   src={`/assets/Images/${community.banner}`}
                   alt={community.community_name}
-                  className="w-16 h-16 rounded-full object-cover shadow"
+                  className="w-16 h-16 rounded-full object-cover shadow dark:border dark:border-gray-700"
                 />
 
                 <div>
-                  <p className="text-lg font-semibold text-gray-800">{community.community_name}</p>
+                  <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">{community.community_name}</p>
 
                   {/* DESCRIPTION BLOCK */}
                   {community.description && (
-                    <p className="text-sm text-gray-500 italic mt-1 max-w-xs line-clamp-2">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 italic mt-1 max-w-xs line-clamp-2">
                       {community.description}
                     </p>
                   )}
 
                   <div className="flex gap-2 mt-2">
-                    <span className="bg-[#E0F2FE] text-[#72C1F5] text-xs font-medium px-3 py-1 rounded-full">
+                    <span className="bg-[#E0F2FE] dark:bg-gray-700 text-[#72C1F5] dark:text-[#B1E1FF] text-xs font-medium px-3 py-1 rounded-full">
                       {community.member_count} Members
                     </span>
-                    <span className="bg-[#E0F2FE] text-[#72C1F5] text-xs font-medium px-3 py-1 rounded-full">
+                    <span className="bg-[#E0F2FE] dark:bg-gray-700 text-[#72C1F5] dark:text-[#B1E1FF] text-xs font-medium px-3 py-1 rounded-full">
                       {community.challenge_count} Challenges
                     </span>
-                    <span className="bg-[#FEF9C3] text-[#FBBF24] text-xs font-medium px-3 py-1 rounded-full">
+                    <span className="bg-[#FEF9C3] dark:bg-gray-700 text-[#FBBF24] dark:text-[#FBBF24] text-xs font-medium px-3 py-1 rounded-full">
                       {Math.round(community.xp_total)} XP
                     </span>
                   </div>
                 </div>
               </div>
-
 
               {/* Card Avatars */}
               <div className="flex items-center gap-4">
@@ -141,7 +142,7 @@ const CommunityList = () => {
                       key={index}
                       src={`/assets/Images/${src}`}
                       alt="avatar"
-                      className="w-8 h-8 rounded-full border-2 border-white"
+                      className="w-8 h-8 rounded-full border-2 border-white dark:border-gray-800"
                     />
                   ))}
                 </div>
@@ -166,7 +167,7 @@ const CommunityList = () => {
         {communities.filter(c =>
           c.community_name.toLowerCase().includes(searchTerm.toLowerCase())
         ).length === 0 && (
-            <div className="text-center text-gray-500 mt-6 text-sm">
+            <div className="text-center text-gray-500 dark:text-gray-400 mt-6 text-sm">
               No matching communities found.
             </div>
           )}

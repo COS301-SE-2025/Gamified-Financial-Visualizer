@@ -151,7 +151,7 @@ const AccountsPerformanceHeader = () => {
                 {/* Stat content */}
                 <div className="text-right">
                   <div className="text-lg font-bold text-gray-900 dark:text-gray-200">{value}</div>
-                  <div className="text-sm text-gray-500 ark:text-gray-200">{label}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-300">{label}</div>
                 </div>
               </div>
 
