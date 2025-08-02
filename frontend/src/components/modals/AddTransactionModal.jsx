@@ -71,7 +71,21 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
       console.error('Error fetching goals:', err);
       setGoals([]);
     }
-  }
+  };
+
+  const fetchChallenges = async () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user?.id) return;
+    try {
+      const response = await fetch(`http://localhost:5000/api/community/challenges/user/${user.id}`);
+      if (!response.ok) throw new Error('Failed to fetch challenges');
+      const data = await response.json(); 
+      setChallenges(data.data.active || []);
+    } catch (err) {
+      console.error('Error fetching challenges:', err);
+      setChallenges([]);
+    }
+  };
 
   const fetchChallenges = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -135,8 +149,6 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
 
       // If user entered a new category, we need to handle it
       if (form.newCategories && !form.categories) {
-        // For now, we'll pass it as transaction_name with a note
-        // You might want to create a custom category endpoint
         transactionData.transaction_name = `${form.name} (${form.newCategories})`;
       }
 

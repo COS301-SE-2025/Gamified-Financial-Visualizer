@@ -26,6 +26,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
         if (data.status === 'success') setCategories(data.data);
       } catch (err) {
         console.error('Error fetching categories:', err);
+        // Fallback categories if API fails
         setCategories([
           { category_id: 1, category_name: 'Food' },
           { category_id: 2, category_name: 'Transport' },

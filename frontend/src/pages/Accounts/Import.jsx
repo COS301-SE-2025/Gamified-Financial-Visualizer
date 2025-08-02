@@ -17,6 +17,8 @@ const ImportPage = () => {
   const [isDragging, setIsDragging] = useState(false);
 
   // Import configuration state
+  const [accounts, setAccounts] = useState(null);
+  const [categories, setCategories] = useState([]); // Add categories state
   const [selectedAccount, setSelectedAccount] = useState('');
   const [accounts, setAccounts] = useState(null);
   const [selectedBank, setSelectedBank] = useState('');
@@ -174,6 +176,7 @@ const contentType = res.headers.get('content-type');
     }
   };
 
+
   // Transaction editing
   const handleCategoryChange = (id, newCategory) => {
     setTransactions(transactions.map(tx =>
@@ -195,6 +198,12 @@ const contentType = res.headers.get('content-type');
 
   const handleFinalImport = async () => {
     setIsImporting(true);
+  const hasChanges = transactions.some(tx =>
+    tx.category !== tx.originalCategory || tx.type !== tx.originalType
+  );
+
+  // 2) send back just the changed rows as feedback
+  const handleConfirmChanges = async () => {
     setIsImporting(true);
     setImportError(null);
 
@@ -238,6 +247,21 @@ const contentType = res.headers.get('content-type');
 
       setImportSuccess(true);
       setShowReview(false);
+                
+      //  send corrections to /feedback
+      if (payload.feedbacks.length) {
+        console.log('Feedback payload:', payload.feedbacks);
+        fetch(
+          `http://localhost:5000/api/classifier/feedback`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ feedback: payload.feedbacks })
+          }
+        );
+      }
+    } catch (err) {
+      setImportError(err.message);
                 
       //  send corrections to /feedback
       if (payload.feedbacks.length) {

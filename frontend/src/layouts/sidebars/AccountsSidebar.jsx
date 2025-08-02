@@ -293,6 +293,94 @@ const AccountsPerformanceHeader = () => {
     };
   }, [userTransactions]);
 
+  // Calculate performance metrics based on transactions
+  const performanceMetrics = useMemo(() => {
+    if (!userTransactions || userTransactions.length === 0) {
+      return {
+        /* score: 150,
+        level: 'Silver',
+        levelNumber: 3,
+        description: 'Excellent',
+        progressPercentage: 75 */
+      };
+    }
+
+    // Calculate totals by transaction type
+    const totals = userTransactions.reduce((acc, transaction) => {
+      const amount = parseFloat(transaction.transaction_amount) || 0;
+      const type = transaction.transaction_type?.toLowerCase();
+      
+      if (type === 'deposit' || type === 'income') {
+        acc.income += amount;
+      } else if (type === 'expense' || type === 'withdrawal' || type === 'fee') {
+        acc.expenses += amount;
+      } else if (type === 'transfer') {
+        acc.transfers += amount;
+      }
+      
+      return acc;
+    }, { income: 0, expenses: 0, transfers: 0 });
+
+    // Calculate performance score
+    // Base score starts at 100
+    let score = 100;
+    
+    // Income boosts score (every R100 income = +5 points, max +100)
+    const incomeBonus = Math.min((totals.income / 100) * 5, 100);
+    score += incomeBonus;
+    
+    // Expenses reduce score (every R100 expense = -3 points, max -80)
+    const expenseReduction = Math.min((totals.expenses / 100) * 3, 80);
+    score -= expenseReduction;
+    
+    // Transfers have neutral impact but show activity (+1 point per R100, max +20)
+    const transferBonus = Math.min((totals.transfers / 100) * 1, 20);
+    score += transferBonus;
+    
+    // Keep score within reasonable bounds
+    score = Math.max(0, Math.min(300, score));
+    
+    // Determine level based on score
+    let level, levelNumber, description;
+    
+    if (score >= 250) {
+      level = 'Diamond';
+      levelNumber = 5;
+      description = 'Outstanding';
+    } else if (score >= 200) {
+      level = 'Platinum';
+      levelNumber = 4;
+      description = 'Excellent';
+    } else if (score >= 150) {
+      level = 'Gold';
+      levelNumber = 3;
+      description = 'Excellent';
+    } else if (score >= 100) {
+      level = 'Silver';
+      levelNumber = 3;
+      description = 'Good';
+    } else if (score >= 50) {
+      level = 'Bronze';
+      levelNumber = 2;
+      description = 'Fair';
+    } else {
+      level = 'Starter';
+      levelNumber = 1;
+      description = 'Getting Started';
+    }
+    
+    // Calculate progress percentage for the circle (0-100%)
+    const progressPercentage = Math.min((score / 300) * 100, 100);
+    
+    return {
+      score: Math.round(score),
+      level,
+      levelNumber,
+      description,
+      progressPercentage
+    };
+  }, [userTransactions]);
+
 
   // Process category data for display
   const categoryTotals = useMemo(() => {

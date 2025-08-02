@@ -7,7 +7,7 @@ const AccountCard = ({
   bank,
   accountName,
   type,
-  available,
+  // available,
   balance,
   currency,
   bg = 'bg-blue-300',

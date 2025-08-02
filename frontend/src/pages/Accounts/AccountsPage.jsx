@@ -91,7 +91,6 @@ const currentTransactions = filteredTransactions.slice(
     }
 
     try {
-      setLoadingTransactions(true);
       setError(null);
 
       const res = await fetch(`http://localhost:5000/api/transactions/user/${userId}`);
@@ -119,7 +118,6 @@ const currentTransactions = filteredTransactions.slice(
       setError(err.message);
       setTransactions([]);
     } finally {
-      setLoadingTransactions(false);
     }
   }, [userId]);
 
@@ -143,13 +141,11 @@ const currentTransactions = filteredTransactions.slice(
   useEffect(() => {
     if (!userId) {
       setError('User not logged in. Please log in again.');
-      setLoading(false);
       return;
     }
 
     const fetchAccountsAndTransactions = async () => {
       try {
-        setLoading(true);
         setError(null);
 
         // Fetch accounts
@@ -163,7 +159,6 @@ const currentTransactions = filteredTransactions.slice(
       } catch (err) {
         setError(err.message);
       } finally {
-        setLoading(false);
       }
     };
 
@@ -178,7 +173,6 @@ const currentTransactions = filteredTransactions.slice(
     }
 
     try {
-      setLoadingTransactions(true);
       setError(null);
 
       const res = await fetch(`http://localhost:5000/api/transactions/accounts/${accountId}`);
@@ -206,7 +200,6 @@ const currentTransactions = filteredTransactions.slice(
       setError(err.message);
       setTransactions([]);
     } finally {
-      setLoadingTransactions(false);
     }
   };
 
@@ -341,8 +334,6 @@ const currentTransactions = filteredTransactions.slice(
 
   // Fixed: Handle transaction operations with proper refresh
   const handleAddTransaction = async (newTransaction) => {
-    // The transaction was already added to database in AddTransactionModal
-    // Refresh the appropriate transactions list
     if (activeAccount?.account_id) {
       await fetchTransactionsForAccount(activeAccount.account_id);
     } else {
@@ -351,8 +342,6 @@ const currentTransactions = filteredTransactions.slice(
   };
 
   const handleEditTransaction = async (index, updatedTransaction) => {
-    // The transaction was already updated in database in EditTransactionModal
-    // Refresh the appropriate transactions list
     if (activeAccount?.account_id) {
       await fetchTransactionsForAccount(activeAccount.account_id);
     } else {
@@ -373,18 +362,6 @@ const currentTransactions = filteredTransactions.slice(
   const transactionHeading = activeAccount
     ? `${activeAccount.account_name || activeAccount.accountName} Transactions`
     : 'Recent Transactions';
-
-  if (loading) {
-    return (
-      <div className="w-full max-w-6xl mx-auto p-4 flex justify-center items-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#336699] mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading accounts...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex gap-6 px-6 py-6 bg-[#F8F9FA] min-h-screen">
       {/* Left Panel */}

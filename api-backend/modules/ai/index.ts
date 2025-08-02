@@ -1,12 +1,13 @@
 // modules/classifier/index.ts
 import { Application } from 'express';
 import classifierRoutes from './routes/classifierRouter';
+import insightsRoutes from './routes/insightsRouter';
 import { logger } from '../../config/logger';
 
 /** Register the classifier module (calls Python service underneath) */
 export function registerClassifierModule(app: Application) {
-  // Mount route at /api/classify
-  app.use('/api/classify', classifierRoutes);
+  // Mount route at /api/classifier
+  app.use('/api/classifier', classifierRoutes);
 
   // Optional health check (check if Python service is reachable)
   app.get('/health/classifier', async (_req, res) => {
@@ -21,4 +22,12 @@ export function registerClassifierModule(app: Application) {
   });
 
   logger.info('Classifier module registered');
+}
+
+export function registerInsightsModule(app: Application) {
+  // This function can be used to register additional insights-related routes or services
+  app.use('/api/insights', insightsRoutes);
+
+  
+  logger.info('Insights module registered');
 }
