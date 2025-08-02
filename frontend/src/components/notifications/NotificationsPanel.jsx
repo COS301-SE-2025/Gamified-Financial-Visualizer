@@ -18,11 +18,11 @@ const notificationStyles = {
       <div className="flex items-center mt-2 space-x-3">
         <div className="flex items-center px-3 py-1 rounded-full bg-white shadow text-xs font-semibold text-[#4A5568] border border-[#D6EAFE]">
           <FaMedal className="text-[#FFC541] mr-1.5" /> {/* Games Played color */}
-          Lvl {p.level}
+          Lvl {p.tierStatus}
         </div>
         <div className="flex items-center px-3 py-1 rounded-full bg-white shadow text-xs font-semibold text-[#4A5568] border border-[#D6EAFE]">
           <FaFire className="text-[#F68D2B] mr-1.5" /> {/* Friends color */}
-          {p.xp} XP
+          {p.totalPoints} XP
         </div>
       </div>
     )

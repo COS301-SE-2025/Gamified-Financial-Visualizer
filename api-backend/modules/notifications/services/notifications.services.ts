@@ -54,11 +54,14 @@ export async function getPendingFriendRequests(userId: number): Promise<Notifica
     SELECT
       f.user_id   AS requester_id,
       u.username,
+      pts.total_points,
+      pts.tier_status,
       ai.avatar_image_path,
       f.created_at
     FROM friendships f
     JOIN users u ON u.user_id = f.user_id
     JOIN user_preferences up ON up.user_id = u.user_id
+    JOIN user_points pts ON pts.user_id = u.user_id
     JOIN avatar_images ai ON ai.avatar_id = up.avatar_id
     WHERE f.friend_id = $1
       AND f.relationship_status = 'pending'
@@ -71,12 +74,16 @@ export async function getPendingFriendRequests(userId: number): Promise<Notifica
       username: string;
       avatar_image_path: string;
       created_at: string;
+      total_points: number;
+      tier_status: string;
    }
 
    interface FriendRequestPayload {
       from: number;
       username: string;
       avatar: string;
+      totalPoints: number;
+      tierStatus: string;
    }
 
    return (rows as FriendRequestRow[]).map((r): Notification => ({
@@ -85,6 +92,8 @@ export async function getPendingFriendRequests(userId: number): Promise<Notifica
          from: r.requester_id,
          username: r.username,
          avatar: r.avatar_image_path,
+         totalPoints: r.total_points,
+         tierStatus: r.tier_status,
       } as FriendRequestPayload,
       timestamp: new Date(r.created_at).getTime(),
    }));
