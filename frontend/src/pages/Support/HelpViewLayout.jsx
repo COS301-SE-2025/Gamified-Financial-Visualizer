@@ -10,7 +10,7 @@ const HelpViewLayout = () => {
         
 
         {/* Main content with header and scrollable body */}
-        <div className="flex-1 flex flex-col h-full pr-6">
+        <div className="flex-1 flex flex-col h-full pr-6 ">
           {/* Header */}
 
           {/* Scrollable content */}
