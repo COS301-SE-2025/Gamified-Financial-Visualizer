@@ -108,7 +108,7 @@ const AchievementCard = ({ achievement }) => {
 
   const colorKey = detectColorKey(achievement_title);
   const { border, fill, text } = colorMap[colorKey];
- const image = getBadgeImage(achievement_title);
+  const image = getBadgeImage(achievement_title);
 
   return (
     <div
@@ -119,7 +119,7 @@ const AchievementCard = ({ achievement }) => {
       <img src={image} alt={achievement_title} className="w-14 h-14 object-contain" />
 
       <div className="w-full mt-1">
-        <div className="h-2 bg-gray-200 rounded-full">
+        <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-700">
           <div
             className={`${fill} h-2 rounded-full`}
             style={{ width: `${percent}%` }}
@@ -185,7 +185,7 @@ const AchievementsPage = () => {
   return (
     <AchievementsLayout>
       <div className="space-y-6 px-6 pt-10 pb-6 -mt-8 ">
-        <h2 className="text-xl font-semibold text-cyan-500 bg-blue-50 inline-block px-4 py-1 rounded-full shadow-sm">
+        <h2 className="text-xl font-semibold text-cyan-500 bg-blue-50 inline-block px-4 py-1 rounded-full shadow-sm dark:bg-gray-800">
           All Achievements
         </h2>
 

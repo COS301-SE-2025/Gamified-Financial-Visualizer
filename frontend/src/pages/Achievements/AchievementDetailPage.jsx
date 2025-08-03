@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaBolt, FaArrowLeft, FaChevronLeft } from 'react-icons/fa';
+import { FaChevronLeft } from 'react-icons/fa';
 import AchievementsLayout from '../../pages/Achievements/AchievementsLayout';
 import toast from 'react-hot-toast';
 
@@ -60,7 +60,7 @@ const BadgeTaskCard = ({ task, primaryColor, image, barGradient }) => {
   const progressPercent = (task.progress / task.total) * 100;
 
   return (
-    <div className="flex items-center justify-between bg-white rounded-2xl p-4 shadow-md border"
+    <div className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md border"
          style={{ borderColor: primaryColor }}>
       <div className="flex items-center gap-4">
         <div className="w-14 h-14 flex items-center justify-center rounded-full bg-gradient-to-br"
@@ -70,19 +70,19 @@ const BadgeTaskCard = ({ task, primaryColor, image, barGradient }) => {
 
         <div>
           <div className="flex items-center gap-4">
-            <h3 className="text-[16px] font-semibold" style={{ color: primaryColor }}>
+            <h3 className="text-[16px] font-semibold dark:text-gray-200" style={{ color: primaryColor }}>
               {task.title}
             </h3>
-            <p className="text-sm font-light" style={{ color: primaryColor }}>
+            <p className="text-sm font-light dark:text-gray-300" style={{ color: primaryColor }}>
               {task.reward} XP Reward
             </p>
           </div>
 
-          <div className="w-64 bg-gray-200 h-2 rounded-full mt-2">
+          <div className="w-64 bg-gray-200 dark:bg-gray-700 h-2 rounded-full mt-2">
             <div className="h-2 rounded-full" style={{ width: `${progressPercent}%`, background: barGradient }} />
           </div>
 
-          <p className="text-xs mt-1" style={{ color: primaryColor }}>
+          <p className="text-xs mt-1 dark:text-gray-300" style={{ color: primaryColor }}>
             {task.progress}/{task.total}
           </p>
         </div>
@@ -112,9 +112,9 @@ const AchievementDetailPage = () => {
         if (!response.ok) throw new Error('Failed to fetch achievement tasks');
         const data = await response.json();
         setTasks(data.data || []);
-      } catch (error) {
-        console.error(error);
-        setError(error.message);
+      } catch (err) {
+        console.error(err);
+        setError(err.message);
         toast.error('Could not load achievement tasks');
       }
     };
@@ -122,11 +122,11 @@ const AchievementDetailPage = () => {
     loadTasks();
   }, [id]);
 
-if (error) {
+  if (error) {
     return (
       <AchievementsLayout>
         <div className="max-w-6xl mx-auto p-4">
-          <div className="bg-red-50 border-l-4 border-[#FF8A8A] p-4 rounded-r-lg">
+          <div className="bg-red-50 dark:bg-gray-800 border-l-4 border-[#FF8A8A] p-4 rounded-r-lg">
             <div className="flex">
               <div className="flex-shrink-0">
                 <svg className="h-5 w-5 text-[#FF8A8A]" viewBox="0 0 20 20" fill="currentColor">
@@ -153,13 +153,13 @@ if (error) {
   }
 
   return (
- <AchievementsLayout>
-      <div className="p-6 space-y-6 rounded-2xl -mt-6">
+    <AchievementsLayout>
+      <div className="p-6 space-y-6 rounded-2xl -mt-6 ">
         <button 
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 mb-4 px-4 py-2 rounded-full border border-gray-300 hover:bg-gray-50 transition-colors text-gray-700"
+          className="flex items-center gap-2 mb-4 px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300"
         >
-          <FaChevronLeft className="text-gray-500" />
+          <FaChevronLeft className="text-gray-500 dark:text-gray-400" />
           <span className="font-medium">Back</span>
         </button>
         
@@ -176,7 +176,7 @@ if (error) {
             {id}
           </div>
 
-          <p className="text-sm text-gray-500 mt-2 mb-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 mb-4">
             Unlock your badges by completing tasks on the site.
           </p>
 
