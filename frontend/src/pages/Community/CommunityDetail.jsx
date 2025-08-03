@@ -260,7 +260,7 @@ const CommunityDetail = () => {
                 className="text-2xl font-bold border-b border-gray-300 dark:border-gray-600 focus:outline-none focus:border-[#66BFBF] dark:focus:border-[#4D7C0F] bg-transparent dark:text-white"
               />
             ) : (
-              <h2 className="text-2xl font-bold text-[#66BFBF] dark:text-[#4D7C0F]">{communityData.community_name}</h2>
+              <h2 className="text-2xl font-bold text-[#66BFBF] dark:text-[#618A54]">{communityData.community_name}</h2>
             )}
           </div>
           <div className="flex items-center gap-4">
@@ -299,7 +299,7 @@ const CommunityDetail = () => {
                   {isMember(currentUser.id) && (
                     <button
                       onClick={() => removeMember(currentUser.id)}
-                      className="flex items-center gap-2 bg-red-100 dark:bg-[#D84535] text-red-600 dark:text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-red-200 dark:hover:bg-red-800 transition"
+                      className="flex items-center gap-2 bg-red-100 dark:bg-[#FE9B90] text-red-600 dark:text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-red-200 dark:hover:bg-red-800 transition"
                     >
                       <FaUserPlus /> Leave
                     </button>
@@ -459,9 +459,9 @@ const CommunityDetail = () => {
                 <div className="flex justify-between items-start">
                   <div>
                     <h4 className="text-lg font-semibold text-[#111827] dark:text-gray-200">{challenge.title}</h4>
-                    <p className="text-sm text-[#ED5E52] font-medium mt-1">{challenge.current_amount}/{challenge.target_amount} ZAR</p>
+                    <p className="text-sm text-[#ED5E52] dark:text-[#E99470] font-medium mt-1">{challenge.current_amount}/{challenge.target_amount} ZAR</p>
                     <p className="text-sm text-[#374151] dark:text-gray-300">{challenge.target_amount - challenge.current_amount} ZAR Left</p>
-                    <p className="text-sm text-[#6B7280] dark:text-gray-400 mt-1">Goal should be accomplished on <span className="text-[#ED5E52] font-semibold">{challenge.deadline}</span></p>
+                    <p className="text-sm text-[#6B7280] dark:text-gray-400 mt-1">Goal should be accomplished on <span className="text-[#E99470] font-semibold">{challenge.deadline}</span></p>
                   </div>
 
                   {/* Tags */}
@@ -497,7 +497,7 @@ const CommunityDetail = () => {
                   <div className="flex-1">
                     <button
                       onClick={() => handleDelete(challenge.id)}
-                      className="w-full bg-[#FE9B90] dark:bg-[#FF7768] text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-[#ED5E52] dark:bg-[#FE9B90] dark:hover:bg-[#E55C4C] transition">
+                      className="w-full bg-[#FE9B90] dark:bg-[#FE9B90] text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-[#ED5E52] dark:bg-[#FE9B90] dark:hover:bg-[#E55C4C] transition">
                       Delete
                     </button>
                   </div>
