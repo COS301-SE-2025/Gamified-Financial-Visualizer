@@ -70,7 +70,7 @@ const HelpMain = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+    <div className="max-w-6xl mx-auto px-4 py-8 space-y-6 dark:bg-gray-900">
       {/* Top Row - XP Overview Card */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}

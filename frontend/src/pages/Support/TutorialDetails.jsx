@@ -17,7 +17,7 @@ const tutorials = [
     description: 'Learn how to create and track your financial goals step-by-step.',
     steps: [
       { image: require('../../assets/Tutorials/goals/goal1.png'), caption: 'Go to the Goals page.' },
-      { image: require('../../assets/Tutorials/goals/goal2.png'), caption: 'Click “Create Goal”.' },
+      { image: require('../../assets/Tutorials/goals/goal2.png'), caption: 'Click "Create Goal".' },
       { image: require('../../assets/Tutorials/goals/goal3.png'), caption: 'Fill out your goal information.' },
       { image: require('../../assets/Tutorials/goals/goal4.png'), caption: 'Click confirm.' },
       { image: require('../../assets/Tutorials/goals/goal5.png'), caption: 'Goal details appear as first goal.' }
@@ -136,7 +136,7 @@ const tutorials = [
     description: 'Learn how to interact with your personal finance assistant using smart prompts.',
     steps: [
       { image: '/images/tutorials/ai1.png', caption: 'Open the AI tab in Transactions or Learn.' },
-      { image: '/images/tutorials/ai2.png', caption: 'Ask a question like “How can I save more?”' },
+      { image: '/images/tutorials/ai2.png', caption: 'Ask a question like "How can I save more?"' },
       { image: '/images/tutorials/ai3.png', caption: 'Apply suggestions and track results.' }
     ],
     video: '/videos/ai.mp4',
@@ -144,7 +144,6 @@ const tutorials = [
     badge: <FaRobot className="text-[#5C6BC0]" />,
     name: 'AI Navigator'
   }
-
 ];
 
 const achievements = [
@@ -192,21 +191,20 @@ const ConfettiAndCoins = () => {
   );
 };
 
-
 const TutorialCard = ({ tutorial, onClick }) => (
   <motion.div
     whileHover={{ y: -5 }}
     whileTap={{ scale: 0.98 }}
     onClick={onClick}
-    className="bg-[#ffffff] p-6 rounded-2xl shadow-sm border-l-8 transition-all relative overflow-hidden group cursor-pointer h-full"
+    className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border-l-8 transition-all relative overflow-hidden group cursor-pointer h-full"
     style={{ borderLeftColor: tutorial.color }}
   >
     <div className="relative z-10 flex flex-col h-full">
       <div className="flex-1">
-        <h3 className="text-lg font-semibold text-[#1f2937] group-hover:text-[#1f2937] transition-colors mb-2" style={{ color: tutorial.color }}>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white group-hover:text-gray-800 dark:group-hover:text-white transition-colors mb-2" style={{ color: tutorial.color }}>
           {tutorial.title}
         </h3>
-        <p className="text-sm text-[#4b5563] mb-4">{tutorial.description}</p>
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">{tutorial.description}</p>
         <div className="flex flex-wrap gap-2 mb-4">
           <span className="px-2 py-1 rounded-full text-xs" style={{ backgroundColor: tutorial.lightColor, color: tutorial.color }}>
             {tutorial.steps.length} steps
@@ -218,7 +216,7 @@ const TutorialCard = ({ tutorial, onClick }) => (
       </div>
       <div className="flex justify-between items-center">
         <div className="flex flex-wrap gap-2">
-          <span className="bg-[#FFD18C] text-[#b45309] px-2 py-1 rounded-full text-xs">+{tutorial.xpReward} XP</span>
+          <span className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded-full text-xs">+{tutorial.xp} XP</span>
           <span className="px-2 py-1 rounded-full text-xs" style={{ backgroundColor: `${tutorial.color}20`, color: tutorial.color }}>
             {tutorial.badge}
           </span>
@@ -271,17 +269,17 @@ const TutorialDetails = () => {
 
   if (!selected) {
     return (
-      <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
+      <div className="max-w-6xl mx-auto px-4 py-8 space-y-8 dark:bg-gray-900">
         {/* Header Section */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="bg-[#ffffff] p-6 rounded-3xl shadow-md border-t-4 border-[#F68D2B]"
+          className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-md border-t-4 border-orange-500"
         >
-          <h1 className="text-2xl font-bold text-[#1f2937] mb-2 flex items-center gap-2">
-            <FaTrophy className="text-[#FFBF1A]" /> Quest Academy
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-2 flex items-center gap-2">
+            <FaTrophy className="text-yellow-400" /> Quest Academy
           </h1>
-          <p className="text-[#4b5563]">
+          <p className="text-gray-600 dark:text-gray-300">
             Complete quests to master our platform and earn rewards!
           </p>
         </motion.div>
@@ -302,28 +300,40 @@ const TutorialDetails = () => {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="bg-[#ffffff] p-6 rounded-3xl shadow-md border-t-4 border-[#FFD18C]"
+          className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-md border-t-4 border-yellow-400"
         >
-          <h2 className="text-xl font-bold text-[#1f2937] mb-4 flex items-center gap-2">
-            <FaTrophy className="text-[#FFBF1A]" /> Your Achievements
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+            <FaTrophy className="text-yellow-400" /> Your Achievements
           </h2>
 
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
             {achievements.map((achievement) => (
               <div
                 key={achievement.id}
-                className={`p-3 rounded-xl flex flex-col items-center border-2 ${achievement.earned ? 'border-[#FFD18C] bg-[#f9efcb]' : 'border-[#e5e7eb] bg-[#f9fafb]'}`}
+                className={`p-3 rounded-xl flex flex-col items-center border-2 ${
+                  achievement.earned 
+                    ? 'border-yellow-400 bg-yellow-100 dark:bg-yellow-900/20' 
+                    : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700'
+                }`}
               >
-                <div className={`text-2xl mb-2 ${achievement.earned ? 'text-[#FFBF1A]' : 'text-[#9ca3af]'}`}>
+                <div className={`text-2xl mb-2 ${
+                  achievement.earned 
+                    ? 'text-yellow-500' 
+                    : 'text-gray-400 dark:text-gray-500'
+                }`}>
                   {achievement.icon}
                 </div>
-                <p className={`text-sm font-medium text-center ${achievement.earned ? 'text-[#1f2937]' : 'text-[#6b7280]'}`}>
+                <p className={`text-sm font-medium text-center ${
+                  achievement.earned 
+                    ? 'text-gray-800 dark:text-white' 
+                    : 'text-gray-600 dark:text-gray-400'
+                }`}>
                   {achievement.name}
                 </p>
                 {achievement.earned ? (
-                  <span className="text-xs text-[#b45309] mt-1 font-medium">Unlocked!</span>
+                  <span className="text-xs text-yellow-600 dark:text-yellow-400 mt-1 font-medium">Unlocked!</span>
                 ) : (
-                  <span className="text-xs text-[#9ca3af] mt-1">Locked</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500 mt-1">Locked</span>
                 )}
               </div>
             ))}
@@ -341,22 +351,22 @@ const TutorialDetails = () => {
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="relative py-10 px-6 text-center rounded-xl bg-[#f8fafc] border border-[#e2e8f0]"
+      className="relative py-10 px-6 text-center rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
     >
-      <div className="bg-[#ffffff] rounded-3xl shadow-md border-t-4 overflow-hidden" style={{ borderTopColor: selected.color }}>
+      <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-md border-t-4 overflow-hidden" style={{ borderTopColor: selected.color }}>
         {/* Tutorial Header */}
-        <div className="p-6 border-b border-[#e5e7eb]">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
             <div>
               <button
                 onClick={() => setSelected(null)}
-                className="flex items-center gap-1 text-sm mb-2"
+                className="flex items-center gap-1 text-sm mb-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
                 style={{ color: selected.color }}
               >
                 <FaArrowLeft size={12} /> Back to Quests
               </button>
-              <h2 className="text-2xl font-bold text-[#1f2937]">{selected.title}</h2>
-              <p className="text-[#4b5563] text-sm">{selected.description}</p>
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{selected.title}</h2>
+              <p className="text-gray-600 dark:text-gray-300 text-sm">{selected.description}</p>
             </div>
             <div className="px-3 py-1 rounded-full text-sm font-medium" style={{ backgroundColor: `${selected.color}20`, color: selected.color }}>
               Step {stepIndex + 1} of {selected.steps.length}
@@ -364,7 +374,7 @@ const TutorialDetails = () => {
           </div>
 
           {/* Progress Bar */}
-          <div className="w-full h-3 bg-[#e5e7eb] rounded-full overflow-hidden mb-6">
+          <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-6">
             <motion.div
               className="h-full"
               style={{ background: selected.color }}
@@ -378,14 +388,22 @@ const TutorialDetails = () => {
           <div className="flex justify-center gap-2 mb-6">
             <button
               onClick={() => setViewMode('steps')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${viewMode === 'steps' ? 'text-white shadow-md' : 'bg-[#ffffff] text-[#4b5563] hover:bg-[#f3f4f6] border border-[#e5e7eb]'}`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                viewMode === 'steps' 
+                  ? 'text-white shadow-md' 
+                  : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600'
+              }`}
               style={{ backgroundColor: viewMode === 'steps' ? selected.color : '' }}
             >
               <FaImages /> Step-by-Step
             </button>
             <button
               onClick={() => setViewMode('video')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${viewMode === 'video' ? 'text-white shadow-md' : 'bg-[#ffffff] text-[#4b5563] hover:bg-[#f3f4f6] border border-[#e5e7eb]'}`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                viewMode === 'video' 
+                  ? 'text-white shadow-md' 
+                  : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600'
+              }`}
               style={{ backgroundColor: viewMode === 'video' ? selected.color : '' }}
             >
               <FaVideo /> Video Guide
@@ -405,14 +423,14 @@ const TutorialDetails = () => {
                 transition={{ duration: 0.2 }}
               >
                 {viewMode === 'steps' && (
-                  <div className="relative rounded-xl overflow-hidden border border-[#e5e7eb] bg-[#ffffff]">
+                  <div className="relative rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700">
                     <img
                       src={step.image}
                       alt={`Step ${stepIndex + 1}`}
                       className="w-full h-auto max-h-[400px] object-contain mx-auto"
                     />
-                    <div className="bg-[#f9fafb] p-4 border-t border-[#e5e7eb]">
-                      <p className="text-center text-[#374151] font-medium">
+                    <div className="bg-gray-50 dark:bg-gray-800 p-4 border-t border-gray-200 dark:border-gray-700">
+                      <p className="text-center text-gray-700 dark:text-gray-300 font-medium">
                         {step.caption}
                       </p>
                     </div>
@@ -420,7 +438,7 @@ const TutorialDetails = () => {
                 )}
 
                 {viewMode === 'video' && (
-                  <div className="rounded-xl overflow-hidden border border-[#e5e7eb] bg-[#ffffff]">
+                  <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700">
                     <video controls className="w-full">
                       <source src={selected.video} type="video/mp4" />
                       Your browser doesn't support videos.
@@ -432,11 +450,11 @@ const TutorialDetails = () => {
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="relative py-10 px-6 text-center rounded-xl bg-[#f8fafc] border border-[#e2e8f0]"
+                className="relative py-10 px-6 text-center rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
               >
                 <ConfettiAndCoins />
                 <div className="relative z-10 flex flex-col items-center space-y-4">
-                  <div className="w-20 h-20 bg-white rounded-full shadow-md flex items-center justify-center border-4" style={{ borderColor: '#FFD700' }}>
+                  <div className="w-20 h-20 bg-white dark:bg-gray-700 rounded-full shadow-md flex items-center justify-center border-4" style={{ borderColor: '#FFD700' }}>
                     {showXpAnimation && (
                       <motion.div
                         className="absolute inset-0 flex items-center justify-center"
@@ -445,21 +463,21 @@ const TutorialDetails = () => {
                         exit={{ scale: 0, opacity: 0 }}
                         transition={{ duration: 0.8 }}
                       >
-                        <div className="text-[#FFD700] text-xl font-bold">+{selected.xp} XP</div>
+                        <div className="text-yellow-500 text-xl font-bold">+{selected.xp} XP</div>
                       </motion.div>
                     )}
-                    <FaCheckCircle className="text-[#88BC46] text-4xl" />
+                    <FaCheckCircle className="text-green-500 text-4xl" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800">Quest Complete!</h3>
-                  <p className="text-gray-600">
+                  <h3 className="text-2xl font-bold text-gray-800 dark:text-white">Quest Complete!</h3>
+                  <p className="text-gray-600 dark:text-gray-300">
                     You earned <span className="font-bold" style={{ color: selected.color }}>+{selected.xp} XP</span>
                   </p>
 
-                  <div className="bg-white border-2 px-6 py-4 rounded-xl shadow-sm text-center" style={{ borderColor: '#FFD700' }}>
+                  <div className="bg-white dark:bg-gray-700 border-2 px-6 py-4 rounded-xl shadow-sm text-center" style={{ borderColor: '#FFD700' }}>
                     <div className="flex justify-center text-2xl mb-1" style={{ color: selected.color }}>
                       {selected.badge}
                     </div>
-                    <div className="text-xs font-medium text-gray-500">NEW BADGE UNLOCKED</div>
+                    <div className="text-xs font-medium text-gray-500 dark:text-gray-400">NEW BADGE UNLOCKED</div>
                   </div>
 
                   <button
@@ -476,17 +494,21 @@ const TutorialDetails = () => {
         </div>
 
         {!completed && (
-          <div className="border-t border-[#e5e7eb] p-4 bg-[#ffffff]">
+          <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4 w-full max-w-md mx-auto">
               <button
                 onClick={prev}
                 disabled={stepIndex === 0}
-                className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium transition-colors w-full sm:w-auto justify-center ${stepIndex === 0 ? 'text-[#9ca3af] bg-[#f3f4f6] cursor-not-allowed' : 'text-[#374151] bg-[#ffffff] hover:bg-[#f3f4f6] border border-[#e5e7eb]'}`}
+                className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium transition-colors w-full sm:w-auto justify-center ${
+                  stepIndex === 0 
+                    ? 'text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 cursor-not-allowed' 
+                    : 'text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600'
+                }`}
               >
                 <FaArrowLeft /> Previous
               </button>
 
-              <div className="text-xs text-[#9ca3af] sm:hidden">
+              <div className="text-xs text-gray-400 dark:text-gray-500 sm:hidden">
                 Step {stepIndex + 1} of {selected.steps.length}
               </div>
 

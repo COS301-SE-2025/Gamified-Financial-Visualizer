@@ -5,7 +5,7 @@ import SupportHeader from '../../layouts/headers/SupportHeader';
 
 const HelpViewLayout = () => {
   return (
-    <div className="h-screen bg-gray-50">
+    <div className="h-screen bg-gray-50 dark:bg-gray-900">
       <div className="flex h-full">
         
 
