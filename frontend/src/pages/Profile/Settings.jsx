@@ -4,11 +4,17 @@ import { FaCheckCircle, FaTimesCircle, FaEye, FaEyeSlash } from 'react-icons/fa'
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-
 const Settings = () => {
   const user = JSON.parse(localStorage.getItem('user'));
   const userId = user?.id;
-  const [theme, setTheme] = useState(localStorage.getItem('theme') === 'dark');
+  
+  // Initialize theme from localStorage or system preference
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) return savedTheme === 'dark';
+    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+  });
+  
   const [notifications, setNotifications] = useState(true);
   const [outAppNotifications, setOutAppNotifications] = useState(true);
   const [verified, setVerified] = useState(false);
@@ -17,7 +23,6 @@ const Settings = () => {
   const [selectedAvatar, setSelectedAvatar] = useState(0);
   const [avatarList, setAvatarList] = useState([]);
   const [showConfirm, setShowConfirm] = useState(false);
-
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -30,12 +35,12 @@ const Settings = () => {
 
   // Apply theme on component mount and when theme changes
   useEffect(() => {
-    document.documentElement.classList.remove('light', 'dark');
-    document.documentElement.classList.add(theme ? 'dark' : 'light');
+    const html = document.documentElement;
+    html.classList.remove('light', 'dark');
+    html.classList.add(theme ? 'dark' : 'light');
     localStorage.setItem('theme', theme ? 'dark' : 'light');
   }, [theme]);
 
- 
   const passwordCriteria = {
     length: /^.{8,}$/,
     lowercase: /[a-z]/,
@@ -66,7 +71,13 @@ const Settings = () => {
       const data = await res.json();
       if (res.ok) {
         setUsername(data.username);
-        setTheme(data.preferences?.theme === 'dark');
+        
+        // Only update theme from backend if localStorage doesn't have a preference
+        const localStorageTheme = localStorage.getItem('theme');
+        if (!localStorageTheme) {
+          setTheme(data.preferences?.theme === 'dark');
+        }
+        
         setNotifications(data.preferences?.in_app_notifications_enabled ?? true);
         setOutAppNotifications(data.outOfAppEnabled ?? false);
         setSelectedAvatar(data.preferences?.avatar_id || 1);
@@ -142,7 +153,6 @@ const Settings = () => {
       });
 
       if (res.ok) {
-        await fetchSettings();
         window.dispatchEvent(new Event('userUpdated'));
         toast.success('Preferences saved successfully');
       } else {
@@ -183,6 +193,10 @@ const Settings = () => {
       console.error('Error updating password:', err);
       toast.error('Failed to change password');
     }
+  };
+
+  const toggleTheme = () => {
+    setTheme(prevTheme => !prevTheme);
   };
 
   const renderCheck = (isValid) =>
@@ -238,18 +252,23 @@ const Settings = () => {
       </div>
 
       {/* Preferences */}
-        <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-6">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-6">
         <h3 className="font-semibold text-[#88BC46] dark:text-[#AAD977] text-lg mb-4">Preferences</h3>
         {[
-          { label: 'Dark Mode', state: theme, setter: setTheme },
-          { label: 'Enable In-App Notifications', state: notifications, setter: setNotifications },
-          { label: 'Enable Out-of-App Notifications', state: outAppNotifications, setter: setOutAppNotifications },
-          { label: 'Two Factor Verification', state: verified, setter: setVerified }
-        ].map(({ label, state, setter }, i) => (
+          { label: 'Dark Mode', state: theme, action: toggleTheme },
+          { label: 'Enable In-App Notifications', state: notifications, action: () => setNotifications(!notifications) },
+          { label: 'Enable Out-of-App Notifications', state: outAppNotifications, action: () => setOutAppNotifications(!outAppNotifications) },
+          { label: 'Two Factor Verification', state: verified, action: () => setVerified(!verified) }
+        ].map(({ label, state, action }, i) => (
           <div key={i} className="flex items-center justify-between mb-4">
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</p>
             <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" checked={state} onChange={() => setter(!state)} className="sr-only peer" />
+              <input 
+                type="checkbox" 
+                checked={state} 
+                onChange={action} 
+                className="sr-only peer" 
+              />
               <div className="w-11 h-6 bg-gray-200 peer-checked:bg-[#88BC46] rounded-full transition-all duration-300"></div>
               <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-md transform peer-checked:translate-x-5 transition-transform duration-300"></div>
             </label>
@@ -353,7 +372,7 @@ const Settings = () => {
       </div>
 
       {/* Danger Zone */}
-       <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-6 border border-red-100 dark:border-red-900">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-6 border border-red-100 dark:border-red-900">
         <h3 className="font-semibold text-red-500 mb-4">Danger Zone</h3>
         <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Deleting your account is permanent and cannot be undone.</p>
         <button onClick={() => setShowConfirm(true)} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md">
