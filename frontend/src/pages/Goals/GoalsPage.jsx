@@ -17,6 +17,7 @@ const GoalsPage = () => {
   const [goals, setGoals] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const bannerImages = [goal1, goal2, goal3];
+  const [latestGoal, setLatestGoal] = useState(null);
 
   useEffect(() => {
     const fetchGoals = async () => {
@@ -34,39 +35,73 @@ const GoalsPage = () => {
     }
   }, [user?.id]);
 
+  useEffect(() => {
+    const fetchLatestGoal = async () => {
+      const res = await fetch(`http://localhost:5000/api/goal/latest-completed/${user.id}`);
+      const data = await res.json();
+      setLatestGoal(data.data || null);
+    };
+    fetchLatestGoal();
+  }, []);
+
   return (
     <GoalsViewLayout>
-      <div className="flex flex-col gap-6 px-6 py-6">
+      <div className="flex flex-col gap-6 px-4 sm:px-6 py-6 items-center w-full">
         {/* Top Charts and Overview */}
-        <div className="w-4/4 overflow-hidden grid grid-cols-12 gap-4">
-          <div className="col-span-3 flex flex-col gap-8">
+        <div className="grid grid-cols-4 gap-6 w-full px-16 max-w-screen-2xl mx-auto">
+          {/* Card 1: Goal Totals */}
+          <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col gap-4 min-h-[280px]">
             <GoalOverviewCards />
             <UpcomingDeadlinesCard />
           </div>
-          <div className="col-span-4">
+
+          {/* Card 2: Bar Chart */}
+          <div className="bg-white rounded-2xl shadow-md p-4 min-h-[280px]">
             <BarChart />
           </div>
-          <div className="col-span-3">
+
+          {/* Card 3: Donut Chart */}
+          <div className="bg-white rounded-2xl shadow-md p-4 min-h-[280px] overflow-hidden">
             <DonutChart />
+          </div>
+
+          {/* Card 4: Latest Accomplished Goal */}
+          <div className="bg-white rounded-2xl shadow-md p-4 min-h-[280px]">
+            {latestGoal ? (
+              <GoalCard
+                goalId={latestGoal.goal_id}
+                title={latestGoal.goal_name}
+                image={bannerImages[(latestGoal.banner_id) % bannerImages.length]}
+                progress={100}
+                target={latestGoal.target_amount}
+                dueDate={new Date(latestGoal.completed_date).toLocaleDateString('en-ZA', {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                })}
+              />
+            ) : (
+              <div className="text-gray-400 text-sm h-full flex items-center justify-center">
+                No completed goals yet
+              </div>
+            )}
           </div>
         </div>
 
         {/*Search Input */}
-        <div className="flex items-center w-full max-w-3xl -ml-[8px] px-4 py-2 rounded-3xl border-2 border-[#E5794B] bg-white shadow-sm">
-          <FaSearch className="text-[#E5794B] mr-2" />
+        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm">
+          <FaSearch className="text-[#76B947] mr-2" />
           <input
             type="text"
             placeholder="Search your goals..."
-            className="w-full outline-none bg-transparent text-sm text-[#E5794B] placeholder-[#E5794B]/70"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70"
           />
         </div>
 
         {/* Goal Cards */}
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-3 gap-6 items-center w-full">
           {goals.filter(g => g.goal_name.toLowerCase().includes(searchTerm.toLowerCase())).map((goal) => {
-            const randomImage = bannerImages[goal.banner_id-1];
+            const randomImage = bannerImages[(goal.banner_id) % bannerImages.length];
             const progress = Math.min(
               Math.round((Number(goal.current_amount) / Number(goal.target_amount)) * 100),
               100
@@ -80,7 +115,7 @@ const GoalsPage = () => {
             return (
               <GoalCard
                 key={goal.goal_id}
-                goalId={goal.goal_id}  
+                goalId={goal.goal_id}
                 title={goal.goal_name}
                 image={randomImage}
                 progress={progress}
@@ -94,10 +129,10 @@ const GoalsPage = () => {
         {goals.filter(c =>
           c.goal_name.toLowerCase().includes(searchTerm.toLowerCase())
         ).length === 0 && (
-          <div className="text-center text-gray-500 mt-6 text-sm">
-            No matching Goals found.
-          </div>
-        )}
+            <div className="text-center text-gray-500 mt-6 text-sm">
+              No matching Goals found.
+            </div>
+          )}
       </div>
     </GoalsViewLayout>
   );

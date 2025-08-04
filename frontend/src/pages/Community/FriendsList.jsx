@@ -13,6 +13,7 @@ const FriendsList = () => {
   const [modalText, setModalText] = useState('');
   const [modalData, setModalData] = useState({ username: '', avatar_image_path: '' });
   const [onConfirm, setOnConfirm] = useState(() => () => { });
+  const [members, setMembers] = useState([]);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -20,17 +21,20 @@ const FriendsList = () => {
 
     const fetchFriendsAndRecommendations = async () => {
       try {
-        const [friendsRes, recsRes] = await Promise.all([
+        const [friendsRes, recsRes, members] = await Promise.all([
           fetch(`http://localhost:5000/api/community/friends/${user.id}`),
-          fetch(`http://localhost:5000/api/community/friends/recommendations/${user.id}`) // ← fixed
+          fetch(`http://localhost:5000/api/community/friends/recommendations/${user.id}`),// ← fixed
+          fetch(`http://localhost:5000/api/community/friends/all/members`)
         ]);
 
 
         const friendsData = await friendsRes.json();
         const recsData = await recsRes.json();
+        const membersData = await members.json();
 
         setYourFriends(friendsData.data || []);
         setRecommended(recsData.data || []);
+        setMembers(membersData.data || []);
       } catch (err) {
         toast.error('Failed to fetch friends or recommendations.');
         console.error(err);
@@ -51,18 +55,14 @@ const FriendsList = () => {
     const currentUser = JSON.parse(localStorage.getItem('user'));
     openModal(`Send a friend request to @${user.username}?`, user, async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/community/friends/request`, {
+        const res = await fetch(`http://localhost:5000/api/community/friends/request/${currentUser.id}/${user.user_id}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sender_id: currentUser.id,
-            receiver_id: user.user_id,
-          }),
         });
 
         const result = await res.json();
         if (res.ok) {
-          toast.success(`Friend request sent to @${user.username}`, {
+          toast.success(`Friend request sent to ${user.username}`, {
             icon: <FaPaperPlane className="text-[#1E3A8A]" />,
             style: {
               borderRadius: '9999px',
@@ -96,7 +96,7 @@ const FriendsList = () => {
 
         const result = await res.json();
         if (res.ok) {
-          toast.success(`@${user.username} removed from your friends list`, {
+          toast.success(`${user.username} removed from your friends list`, {
             icon: <FaUserMinus className="text-[#7F1D1D]" />,
             style: {
               borderRadius: '9999px',
@@ -121,19 +121,26 @@ const FriendsList = () => {
   const filteredFriends = yourFriends.filter(f =>
     f.username.toLowerCase().includes(search.toLowerCase())
   );
+  const currentUser = JSON.parse(localStorage.getItem('user'));
+  const filteredMembers = members.filter(m =>
+    m.username.toLowerCase().includes(search.toLowerCase()) &&
+    m.user_id !== currentUser?.id
+  );
+
+  const someoneList = search ? filteredMembers : recommended;
 
   return (
     <CommunityLayout>
       <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
-        <CommunityHeader />
         <Toaster position="top-right" />
 
-        <div className="flex items-center w-full max-w-4xl -ml-[8px] px-4 py-2 rounded-3xl border-2 border-[#E5794B] bg-white shadow-sm">
-          <FaSearch className="text-[#E5794B] mr-2" />
+        {/* Search bar */}
+        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm">
+          <FaSearch className="text-[#76B947] mr-2" />
           <input
             type="text"
             placeholder="Search your friends..."
-            className="w-full outline-none bg-transparent text-sm text-[#E5794B] placeholder-[#E5794B]/70"
+            className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -141,7 +148,7 @@ const FriendsList = () => {
 
         {/* Your Friends */}
         <div>
-          <h3 className="text-lg font-semibold text-[#333333] mb-3">Your Friends</h3>
+          <h2 className="text-lg font-semibold text-[#333333] mb-3">Your Friends</h2>
           <div className="bg-white rounded-xl shadow p-4 space-y-2 border border-[#E5E7EB]">
             {filteredFriends.length === 0 ? (
               <p className="text-sm text-gray-500 text-center py-4">
@@ -153,7 +160,7 @@ const FriendsList = () => {
                   <div className="flex items-center gap-4">
                     <img src={`/assets/Images/${friend.avatar_image_path}`} alt={friend.username} className="w-10 h-10 rounded-full object-cover border" />
                     <div>
-                      <p className="text-sm font-semibold text-[#111827]">@{friend.username}</p>
+                      <p className="text-sm font-semibold text-[#111827]">{friend.username}</p>
                       <p className="text-xs text-[#6B7280]">{friend.tier_status || 'Unranked'}</p>
                     </div>
                   </div>
@@ -180,12 +187,12 @@ const FriendsList = () => {
         <div>
           <h3 className="text-lg font-semibold text-[#333333] mb-3">Someone New</h3>
           <div className="bg-white rounded-xl shadow p-4 space-y-2 border border-[#E5E7EB]">
-            {recommended.map((person, i) => (
+            {someoneList.map((person, i) => (
               <div key={i} className="flex justify-between items-center py-2 border-b border-[#F3F4F6] last:border-0">
                 <div className="flex items-center gap-4">
                   <img src={`/assets/Images/${person.avatar_image_path}`} alt={person.username} className="w-10 h-10 rounded-full object-cover border" />
                   <div>
-                    <p className="text-sm font-semibold text-[#111827]">@{person.username}</p>
+                    <p className="text-sm font-semibold text-[#111827]">{person.username}</p>
                     <p className="text-xs text-[#6B7280]">{person.tier_status || 'Unranked'}</p>
                   </div>
                 </div>
@@ -197,7 +204,7 @@ const FriendsList = () => {
                   </Link>
                   <button
                     onClick={() => handleFriendRequest(person)}
-                    className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#FFD18C] text-white"
+                    className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#72C1F5] text-white"
                   >
                     <FaPaperPlane /> Request
                   </button>

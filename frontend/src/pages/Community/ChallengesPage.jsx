@@ -43,7 +43,26 @@ const ChallengesPage = () => {
     fetchChallenges();
   }, []);
 
-  const handleDelete = (title) => {
+  const deleteChallenge = async (challengeId) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/community/challenges/${challengeId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      const json = await res.json();
+      if (res.ok) {
+        toast.success(`Deleted challenge "${json.data.title}"`);
+      }
+    } catch (err) {
+      toast.error('Error deleting challenge');
+      console.error(err);
+    }
+  };
+
+
+  const handleDelete = (title, challenge_id) => {
     toast.custom((t) => (
       <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-lg max-w-sm w-full space-y-3">
         <p className="text-sm font-semibold text-gray-800">
@@ -52,8 +71,8 @@ const ChallengesPage = () => {
         <div className="flex gap-2 justify-end">
           <button
             onClick={() => {
+              deleteChallenge(challenge_id);
               toast.dismiss(t.id);
-              toast.success(`Deleted "${title}"`);
               console.log(`Deleted ${title}`);
             }}
             className="bg-[#ED5E52] hover:bg-[#FE9B90] text-white px-4 py-1.5 text-sm rounded-full font-medium"
@@ -135,8 +154,8 @@ const ChallengesPage = () => {
               {challenge.status === 'active'
                 ? 'Active'
                 : challenge.status === 'upcoming'
-                ? 'Upcoming'
-                : 'Completed'}
+                  ? 'Upcoming'
+                  : 'Completed'}
             </span>
             <span className="text-xs px-3 py-1 rounded-full bg-[#FFD18C] text-white font-medium capitalize">
               {challenge.type}
@@ -166,7 +185,7 @@ const ChallengesPage = () => {
           </div>
           <div className="flex-1">
             <button
-              onClick={() => handleDelete(challenge.title)}
+              onClick={() => handleDelete(challenge.title, challenge.id)}
               className="w-full bg-[#FE9B90] text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-[#ED5E52] transition"
             >
               Delete
@@ -195,8 +214,6 @@ const ChallengesPage = () => {
     <CommunityLayout>
       <Toaster position="top-right" />
       <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
-        <CommunityHeader />
-
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h2 className="text-2xl font-bold text-gray-600">Community Challenges</h2>
@@ -204,21 +221,20 @@ const ChallengesPage = () => {
           </div>
           <Link to="/community/challenges/create">
             <button className="flex items-center gap-2 bg-gradient-to-r from-[#72C1F5] to-[#B1E1FF] text-white px-4 py-2 rounded-full text-sm font-medium shadow hover:shadow-md transition">
-              <FaTrophy /> Create Challenge
+              <FaTrophy /> Create Challenge 
             </button>
           </Link>
         </div>
 
-        <div className="flex items-center w-full max-w-4xl -ml-[8px] px-4 py-2 rounded-3xl border-2 border-[#E5794B] bg-white shadow-sm">
-          <FaSearch className="text-[#E5794B] mr-2" />
-          <input
-            type="text"
-            placeholder="Search for challenges..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full outline-none bg-transparent text-sm text-[#E5794B] placeholder-[#E5794B]/70"
-          />
-        </div>
+{/* Search bar */}
+        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm">
+                  <FaSearch className="text-[#76B947] mr-2" />
+                  <input
+                    type="text"
+                    placeholder="Search your challenges..."
+                    className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70"
+                  />
+                </div>
 
         <Section title="Active" icon={<FaFire />} color="text-orange-500" data={challenges.active} />
         <Section title="Upcoming" icon={<FaClock />} color="text-yellow-500" data={challenges.upcoming} />

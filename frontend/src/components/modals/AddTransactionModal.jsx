@@ -20,6 +20,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
   const [error, setError] = useState('');
   const [budgets, setBudgets] = useState([]);
   const [goals, setGoals] = useState([]);
+  const [challenges, setChallenges] = useState([]);
 
   // Fetch categories from API
   useEffect(() => {
@@ -27,6 +28,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
       fetchCategories();
       fetchBudgets();
       fetchGoals();
+      fetchChallenges();
     }
   }, [isOpen]);
 
@@ -69,7 +71,23 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
       console.error('Error fetching goals:', err);
       setGoals([]);
     }
-  }
+  };
+
+  const fetchChallenges = async () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user?.id) return;
+    try {
+      const response = await fetch(`http://localhost:5000/api/community/challenges/user/${user.id}`);
+      if (!response.ok) throw new Error('Failed to fetch challenges');
+      const data = await response.json(); 
+      setChallenges(data.data.active || []);
+    } catch (err) {
+      console.error('Error fetching challenges:', err);
+      setChallenges([]);
+    }
+  };
+
+
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -119,8 +137,6 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
 
       // If user entered a new category, we need to handle it
       if (form.newCategories && !form.categories) {
-        // For now, we'll pass it as transaction_name with a note
-        // You might want to create a custom category endpoint
         transactionData.transaction_name = `${form.name} (${form.newCategories})`;
       }
 
@@ -323,8 +339,11 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
             <label className="text-gray-600 mb-1">Challenges</label>
             <select name="challenges" value={form.challenges} onChange={handleChange} className="border p-2 rounded">
               <option value="">Select challenge</option>
-              <option value="1">Challenge 1</option>
-              <option value="2">Challenge 2</option>
+              {challenges.map(c => (
+                <option key={c.id} value={c.id}>
+                  {c.title}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -334,14 +353,14 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
           <button
             onClick={onClose}
             disabled={loading}
-            className="flex items-center gap-2 bg-red-200 text-red-600 px-4 py-2 rounded-full disabled:opacity-50"
+            className="flex items-center gap-2 bg-red-100 text-red-500 px-4 py-2 rounded-full disabled:opacity-50"
           >
             <FaTimes /> Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="flex items-center gap-2 bg-green-200 text-green-700 px-4 py-2 rounded-full disabled:opacity-50"
+            className="flex items-center gap-2 bg-lime-100 text-lime-600 px-4 py-2 rounded-full disabled:opacity-50"
           >
             <FaSave /> {loading ? 'Saving...' : 'Save'}
           </button>

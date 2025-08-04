@@ -1,121 +1,421 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, NavLink } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
-  FaHome, FaCalculator, FaBullseye, FaUsers, FaGraduationCap, FaMedal,
-  FaQuestionCircle, FaBell, FaSignOutAlt
+  FaChevronRight, FaUser, FaCog, FaSignOutAlt, FaHome, FaWallet,
+  FaBullseye, FaGraduationCap, FaMedal, FaUsers, FaQuestionCircle,
+  FaFileImport, FaChartLine, FaPiggyBank, FaPlus, FaTrophy,
+  FaBook, FaCheckCircle, FaBookOpen, FaUserFriends, FaSearch,
+  FaVideo, FaListAlt, FaChevronDown, FaBell
 } from 'react-icons/fa';
-
-import Logo from '../assets/Images/Logo.png';
-import User from '../assets/Images/avatars/totoroAvatar.jpeg';
+import logo from '../assets/Images/Logo1.png';
+import avatar from '../assets/Images/avatars/sharkAvatar.jpeg';
 import NotificationsPanel from '../components/notifications/NotificationsPanel';
 
+const menuItems = [
+  {
+    label: 'Home',
+    icon: <FaHome className="mr-1" />,
+    items: [{
+      label: 'Dashboard',
+      sub: 'Your personal dashboard',
+      to: '/dashboard',
+      icon: <FaHome className="text-[#B4CB98]" />
+    }],
+  },
+  {
+    label: 'Accounts',
+    icon: <FaWallet className="mr-1" />,
+    items: [
+      {
+        label: 'Transactions',
+        sub: 'Manage accounts',
+        to: '/transactions',
+        icon: <FaWallet className="text-[#B4CB98]" />
+      },
+      {
+        label: 'Budgets',
+        sub: 'Create and track',
+        to: '/transactions/budget',
+        icon: <FaPiggyBank className="text-[#B4CB98]" />
+      },
+      {
+        label: 'Insights',
+        sub: 'Financial summaries',
+        to: '/transactions/insights',
+        icon: <FaChartLine className="text-[#B4CB98]" />
+      },
+      {
+        label: 'Import',
+        sub: 'Upload statements',
+        to: '/transactions/import',
+        icon: <FaFileImport className="text-[#B4CB98]" />
+      },
+    ],
+  },
+  {
+    label: 'Goals',
+    icon: <FaBullseye className="mr-1" />,
+    items: [
+      {
+        label: 'Your Goals',
+        sub: 'Track your goals',
+        to: '/goals',
+        icon: <FaBullseye className="text-[#B4CB98]" />
+      },
+      {
+        label: 'Create Goal',
+        sub: 'Start something new',
+        to: '/goals/create',
+        icon: <FaPlus className="text-[#B4CB98]" />
+      },
+    ],
+  },
+  {
+    label: 'Learn',
+    icon: <FaGraduationCap className="mr-1" />,
+    items: [
+      {
+        label: 'Modules',
+        sub: 'Financial lessons',
+        to: '/learn',
+        icon: <FaBook className="text-[#B4CB98]" />
+      },
+      {
+        label: 'Complete',
+        sub: 'Completed modules',
+        to: '/learn/complete',
+        icon: <FaCheckCircle className="text-[#B4CB98]" />
+      },
+      {
+        label: 'Incomplete',
+        sub: 'Keep learning',
+        to: '/learn/incomplete',
+        icon: <FaBookOpen className="text-[#B4CB98]" />
+      },
+    ],
+  },
+  {
+    label: 'Achievements',
+    icon: <FaMedal className="mr-1" />,
+    items: [
+      {
+        label: 'Achievements',
+        sub: 'Progress & points',
+        to: '/achievements',
+        icon: <FaMedal className="text-[#B4CB98]" />
+      },
+      {
+        label: 'Complete',
+        sub: 'Completed achievements',
+        to: '/achievements/complete',
+        icon: <FaTrophy className="text-[#B4CB98]" />
+      },
+      {
+        label: 'Incomplete',
+        sub: 'Still to achieve',
+        to: '/achievements/incomplete',
+        icon: <FaMedal className="text-[#B4CB98]" />
+      },
+    ],
+  },
+  {
+    label: 'Community',
+    icon: <FaUsers className="mr-1" />,
+    items: [
+      {
+        label: 'Social',
+        sub: 'Community home',
+        to: '/community',
+        icon: <FaUsers className="text-[#B4CB98]" />
+      },
+      {
+        label: 'Friends',
+        sub: 'Your friends list',
+        to: '/community/friends',
+        icon: <FaUserFriends className="text-[#B4CB98]" />
+      },
+      {
+        label: 'Communities',
+        sub: 'Browse communities',
+        to: '/community/list',
+        icon: <FaSearch className="text-[#B4CB98]" />
+      },
+      {
+        label: 'Challenges',
+        sub: 'View challenges',
+        to: '/community/challenges',
+        icon: <FaBullseye className="text-[#B4CB98]" />
+      },
+    ],
+  },
+  {
+    label: 'Support',
+    icon: <FaQuestionCircle className="mr-1" />,
+    items: [
+      {
+        label: 'Help Center',
+        sub: 'Guides & FAQs',
+        to: '/support',
+        icon: <FaQuestionCircle className="text-[#B4CB98]" />
+      },
+      {
+        label: 'Overview',
+        sub: 'Page help sections',
+        to: '/support/overview',
+        icon: <FaListAlt className="text-[#B4CB98]" />
+      },
+      {
+        label: 'Tutorials',
+        sub: 'Walkthrough videos',
+        to: '/support/tutorials',
+        icon: <FaVideo className="text-[#B4CB98]" />
+      },
+      {
+        label: 'FAQs',
+        sub: 'Common questions',
+        to: '/support/faqs',
+        icon: <FaListAlt className="text-[#B4CB98]" />
+      },
+    ],
+  },
+];
+
 const Navbar = () => {
-  const [user, setUser] = useState(null);
+  const [activeMenu, setActiveMenu] = useState(null);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [darkMode] = useState(false);
   const [performance, setPerformance] = useState(null);
-  const [levelProgress, setLevelProgress] = useState(null);
+  const [notifications, setNotifications] = useState(0);
+  const [user, setUser] = useState(() => {
+    const userData = localStorage.getItem('user');
+    return userData ? JSON.parse(userData) : {
+      username: 'kevin_park',
+      tier: 'Silver',
+      avatar,
+      id: null
+    };
+  });
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem('user'));
-    setUser(storedUser);
-
-    fetch(`http://localhost:5000/api/community/performance-summary/${storedUser.id}`)
-      .then(res => res.json())
-      .then(data => setPerformance(data.data))
-      .catch(err => console.error('Community performance summary error:', err));
-
-        // Fetch level progress
-  fetch(`http://localhost:5000/api/auth/profile/level-progress/${storedUser.id}`)
-    .then(res => res.json())
-    .then(res => setLevelProgress(res.data))
-    .catch(err => console.error('Failed to load level progress:', err));
-
-  }, []);
-
-  useEffect(() => {
-    document.body.classList.toggle('dark', darkMode);
-  }, [darkMode]);
+  const location = useLocation();
 
   const handleLogout = () => {
     localStorage.removeItem('user');
-    setUser(null);
     navigate('/landing');
   };
 
-  const navClasses = ({ isActive }) =>
-    isActive
-      ? "text-[#83AB55] border-b-2 border-[#83AB55] pb-1 flex items-center space-x-1"
-      : "hover:text-[#83AB55] flex items-center space-x-1";
+  const toggleMenu = (label) => {
+    setActiveMenu(activeMenu === label ? null : label);
+    setProfileOpen(false);
+    setShowNotifications(false);
+  };
+
+  const toggleProfile = () => {
+    setProfileOpen(!profileOpen);
+    setActiveMenu(null);
+    setShowNotifications(false);
+  };
+
+  const toggleNotifications = () => {
+    setShowNotifications(!showNotifications);
+    setActiveMenu(null);
+    setProfileOpen(false);
+  };
+
+  const closeAll = () => {
+    setActiveMenu(null);
+    setProfileOpen(false);
+    setShowNotifications(false);
+  };
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        if (user?.id) {
+          const res = await fetch(`http://localhost:5000/api/notifications/${user.id}`);
+          const data = await res.json();
+          setNotifications(data.data?.length || 0);
+        }
+      } catch (err) {
+        console.error('Failed to load notifications:', err);
+      }
+    };
+
+    fetch(`http://localhost:5000/api/community/performance-summary/${user.id}`)
+    .then(res => res.json())
+    .then(data => setPerformance(data?.data))
+    .catch(err => console.error('Community performance summary error:', err));
+
+    fetchNotifications();
+
+    const updateListener = () => fetchNotifications();
+    window.addEventListener('userUpdated', updateListener);
+
+    return () => window.removeEventListener('userUpdated', updateListener);
+  }, [user]);
 
   return (
     <>
-      <nav className="bg-white h-20 px-6 flex items-center justify-between border-b-2 border-[#83AB55] shadow-sm">
-        {/* Left: User Info */}
-        <div className="flex items-center space-x-4">
-          <NavLink to="/profile">
-            <img
-              src={
-                performance
-                  ? `../../assets/Images/${performance.avatar_image_path}`
-                  : { User }
-              }
-              className="w-12 h-12 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
-            />
-
-          </NavLink>
-          <div>
-            <p className="text-sm font-semibold text-gray-900">{user ? user.username : "Guest"}</p>
-            <p className="text-xs text-gray-400">{levelProgress?.tier_status ?? '—'}</p>
-          </div>
+      <nav className="bg-white shadow px-6 py-2 flex items-center justify-between relative z-50">
+        {/* Logo */}
+        <div className="flex items-center gap-2">
+          <img src={logo} alt="Logo" className="w-16 h-16" />
+          <h1 className="text-xl font-bold text-[#83AB55]">Gamified Finance</h1>
         </div>
 
-        {/* Center: Navigation Links */}
-        <div className="flex items-center space-x-6 text-sm font-medium text-gray-700">
-          <NavLink to="/Dashboard" className={navClasses}><FaHome /> <span>Home</span></NavLink>
-          <NavLink to="/transactions" className={navClasses}><FaCalculator /> <span>Accounts</span></NavLink>
-          <NavLink to="/goals" className={navClasses}><FaBullseye /> <span>Goals</span></NavLink>
-          <NavLink to="/community" className={navClasses}><FaUsers /> <span>Community</span></NavLink>
-          <NavLink to="/learn" className={navClasses}><FaGraduationCap /> <span>Learn</span></NavLink>
-          <NavLink to="/achievements" className={navClasses}><FaMedal /> <span>Achievements</span></NavLink>
-          <NavLink to="/support" className={navClasses}><FaQuestionCircle /> <span>Support</span></NavLink>
-          {/* <NavLink to="/profile" className={navClasses}><FaUser /> <span>Profile</span></NavLink> */}
+        {/* Main Navigation */}
+        <div className="hidden lg:flex gap-6 items-center">
+          {menuItems.map((menu) => (
+            <div key={menu.label} className="relative">
+              {menu.items.length === 1 ? (
+                <NavLink
+                  to={menu.items[0].to}
+                  className={({ isActive }) =>
+                    `flex items-center gap-1 text-sm font-semibold transition-colors ${isActive ? 'text-[#83AB55]' : 'text-gray-700 hover:text-[#83AB55]'
+                    }`
+                  }
+                  onClick={closeAll}
+                >
+                  {menu.icon}
+                  <span>{menu.label}</span>
+                </NavLink>
+              ) : (
+                <>
+                {/* Adds the button highlight */}
+                  <button
+                    onClick={() => toggleMenu(menu.label)}
+                    className={`flex items-center gap-1 text-sm font-semibold transition-colors ${menu.items.some(item => location.pathname.startsWith(item.to)) || activeMenu === menu.label
+                        ? 'text-[#83AB55]'
+                        : 'text-gray-700 hover:text-[#83AB55]'
+                      }`}
+                  >
+                    {menu.icon}
+                    <span>{menu.label}</span>
+                    <FaChevronDown className={`text-xs mt-0.5 transition-transform ${activeMenu === menu.label ? 'rotate-180' : ''
+                      }`} />
+                  </button>
+
+                  {activeMenu === menu.label && (
+                    <div className="absolute left-0 top-full mt-2 w-64 bg-white rounded-xl shadow-lg p-3 z-50 border border-gray-100">
+                      <p className="text-[#83AB55] font-bold mb-2 px-2">{menu.label}</p>
+                      <div className="space-y-1">
+                        {menu.items.map((item) => (
+                          <NavLink
+                            key={item.label}
+                            to={item.to}
+                            onClick={closeAll}
+                            className={({ isActive }) => `
+                              flex items-center justify-between px-3 py-2 rounded-lg transition-colors
+                              ${isActive ? 'bg-green-50 text-[#83AB55]' : 'hover:bg-gray-50 text-gray-700'}
+                            `}
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-lg">{item.icon}</span>
+                              <div>
+                                <p className="text-sm font-medium">{item.label}</p>
+                                <p className="text-xs text-gray-500">{item.sub}</p>
+                              </div>
+                            </div>
+                            <FaChevronRight className="text-gray-400 text-xs" />
+                          </NavLink>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          ))}
         </div>
 
-        {/* Right: Icons + Logout */}
-        <div className="flex items-center space-x-4">
-          {/* Notification Bell */}
+        {/* Right Side Icons */}
+        <div className="flex items-center gap-4">
+          {/* Notifications */}
           <div className="relative">
-            <FaBell
-              className="text-xl text-gray-700 hover:text-[#83AB55] cursor-pointer"
-              onClick={() => setShowNotifications(!showNotifications)}
-            />
-            <span className="absolute -top-2 -right-2 bg-[#FB7272] text-white text-xs rounded-full px-1">5</span>
+            <button
+              onClick={toggleNotifications}
+              className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+            >
+              <FaBell className="text-xl text-gray-700 hover:text-[#83AB55]" />
+              {notifications > 0 && (
+                <span className="absolute -top-1 -right-1 bg-[#72C1F5] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {notifications}
+                </span>
+              )}
+            </button>
           </div>
 
-          {/* Logout */}
-          {user ? (
+          {/* User Profile */}
+          <div className="relative">
             <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow hover:bg-[#F0F0F0] transition"
+              onClick={toggleProfile}
+              className="flex items-center gap-2 cursor-pointer"
             >
-              <FaSignOutAlt className="text-[#83AB55] text-xl" />
-              <span className="text-sm font-medium text-[#83AB55]">Logout</span>
+              <div className="text-right">
+                <p className="text-sm font-medium text-gray-700">{user.username}</p>
+                <p className="text-xs text-gray-400">{user.tier}</p>
+              </div>
+              <img
+                src={performance?.avatar_image_path
+                  ? `/assets/Images/${performance.avatar_image_path}`
+                  : avatar}
+                alt="avatar"
+                className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+              />
+              <FaChevronDown className={`text-xs text-gray-500 transition-transform ${profileOpen ? 'rotate-180' : ''
+                }`} />
             </button>
 
-          ) : (
-            <NavLink to="/landing" className="bg-[#83AB55] text-white px-4 py-1 rounded-full shadow">
-              Login
-            </NavLink>
-          )}
-
-          {/* Logo */}
-          <img src={Logo} alt="brand" className="w-16 h-16 object-cover" />
+            {profileOpen && (
+              <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg p-2 z-50 border border-gray-100">
+                <NavLink
+                  to="/profile"
+                  onClick={closeAll}
+                  className={({ isActive }) => `
+                    flex items-center gap-2 px-3 py-2 rounded-lg transition-colors
+                    ${isActive ? 'bg-green-50 text-[#83AB55]' : 'hover:bg-gray-50 text-gray-700'}
+                  `}
+                >
+                  <FaUser className="text-gray-500" />
+                  <span className="text-sm">Profile</span>
+                </NavLink>
+                <NavLink
+                  to="/profile/settings"
+                  onClick={closeAll}
+                  className={({ isActive }) => `
+                    flex items-center gap-2 px-3 py-2 rounded-lg transition-colors
+                    ${isActive ? 'bg-green-50 text-[#83AB55]' : 'hover:bg-gray-50 text-gray-700'}
+                  `}
+                >
+                  <FaCog className="text-gray-500" />
+                  <span className="text-sm">Settings</span>
+                </NavLink>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500 transition-colors"
+                >
+                  <FaSignOutAlt />
+                  <span>Logout</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* Click outside to close dropdowns */}
+        {(activeMenu !== null || profileOpen || showNotifications) && (
+          <div
+            className="fixed inset-0 z-40 bg-black bg-opacity-10"
+            onClick={closeAll}
+          />
+        )}
       </nav>
 
-      {showNotifications && <NotificationsPanel onClose={() => setShowNotifications(false)} />}
+      {/* Notifications Panel */}
+      {showNotifications && (
+        <div className="fixed right-4 top-16 z-50">
+          <NotificationsPanel onClose={() => setShowNotifications(false)} />
+        </div>
+      )}
     </>
   );
 };

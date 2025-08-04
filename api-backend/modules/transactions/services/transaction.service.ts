@@ -54,12 +54,12 @@ export async function createTransaction(txn: Transaction) {
 
     let balanceDelta = Math.abs(transaction_amount);
     const deducting = [ 'expense', 'withdrawal', 'fee' ].includes(transaction_type);
-    if (deducting) {
-      if (transaction_amount > currentBalance) {
-        throw new Error("Insufficient funds for this transaction.");
-      }
-      balanceDelta *= -1;
-    }
+    // if (deducting) {
+    //   if (transaction_amount > currentBalance) {
+    //     throw new Error("Insufficient funds for this transaction.");
+    //   }
+    //   balanceDelta *= -1;
+    // }
 
     const insertTxnSql = `
       INSERT INTO transactions (
@@ -169,7 +169,7 @@ export async function createTransaction(txn: Transaction) {
       }
     }
 
-    if (is_recurring) {
+      if (is_recurring) {
       await client.query(
         `INSERT INTO recurring_transactions
          (transaction_id, frequency, next_occurrence)
@@ -179,8 +179,6 @@ export async function createTransaction(txn: Transaction) {
       );
     }
 
-    await client.query('COMMIT');
-
     eventBus.emit('transaction.created', {
       transaction_id,
       account_id,
@@ -189,6 +187,123 @@ export async function createTransaction(txn: Transaction) {
       type: transaction_type,
       timestamp: transaction_date
     });
+
+    // update challenge progress
+    if (linked_challenge_id && user_id) {
+      // fetch challenge measurement type
+      const challengeCheck = await client.query(
+        `SELECT measurement_type, target_amount FROM challenges WHERE challenge_id = $1`,
+        [ linked_challenge_id ]
+      );
+
+      if (challengeCheck.rowCount === 0) {
+        throw new Error(`Challenge with ID ${linked_challenge_id} not found.`);
+      }
+
+      // check if the challenge is already completed or expired
+      const challengeStatusCheck = await client.query(
+        `SELECT challenge_status, target_date FROM challenges WHERE challenge_id = $1`,
+        [ linked_challenge_id ]
+      );
+
+      if (challengeStatusCheck.rows[ 0 ].challenge_status === 'completed' ) {
+        logger.info(`[TransactionService] Challenge ${linked_challenge_id} already completed for user ${user_id}.`);
+        // dont do anything if the challenge is already completed o
+        return { transaction_id, updated_balance: updatedBalance };
+      } else if (challengeStatusCheck.rows[ 0 ].target_date >= new Date()) {
+        // award points if the challenge is still active
+        await client.query(
+          `UPDATE user_points SET total_points = total_points + $1 WHERE user_id = $2`,
+          [ 20, user_id ]
+        );
+      }
+
+      const { measurement_type: mType, target_amount: targetAmount } = challengeCheck.rows[ 0 ];
+      let delta = 0;
+      switch (mType) {
+        case 'amount_saved':
+          delta = Math.abs(transaction_amount);
+          break;
+        case 'goals_completed':
+          // one unit per goal completed
+          if (linked_goal_id) {
+            delta = 1; // Increment by 1 for each goal completed
+          }
+          break;
+        case 'transactions_logged':
+          // one unit per transaction or per completed goal
+          delta = 1;
+          break;
+        case 'amount_invested':
+          // only count positive (saving/investing/donating) transactions
+          if (![ 'expense', 'withdrawal', 'fee' ].includes(transaction_type)) {
+            delta = Math.abs(transaction_amount);
+          }
+
+          break;
+        case 'amount_donated':
+          // only count positive (saving/investing/donating) transactions
+          if (![ 'expense', 'withdrawal', 'fee' ].includes(transaction_type)) {
+            delta = Math.abs(transaction_amount);
+          }
+          break
+        case 'spending_within_limit':
+          if (
+            transaction_type === 'expense' &&
+            Math.abs(transaction_amount) <= Number(targetAmount)
+          ) {
+            delta = Math.abs(transaction_amount);
+          }
+          break;
+        default:
+          break;
+      }
+
+      if (delta > 0) {
+        // upsert into challenge_progress
+        await client.query(
+          `INSERT INTO challenge_progress
+            (challenge_id, user_id, progress_amount)
+          VALUES ($1, $2, $3)
+          ON CONFLICT (challenge_id, user_id) DO
+            UPDATE SET
+              progress_amount = challenge_progress.progress_amount + $3,
+              last_updated    = CURRENT_TIMESTAMP`,
+          [ linked_challenge_id, user_id, delta ]
+        );
+
+        // insert into challenge
+        await client.query(
+          `UPDATE challenges
+            SET current_amount = current_amount + $2,
+                updated_at     = CURRENT_TIMESTAMP
+          WHERE challenge_id = $1`,
+          [ linked_challenge_id, delta ]
+        );
+        // re-fetch the updated progress
+        const progRes = await client.query(
+          `SELECT current_amount
+            FROM challenges
+            WHERE challenge_id = $1`,
+          [ linked_challenge_id]
+        );
+        const newProgress = Number(progRes.rows[ 0 ].current_amount);
+
+        // if they’ve hit the target, mark the challenge complete
+        if (newProgress >= Number(targetAmount)) {
+          await client.query(
+            `UPDATE challenges
+                SET challenge_status = 'completed',
+                    end_date        = CURRENT_TIMESTAMP
+              WHERE challenge_id = $1`,
+            [ linked_challenge_id ]
+          );
+        }
+      }
+
+    }
+
+    await client.query('COMMIT');
 
     return { transaction_id, updated_balance: updatedBalance };
   } catch (error) {
@@ -341,6 +456,17 @@ export async function getTransactionByCategory(category_id: number) {
     return res.rows;
   } catch (error) {
     logger.error(`[TransactionService] Error fetching transactions for category ${category_id}:`, error);
+    throw error;
+  }
+}
+
+export async function getCategoryId(category_name: string) {
+  const sql = `SELECT category_id FROM categories WHERE category_name = $1;`;
+  try {
+    const res = await pool.query(sql, [ category_name ]);
+    return res.rows[ 0 ]?.category_id || null;
+  } catch (error) {
+    logger.error(`[TransactionService] Error fetching category ID for name ${category_name}:`, error);
     throw error;
   }
 }
@@ -721,7 +847,7 @@ WHERE b.user_id = $1
 GROUP BY b.budget_id;
   `;
   try {
- 
+
     const res = await pool.query(sql, [ user_id ]);
 
 

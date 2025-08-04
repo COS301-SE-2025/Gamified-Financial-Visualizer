@@ -1,5 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // The Login Page Routes
 import Login from './pages/Auth/Login';
@@ -8,6 +10,7 @@ import Register from './pages/Auth/Register';
 // Layout and Landing Routes
 import Layout from './layouts/Layout';
 import LandingPage from './pages/Landing/LandingPage';
+import FeaturesPage from './pages/Landing/FeaturesPage';
 import LandingAchievements from './pages/Landing/LandingAchievements';
 import AboutPage from './pages/Landing/about';
 import ContactPage from './pages/Landing/contact';
@@ -66,10 +69,29 @@ import CompleteAchievements from './pages/Achievements/CompleteAchievement';
 function App() {
   return (
     <Router>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        toastStyle={{
+          backgroundColor: "#FFFFFF", // Whitebackground
+          color: "#88BC46" // green text
+        }}
+        progressStyle={{
+          background: "#AAD977" // Green progress bar
+        }}
+      />
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/landing" element={<LandingPage />} />
+        <Route path="/features" element={<FeaturesPage />}/>
         <Route path="/landingAchievements" element={<LandingAchievements />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
@@ -82,7 +104,6 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/transactions" element={<TransactionPage />} />
 
-          {/* Routes for the learn page */}
           {/* Routes for the learn page */}
           <Route path="/learn" element={<LearningPage />} />
 

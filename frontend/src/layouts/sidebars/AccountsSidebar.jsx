@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import avatar from '../../assets/Images/avatars/totoroAvatar.jpeg';
+import React, {useState, useEffect, useMemo} from 'react';
 import {
-
+  FaUsers,
   FaBolt,
-  FaChartBar,
-  FaHourglassHalf,
   FaCheck,
+  FaHourglassHalf,
   FaTimes,
+  FaChartBar,
   FaBan,
   FaUtensils,
   FaBus,
@@ -39,8 +38,15 @@ import {
   FaCoins,
   FaExchangeAlt,
   FaSpinner
-
 } from 'react-icons/fa';
+import avatar from '../../assets/Images/avatars/sharkAvatar.jpeg';
+
+const performance = {
+  score: 350,
+  level: 'Lv 3: Silver',
+  label: 'Excellent',
+  progress: 70
+};
 
 // Category icons mapping
 const categoryIcons = {
@@ -68,12 +74,7 @@ const categoryIcons = {
   default: <FaMoneyBillWave />
 };
 
-function getRandomColor() {
-  return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
-}
-
-const randomColor = getRandomColor(); // Example output: "#3A7B42"
-// Category colors mapping
+// Base category colors mapping
 const categoryColors = {
   groceries: '#FF8A8A',
   transport: '#5FBFFF',
@@ -94,14 +95,32 @@ const categoryColors = {
   clothing: '#DD6B20',
   personal: '#7FDD53',
   gifts: '#68D391',
-  charity: '#48BB78',
-  default: randomColor
+  charity: '#48BB78'
 };
 
-const AccountsSidebar = () => {
-  const [categorySummary, setCategorySummary] = useState([]);
-  const [loading, setLoading] = useState(true);
+// Array of vibrant colors for categories not in the mapping
+const fallbackColors = [
+  '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57',
+  '#FF9FF3', '#54A0FF', '#5F27CD', '#00D2D3', '#FF9F43',
+  '#10AC84', '#EE5A6F', '#C44569', '#F8B500', '#6C5CE7',
+  '#A29BFE', '#FD79A8', '#00B894', '#E17055', '#74B9FF',
+  '#81ECEC', '#FAB1A0', '#E84393', '#00CEC9', '#FDCB6E'
+];
+
+// Function to get color for a category
+const getCategoryColor = (categoryKey, index = 0) => {
+  if (categoryColors[categoryKey]) {
+    return categoryColors[categoryKey];
+  }
+  
+  return fallbackColors[index % fallbackColors.length];
+};
+
+const AccountsPerformanceHeader = () => {
+   const [categorySummary, setCategorySummary] = useState([]);
+  const [userTransactions, setUserTransactions] = useState([]);
   const [error, setError] = useState(null);
+   const [performanceSummary, setPerformanceSummary] = useState(null);
   const [userId, setUserId] = useState(null);
 
   // Get user ID from localStorage
@@ -109,10 +128,7 @@ const AccountsSidebar = () => {
     const getUserFromStorage = () => {
       try {
         // Try different possible keys for user data in localStorage
-        const userData = localStorage.getItem('user') || 
-                        localStorage.getItem('currentUser') || 
-                        localStorage.getItem('userData') ||
-                        localStorage.getItem('authUser');
+        const userData = localStorage.getItem('user') ;
         
         if (userData) {
           const parsedUser = JSON.parse(userData);
@@ -131,56 +147,153 @@ const AccountsSidebar = () => {
     getUserFromStorage();
   }, []);
 
-  // Fetch category summary data from API
+  // Fetch both category summary and user transactions
   useEffect(() => {
-    const fetchCategorySummary = async () => {
+    const fetchData = async () => {
       if (!userId) {
         if (userId === null) {
-          // Still loading user ID
           return;
         }
         setError('User ID is required');
-        setLoading(false);
         return;
       }
 
       try {
-        setLoading(true);
         setError(null);
 
-        const response = await fetch(`http://localhost:5000/api/transactions/user/${userId}/summary`);
+        // Fetch category summary
+        const summaryResponse = await fetch(`http://localhost:5000/api/transactions/user/${userId}/summary`);
         
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        if (!summaryResponse.ok) {
+          throw new Error(`HTTP error! status: ${summaryResponse.status}`);
         }
 
-        const result = await response.json();
+        const summaryResult = await summaryResponse.json();
         
-        if (result.status === 'success') {
-          setCategorySummary(result.data || []);
+        if (summaryResult.status === 'success') {
+          setCategorySummary(summaryResult.data || []);
         } else {
-          throw new Error(result.message || 'Failed to fetch category summary');
+          throw new Error(summaryResult.message || 'Failed to fetch category summary');
+        }
+
+        // Fetch user transactions
+        const transactionsResponse = await fetch(`http://localhost:5000/api/transactions/user/${userId}`);
+        
+        if (!transactionsResponse.ok) {
+          throw new Error(`HTTP error! status: ${transactionsResponse.status}`);
+        }
+
+        const transactionsResult = await transactionsResponse.json();
+        
+        if (transactionsResult.status === 'success') {
+          setUserTransactions(transactionsResult.data || []);
+        } else {
+          throw new Error(transactionsResult.message || 'Failed to fetch user transactions');
         }
       } catch (err) {
-        console.error('Error fetching category summary:', err);
-        setError(err.message || 'Failed to load category data');
-      } finally {
-        setLoading(false);
+        console.error('Error fetching data:', err);
+        setError(err.message || 'Failed to load data');
       }
     };
 
-    fetchCategorySummary();
+     fetch(`http://localhost:5000/api/auth/profile/performance-summary/${userId}`)
+      .then(res => res.json())
+      .then(data => setPerformanceSummary(data.data))
+      .catch(err => console.error('Performance summary error:', err));
+
+
+    fetchData();
   }, [userId]);
 
-  // Debug logging to help troubleshoot
-  useEffect(() => {
-    console.log('AccountsSidebar Debug:', {
-      userId,
-      categorySummary,
-      loading,
-      error
-    });
-  }, [userId, categorySummary, loading, error]);
+  // Calculate performance metrics based on transactions
+  const performanceMetrics = useMemo(() => {
+    if (!userTransactions || userTransactions.length === 0) {
+      return {
+        /* score: 150,
+        level: 'Silver',
+        levelNumber: 3,
+        description: 'Excellent',
+        progressPercentage: 75 */
+      };
+    }
+
+    // Calculate totals by transaction type
+    const totals = userTransactions.reduce((acc, transaction) => {
+      const amount = parseFloat(transaction.transaction_amount) || 0;
+      const type = transaction.transaction_type?.toLowerCase();
+      
+      if (type === 'deposit' || type === 'income') {
+        acc.income += amount;
+      } else if (type === 'expense' || type === 'withdrawal' || type === 'fee') {
+        acc.expenses += amount;
+      } else if (type === 'transfer') {
+        acc.transfers += amount;
+      }
+      
+      return acc;
+    }, { income: 0, expenses: 0, transfers: 0 });
+
+    // Calculate performance score
+    // Base score starts at 100
+    let score = 100;
+    
+    // Income boosts score (every R100 income = +5 points, max +100)
+    const incomeBonus = Math.min((totals.income / 100) * 5, 100);
+    score += incomeBonus;
+    
+    // Expenses reduce score (every R100 expense = -3 points, max -80)
+    const expenseReduction = Math.min((totals.expenses / 100) * 3, 80);
+    score -= expenseReduction;
+    
+    // Transfers have neutral impact but show activity (+1 point per R100, max +20)
+    const transferBonus = Math.min((totals.transfers / 100) * 1, 20);
+    score += transferBonus;
+    
+    // Keep score within reasonable bounds
+    score = Math.max(0, Math.min(300, score));
+    
+    // Determine level based on score
+    let level, levelNumber, description;
+    
+    if (score >= 250) {
+      level = 'Diamond';
+      levelNumber = 5;
+      description = 'Outstanding';
+    } else if (score >= 200) {
+      level = 'Platinum';
+      levelNumber = 4;
+      description = 'Excellent';
+    } else if (score >= 150) {
+      level = 'Gold';
+      levelNumber = 3;
+      description = 'Excellent';
+    } else if (score >= 100) {
+      level = 'Silver';
+      levelNumber = 3;
+      description = 'Good';
+    } else if (score >= 50) {
+      level = 'Bronze';
+      levelNumber = 2;
+      description = 'Fair';
+    } else {
+      level = 'Starter';
+      levelNumber = 1;
+      description = 'Getting Started';
+    }
+    
+    // Calculate progress percentage for the circle (0-100%)
+    const progressPercentage = Math.min((score / 300) * 100, 100);
+    
+    return {
+      score: Math.round(score),
+      level,
+      levelNumber,
+      description,
+      progressPercentage
+    };
+  }, [userTransactions]);
+
+
 
   // Process category data for display
   const categoryTotals = useMemo(() => {
@@ -188,18 +301,17 @@ const AccountsSidebar = () => {
       return [];
     }
 
-    return categorySummary.map(category => {
-      // Fix: Use 'category' instead of 'category_name' to match API response
+    return categorySummary.map((category, index) => {
       const categoryKey = category.category?.toLowerCase() || 'default';
       
       return {
         total: parseFloat(category.total_spent) || 0,
-        name: category.category || 'Unknown', // Fix: Use 'category' instead of 'category_name'
+        name: category.category || 'Unknown',
         icon: categoryIcons[categoryKey] || categoryIcons.default,
-        color: categoryColors[categoryKey] || categoryColors.default,
+        color: getCategoryColor(categoryKey, index),
         transactionCount: category.transaction_count || 0
       };
-    }).sort((a, b) => b.total - a.total); // Sort by highest spending first
+    }).sort((a, b) => b.total - a.total);
   }, [categorySummary]);
 
   // Calculate total spending across all categories
@@ -207,145 +319,82 @@ const AccountsSidebar = () => {
     return categoryTotals.reduce((sum, category) => sum + category.total, 0);
   }, [categoryTotals]);
 
-  // Loading state
-  if (loading) {
-    return (
-      <aside className="space-y-6">
-        <div className="bg-white rounded-2xl p-4 shadow text-center">
-          <div className="flex items-center justify-center space-x-2">
-            <FaSpinner className="animate-spin text-blue-500" />
-            <span className="text-gray-600">Loading categories...</span>
-          </div>
-        </div>
-      </aside>
-    );
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <aside className="space-y-6">
-        <div className="bg-white rounded-2xl p-4 shadow text-center">
-          <div className="text-red-500 mb-2">
-            <FaTimes className="mx-auto text-2xl mb-2" />
-            <p className="text-sm">Error loading categories</p>
-            <p className="text-xs text-gray-500 mt-1">{error}</p>
-          </div>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="text-blue-500 text-sm hover:underline"
-          >
-            Try again
-          </button>
-        </div>
-      </aside>
-    );
-  }
-
   return (
-    <aside className="space-y-6">
-      {/* Overall Performance */}
-      <div className="bg-white rounded-2xl p-4 shadow text-center">
-        <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-3 py-1 rounded-full inline-block mb-2">
-          Account Performance
+    <div className="flex flex-wrap justify-between gap-6 items-start w-full mb-6">
+      {/* Left Label */}
+      <div className="text-center lg:text-left">
+        <div className="flex items-center justify-center lg:justify-start gap-2 text-[#B4DFA4]">
+          <FaUsers className="text-6xl" />
+          <h1 className="text-5xl font-light">Accounts</h1>
+        </div>
+        <p className="text-lg text-gray-400 mt-1 max-w-xs mx-auto lg:mx-0">
+          View and manage all your linked accounts and track recent transactions in one place.
         </p>
-
-        {/* Progress Circle */}
-        <div className="relative w-40 h-40 mx-auto">
-          <svg viewBox="0 0 100 100" className="w-full h-full">
-            <circle cx="50" cy="50" r="45" fill="none" stroke="#E8F0FA" strokeWidth="10" />
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              fill="none"
-              stroke="url(#gradient)"
-              strokeWidth="10"
-              strokeDasharray="270"
-              strokeDashoffset="67"
-              strokeLinecap="round"
-              transform="rotate(-90 50 50)"
-            />
-            <defs>
-              <linearGradient id="gradient" x1="1" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#60A5FA" />
-                <stop offset="100%" stopColor="#93C5FD" />
-              </linearGradient>
-            </defs>
-          </svg>
-
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <p className="text-[24px] font-bold text-[#2D3748]">150</p>
-            <p className="text-sm text-[#718096]">Excellent</p>
-            <img
-              src={avatar}
-              alt="Silver Level"
-              className="w-8 h-8 mt-1 rounded-full object-cover"
-            />
-          </div>
-
-          <div className="absolute top-[6px] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full flex items-center justify-center">
-            <div className="w-4 h-4 bg-blue-400 rounded-full" />
-          </div>
-        </div>
-        <p className="text-sm text-[#F56565] mt-2 font-medium">Lv 3: Silver</p>
       </div>
 
-      {/* Categories Summaries */}
-      <div className="bg-white rounded-2xl p-4 shadow">
-        <div className="flex justify-between items-center mb-4">
-          <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-4 py-1 rounded-full inline-block">
-            Categories
-          </p>
-          {totalSpending > 0 && (
-            <p className="text-xs text-gray-500">
-              {/* Total: R{totalSpending.toFixed(2)} */}
-            </p>
-          )}
+      {/* Right Section (Performance Card + Stat Grid) */}
+      <div className="flex flex-col gap-4 flex-1">
+        {/* Center Performance Card */}
+        <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col sm:flex-row items-center justify-between gap-6">
+          {/* Avatar + Info */}
+          <div className="flex items-center gap-6">
+            <img src={`/assets/Images/${performanceSummary?.avatar_image_path}`} className="w-16 h-16 rounded-full object-cover" alt="Avatar" />
+            <div>
+              <p className="text-sm text-gray-500">Score</p>
+              <p className="text-2xl font-bold text-gray-800">{performanceMetrics.score}</p>
+              <p className="text-sm text-gray-500">{performanceMetrics.description}</p>
+              <p className="text-sm text-[#F97156] font-medium">Lv {performanceMetrics.levelNumber}: {performanceMetrics.level}</p>
+            </div>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="w-full">
+            <p className="text-sm font-medium text-[#7FBCE9] mb-1">Accounts Performance</p>
+            <div className="relative h-4 w-full rounded-full bg-[#f5f5f5] overflow-hidden">
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${performanceMetrics.progressPercentage}%`,
+                  background: 'linear-gradient(to right, #4FC3F7, #B3E5FC)'
+                }}
+              />
+              <div
+                className="absolute top-1/2 w-5 h-5 bg-[#B3E5FC] rounded-full border-2 border-white shadow-md"
+                style={{
+                  left: `calc(${performanceMetrics.progressPercentage}% - 10px)`,
+                  transform: 'translateY(-50%)'
+                }}
+              />
+            </div>
+          </div>
         </div>
 
-        {categoryTotals.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <FaChartBar className="mx-auto text-3xl mb-2 opacity-50" />
-            <p className="text-sm">No spending data available</p>
-            <p className="text-xs mt-1">Start making transactions to see your categories</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-4">
-            {categoryTotals.map((category, i) => (
-              <div key={i} className="relative bg-white rounded-xl shadow-md p-3 flex items-center justify-between hover:shadow-lg transition-shadow">
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: `${category.color}20` }}
-                >
-                  <div style={{ color: category.color }}>
-                    {category.icon}
-                  </div>
+        {/* Stat Blocks*/}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 w-full">
+          {categoryTotals.map((category, i) => (
+            <div key={i} className="relative bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-3">
+                {/* Icon circle with soft background */}
+                <div className="w-10 h-10 flex items-center justify-center rounded-full" style={{ backgroundColor: `${category.color}20` }}>
+                  <span className="text-xl" style={{ color: category.color }}>{category.icon}</span>
                 </div>
 
+                {/* Stat content */}
                 <div className="text-right">
-                  <p className="text-lg font-bold text-gray-900">
-                    R{category.total.toFixed(2)}
-                  </p>
-                  <p className="text-sm text-gray-500">{category.name}</p>
-                  {category.transactionCount > 0 && (
-                    <p className="text-xs text-gray-400">
-                      {category.transactionCount} transaction{category.transactionCount !== 1 ? 's' : ''}
-                    </p>
-                  )}
+                  <div className="text-lg font-bold text-gray-900">R{category.total.toFixed(2)}</div>
+                  <div className="text-sm text-gray-500">{category.name}</div>
                 </div>
-
-                <div
-                  className="absolute bottom-0 left-0 h-[5px] w-full rounded-b-xl"
-                  style={{ backgroundColor: category.color }}
-                />
               </div>
-            ))}
-          </div>
-        )}
+
+              {/* Bottom colored bar */}
+              <div className="absolute bottom-0 left-0 h-[5px] w-full rounded-b-xl" style={{ backgroundColor: category.color }} />
+            </div>
+          ))}
+        </div>
+
       </div>
-    </aside>
+    </div>
   );
 };
 
-export default AccountsSidebar;
+export default AccountsPerformanceHeader;

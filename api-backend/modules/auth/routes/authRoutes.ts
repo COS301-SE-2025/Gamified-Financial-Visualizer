@@ -32,8 +32,8 @@ const registerValidation = [
     }),
   body('username')
     .trim()
-    .matches(/^[a-z._]+$/)
-    .withMessage('Username must contain only lowercase letters, dots, or underscores.')
+    .matches(/^[a-z0-9._]+$/)
+    .withMessage('Username must contain only lowercase letters, numbers, dots, or underscores.')
     .isLength({ min: 3, max: 15 })
     .withMessage('Username must be between 3 and 15 characters.'),
   body('email')
@@ -134,16 +134,15 @@ const login = async (req: Request, res: Response): Promise<void> => {
     
     /* 2. sign PASETO (v3.local) ------------------------------------------ */
   const localKey = Buffer.from(process.env.PASETO_LOCAL_KEY!, 'hex');
-
+const expiresAt = new Date(Date.now() + TOKEN_TTL * 1000);
   const token = await V3.encrypt(
         { 
           user_id: user.user_id, 
-          exp: Math.floor(Date.now() / 1000) + TOKEN_TTL 
+          exp: expiresAt.toISOString(), 
         },
         localKey
       );
 
-    const expiresAt = new Date(Date.now() + TOKEN_TTL * 1000);
 
     /* 3. store / update db token ----------------------------------------- */
     await userService.upsertToken(user.user_id, token, expiresAt);
@@ -227,7 +226,7 @@ router.get('/sidebar/:userId', async (req: Request, res: Response) => {
       data: stats
     });
   } catch (error) {
-    logger.error(`[Auth] Failed to fetch sidebar stats for user ID ${userId}:`, error);
+    logger.error(`[Auth] Failed to get sidebar stats for user ID ${userId}:`, error);
     res.status(500).json({
       status: 'error',
       message: 'Failed to load sidebar stats.'
@@ -419,6 +418,69 @@ router.put('/:userId/settings', async (req: Request, res: Response) => {
     return;
   }
 
+  // check updates for valid fields
+  const validFields = ['username', 'theme', 'avatar_id', 'inAppNotifications', 'outOfAppEnabled', 'twoFactorEnabled'];
+  const invalidFields = Object.keys(updates).filter(key => !validFields.includes(key));
+
+  if (invalidFields.length > 0) {
+    res.status(400).json({
+      status: 'error',
+      message: `Invalid fields in request body: ${invalidFields.join(', ')}`,
+    });
+    return;
+  }
+
+  // Validate userId is a number
+  const userIdNumber = Number(userId);
+  if (isNaN(userIdNumber)) {
+    res.status(400).json({ status: 'error', message: 'Invalid user ID.' });
+    return;
+  }
+
+  // validate username if provided
+  if (updates.username && !/^[a-z0-9._]+$/.test(updates.username)) {
+    res.status(400).json({
+      status: 'error',
+      message: 'Username must contain only lowercase letters, numbers, dots, or underscores.',
+    });
+    return;
+  }
+  // Validate theme if provided
+  if (updates.theme && !['light', 'dark'].includes(updates.theme)) {
+    res.status(400).json({
+      status: 'error',
+      message: 'Theme must be either "light" or "dark".',
+    });
+    return;
+  }
+
+  // Validate avatar_id if provided
+  if (updates.avatar_id && typeof updates.avatar_id !== 'number') {
+    res.status(400).json({
+      status: 'error',
+      message: 'Avatar ID must be a number.',
+    });
+    return;
+  }
+
+  // Validate twoFactorEnabled if provided
+  if (updates.twoFactorEnabled !== undefined && typeof updates.twoFactorEnabled !== 'boolean') {
+    res.status(400).json({
+      status: 'error',
+      message: 'Two-factor enabled must be a boolean value.',
+    });
+    return;
+  }
+
+  // If twoFactorEnabled is true, ensure user has a valid 2FA secret
+  if (updates.twoFactorEnabled && !updates.twoFactorSecret) {
+    res.status(400).json({
+      status: 'error',
+      message: 'Two-factor authentication requires a valid secret.',
+    });
+    return;
+  }
+
   try {
     await userService.updateUserSettings(Number(userId), updates);
     logger.info(`[Auth] Settings updated for user ID ${userId}`);
@@ -449,9 +511,7 @@ router.put('/:userId/settings', async (req: Request, res: Response) => {
  * @route GET /api/auth/:userId/settings
  * @desc Retrieves current user settings (username, preferences, push settings, 2FA)
  */
-router.get(
-  '/:userId/settings',
-  async (req: Request, res: Response): Promise<void> => {
+router.get('/:userId/settings', async (req: Request, res: Response): Promise<void> => {
     const userIdParam = req.params.userId;
 
     // Validate userId is a number
@@ -504,6 +564,7 @@ router.put(
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
+      logger.warn('[Auth] Change password validation failed', errors.array());
       res.status(400).json({ status: 'error', errors: errors.array() });
       return;
     }
@@ -512,7 +573,8 @@ router.put(
       await userService.changeUserPassword(Number(userId), currentPassword, newPassword);
       res.status(200).json({ status: 'success', message: 'Password updated successfully.' });
     } catch (err: any) {
-      res.status(400).json({ status: 'error', message: err.message || 'Password change failed.' });
+      logger.error(`[Auth] Failed to change password for user ID ${userId}:`, err);
+      res.status(500).json({ status: 'error', message: err.message || 'Password change failed.' });
     }
   }
 );
@@ -523,6 +585,7 @@ router.get('/avatars', async (_req, res) => {
     const avatars = await userService.getAllAvatars();
     res.status(200).json({ status: 'success', data: avatars });
   } catch (err) {
+    logger.error('[Auth] Failed to fetch avatars:', err);
     res.status(500).json({ status: 'error', message: 'Could not fetch avatars.' });
   }
 });
