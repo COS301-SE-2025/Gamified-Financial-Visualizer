@@ -837,7 +837,6 @@ export async function getAllBanners() {
     const result = await pool.query(`
       SELECT banner_id, banner_image_path FROM banner_images
     `);
-    logger.info('[CommunityService] Fetched all banners');
     return result.rows;
   } catch (err) {
     logger.error('[CommunityService] Failed to fetch banners:', err);
