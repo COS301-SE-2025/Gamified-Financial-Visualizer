@@ -223,6 +223,7 @@ const BudgetCard = ({
           >
             <FaEdit /> Edit
           </button> */}
+          
           <button
             onClick={onDelete}
             className="flex items-center gap-1 bg-red-100 text-red-400 px-4 py-1 rounded-full hover:bg-red-200"

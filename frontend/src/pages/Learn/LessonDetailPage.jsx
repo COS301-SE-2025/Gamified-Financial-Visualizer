@@ -420,7 +420,7 @@ const ModuleLessonsPage = () => {
                                   )}
                                 </div>
                                 <span className="text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors">{option}</span>
-                              </label>
+                              </div>
                             ))}
                           </div>
                         </div>

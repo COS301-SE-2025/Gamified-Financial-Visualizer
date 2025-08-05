@@ -597,7 +597,7 @@ const contentType = res.headers.get('content-type');
                         </tbody>
                       </table>
                     </div>
-                  </div>
+                  
 
                   <div className="border-t pt-6">
                     <div className="flex justify-between items-center">
