@@ -8,7 +8,7 @@ import {
   FaTimes,
   FaBan
 } from 'react-icons/fa';
-import avatar from '../../assets/Images/avatars/sharkAvatar.jpeg';
+import avatar from '../../assets/Images/avatars/BeachShore.png';
 
 const performance = {
   score: 350,
