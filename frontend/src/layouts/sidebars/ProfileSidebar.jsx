@@ -13,9 +13,9 @@ import avatar from '../../assets/Images/avatars/sharkAvatar.jpeg';
 const AccountsPerformanceHeader = () => {
   const [sidebarStats, setSidebarStats] = useState(null);
   const [performanceSummary, setPerformanceSummary] = useState(null);
-
+  const user = JSON.parse(localStorage.getItem('user'));
+  
   const fetchSidebarData = () => {
-    const user = JSON.parse(localStorage.getItem('user'));
     if (!user?.id) return;
 
     fetch(`http://localhost:5000/api/auth/sidebar/${user.id}`)
@@ -23,7 +23,7 @@ const AccountsPerformanceHeader = () => {
       .then(data => setSidebarStats(data.data))
       .catch(err => console.error('Sidebar stats error:', err));
 
-    fetch(`http://localhost:5000/api/auth/profile/performance-summary/${user.id}`)
+    fetch(`http://localhost:5000/api/auth/profile/performance-summary/${user?.id}`)
       .then(res => res.json())
       .then(data => setPerformanceSummary(data.data))
       .catch(err => console.error('Performance summary error:', err));

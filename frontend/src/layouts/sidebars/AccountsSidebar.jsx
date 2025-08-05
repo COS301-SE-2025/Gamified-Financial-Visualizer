@@ -127,10 +127,8 @@ const AccountsPerformanceHeader = () => {
   useEffect(() => {
     const getUserFromStorage = () => {
       try {
-        const userData = localStorage.getItem('user') || 
-                        localStorage.getItem('currentUser') || 
-                        localStorage.getItem('userData') ||
-                        localStorage.getItem('authUser');
+        // Try different possible keys for user data in localStorage
+        const userData = localStorage.getItem('user') ;
         
         if (userData) {
           const parsedUser = JSON.parse(userData);
@@ -274,6 +272,8 @@ const AccountsPerformanceHeader = () => {
     };
   }, [userTransactions]);
 
+
+
   // Process category data for display
   const categoryTotals = useMemo(() => {
     if (!categorySummary || categorySummary.length === 0) {
@@ -317,14 +317,9 @@ const AccountsPerformanceHeader = () => {
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-4 flex flex-col sm:flex-row items-center justify-between gap-6">
           {/* Avatar + Info */}
           <div className="flex items-center gap-6">
-            <img 
-              src={performanceSummary?.avatar_image_path
-                ? `/assets/Images/${performanceSummary.avatar_image_path}`
-                : avatar} 
-              className="w-16 h-16 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600" 
-              alt="Avatar" 
-            />
+            <img src={`/assets/Images/${performanceSummary?.avatar_image_path}`} className="w-16 h-16 rounded-full object-cover" alt="Avatar" />
             <div>
+              <p className="text-sm text-gray-500">Score</p>
               <p className="text-2xl font-bold text-gray-800 dark:text-white">{performanceMetrics.score}</p>
               <p className="text-sm text-gray-500 dark:text-gray-400">{performanceMetrics.description}</p>
               <p className="text-sm text-[#F97156] dark:text-[#FF955A] font-medium">Lv {performanceMetrics.levelNumber}: {performanceMetrics.level}</p>

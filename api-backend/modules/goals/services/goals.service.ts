@@ -291,7 +291,7 @@ export async function addGoalProgress(
   }
 }
 
-export async function getWeeklyGoalCompletions(userId: number): Promise<{day_label: string; count: number}[]> {
+export async function getWeeklyGoalCompletions(userId: number): Promise<{day: string; count: number}[]> {
   const sql = `
     WITH week_days AS (
       SELECT generate_series(
@@ -325,7 +325,7 @@ export async function getWeeklyGoalCompletions(userId: number): Promise<{day_lab
 
   const { rows } = await pool.query(sql, [userId]);
   return rows.map(r => ({
-    day_label: r.day_label,
+    day: r.day,
     count:     Number(r.count),
   }));
 }

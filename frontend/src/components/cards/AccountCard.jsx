@@ -1,6 +1,8 @@
 import React from 'react';
 import { FaTrash, FaEdit } from 'react-icons/fa';
 
+
+
 const AccountCard = ({
   bank,
   accountName,
@@ -10,15 +12,25 @@ const AccountCard = ({
   currency,
   bg = 'bg-blue-300',
   overlay = 'bg-blue-500',
+  isActive = false, // Add this prop
   onClick = () => {},
   onEdit = () => {},
   onDelete = () => {},
 }) => {
-  const currencySymbols = {
+  const currencySymbols = { // fetch currency symbols dynamically if needed
     ZAR: 'R',
     USD: '$',
     EUR: '€',
     GBP: '£',
+    BTC: '₿',
+    ETH: 'Ξ',
+    USDT: '₮',
+    LTC: 'Ł',
+    XRP: '✕',
+    SOL: '◎',
+    ADA: '₳',
+    DOGE: 'Ð',
+    USDC: '∩',
   };
 
   const symbol = currencySymbols[currency] || '';
@@ -26,7 +38,11 @@ const AccountCard = ({
   return (
     <div
       onClick={onClick}
-      className="w-full bg-white dark:bg-gray-800 flex flex-col rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 p-5 transition hover:shadow-lg cursor-pointer"
+      className={`w-full bg-white dark:bg-gray-800 flex flex-col rounded-2xl shadow-md border-2 dark:border-gray-700 p-5 transition-all cursor-pointer ${
+        isActive 
+          ? 'border-[#7FBCE9] ring-2 ring-white bg-[#eef6f7]' 
+          : 'border-gray-200 hover:border-gray-300 hover:shadow-lg'
+      }`}
     >
       {/* Top row */}
       <div className="flex justify-between items-start w-full">
@@ -51,7 +67,11 @@ const AccountCard = ({
         <div className="flex flex-col items-end ml-4">
           <div className="text-right">
             <p className="text-sm font-semibold text-black dark:text-white">{type}</p>
-            <p className="text-sm text-green-500 dark:text-green-400">Active</p>
+            <p className={`text-sm ${
+              isActive ? 'text-[#76B947] font-bold' : 'text-gray-500 dark:text-green-400'
+            }`}>
+              {isActive ? 'Active (Viewing)' : 'Active'}
+            </p>
           </div>
 
           <div className={`mt-3 w-[160px] h-[90px] ${bg} rounded-xl relative overflow-hidden shadow`}>

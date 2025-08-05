@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import AccountsLayout from './AccountsLayout';
 import {
   FaEdit, FaTrash, FaUtensils, FaBus, FaBolt, FaFilm, FaHeartbeat,
   FaPlane, FaBook, FaLaptop, FaUser, FaHandsHelping, FaTshirt,
-  FaDumbbell, FaMobileAlt, FaWifi, FaTv, FaHome, FaCar, FaShieldAlt,
-  FaCalendarAlt, FaGasPump, FaBuilding, FaUniversity, FaMoneyBillWave,
+  FaDumbbell, FaMobileAlt, FaWifi, FaTv, FaHome, FaShieldAlt,
+  FaGasPump, FaBuilding, FaUniversity, FaMoneyBillWave,
   FaPiggyBank, FaChartLine, FaChild, FaPaw, FaTools, FaWallet,
-  FaCoins, FaExchangeAlt, FaPlus, FaTimes, FaCheck
+  FaCoins, FaExchangeAlt, FaPlus, FaTimes, FaCheck,
+  FaSearch
 } from 'react-icons/fa';
 
-// Enhanced category icons with colors (unchanged)
+import toast, { Toaster } from 'react-hot-toast';
+
+// Enhanced category icons with colors
 const categoryIcons = {
   groceries: { icon: <FaUtensils />, color: 'bg-orange-100 text-orange-500' },
   transport: { icon: <FaBus />, color: 'bg-blue-100 text-blue-500' },
@@ -61,7 +64,7 @@ const categoryIcons = {
 };
 
 const BudgetForm = ({
-  initialData = { budget_name: '', category_id: '', target_amount: 0 },
+  initialData = { budget_name: '', category_id: '', target_amount: '' }, // Changed default target_amount to empty string
   onSave,
   onCancel,
   categories = [],
@@ -76,7 +79,7 @@ const BudgetForm = ({
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'target_amount' || name === 'category_id' ? Number(value) : value
+      [name]: name === 'target_amount' || name === 'category_id' ? (value === '' ? '' : Number(value)) : value
     }));
   };
 
@@ -137,6 +140,7 @@ const BudgetForm = ({
                       required
                       min="0"
                       step="0.01"
+                      placeholder="0.00"
                     />
                   </div>
                 </>
@@ -175,13 +179,14 @@ const BudgetCard = ({
   const targetAmount = Number(total_target) || 0;
   const usedAmount = Number(used) || 0;
   const remainingAmount = targetAmount - usedAmount;
-  
+
   const percentageUsed = targetAmount > 0 ? Math.min((usedAmount / targetAmount) * 100, 100) : 0;
   const categoryName = budget_name?.toLowerCase() || '';
   const iconData = categoryIcons[categoryName] || categoryIcons.default;
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 mb-4 border border-gray-100 dark:border-gray-700 hover:shadow-md transition w-full">
+      <Toaster position="top-center" />
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4 w-full">
           <div className={`w-12 h-12 ${iconData.color} rounded-xl flex items-center justify-center text-xl`}>
@@ -194,14 +199,15 @@ const BudgetCard = ({
               <span className="text-sm text-gray-600 dark:text-gray-400">Used: <span className="font-medium dark:text-gray-300">R{usedAmount.toFixed(2)}</span></span>
               <span className="text-sm text-gray-600 dark:text-gray-400">Remaining: <span className="font-medium dark:text-gray-300">R{remainingAmount.toFixed(2)}</span></span>
             </div>
-            
+
             <div className="mt-3 w-full">
               <div className="w-full h-2.5 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-500 ease-out"
-                  style={{ 
+                  style={{
                     width: `${percentageUsed}%`,
                     background: 'linear-gradient(90deg, #5FBFFF 0%, #91BE59 100%)'
+                    // bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53] 
                   }}
                 ></div>
               </div>
@@ -210,13 +216,14 @@ const BudgetCard = ({
         </div>
 
         <div className="flex gap-2">
-          <button 
+          {/* Removing this feature for the time being */}
+          {/* <button
             onClick={onEdit}
             className="flex items-center gap-1 bg-sky-100 text-sky-500 px-4 py-1 rounded-full hover:bg-sky-200"
           >
             <FaEdit /> Edit
-          </button>
-          <button 
+          </button> */}
+          <button
             onClick={onDelete}
             className="flex items-center gap-1 bg-red-100 text-red-400 px-4 py-1 rounded-full hover:bg-red-200"
           >
@@ -235,14 +242,12 @@ const BudgetPage = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const user = localStorage.getItem('user');
-  const userId = user ? JSON.parse(user).id : null;
+  const user = JSON.parse(localStorage.getItem('user'));
 
-  useEffect(() => {
-    fetchBudgets();
-    fetchCategories();
-  }, []);
+  const userId = user?.id;
+
 
   const fetchBudgets = async () => {
     try {
@@ -251,7 +256,11 @@ const BudgetPage = () => {
       const result = await response.json();
 
       if (result.status === 'success') {
-        setBudgets(result.data);
+        // Sort budgets by creation date (newest first)
+        const sortedBudgets = result.data.sort((a, b) =>
+          new Date(b.created_at || 0) - new Date(a.created_at || 0)
+        );
+        setBudgets(sortedBudgets);
       } else {
         setError(result.message || 'Failed to fetch budgets');
       }
@@ -262,6 +271,11 @@ const BudgetPage = () => {
       setLoading(false);
     }
   };
+
+  // Filter budgets based on search term
+  const filteredBudgets = budgets.filter(budget =>
+    budget.budget_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const fetchCategories = async () => {
     try {
@@ -288,18 +302,56 @@ const BudgetPage = () => {
     setIsCreating(false);
   };
 
+  useEffect(() => {
+    fetchBudgets();
+    fetchCategories();
+  }, []);
+
+
+  function handleDeleteWithConfirm(budget_id) {
+    toast.custom((t) => (
+      <div
+        className={`max-w-sm w-full bg-white rounded-2xl shadow-lg border border-gray-200 px-5 py-4 text-sm transition-all ${t.visible ? 'animate-enter' : 'animate-leave'
+          }`}
+      >
+        <p className="text-gray-800 mb-3">
+          Are you sure you want to delete this budget?
+        </p>
+        <div className="flex justify-end gap-2">
+          <button
+            className="px-4 py-1.5 bg-red-500 text-white rounded-full text-sm font-medium hover:bg-red-600 transition"
+            onClick={() => {
+              handleDelete(budget_id);
+              toast.success('Budget deleted');
+              toast.dismiss(t.id);
+            }}
+          >
+            Delete
+          </button>
+          <button
+            className="px-4 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200 transition"
+            onClick={() => toast.dismiss(t.id)}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    ), {
+      duration: 10000,
+    });
+  }
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this budget?')) {
-      return;
-    }
+    // Show a confirmation toast instead of window.confirm
+    // We'll use a simple state to handle confirmation
 
     try {
-      const response = await fetch(`http://localhost:5000/api/budget/user/${id}`, {
+      const response = await fetch(`http://localhost:5000/api/budget/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ user_id: userId }),
+        body: JSON.stringify({ user_id: userId }),  // Pass user_id if needed
+        // Remove the body since your backend likely doesn't need it for DELETE
       });
 
       const result = await response.json();
@@ -379,15 +431,6 @@ const BudgetPage = () => {
     setIsCreating(false);
   };
 
-  if (loading) {
-    return (
-      <AccountsLayout>
-        <div className="flex justify-center items-center min-h-[300px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#467D35]"></div>
-        </div>
-      </AccountsLayout>
-    );
-  }
 
   return (
     <AccountsLayout>
@@ -411,6 +454,20 @@ const BudgetPage = () => {
           </div>
         )}
 
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm">
+            <FaSearch className="text-[#76B947] mr-2" />
+            <input
+              type="text"
+              placeholder="Search your budgets..."
+              className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+
         <div className="space-y-4">
           {isCreating && (
             <BudgetForm
@@ -421,7 +478,7 @@ const BudgetPage = () => {
             />
           )}
 
-          {budgets.map((budget) => (
+          {filteredBudgets.map((budget) => (
             editingId === budget.budget_id ? (
               <BudgetForm
                 key={budget.budget_id}
@@ -439,7 +496,7 @@ const BudgetPage = () => {
                 total_target={budget.total_target}
                 used={budget.used}
                 onEdit={() => handleEdit(budget.budget_id)}
-                onDelete={() => handleDelete(budget.budget_id)}
+                onDelete={() => handleDeleteWithConfirm(budget.budget_id)}
               />
             )
           ))}
@@ -457,6 +514,16 @@ const BudgetPage = () => {
               >
                 <FaPlus className="inline mr-2" /> Create Budget
               </button>
+            </div>
+          )}
+
+          {budgets.length > 0 && filteredBudgets.length === 0 && (
+            <div className="text-center py-12">
+              <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <FaSearch className="text-gray-400 text-3xl" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-700 mb-1">No budgets found</h3>
+              <p className="text-gray-500">Try adjusting your search term</p>
             </div>
           )}
         </div>

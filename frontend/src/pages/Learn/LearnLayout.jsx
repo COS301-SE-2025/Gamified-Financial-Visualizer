@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PacmanLoader } from 'react-spinners';
+import PacmanLoader from '../../components/loaders/PacmanLoader';
 import LearnSidebar from '../../layouts/sidebars/LearnSidebar';
 
 const LearnLayout = ({ children }) => {
@@ -13,6 +13,11 @@ const LearnLayout = ({ children }) => {
   return (
     <div className="relative min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Loader */}
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
+          <PacmanLoader />
+        </div>
+      )}
 
       <div className={`${isLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'} transition-opacity duration-500`}>
         {/* Top Learn Header */}

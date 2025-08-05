@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AchievementsLayout from '../../pages/Achievements/AchievementsLayout';
 import toast from 'react-hot-toast';
 
+// Import all badge images as before
 import badge1 from '../../assets/Images/badges/coin.png';
 import badge2 from '../../assets/Images/badges/banknote.png';
 import badge3 from '../../assets/Images/badges/target.png';
@@ -29,24 +30,25 @@ import badge23 from '../../assets/Images/badges/start-up.png';
 import badge24 from '../../assets/Images/badges/support.png';
 import badge25 from '../../assets/Images/badges/team.png';
 
-
-
 // Color system matching Figma card groups
 const colorMap = {
   red: {
     border: 'border-[#ED5E52]',
     fill: 'bg-[#ED5E52]',
     text: 'text-[#ED5E52]',
+    bg: 'bg-red-50',
   },
   blue: {
     border: 'border-[#5FBFFF]',
     fill: 'bg-[#5FBFFF]',
     text: 'text-[#5FBFFF]',
+    bg: 'bg-blue-50',
   },
   green: {
     border: 'border-[#88BC46]',
     fill: 'bg-[#88BC46]',
     text: 'text-[#88BC46]',
+    bg: 'bg-green-50',
   },
 };
 
@@ -57,13 +59,6 @@ const allBadges = [
   badge19, badge20, badge21, badge22, badge23, badge24, badge25
 ];
 
-// Optional: Helper to get a random badge
-const getRandomBadge = () => {
-  const index = Math.floor(Math.random() * allBadges.length);
-  return allBadges[index];
-};
-
-// mapping for the badge images 
 const getBadgeImage = (title) => {
   const lower = title.toLowerCase();
 
@@ -78,19 +73,18 @@ const getBadgeImage = (title) => {
   if (lower.includes('investor') || lower.includes('quiz') || lower.includes('trophy')) return badge9;
   if (lower.includes('banker')) return badge10;
 
-  // Default to a random badge if no keyword match
-  return getRandomBadge();
+  return allBadges[Math.floor(Math.random() * allBadges.length)];
 };
 
 const detectColorKey = (title) => {
   const lower = title.toLowerCase();
-  if (lower.includes('grow') || lower.includes('plant') || lower.includes('first') || lower.includes('friend') || lower.includes('master') || lower.includes('stock') || lower.includes('daily') ||lower.includes('learn') || lower.includes('investment') || lower.includes('save') || lower.includes('wealth') || lower.includes('spend') || lower.includes('transaction')) {
+  if (lower.includes('grow') || lower.includes('plant') || lower.includes('first') || lower.includes('friend') || lower.includes('master') || lower.includes('stock') || lower.includes('daily') || lower.includes('learn') || lower.includes('investment') || lower.includes('save') || lower.includes('wealth') || lower.includes('spend') || lower.includes('transaction')) {
     return 'green';
   }
   if (lower.includes('bank') || lower.includes('top') || lower.includes('habits') || lower.includes('score') || lower.includes('secret') || lower.includes('data') || lower.includes('weekly') || lower.includes('milestone') || lower.includes('budget') || lower.includes('quiz') || lower.includes('target') || lower.includes('goal')) {
     return 'blue';
   }
-  return 'red'; // default
+  return 'red';
 };
 
 const AchievementCard = ({ achievement }) => {
@@ -100,6 +94,7 @@ const AchievementCard = ({ achievement }) => {
     points_awarded,
     progress_value,
     trigger_condition_json,
+    achievement_description,
   } = achievement;
 
   const total = trigger_condition_json.count || trigger_condition_json.value || 1;
@@ -107,18 +102,34 @@ const AchievementCard = ({ achievement }) => {
   const percent = Math.min((progress / total) * 100, 100);
 
   const colorKey = detectColorKey(achievement_title);
-  const { border, fill, text } = colorMap[colorKey];
+  const { border, fill, text, bg } = colorMap[colorKey];
   const image = getBadgeImage(achievement_title);
 
   return (
     <div
       onClick={() => navigate(`/achievements/${achievement_title}`)}
-      className={`cursor-pointer border-2 ${border} rounded-xl px-4 pt-4 pb-3 bg-white flex flex-col items-center gap-2 dark:bg-gray-800`}
+      className={`cursor-pointer border-2 ${border} rounded-xl p-4 bg-white flex flex-col items-center gap-3 hover:shadow-md transition-shadow ${bg}`}
+      title="Click to view details and sub-achievements"
     >
-      <h3 className={`text-sm font-semibold ${text} text-center`}>{achievement_title}</h3>
-      <img src={image} alt={achievement_title} className="w-14 h-14 object-contain" />
+      <div className="relative">
+        <img src={image} alt={achievement_title} className="w-16 h-16 object-contain" />
+        {percent === 100 && (
+          <div className="absolute -top-1 -right-1 bg-yellow-400 rounded-full w-5 h-5 flex items-center justify-center">
+            <span className="text-xs font-bold">✓</span>
+          </div>
+        )}
+      </div>
+
+      <div className="text-center">
+        <h3 className={`text-sm font-semibold ${text}`}>{achievement_title}</h3>
+        <p className="text-xs text-gray-500 mt-1 line-clamp-2">{achievement_description || 'Complete tasks to earn this achievement'}</p>
+      </div>
 
       <div className="w-full mt-1">
+        <div className="flex justify-between text-xs font-medium mb-1">
+          <span className={`${text}`}>{points_awarded} XP</span>
+          <span className="text-gray-600">{progress}/{total}</span>
+        </div>
         <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-700">
           <div
             className={`${fill} h-2 rounded-full`}
@@ -130,12 +141,17 @@ const AchievementCard = ({ achievement }) => {
           <span>{progress}/{total}</span>
         </div>
       </div>
+
+      <div className="text-xs text-gray-500 mt-1">
+        {percent === 100 ? 'Completed!' : 'Click for details'}
+      </div>
     </div>
   );
 };
 
 const AchievementsPage = () => {
   const [achievements, setAchievements] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -143,6 +159,7 @@ const AchievementsPage = () => {
 
     const fetchAchievements = async () => {
       try {
+        setIsLoading(true);
         const [defsRes, userRes] = await Promise.all([
           fetch('http://localhost:5000/api/achievements'),
           fetch(`http://localhost:5000/api/achievements/user/${user.id}`)
@@ -166,17 +183,22 @@ const AchievementsPage = () => {
       } catch (err) {
         console.error(err);
         toast.error('Could not load achievements');
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchAchievements();
   }, []);
 
-  if (!achievements.length) {
+  if (isLoading) {
     return (
       <AchievementsLayout>
-        <div className="flex items-center justify-center h-full text-gray-500">
-          Loading achievements...
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your achievements...</p>
+          </div>
         </div>
       </AchievementsLayout>
     );
@@ -184,15 +206,38 @@ const AchievementsPage = () => {
 
   return (
     <AchievementsLayout>
-      <div className="space-y-6 px-6 pt-10 pb-6 -mt-8 ">
-        <h2 className="text-xl font-semibold text-cyan-500 bg-blue-50 inline-block px-4 py-1 rounded-full shadow-sm dark:bg-gray-800">
-          All Achievements
-        </h2>
+      <div className="space-y-6 px-6 pt-10 pb-6 -mt-8">
+        {/* Achievemnets page banner */}
+        <div className="bg-gradient-to-r from-[#B1E1FF20] to-[#7FDD5320] rounded-xl p-6 mb-6 shadow-sm border border-gray-100">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">All Your Achievements</h1>
+              <p className="text-gray-600">
+                Complete challenges to earn XP and unlock badges. Click on any achievement to see its sub-tasks and requirements.
+              </p>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-          {achievements.map((ach, idx) => (
-            <AchievementCard key={idx} achievement={ach} />
-          ))}
+              <div className="flex items-center text-sm text-gray-500 mt-3">
+                <span className="inline-block w-3 h-3 bg-[#88BC46] rounded-full mr-1"></span>
+                <span className="mr-3">Financial</span>
+                <span className="inline-block w-3 h-3 bg-[#5FBFFF] rounded-full mr-1"></span>
+                <span className="mr-3">Learning</span>
+                <span className="inline-block w-3 h-3 bg-[#ED5E52] rounded-full mr-1"></span>
+                <span>Community</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {achievements.length > 0 ? (
+            achievements.map((ach, idx) => (
+              <AchievementCard key={idx} achievement={ach} />
+            ))
+          ) : (
+            <div className="col-span-full text-center py-10">
+              <p className="text-gray-500">No achievements found. Start completing tasks to earn your first badge!</p>
+            </div>
+          )}
         </div>
       </div>
     </AchievementsLayout>

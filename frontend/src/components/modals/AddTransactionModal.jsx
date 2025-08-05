@@ -19,12 +19,14 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
   const [error, setError] = useState('');
   const [budgets, setBudgets] = useState([]);
   const [goals, setGoals] = useState([]);
+  const [challenges, setChallenges] = useState([]);
 
   useEffect(() => {
     if (isOpen) {
       fetchCategories();
       fetchBudgets();
       fetchGoals();
+      fetchChallenges();
     }
   }, [isOpen]);
 
@@ -65,7 +67,23 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
       console.error('Error fetching goals:', err);
       setGoals([]);
     }
-  }
+  };
+
+  const fetchChallenges = async () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user?.id) return;
+    try {
+      const response = await fetch(`http://localhost:5000/api/community/challenges/user/${user.id}`);
+      if (!response.ok) throw new Error('Failed to fetch challenges');
+      const data = await response.json(); 
+      setChallenges(data.data.active || []);
+    } catch (err) {
+      console.error('Error fetching challenges:', err);
+      setChallenges([]);
+    }
+  };
+
+
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -343,8 +361,11 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
               className="border dark:border-gray-700 p-2 rounded dark:bg-gray-700 dark:text-gray-200"
             >
               <option value="">Select challenge</option>
-              <option value="1">Challenge 1</option>
-              <option value="2">Challenge 2</option>
+              {challenges.map(c => (
+                <option key={c.id} value={c.id}>
+                  {c.title}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -354,14 +375,14 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
           <button
             onClick={onClose}
             disabled={loading}
-            className="flex items-center gap-2 bg-red-200 dark:bg-red-800 text-red-600 dark:text-red-200 px-4 py-2 rounded-full disabled:opacity-50 hover:bg-red-300 dark:hover:bg-red-700 transition"
+            className="flex items-center gap-2 bg-red-100 dark:bg-red-800 text-red-500 dark:text-red-200 px-4 py-2 rounded-full disabled:opacity-50 hover:bg-red-300 dark:hover:bg-red-700 transition"
           >
             <FaTimes /> Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="flex items-center gap-2 bg-green-200 dark:bg-green-700 text-green-700 dark:text-green-100 px-4 py-2 rounded-full disabled:opacity-50 hover:bg-green-300 dark:hover:bg-green-600 transition"
+            className="flex items-center gap-2 bg-lime-100 dark:bg-green-700 text-lime-600 dark:text-green-100 px-4 py-2 rounded-full disabled:opacity-50 hover:bg-green-300 dark:hover:bg-green-600 transition"
           >
             <FaSave /> {loading ? 'Saving...' : 'Save'}
           </button>

@@ -75,13 +75,14 @@ const HelpMain = () => {
 
         <div className="relative z-10 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-[#FFBF1A] mb-1">Knowledge Quest</h1>
+            <h1 className="text-2xl font-bold text-sky-300 mb-1">Knowledge Quest</h1>
             <p className="text-gray-600 dark:text-gray-300 mb-4">Level {userStats.level} Scholar</p>
 
             <div className="flex items-center gap-3 mb-4">
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                 <motion.div
-                  className="bg-gradient-to-r from-[#facc15] to-[#fb923c] h-3 rounded-full"
+                  className="bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53] h-3 rounded-full"
+                  // bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53] 
                   initial={{ width: 0 }}
                   animate={{ width: `${xpProgress}%` }}
                   transition={{ duration: 1, delay: 0.3 }}
@@ -137,7 +138,7 @@ const HelpMain = () => {
             <AnimatePresence>
               {isHovered === 'faq' && (
                 <motion.div
-                  className="absolute inset-0 bg-[#bfdbfe]/30 backdrop-blur-sm"
+                  className="absolute inset-0 bg-[#CBEEA5]/30 backdrop-blur-sm"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -145,15 +146,17 @@ const HelpMain = () => {
               )}
             </AnimatePresence>
             <div className="relative z-10 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-[#dbeafe] flex items-center justify-center text-[#72C1F5] group-hover:text-[#518fc5] transition-colors">
+              <div className="w-12 h-12 rounded-xl bg-[#E8F5E9] flex items-center justify-center text-[#88BC46] group-hover:text-[#6B9E3D] transition-colors">
                 <FaQuestionCircle className="text-2xl" />
               </div>
               <div className="text-left">
-                <p className="text-lg font-semibold text-[#1f2937] group-hover:text-[#518fc5] transition-colors">FAQ Library</p>
-                <p className="text-sm text-[#4b5563]">Instant answers with XP rewards</p>
+                <p className="text-lg font-semibold text-gray-800 group-hover:text-[#6B9E3D] transition-colors">
+                  FAQ Library
+                </p>
+                <p className="text-sm text-gray-600">Instant answers with XP rewards</p>
               </div>
             </div>
-            <div className="absolute right-4 top-4 bg-[#fef9c3] text-[#e46349] text-xs font-bold px-2 py-1 rounded-full border border-[#fde047]">
+            <div className="absolute right-4 top-4 bg-[#F0F4C3] text-[#689F38] text-xs font-bold px-2 py-1 rounded-full border border-[#DCEDC8]">
               +5 XP each
             </div>
           </motion.button>
@@ -177,15 +180,15 @@ const HelpMain = () => {
               )}
             </AnimatePresence>
             <div className="relative z-10 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-[#fce7f3] flex items-center justify-center text-[#ec4899] group-hover:text-[#f584b7] transition-colors">
+              <div className="w-12 h-12 rounded-xl bg-[#fcf5e7] flex items-center justify-center text-[#FFD18C] group-hover:text-[#f5ca84] transition-colors">
                 <FaBookOpen className="text-2xl" />
               </div>
               <div className="text-left">
-                <p className="text-lg font-semibold text-[#1f2937] group-hover:text-[#ef76ad] transition-colors">Tutorial Quests</p>
+                <p className="text-lg font-semibold text-[#1f2937] group-hover:text-[#f5ca84] transition-colors">Tutorial Quests</p>
                 <p className="text-sm text-[#4b5563]">Master features with guided tours</p>
               </div>
             </div>
-            <div className="absolute right-4 top-4 bg-[#fef9c3] text-[#e46349] text-xs font-bold px-2 py-1 rounded-full border border-[#fde047]">
+            <div className="absolute right-4 top-4 bg-[#fef9c3] text-[#e89e59] text-xs font-bold px-2 py-1 rounded-full border border-[#fde047]">
               +15 XP each
             </div>
           </motion.button>
@@ -261,7 +264,7 @@ const HelpMain = () => {
           <div className="flex items-center gap-3 mt-5">
             <div className="flex-1 bg-[#f3f4f6] rounded-full h-3">
               <div
-                className="bg-gradient-to-r from-[#f8994c] to-[#FFD18C] h-3 rounded-full"
+                className="bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53] h-3 rounded-full"
                 style={{ width: `${Math.min((completedCount / 3) * 100, 100)}%` }}
               ></div>
             </div>
@@ -269,10 +272,10 @@ const HelpMain = () => {
           </div>
 
           <button
-            className={`mt-4 px-6 py-2 ${completedCount === 3
-              ? 'bg-gradient-to-r from-[#22c55e] to-[#86efac] hover:to-[#4ade80]'
-              : 'bg-gradient-to-r from-[#fb923c] to-[#FFD18C] hover:from-[#f9925b] hover:to-[#f59e0b]'
-              } text-white font-bold rounded-full shadow-md transition-all w-full`}
+            className={`mt-4 px-6 py-2 font-bold rounded-full shadow-md transition-all w-full ${completedCount === 3
+              ? 'bg-gradient-to-r from-[#88BC46] to-[#CBEEA5] hover:to-[#A0D672] text-white'
+              : 'bg-gradient-to-r from-[#ED5E52] to-[#FFCE51] hover:from-[#F0685E] hover:to-[#F68D2B] text-white'
+              }`}
             onClick={claimReward}
           >
             {completedCount === 3 ? 'Claim Reward' : 'Start Challenge'}

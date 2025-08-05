@@ -17,6 +17,7 @@ const AccountsPage = () => {
   const [loadingTransactions, setLoadingTransactions] = useState(false);
   const [error, setError] = useState(null);
   const transactionsRef = useRef(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Transaction pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -31,13 +32,29 @@ const AccountsPage = () => {
   const indexOfFirstAccount = indexOfLastAccount - accountsPerPage;
   const currentAccounts = accounts.slice(indexOfFirstAccount, indexOfLastAccount);
 
-  // Get current transactions
-  const indexOfLastTransaction = currentPage * transactionsPerPage;
-  const indexOfFirstTransaction = indexOfLastTransaction - transactionsPerPage;
-  const currentTransactions = transactions.slice(
-    indexOfFirstTransaction,
-    indexOfLastTransaction
+
+
+  // Get current transactions with search filtering
+const filteredTransactions = transactions.filter(txn => {
+  if (!searchQuery) return true;
+  const query = searchQuery.toLowerCase();
+  return (
+    (txn.name && txn.name.toLowerCase().includes(query)) ||
+    (txn.category && txn.category.toLowerCase().includes(query)) ||
+    (txn.amount && txn.amount.toString().toLowerCase().includes(query))
   );
+});
+
+  const pageLimit = 17; // Number of page buttons to show
+  const totalPages = Math.ceil(filteredTransactions.length / transactionsPerPage);
+  const [pageWindowStart, setPageWindowStart] = useState(0); // Index of first page in window
+
+const indexOfLastTransaction = currentPage * transactionsPerPage;
+const indexOfFirstTransaction = indexOfLastTransaction - transactionsPerPage;
+const currentTransactions = filteredTransactions.slice(
+  indexOfFirstTransaction,
+  indexOfLastTransaction
+);
 
   // Change account page
   const paginateAccounts = (pageNumber) => {
@@ -73,7 +90,6 @@ const AccountsPage = () => {
     }
 
     try {
-      setLoadingTransactions(true);
       setError(null);
 
       const res = await fetch(`http://localhost:5000/api/transactions/user/${userId}`);
@@ -101,7 +117,6 @@ const AccountsPage = () => {
       setError(err.message);
       setTransactions([]);
     } finally {
-      setLoadingTransactions(false);
     }
   }, [userId]);
 
@@ -125,13 +140,11 @@ const AccountsPage = () => {
   useEffect(() => {
     if (!userId) {
       setError('User not logged in. Please log in again.');
-      setLoading(false);
       return;
     }
 
     const fetchAccountsAndTransactions = async () => {
       try {
-        setLoading(true);
         setError(null);
 
         // Fetch accounts
@@ -145,7 +158,6 @@ const AccountsPage = () => {
       } catch (err) {
         setError(err.message);
       } finally {
-        setLoading(false);
       }
     };
 
@@ -160,7 +172,6 @@ const AccountsPage = () => {
     }
 
     try {
-      setLoadingTransactions(true);
       setError(null);
 
       const res = await fetch(`http://localhost:5000/api/transactions/accounts/${accountId}`);
@@ -188,10 +199,10 @@ const AccountsPage = () => {
       setError(err.message);
       setTransactions([]);
     } finally {
-      setLoadingTransactions(false);
     }
   };
 
+  // handle the clicking of a specific account 
   const handleCardClick = (account) => {
     setActiveAccount(account);
     if (account.account_id) {
@@ -219,7 +230,7 @@ const AccountsPage = () => {
           account_name: newAccount.accountName,
           account_type: newAccount.accountType,
           currency: newAccount.currency,
-          account_balance: parseFloat(newAccount.balance) || 0,
+          account_balance: parseFloat(newAccount.balance),
         }),
       });
       if (!response.ok) {
@@ -346,18 +357,6 @@ const AccountsPage = () => {
   const transactionHeading = activeAccount
     ? `${activeAccount.account_name || activeAccount.accountName} Transactions`
     : 'Recent Transactions';
-
-  if (loading) {
-    return (
-      <div className="w-full max-w-6xl mx-auto p-4 flex justify-center items-center min-h-[400px] dark:bg-gray-900">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#336699] dark:border-blue-400 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading accounts...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex gap-6 px-6 py-6 bg-[#F8F9FA] min-h-screen dark:bg-gray-900">
       {/* Left Panel */}
@@ -366,11 +365,12 @@ const AccountsPage = () => {
           <h2 className="text-2xl font-semibold text-[#1C3C78] dark:text-blue-300">Accounts</h2>
           <button
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-1 px-4 py-1 bg-[#D8F5C5] dark:bg-[#A1E358] text-[#467D35] dark:text-green-100 text-sm font-semibold rounded-full hover:bg-[#c8ecb4] dark:hover:bg-green-700 transition-colors"
+            className="flex items-center gap-1 px-4 py-1 bg-[#D8F5C5] dark:bg-[#A1E358] text-[#76B947] dark:text-green-100 text-sm font-semibold rounded-full hover:bg-[#c8ecb4] dark:hover:bg-green-700 transition-colors"
           >
             <FaPlus /> Add
           </button>
         </div>
+        <p className="gap-6 pb-3 mb-2 text-sm text-gray-500">Click an account to view its transactions</p>
 
         {/* Render currentAccounts */}
         <div className="space-y-4">
@@ -430,6 +430,11 @@ const AccountsPage = () => {
             type="text"
             placeholder="Search your transactions..."
             className="w-full outline-none bg-transparent text-sm text-[#76B947] dark:text-green-200 placeholder-[#76B947]/70 dark:placeholder-green-400/70"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1); // Reset to first page when searching
+            }}
           />
         </div>
 
@@ -449,23 +454,47 @@ const AccountsPage = () => {
         </div>
 
         {/* Transaction Pagination */}
-        {transactions.length > transactionsPerPage && (
-          <div className="flex justify-center mt-4">
-            {Array.from({ length: Math.ceil(transactions.length / transactionsPerPage) }).map((_, index) => (
+     {filteredTransactions.length > transactionsPerPage && (
+        <div className="flex justify-center mt-4 items-center gap-1">
+          {/* Prev Window */}
+          {pageWindowStart > 0 && (
+            <button
+              onClick={() => setPageWindowStart(pageWindowStart - pageLimit)}
+              className="px-2 py-1 bg-gray-300 rounded"
+            >
+             < FaChevronLeft className='text-[#FFFFFF]'/>
+            </button>
+          )}
+
+          {/* Page Buttons */}
+          {Array.from({ length: Math.min(pageLimit, totalPages - pageWindowStart) }).map((_, i) => {
+            const pageNumber = pageWindowStart + i + 1;
+            return (
               <button
-                key={index}
-                onClick={() => paginate(index + 1)}
-                className={`mx-1 px-3 py-1 rounded ${
-                  currentPage === index + 1 
+                key={pageNumber}
+                onClick={() => paginate(pageNumber)}
+                className={`px-3 py-1 rounded ${
+                  currentPage === pageNumber 
                     ? 'bg-[#B1E1FF] dark:bg-blue-600 text-white' 
                     : 'bg-gray-200 dark:bg-gray-700 dark:text-gray-300'
                 }`}
               >
-                {index + 1}
+                {pageNumber}
               </button>
-            ))}
-          </div>
-        )}
+            );
+          })}
+
+          {/* Next Window */}
+          {pageWindowStart + pageLimit < totalPages && (
+            <button
+              onClick={() => setPageWindowStart(pageWindowStart + pageLimit)}
+              className="px-2 py-1 bg-gray-300 rounded"
+            >
+              <FaChevronRight className='text-[#FFFFFF]'/>
+            </button>
+          )}
+        </div>
+      )}
       </div>
 
       {/* Modals */}

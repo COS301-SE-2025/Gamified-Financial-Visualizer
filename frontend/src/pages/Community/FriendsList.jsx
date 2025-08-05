@@ -138,8 +138,8 @@ const FriendsList = () => {
           <FaSearch className="text-[#76B947] mr-2 dark:text-[#4D7C0F]" />
           <input
             type="text"
-            placeholder="Search your transactions..."
-            className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70 dark:text-[#4D7C0F] dark:placeholder-[#4D7C0F]/70"
+            placeholder="Search your friends..."
+            className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />

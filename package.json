@@ -2,6 +2,7 @@
   "dependencies": {
     "@types/axios": "^0.9.36",
     "@types/winston": "^2.4.4",
+    "@web3icons/react": "^4.0.19",
     "argon2": "^0.43.0",
     "axios": "^1.9.0",
     "bullmq": "^5.56.4",
@@ -12,6 +13,7 @@
     "express-validator": "^7.2.1",
     "framer-motion": "^12.23.3",
     "helmet": "^8.1.0",
+    "multer": "^2.0.2",
     "node-cron": "^4.0.5",
     "paseto": "^3.1.4",
     "pg": "^8.16.0",
@@ -29,7 +31,7 @@
   },
   "scripts": {
     "format": "prettier . --write",
-    "dev": "concurrently \"redis-server\" \"npx ts-node api-backend/server.ts\" \"npm start --prefix frontend\"",
+    "dev": "concurrently \"redis-server\" \"npx ts-node api-backend/server.ts\" \"cd api-backend/modules/ai && uvicorn app.server:app --host 0.0.0.0 --port 6000\" \"npm start --prefix frontend\"",
     "test": "jest --setupFilesAfterEnv=./api-backend/tests/jest-setup.ts",
     "test:int": "jest integration --setupFilesAfterEnv=./api-backend/tests/jest-setup.ts",
     "test:services": "jest services --setupFilesAfterEnv=./api-backend/tests/jest-setup.ts",
@@ -71,6 +73,7 @@
     "@types/express-validator": "^3.0.2",
     "@types/helmet": "^0.0.48",
     "@types/jest": "^29.5.14",
+    "@types/multer": "^2.0.0",
     "@types/node": "^22.16.3",
     "@types/node-cron": "^3.0.11",
     "@types/pg": "^8.15.4",

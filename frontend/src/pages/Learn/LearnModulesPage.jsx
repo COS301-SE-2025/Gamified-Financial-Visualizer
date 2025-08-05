@@ -103,7 +103,7 @@ const LearningPage = () => {
               <FaSearch className="text-[#76B947] dark:text-[#AAD977] mr-2" />
               <input
                 type="text"
-                placeholder="Search your transactions..."
+                placeholder="Search your modules..."
                 className="w-full outline-none bg-transparent text-sm text-[#76B947] dark:text-[#AAD977] placeholder-[#76B947]/70 dark:placeholder-[#AAD977]/70"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}

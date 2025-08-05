@@ -15,6 +15,8 @@ import banner from '../../assets/Images/banners/pixelStudents.jpeg';
 import banner1 from '../../assets/Images/banners/pixelGirlAlly.gif';
 import banner2 from '../../assets/Images/banners/pixelApartment.gif';
 import banner3 from '../../assets/Images/banners/pixelStore.gif';
+import { FaTrophy } from 'react-icons/fa';
+
 
 const bannerOptions = [
   { id: 1, label: 'Pixel Students', src: banner },
@@ -23,6 +25,8 @@ const bannerOptions = [
   { id: 4, label: 'Pixel Store', src: banner3 },
 ];
 
+
+
 const CommunityDetail = () => {
   const navigate = useNavigate();
   const { communityId } = useParams();
@@ -30,8 +34,10 @@ const CommunityDetail = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [communityData, setCommunityData] = useState(null);
   const [members, setMembers] = useState([]);
+  const [pendingInvites, setPendingInvites] = useState([]);
   const [challengeData, setChallengeData] = useState(null);
   const currentUser = JSON.parse(localStorage.getItem('user'));
+  const [contributionScores, setContributionScores] = useState([]);
 
   useEffect(() => {
     const fetchCommunityData = async () => {
@@ -44,6 +50,7 @@ const CommunityDetail = () => {
         const community = data.data;
         setCommunityData(community);
         setMembers(community.members);
+        setContributionScores(community.contributions);
         setChallengeData(community.challenges);
       } catch (error) {
         console.error('Error fetching community data:', error);
@@ -51,12 +58,42 @@ const CommunityDetail = () => {
       }
     }
 
+    const fetchPendingInvites = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/community/membership/requests/${communityId}`);
+        if (!response.ok) throw new Error('Failed to fetch pending invites');
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error(error);
+        return [];
+      }
+    };
+
+    fetchPendingInvites()
     fetchCommunityData();
   }, [title, navigate]);
 
   const [friends, setFriends] = useState([]);               // all your friends
   const [searchFriend, setSearchFriend] = useState('');     // for filtering
   const [showAddMember, setShowAddMember] = useState(false);
+
+
+  const enrichedScores = contributionScores.map(score => {
+    const matchingMember = members.find(m => m.id === score.id);
+    return {
+      ...score,
+      avatar: matchingMember?.avatar || '/default-avatar.png', // fallback if missing
+    };
+  });
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  const totalPages = Math.ceil(enrichedScores.length / itemsPerPage);
+  const paginatedScores = enrichedScores
+    .sort((a, b) => b.score - a.score)
+    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const isMember = (userId) => {
     return members.some(member => member.user_id === userId);
@@ -178,6 +215,15 @@ const CommunityDetail = () => {
                       }
                     )
                   )
+                  ,
+                  fetch(`http://localhost:5000/api/community/membership/request`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      community_id: communityData.community_id,
+                      user_id: currentUser.id,
+                    }),
+                  })
                 );
                 toast.success('Friend requests sent to all community members!');
               } catch (err) {
@@ -240,7 +286,41 @@ const CommunityDetail = () => {
 
   const handleCancel = () => {
     setIsEditing(false);
+    // Reset to original data if needed
   };
+
+  const handleAccept = async (userId) => {
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/community/membership/respond/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ community_id: communityData.community_id, user_id: userId, response: 'accept' }),
+      });
+      if (!response.ok) throw new Error('Failed to accept invite');
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  }
+
+  const handleReject = async (userId) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/community/membership/respond/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ community_id: communityId, user_id: userId, response: 'reject' }),
+      });
+      if (!response.ok) throw new Error('Failed to reject invite');
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  }
 
   const selectedBanner = bannerOptions.find(b => b.id === communityData.bannerId)?.src || banner;
 
@@ -260,7 +340,10 @@ const CommunityDetail = () => {
                 className="text-2xl font-bold border-b border-gray-300 dark:border-gray-600 focus:outline-none focus:border-[#66BFBF] dark:focus:border-[#4D7C0F] bg-transparent dark:text-white"
               />
             ) : (
-              <h2 className="text-2xl font-bold text-[#66BFBF] dark:text-[#618A54]">{communityData.community_name}</h2>
+              <div className="flex flex-col">
+                <h2 className="text-2xl font-bold text-[#66BFBF] dark:text-[#618A54]">{communityData.community_name}</h2>
+                <p className="text-sm text-gray-500">{communityData.description}</p>
+              </div>
             )}
           </div>
           <div className="flex items-center gap-4">
@@ -290,19 +373,21 @@ const CommunityDetail = () => {
                       <FaUserPlus /> Request
                     </button>
                   )}
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="flex items-center gap-2 bg-[#B1E1FF] dark:bg-[#88D1FF] hover:bg-[#4BA5E6] dark:hover:bg-[#6BB7F5] text-white px-4 py-2 rounded-full text-sm font-semibold shadow-sm"
-                  >
-                    <FaEdit /> Edit
-                  </button>
                   {isMember(currentUser.id) && (
-                    <button
-                      onClick={() => removeMember(currentUser.id)}
-                      className="flex items-center gap-2 bg-red-100 dark:bg-[#FE9B90] text-red-600 dark:text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-red-200 dark:hover:bg-red-800 transition"
-                    >
-                      <FaUserPlus /> Leave
-                    </button>
+                    <>
+                      <button
+                        onClick={() => setIsEditing(true)}
+                        className="flex items-center gap-2 bg-[#B1E1FF] dark:bg-[#88D1FF] hover:bg-[#4BA5E6] dark:hover:bg-[#6BB7F5] text-white px-4 py-2 rounded-full text-sm font-semibold shadow-sm"
+                      >
+                        <FaEdit /> Edit
+                      </button>
+                      <button
+                        onClick={() => removeMember(currentUser.id)}
+                        className="flex items-center gap-2 bg-red-100 dark:bg-[#FE9B90] text-red-600 dark:text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-red-200 dark:hover:bg-red-800 transition"
+                      >
+                        <FaUserPlus /> Leave
+                      </button>
+                    </>
                   )}
                   <button
                     onClick={() => navigate(-1)}
@@ -423,24 +508,96 @@ const CommunityDetail = () => {
             {members.map((member, i) => (
               <div
                 key={i}
-                className="flex items-center gap-4 bg-white dark:bg-gray-800 p-3 rounded-2xl shadow-sm border dark:border-gray-800"
+                className="flex items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border hover:shadow-md transition dark:border-gray-800"
               >
-                <img
-                  src={member.avatar}
-                  className="w-12 h-12 rounded-full border dark:border-gray-500 object-cover"
-                  alt={member.username}
-                />
-                <div>
-                  <p className="text-sm font-semibold text-[#374151] dark:text-gray-200">{member.username}</p>
-                  <p className="text-xs text-[#6B7280] dark:text-gray-400">{member.level}</p>
+                <div className="flex items-center gap-4">
+                  <img
+                    src={member.avatar}
+                    className="w-12 h-12 rounded-full border object-cover"
+                    alt={member.username}
+                  />
+                  <div>
+                    <p className="text-sm font-semibold text-[#374151]">{member.username}</p>
+                    <p className="text-xs text-[#6B7280]">{member.level}</p>
+                  </div>
+
+
+
+                  <Link to={`/community/member/${member.username}`}>
+                    <button className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#AAD977] text-white hover:bg-[#94c867] transition">
+                      <FaEye className="text-white" /> View
+                    </button>
+                  </Link>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
+
+        {/* Community invitations */}
+        {isMember(currentUser.id) && pendingInvites.length > 0 && (
+          <div className="mt-8">
+            <h3 className="text-sm font-semibold mb-3 text-[#4B5563]">Community Invitations</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {pendingInvites.map((invite, i) => (
+                <div
+                  key={i}
+                  className="flex flex-col justify-between bg-white p-4 rounded-2xl shadow-sm border border-[#E5E7EB] hover:shadow-md transition"
+                >
+                  {/* Avatar + Info */}
+                  <div className="flex items-center gap-4 mb-4">
+                    <img
+                      src={invite.avatar}
+                      className="w-12 h-12 rounded-full border object-cover"
+                      alt={invite.username}
+                    />
+                    <div>
+                      <p className="text-sm font-semibold text-[#374151]">{invite.username}</p>
+                      <p className="text-xs text-[#6B7280]">{invite.level}</p>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex flex-wrap gap-2">
+                    <Link to={`/community/member/${invite.username}`}>
+                      <button className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#AAD977] text-white hover:bg-[#94c867] transition">
+                        <FaEye /> View
+                      </button>
+                    </Link>
+                    <button
+                      onClick={() => handleAccept(invite.user_id)}
+                      className="px-3 py-1 text-sm bg-green-500 text-white rounded-full hover:bg-green-600 transition"
+                    >
+                      Accept
+                    </button>
+                    <button
+                      onClick={() => handleReject(invite.user_id)}
+                      className="px-3 py-1 text-sm bg-red-500 text-white rounded-full hover:bg-red-600 transition"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Community Challenges */}
-        <h3 className="text-sm font-semibold mb-3 text-[#4B5563] dark:text-gray-300">Community Challenges</h3>
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-sm font-semibold text-[#4B5563] dark:text-gray-300">
+            Community Challenges
+          </h3>
+          {isMember(currentUser.id) && (
+            <Link to="/community/challenges/create">
+              <button className="flex items-center gap-2 bg-gradient-to-r from-[#72C1F5] to-[#B1E1FF] text-white px-4 py-2 rounded-full text-sm font-medium shadow hover:shadow-md transition">
+                <FaTrophy /> Create Challenge
+              </button>
+            </Link>
+          )}
+        </div>
+
         <div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
             {challengeData.map((challenge, i) => (
@@ -455,18 +612,32 @@ const CommunityDetail = () => {
                   className="absolute -top-8 left-4 w-20 h-20 rounded-full object-cover border-4 border-white dark:border-gray-700 shadow"
                 />
 
-                {/* Title + Deadline + Status + Tags */}
                 <div className="flex justify-between items-start">
                   <div>
                     <h4 className="text-lg font-semibold text-[#111827] dark:text-gray-200">{challenge.title}</h4>
-                    <p className="text-sm text-[#ED5E52] dark:text-[#E99470] font-medium mt-1">{challenge.current_amount}/{challenge.target_amount} ZAR</p>
-                    <p className="text-sm text-[#374151] dark:text-gray-300">{challenge.target_amount - challenge.current_amount} ZAR Left</p>
-                    <p className="text-sm text-[#6B7280] dark:text-gray-400 mt-1">Goal should be accomplished on <span className="text-[#E99470] font-semibold">{challenge.deadline}</span></p>
+                    <p
+                      className={`text-sm dark:text-[#E99470] font-medium mt-1 ${challenge.current_amount >= challenge.target_amount
+                        ? 'text-green-400'
+                        : 'text-[#ED5E52]'
+                        }`}
+                    >
+                      {challenge.current_amount}/{challenge.target_amount} ZAR
+                    </p>
+                    <p className="text-sm text-[#374151] dark:text-gray-300">
+                      {(challenge.target_amount - challenge.current_amount) < 0
+                        ? 0
+                        : (challenge.target_amount - challenge.current_amount)}{' '}
+                      ZAR Left
+                    </p>
+                    <p className="text-sm text-[#6B7280] dark:text-gray-400 mt-1">
+                      Goal should be accomplished on{' '}
+                      <span className="text-[#E99470] font-semibold">{challenge.deadline}</span>
+                    </p>
                   </div>
 
                   {/* Tags */}
                   <div className="flex flex-col items-end gap-2 ml-4">
-                    <span className="text-xs px-4 py-1 rounded-full bg-[#B1E1FF] dark:bg-[#88D1FF] text-[#4B82A2] dark:text-[#1E3A8A] font-medium">In-Progress</span>
+                    <span className="text-xs px-4 py-1 rounded-full bg-[#B1E1FF] dark:bg-[#88D1FF] text-[#4B82A2] dark:text-[#1E3A8A] font-medium">{challenge.challenge_status}</span>
                     <span className="text-xs px-3 py-1 rounded-full bg-[#FFD18C] text-[#FFFFFF] font-medium">{challenge.challenge_type}</span>
                     <span className="text-xs px-3 py-1 rounded-full bg-[#FFD18C] text-[#FFFFFF] font-semibold">{challenge.xp} XP</span>
                   </div>
@@ -509,46 +680,107 @@ const CommunityDetail = () => {
 
         {/* Community Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* XP Collected */}
-          <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow border dark:border-gray-800">
-            <h4 className="text-sm font-semibold mb-2 text-[#1F2937] dark:text-gray-200">XP Collected</h4>
-            <div className="flex items-center justify-between">
-              <div className="w-full h-4 rounded-full overflow-hidden bg-white dark:bg-gray-600 border border-[#FBBF24] mr-4">
+          {/* Community Progress Card */}
+          <div className="bg-white p-6 rounded-2xl shadow border border-[#E5E7EB]">
+            <h4 className="text-sm font-semibold mb-4 text-[#1F2937]">Community Progress</h4>
+
+            {/* XP Collected */}
+            <div className="mb-5">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-medium text-[#374151]">XP Collected</span>
+                <span className="text-sm font-semibold text-[#F97316]">
+                  {communityData.xpCollected} XP
+                </span>
+              </div>
+              <div className="w-full h-4 rounded-full overflow-hidden bg-white border border-[#5FBFFF]">
                 <div
                   className="h-full"
                   style={{
-                    width: (communityData.xpCollected / communityData.xpGoal) * 100 + '%',
-                    background: 'linear-gradient(to right, #FACC15, #FB923C)',
+                    width: `${(communityData.xpCollected / communityData.xpGoal) * 100}%`,
+                    background: 'linear-gradient(to right, #5FBFFF, #7FDD53)',
                     borderRadius: '9999px',
                   }}
                 />
               </div>
-              <span className="text-sm font-semibold text-[#F97316]">
-                {communityData.xpCollected} XP
-              </span>
+              <p className="text-xs mt-2 text-right text-[#6B7280]">
+                Out of {communityData.xpGoal} XP Goal
+              </p>
             </div>
-            <p className="text-xs mt-1 text-right text-[#6B7280] dark:text-gray-400">Out of {communityData.xpGoal} XP Goal</p>
+
+            {/* Goals Completed */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-medium text-[#374151]">Challenges Completed</span>
+                <span className="text-sm font-semibold text-[#F97316]">
+                  {communityData.goalsCompleted} / {communityData.goalsTotal}
+                </span>
+              </div>
+              <div className="w-full h-4 rounded-full overflow-hidden bg-white border border-[#5FBFFF]">
+                <div
+                  className="h-full"
+                  style={{
+                    width: `${(communityData.goalsCompleted / communityData.goalsTotal) * 100}%`,
+                    background: 'linear-gradient(to right, #5FBFFF, #7FDD53)',
+                    borderRadius: '9999px',
+                  }}
+                />
+              </div>
+              <p className="text-xs mt-2 text-right text-[#6B7280]">Goals Completed</p>
+            </div>
           </div>
 
-          {/* Goals Completed */}
-          <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow border dark:border-gray-800">
-            <h4 className="text-sm font-semibold mb-2 text-[#1F2937] dark:text-gray-200">Goals Completed</h4>
-            <div className="flex items-center justify-between">
-              <div className="w-full h-4 rounded-full overflow-hidden bg-white dark:bg-gray-600 border border-[#FBBF24] mr-4">
-                <div
-                  className="h-full"
-                  style={{
-                    width: (communityData.goalsCompleted / communityData.goalsTotal) * 100 + '%',
-                    background: 'linear-gradient(to right, #FACC15, #FB923C)',
-                    borderRadius: '9999px',
-                  }}
-                />
+          {/* Contribution Score Card */}
+          <div className="bg-white p-6 rounded-2xl shadow border border-[#E5E7EB]">
+            <h4 className="text-sm font-semibold mb-4 text-[#1F2937]">Top Contributors</h4>
+            {paginatedScores.map((member, index) => (
+              <div key={member.id} className="flex items-center justify-between mb-4">
+                {/* Avatar & Name */}
+                <div className="flex items-center gap-3">
+                  <img
+                    src={member.avatar}
+                    alt={member.name}
+                    className="w-8 h-8 rounded-full object-cover border border-gray-300"
+                  />
+                  <span className="text-sm font-medium text-[#374151]">{member.name}</span>
+                </div>
+
+                {/* Score Bar */}
+                <div className="flex items-center gap-2 w-2/3">
+                  <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full"
+                      style={{
+                        width: `${member.score}%`,
+                        background: 'linear-gradient(to right, #34D399, #3B82F6)',
+                        borderRadius: '9999px',
+                      }}
+                    />
+                  </div>
+                  <span className="text-xs font-semibold text-[#10B981]">{member.score}</span>
+                </div>
               </div>
-              <span className="text-sm font-semibold text-[#F97316]">
-                {communityData.goalsCompleted} / {communityData.goalsTotal}
-              </span>
-            </div>
-            <p className="text-xs mt-1 text-right text-[#6B7280] dark:text-gray-400">Goals Completed</p>
+            ))}
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-4">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 text-sm bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+                >
+                  Prev
+                </button>
+                <span className="text-sm text-gray-600">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1 text-sm bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>)}
           </div>
         </div>
       </div>

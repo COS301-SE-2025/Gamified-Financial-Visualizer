@@ -102,13 +102,14 @@ const GoalsDetailPage = () => {
                     />
                     <defs>
                       <linearGradient id="grad1" x1="1" y1="0" x2="0" y2="1">
-                        <stop offset="40%" stopColor="#FF4C28" />
-                        <stop offset="100%" stopColor="#FFCE51" />
+                        <stop offset="40%" stopColor="#5FBFFF" />
+                        <stop offset="100%" stopColor="#7FDD53" />
+                        {/* // bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53] */}
                       </linearGradient>
                     </defs>
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-orange-500 dark:text-orange-400 font-bold text-lg">{percentage}%</span>
+                    <span className="text-sky-500 dark:text-orange-400 font-bold text-lg">{percentage}%</span>
                   </div>
                 </div>
 

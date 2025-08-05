@@ -15,7 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const pageInfo = {
     dashboard: {
-        title: 'Mission Control',
+        title: 'Home Dashboard',
         content: `Your ultimate command hub. This page offers a gamified overview of your entire financial journey — XP, coins, streaks, daily challenges, upcoming bills, recent transactions, and achievement progress. Start each session here to stay on top of your quest!`,
         color: '#72C1F5',
         icon: <FaStar />,
@@ -79,7 +79,7 @@ const pageInfo = {
     ,
 
     transactions: {
-        title: 'Account Vault',
+        title: 'Accounts',
         content: `Welcome to your Coin Vault — a dynamic command center for managing your entire financial ecosystem. Here, you can monitor accounts, review transactions, analyze trends, and stay in control of your cash flow.`,
         color: '#FFA726',
         icon: <FaMoneyBillWave />,
@@ -133,7 +133,7 @@ const pageInfo = {
     },
 
     goals: {
-        title: 'Goal Quest',
+        title: 'Goals',
         content: `The Quest Log is your goal-tracking realm. Whether you’re saving for a dream trip, a new PC, or crushing debt, this page lets you create personalized quests with rich visuals, progress charts, and deadlines.`,
         color: '#88BC46',
         icon: <FaBullseye />,
@@ -185,7 +185,7 @@ const pageInfo = {
     },
 
     community: {
-        title: 'Community Adventures',
+        title: 'Community',
         content: `The Guild Hall is where collaboration meets competition. It's your portal to community-led financial adventures, including challenges, shared goals, and social engagement.`,
         color: '#9575CD',
         icon: <FaUsers />,
@@ -244,7 +244,7 @@ const pageInfo = {
     },
 
     learn: {
-        title: "Knowledge Path",
+        title: "Learn",
         content: `Step into the Wizard’s Library, where knowledge is power. Dive into bite-sized lessons, take quizzes, and unlock mastery in personal finance. Each topic—from budgeting to saving—boosts your XP and your real-life money magic.`,
         color: '#FF7043',
         icon: <FaGraduationCap />,
@@ -295,7 +295,7 @@ const pageInfo = {
     },
 
     achievements: {
-        title: 'Trophy Room',
+        title: 'Achievements',
         content: `Your hall of fame showcasing financial mastery. Display hard-earned badges, track progress toward milestones, and discover new challenges. This page gamifies your personal finance journey by rewarding XP and badges for completing activities throughout the app.`,
         color: '#FF4080',
         icon: <FaTrophy />,
@@ -331,7 +331,7 @@ const pageInfo = {
     },
 
     profile: {
-        title: 'Character Profile',
+        title: 'Profile',
         content: `This page is your identity hub in the financial journey. It visually showcases your progress, achievements, and avatar — allowing you to customize your experience, monitor progress, and access personal records.`,
         color: '#26C6DA',
         icon: <FaUser />,
