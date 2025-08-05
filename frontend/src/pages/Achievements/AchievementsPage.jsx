@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AchievementsLayout from '../../pages/Achievements/AchievementsLayout';
 import toast from 'react-hot-toast';
 
-// badge images
+// Import all badge images as before
 import badge1 from '../../assets/Images/badges/coin.png';
 import badge2 from '../../assets/Images/badges/banknote.png';
 import badge3 from '../../assets/Images/badges/target.png';
@@ -14,35 +14,79 @@ import badge7 from '../../assets/Images/badges/investment.png';
 import badge8 from '../../assets/Images/badges/goal.png';
 import badge9 from '../../assets/Images/badges/trophy.png';
 import badge10 from '../../assets/Images/badges/bank.png';
+import badge11 from '../../assets/Images/badges/balance-scale.png';
+import badge12 from '../../assets/Images/badges/brainstorming.png';
+import badge13 from '../../assets/Images/badges/customer.png';
+import badge14 from '../../assets/Images/badges/discussion.png';
+import badge15 from '../../assets/Images/badges/expense.png';
+import badge16 from '../../assets/Images/badges/idea.png';
+import badge17 from '../../assets/Images/badges/income.png';
+import badge18 from '../../assets/Images/badges/lighthouse.png';
+import badge19 from '../../assets/Images/badges/meeting.png';
+import badge20 from '../../assets/Images/badges/planing.png';
+import badge21 from '../../assets/Images/badges/presentation.png';
+import badge22 from '../../assets/Images/badges/profit.png';
+import badge23 from '../../assets/Images/badges/start-up.png';
+import badge24 from '../../assets/Images/badges/support.png';
+import badge25 from '../../assets/Images/badges/team.png';
 
-// static styling maps keyed by achievement_title
-const styleMap = {
-  'Cash Horder':    { color: 'from-[#FFC857] to-[#F5A623]', border: 'border-[#ED5E52]', text: 'text-[#ED5E52]' },
-  'OverAchiever':   { color: 'from-[#5FBFFF] to-[#5FBFFF]', border: 'border-[#5FBFFF]', text: 'text-[#5FBFFF]' },
-  'Just Grow it':   { color: 'from-[#88BC46] to-[#88BC46]', border: 'border-[#88BC46]', text: 'text-[#88BC46]' },
-  'Money Major':    { color: 'from-[#FFC857] to-[#F5A623]', border: 'border-[#ED5E52]', text: 'text-[#ED5E52]' },
-  'Real Banker':    { color: 'from-[#5FBFFF] to-[#5FBFFF]', border: 'border-[#5FBFFF]', text: 'text-[#5FBFFF]' },
-  'Stack Stacker':  { color: 'from-[#88BC46] to-[#88BC46]', border: 'border-[#88BC46]', text: 'text-[#88BC46]' },
-  'All My Friends': { color: 'from-[#FFC857] to-[#F5A623]', border: 'border-[#ED5E52]', text: 'text-[#ED5E52]' },
-  'Target Chaser':  { color: 'from-[#5FBFFF] to-[#5FBFFF]', border: 'border-[#5FBFFF]', text: 'text-[#5FBFFF]' },
-  'Building Wealth':{ color: 'from-[#88BC46] to-[#88BC46]', border: 'border-[#88BC46]', text: 'text-[#88BC46]' },
-  '#1 Investor':    { color: 'from-[#FFC857] to-[#F5A623]', border: 'border-[#ED5E52]', text: 'text-[#ED5E52]' },
+// Color system matching Figma card groups
+const colorMap = {
+  red: {
+    border: 'border-[#ED5E52]',
+    fill: 'bg-[#ED5E52]',
+    text: 'text-[#ED5E52]',
+    bg: 'bg-red-50',
+  },
+  blue: {
+    border: 'border-[#5FBFFF]',
+    fill: 'bg-[#5FBFFF]',
+    text: 'text-[#5FBFFF]',
+    bg: 'bg-blue-50',
+  },
+  green: {
+    border: 'border-[#88BC46]',
+    fill: 'bg-[#88BC46]',
+    text: 'text-[#88BC46]',
+    bg: 'bg-green-50',
+  },
 };
 
-const badgeImageMap = {
-  'Cash Horder':     badge1,
-  'OverAchiever':    badge2,
-  'Just Grow it':    badge4,
-  'Money Major':     badge6,
-  'Real Banker':     badge10,
-  'Stack Stacker':   badge2,
-  'All My Friends':  badge5,
-  'Target Chaser':   badge3,
-  'Building Wealth': badge7,
-  '#1 Investor':     badge9,
+const allBadges = [
+  badge1, badge2, badge3, badge4, badge5,
+  badge6, badge7, badge8, badge9, badge10, badge11, badge12,
+  badge13, badge14, badge15, badge16, badge17, badge18,
+  badge19, badge20, badge21, badge22, badge23, badge24, badge25
+];
+
+const getBadgeImage = (title) => {
+  const lower = title.toLowerCase();
+
+  if (lower.includes('coin') || lower.includes('track') || lower.includes('halfway')) return badge1;
+  if (lower.includes('bank') || lower.includes('stack')) return badge2;
+  if (lower.includes('target') || lower.includes('top')) return badge3;
+  if (lower.includes('grow') || lower.includes('transaction')) return badge4;
+  if (lower.includes('friend') || lower.includes('closer') || lower.includes('hi5')) return badge5;
+  if (lower.includes('money') || lower.includes('challenge')) return badge6;
+  if (lower.includes('wealth') || lower.includes('first') || lower.includes('budget')) return badge7;
+  if (lower.includes('goal') || lower.includes('smasher')) return badge8;
+  if (lower.includes('investor') || lower.includes('quiz') || lower.includes('trophy')) return badge9;
+  if (lower.includes('banker')) return badge10;
+
+  return allBadges[Math.floor(Math.random() * allBadges.length)];
 };
 
-// Card component
+const detectColorKey = (title) => {
+  const lower = title.toLowerCase();
+  if (lower.includes('grow') || lower.includes('plant') || lower.includes('first') || lower.includes('friend') || lower.includes('master') || lower.includes('stock') || lower.includes('daily') || lower.includes('learn') || lower.includes('investment') || lower.includes('save') || lower.includes('wealth') || lower.includes('spend') || lower.includes('transaction')) {
+    return 'green';
+  }
+  if (lower.includes('bank') || lower.includes('top') || lower.includes('habits') || lower.includes('score') || lower.includes('secret') || lower.includes('data') || lower.includes('weekly') || lower.includes('milestone') || lower.includes('budget') || lower.includes('quiz') || lower.includes('target') || lower.includes('goal')) {
+    return 'blue';
+  }
+  return 'red';
+};
+
 const AchievementCard = ({ achievement }) => {
   const navigate = useNavigate();
   const {
@@ -50,37 +94,52 @@ const AchievementCard = ({ achievement }) => {
     points_awarded,
     progress_value,
     trigger_condition_json,
-    achievement_status, 
-    image_path
+    achievement_description,
   } = achievement;
 
   const total = trigger_condition_json.count || trigger_condition_json.value || 1;
   const progress = progress_value;
   const percent = Math.min((progress / total) * 100, 100);
 
-  const { color, border, text } = styleMap[achievement_title] || styleMap['Cash Horder'];
-  const image = image_path;
+  const colorKey = detectColorKey(achievement_title);
+  const { border, fill, text, bg } = colorMap[colorKey];
+  const image = getBadgeImage(achievement_title);
 
   return (
     <div
-      className={`rounded-2xl p-4 shadow-md transition hover:shadow-lg cursor-pointer border-2 ${border} bg-white`}
       onClick={() => navigate(`/achievements/${achievement_title}`)}
+      className={`cursor-pointer border-2 ${border} rounded-xl p-4 bg-white flex flex-col items-center gap-3 hover:shadow-md transition-shadow ${bg}`}
+      title="Click to view details and sub-achievements"
     >
-      <div className="flex flex-col items-center gap-2">
-        <h3 className={`text-sm font-bold ${text}`}>{achievement_title}</h3>
-        <img src={image} alt={achievement_title} className="w-22 h-20 object-contain" />
-        <div className="w-full mt-1">
-          <div className="relative h-2 rounded-full bg-gray-200">
-            <div
-              className={`absolute top-0 left-0 h-2 rounded-full bg-gradient-to-r ${color}`}
-              style={{ width: `${percent}%` }}
-            />
+      <div className="relative">
+        <img src={image} alt={achievement_title} className="w-16 h-16 object-contain" />
+        {percent === 100 && (
+          <div className="absolute -top-1 -right-1 bg-yellow-400 rounded-full w-5 h-5 flex items-center justify-center">
+            <span className="text-xs font-bold">✓</span>
           </div>
+        )}
+      </div>
+
+      <div className="text-center">
+        <h3 className={`text-sm font-semibold ${text}`}>{achievement_title}</h3>
+        <p className="text-xs text-gray-500 mt-1 line-clamp-2">{achievement_description || 'Complete tasks to earn this achievement'}</p>
+      </div>
+
+      <div className="w-full mt-1">
+        <div className="flex justify-between text-xs font-medium mb-1">
+          <span className={`${text}`}>{points_awarded} XP</span>
+          <span className="text-gray-600">{progress}/{total}</span>
         </div>
-        <div className="flex justify-between w-full text-xs text-gray-600 font-medium pt-1">
-          <span>{points_awarded} XP</span>
-          <span>{progress}/{total}</span>
+        <div className="h-2 bg-gray-200 rounded-full">
+          <div
+            className={`${fill} h-2 rounded-full`}
+            style={{ width: `${percent}%` }}
+          />
         </div>
+      </div>
+
+      <div className="text-xs text-gray-500 mt-1">
+        {percent === 100 ? 'Completed!' : 'Click for details'}
       </div>
     </div>
   );
@@ -88,6 +147,7 @@ const AchievementCard = ({ achievement }) => {
 
 const AchievementsPage = () => {
   const [achievements, setAchievements] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -95,16 +155,16 @@ const AchievementsPage = () => {
 
     const fetchAchievements = async () => {
       try {
+        setIsLoading(true);
         const [defsRes, userRes] = await Promise.all([
           fetch('http://localhost:5000/api/achievements'),
           fetch(`http://localhost:5000/api/achievements/user/${user.id}`)
         ]);
-        if (!defsRes.ok || !userRes.ok) throw new Error('Failed fetch');
+        if (!defsRes.ok || !userRes.ok) throw new Error('Fetch failed');
 
         const defsData = await defsRes.json();
         const userData = await userRes.json();
 
-        // merge definitions + user progress
         const mergedData = defsData.data.map(def => {
           const userAch = userData.data.find(ua => ua.achievement_id === def.achievement_id);
           return {
@@ -112,25 +172,29 @@ const AchievementsPage = () => {
             ...userAch,
             progress_value: userAch?.progress_value || 0,
             achievement_status: userAch?.achievement_status || 'incomplete',
-            image_path: def.image_path|| badge1
           };
         });
-     
+
         setAchievements(mergedData);
       } catch (err) {
         console.error(err);
         toast.error('Could not load achievements');
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchAchievements();
   }, []);
 
-  if (!achievements.length) {
+  if (isLoading) {
     return (
       <AchievementsLayout>
         <div className="flex items-center justify-center h-full">
-          <p className="text-gray-500">Loading achievements...</p>
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your achievements...</p>
+          </div>
         </div>
       </AchievementsLayout>
     );
@@ -139,14 +203,37 @@ const AchievementsPage = () => {
   return (
     <AchievementsLayout>
       <div className="space-y-6 px-6 pt-10 pb-6 -mt-8">
-        <h2 className="text-2xl font-semibold text-sky-500 bg-sky-100 inline-block px-4 py-1 rounded-full mb-6">
-          All Achievements
-        </h2>
+        {/* Achievemnets page banner */}
+        <div className="bg-gradient-to-r from-[#B1E1FF20] to-[#7FDD5320] rounded-xl p-6 mb-6 shadow-sm border border-gray-100">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">All Your Achievements</h1>
+              <p className="text-gray-600">
+                Complete challenges to earn XP and unlock badges. Click on any achievement to see its sub-tasks and requirements.
+              </p>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-          {achievements.map((ach, idx) => (
-            <AchievementCard key={idx} achievement={ach} />
-          ))}
+              <div className="flex items-center text-sm text-gray-500 mt-3">
+                <span className="inline-block w-3 h-3 bg-[#88BC46] rounded-full mr-1"></span>
+                <span className="mr-3">Financial</span>
+                <span className="inline-block w-3 h-3 bg-[#5FBFFF] rounded-full mr-1"></span>
+                <span className="mr-3">Learning</span>
+                <span className="inline-block w-3 h-3 bg-[#ED5E52] rounded-full mr-1"></span>
+                <span>Community</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {achievements.length > 0 ? (
+            achievements.map((ach, idx) => (
+              <AchievementCard key={idx} achievement={ach} />
+            ))
+          ) : (
+            <div className="col-span-full text-center py-10">
+              <p className="text-gray-500">No achievements found. Start completing tasks to earn your first badge!</p>
+            </div>
+          )}
         </div>
       </div>
     </AchievementsLayout>

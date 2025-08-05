@@ -87,6 +87,8 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
     }
   };
 
+
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError(''); // Clear error when user types
@@ -351,14 +353,14 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
           <button
             onClick={onClose}
             disabled={loading}
-            className="flex items-center gap-2 bg-red-200 text-red-600 px-4 py-2 rounded-full disabled:opacity-50"
+            className="flex items-center gap-2 bg-red-100 text-red-500 px-4 py-2 rounded-full disabled:opacity-50"
           >
             <FaTimes /> Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="flex items-center gap-2 bg-green-200 text-green-700 px-4 py-2 rounded-full disabled:opacity-50"
+            className="flex items-center gap-2 bg-lime-100 text-lime-600 px-4 py-2 rounded-full disabled:opacity-50"
           >
             <FaSave /> {loading ? 'Saving...' : 'Save'}
           </button>

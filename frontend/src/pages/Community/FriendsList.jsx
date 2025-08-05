@@ -132,15 +132,15 @@ const FriendsList = () => {
   return (
     <CommunityLayout>
       <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
-        <CommunityHeader />
         <Toaster position="top-right" />
 
-        <div className="flex items-center w-full max-w-4xl -ml-[8px] px-4 py-2 rounded-3xl border-2 border-[#E5794B] bg-white shadow-sm">
-          <FaSearch className="text-[#E5794B] mr-2" />
+        {/* Search bar */}
+        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm">
+          <FaSearch className="text-[#76B947] mr-2" />
           <input
             type="text"
             placeholder="Search your friends..."
-            className="w-full outline-none bg-transparent text-sm text-[#E5794B] placeholder-[#E5794B]/70"
+            className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -148,7 +148,7 @@ const FriendsList = () => {
 
         {/* Your Friends */}
         <div>
-          <h3 className="text-lg font-semibold text-[#333333] mb-3">Your Friends</h3>
+          <h2 className="text-lg font-semibold text-[#333333] mb-3">Your Friends</h2>
           <div className="bg-white rounded-xl shadow p-4 space-y-2 border border-[#E5E7EB]">
             {filteredFriends.length === 0 ? (
               <p className="text-sm text-gray-500 text-center py-4">
@@ -204,7 +204,7 @@ const FriendsList = () => {
                   </Link>
                   <button
                     onClick={() => handleFriendRequest(person)}
-                    className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#FFD18C] text-white"
+                    className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#72C1F5] text-white"
                   >
                     <FaPaperPlane /> Request
                   </button>

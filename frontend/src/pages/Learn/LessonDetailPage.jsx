@@ -1,33 +1,36 @@
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaChevronDown, FaChevronUp, FaCheckCircle, FaTrophy} from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaCheckCircle, FaTrophy, FaClock, FaBookOpen } from 'react-icons/fa';
 import LearnLayout from './LearnLayout';
 
 const colorMap = {
   green: {
-    border: 'border-l-[#88BC46]',
-    text: 'text-[#88BC46]',
-    bg: 'bg-[#88BC46]',
-    ring: 'ring-[#88BC46]'
+    border: 'border-l-[#7FDD53]',
+    text: 'text-[#7FDD53]',
+    bg: 'bg-[#7FDD5320]',
+    ring: 'ring-[#7FDD5320]',
+    icon: 'text-[#7FDD53]'
   },
   blue: {
     border: 'border-l-[#5FBFFF]',
     text: 'text-[#5FBFFF]',
-    bg: 'bg-[#5FBFFF]',
-    ring: 'ring-[#5FBFFF]'
+    bg: 'bg-[#5FBFFF20]',
+    ring: 'ring-[#5FBFFF20]',
+    icon: 'text-[#5FBFFF]'
   },
   purple: {
-    border: 'border-l-[#a78bfa]',
-    text: 'text-[#8b5cf6]',
-    bg: 'bg-[#8b5cf6]',
-    ring: 'ring-[#8b5cf6]'
+    border: 'border-l-[#B1E1FF]',
+    text: 'text-[#B1E1FF]',
+    bg: 'bg-[#B1E1FF20]',
+    ring: 'ring-[#B1E1FF20]',
+    icon: 'text-[#B1E1FF]'
   }
 };
 
 const ModuleLessonsPage = () => {
   const { moduleSlug, moduleId } = useParams();
   const navigate = useNavigate();
-  
+
   const user = localStorage.getItem('user');
   const userId = user ? JSON.parse(user).id : null;
 
@@ -42,28 +45,27 @@ const ModuleLessonsPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [moduleTitle, setModuleTitle] = useState('');
+  const [moduleDescription, setModuleDescription] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        
-        // Fetch module details
+
         const moduleResponse = await fetch(`http://localhost:5000/api/learning/${moduleId}`);
         if (!moduleResponse.ok) throw new Error('Failed to load module');
         const moduleData = await moduleResponse.json();
         setModuleTitle(moduleData.data.module_title);
-        
-        // Fetch lessons
+        setModuleDescription(moduleData.data.module_description || 'Boost your financial knowledge with this module');
+
         const lessonsResponse = await fetch(`http://localhost:5000/api/learning/${moduleId}/lessons`);
         if (!lessonsResponse.ok) throw new Error('Failed to load lessons');
         const lessonsData = await lessonsResponse.json();
-        
-        // Fetch quiz
+
         const quizResponse = await fetch(`http://localhost:5000/api/learning/quizzes/${moduleId}`);
         if (!quizResponse.ok) throw new Error('Failed to load quiz');
         const quizData = await quizResponse.json();
-        
+
         setLessons(lessonsData.data.map((lesson, index) => ({
           id: lesson.lesson_id,
           title: lesson.lesson_title,
@@ -71,8 +73,8 @@ const ModuleLessonsPage = () => {
           content: lesson.content,
           estimated_duration: lesson.estimated_duration
         })));
-        
-        setQuizData(quizData.data[0]); // Assuming the API returns an array with one quiz
+
+        setQuizData(quizData.data[0]);
       } catch (error) {
         console.error('Error:', error);
         setError(error.message);
@@ -96,43 +98,40 @@ const ModuleLessonsPage = () => {
     }));
   };
 
-const submitQuiz = async () => {
-  if (!quizData) return;
-  
-  let score = 0;
-  quizData.questions_jsonb.forEach((question, index) => {
-    if (quizAnswers[index] === question.correct_answer) {
-      score += question.points;
-    }
-  });
+  const submitQuiz = async () => {
+    if (!quizData) return;
 
-  // Submit quiz answers to backend
-  try {
-    await fetch(`http://localhost:5000/api/learning/quizzes/${moduleId}/submit`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        answers: quizAnswers,
-        userId: userId,
-        passed: score >= quizData.pass_score,
-        attempt_score : score
-      })
+    let score = 0;
+    quizData.questions_jsonb.forEach((question, index) => {
+      if (quizAnswers[index] === question.correct_answer) {
+        score += question.points;
+      }
     });
-  } catch (err) {
-    // Optionally handle error
-    console.error('Failed to submit quiz:', err);
-  }
-  
-  setQuizScore(score);
-  setQuizSubmitted(true);
-  
-  if (readLessons.length === lessons.length) {
-    setShowCompletion(true);
-  }
-};
 
+    try {
+      await fetch(`http://localhost:5000/api/learning/quizzes/${moduleId}/submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          answers: quizAnswers,
+          userId: userId,
+          passed: score >= quizData.pass_score,
+          attempt_score: score
+        })
+      });
+    } catch (err) {
+      console.error('Failed to submit quiz:', err);
+    }
+
+    setQuizScore(score);
+    setQuizSubmitted(true);
+
+    if (readLessons.length === lessons.length) {
+      setShowCompletion(true);
+    }
+  };
 
   const resetQuiz = () => {
     setQuizAnswers({});
@@ -141,22 +140,22 @@ const submitQuiz = async () => {
   };
 
   const calculateProgress = () => {
-    const totalLessons = lessons.length + (quizData ? 1 : 0); // Count quiz as a lesson
+    const totalLessons = lessons.length + (quizData ? 1 : 0);
     const completed = readLessons.length + (quizSubmitted ? 1 : 0);
     return totalLessons ? Math.round((completed / totalLessons) * 100) : 0;
   };
 
   const renderLessonContent = (lesson) => {
     return (
-      <div className="mt-4 space-y-4">
-        <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+      <div className="mt-4 space-y-4 animate-fadeIn">
+        <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-line">
           {lesson.content}
         </div>
-        
+
         <div className="pt-4 border-t border-gray-100">
-          <button 
+          <button
             onClick={() => toggleExpand(lesson.id)}
-            className="text-sm text-gray-500 hover:text-gray-700 flex items-center"
+            className="text-sm text-gray-500 hover:text-gray-700 flex items-center transition-colors"
           >
             Collapse lesson
             <FaChevronUp className="ml-1" />
@@ -166,12 +165,41 @@ const submitQuiz = async () => {
     );
   };
 
+  if (isLoading) {
+    return (
+      <LearnLayout>
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#5FBFFF]"></div>
+        </div>
+      </LearnLayout>
+    );
+  }
+
   if (error) {
     return (
       <LearnLayout>
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-          <strong className="font-bold">Error: </strong>
-          <span className="block sm:inline">{error}</span>
+        <div className="max-w-6xl mx-auto p-4">
+          <div className="bg-red-50 border-l-4 border-[#FF8A8A] p-4 rounded-r-lg">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-[#FF8A8A]" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-[#FF8A8A]">Error loading module content</h3>
+                <div className="mt-2 text-sm text-[#FF8A8A]">
+                  <p>{error}</p>
+                </div>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="mt-3 inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#FF8A8A] hover:bg-[#FF6B6B] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF8A8A]"
+                >
+                  Try Again
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </LearnLayout>
     );
@@ -180,25 +208,25 @@ const submitQuiz = async () => {
   return (
     <LearnLayout>
       {showCompletion && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full text-center animate-bounce-in">
-            <div className="bg-[#fef9c3] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FaTrophy className="text-[#eab308] text-3xl" />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full text-center animate-zoomIn">
+            <div className="bg-gradient-to-br from-[#FFC54120] to-[#FFC54110] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+              <FaTrophy className="text-[#FFC541] text-3xl" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">Congratulations!</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Module Complete!</h3>
             <p className="text-gray-600 mb-4">
-              You've completed the {moduleTitle} module with a score of {quizScore}/{quizData?.max_score} on the quiz!
+              You've successfully completed <span className="font-semibold text-gray-800">{moduleTitle}</span> with a score of {quizScore}/{quizData?.max_score} on the quiz.
             </p>
-            <div className="flex justify-center space-x-3">
+            <div className="flex flex-col gap-2">
               <button
                 onClick={() => setShowCompletion(false)}
-                className="px-4 py-2 bg-[#8b5cf6] text-white rounded-full hover:bg-[#7c3aed]"
+                className="px-4 py-2 bg-gradient-to-r from-[#5FBFFF] to-[#B1E1FF] text-white rounded-lg font-medium hover:from-[#4FAFFF] hover:to-[#A1D1FF] transition-all shadow"
               >
                 Continue Learning
               </button>
               <button
                 onClick={() => navigate('/learn')}
-                className="px-4 py-2 bg-white border border-gray-300 rounded-full hover:bg-gray-50"
+                className="px-4 py-2 bg-white border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition-all"
               >
                 Back to Courses
               </button>
@@ -206,66 +234,96 @@ const submitQuiz = async () => {
           </div>
         </div>
       )}
-      
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-semibold text-[#0ea5e9] bg-[#e0f2fe] inline-block px-4 py-1 rounded-full mb-6">
-            {moduleTitle || 'Module Lessons'}
-          </h2>
-          <button 
-            onClick={() => navigate(-1)} 
-            className="px-4 py-2 bg-[#AAD977] text-white text-sm rounded-full shadow hover:from-green-500"
-          >
-            Back to Courses
-          </button>
+
+      <div className="max-w-6xl mx-auto px-6 py-6">
+        {/* Module Header */}
+        <div className="bg-gradient-to-r from-[#B1E1FF20] to-[#7FDD5320] rounded-xl p-6 mb-6 shadow-sm border border-gray-100">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#B1E1FF20] text-[#5FBFFF]">
+                  Module
+                </span>
+                <span className="text-sm text-gray-500 flex items-center">
+                  <FaClock className="mr-1 text-[#F68D2B]" /> {lessons.reduce((acc, lesson) => acc + lesson.estimated_duration, 0)} min
+                </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{moduleTitle}</h1>
+              <p className="text-gray-600">{moduleDescription}</p>
+            </div>
+            <button
+              onClick={() => navigate(-1)}
+              className="px-5 py-2 bg-white border border-gray-200 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back to Courses
+            </button>
+          </div>
         </div>
 
-        <div className="flex items-center mb-6">
-          <div className="w-48 bg-gray-200 rounded-full h-2.5 mr-2">
-            <div 
-              className="bg-[#22c55e] h-2.5 rounded-full" 
+        {/* Progress Bar */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="text-sm font-medium text-gray-700">Your Progress</h3>
+            <span className="text-sm font-medium text-gray-600">
+              {readLessons.length + (quizSubmitted ? 1 : 0)} of {lessons.length + (quizData ? 1 : 0)} completed
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2.5">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53]"
               style={{ width: `${calculateProgress()}%` }}
             ></div>
           </div>
-          <span className="text-sm text-gray-600">
-            {readLessons.length + (quizSubmitted ? 1 : 0)} of {lessons.length + (quizData ? 1 : 0)} items completed
-          </span>
         </div>
 
-        <div className="space-y-4 mb-8">
+        {/* Lessons List */}
+        <div className="space-y-4 mb-12">
+          <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+            <FaBookOpen className="text-[#B1E1FF]" />
+            Lessons
+          </h2>
+
           {lessons.map((lesson) => (
             <div
               key={lesson.id}
-              className={`bg-white shadow-md rounded-xl overflow-hidden border-l-4 ${colorMap[lesson.color].border} transition-all duration-200 ${
-                expandedId === lesson.id ? `ring-2 ring-opacity-50 ${colorMap[lesson.color].ring}` : ''
-              }`}
+              className={`bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 ${colorMap[lesson.color].border
+                } ${expandedId === lesson.id ? `ring-2 ${colorMap[lesson.color].ring} shadow-md` : ''
+                }`}
             >
               <div
-                className="flex justify-between items-center p-4 cursor-pointer"
+                className="flex justify-between items-center p-5 cursor-pointer"
                 onClick={() => toggleExpand(lesson.id)}
               >
-                <div className="flex items-center">
-                  <div 
-                    className={`w-8 h-8 rounded-full flex items-center justify-center mr-3`}
-                    style={{ backgroundColor: `${colorMap[lesson.color].bg.replace('bg-[', '').replace(']', '')}80` }}
+                <div className="flex items-start gap-4">
+                  <div
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${colorMap[lesson.color].bg}`}
                   >
-                    <span className={`text-xs font-bold ${colorMap[lesson.color].text}`}>
+                    <span className={`text-lg font-bold ${colorMap[lesson.color].text}`}>
                       {lesson.id}
                     </span>
                   </div>
                   <div>
-                    <h3 className={`font-semibold text-md ${colorMap[lesson.color].text}`}>
+                    <h3 className={`font-semibold text-lg ${colorMap[lesson.color].text}`}>
                       {lesson.title}
                     </h3>
-                    <p className="text-xs text-gray-500">
-                      {lesson.estimated_duration} min • Click to expand
+                    <p className="text-sm text-gray-500 mt-1 flex items-center gap-2">
+                      <span className="flex items-center gap-1">
+                        <FaClock className="text-xs" />
+                        {lesson.estimated_duration} min
+                      </span>
+                      {readLessons.includes(lesson.id) && (
+                        <span className="inline-flex items-center gap-1 text-[#7FDD53]">
+                          <FaCheckCircle className="text-xs" />
+                          Completed
+                        </span>
+                      )}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  {readLessons.includes(lesson.id) && (
-                    <FaCheckCircle className="text-[#22c55e]" />
-                  )}
+                <div className="ml-4">
                   {expandedId === lesson.id ? (
                     <FaChevronUp className="text-gray-400" />
                   ) : (
@@ -274,7 +332,7 @@ const submitQuiz = async () => {
                 </div>
               </div>
               {expandedId === lesson.id && (
-                <div className="p-4 pt-0">
+                <div className="px-5 pb-5">
                   {renderLessonContent(lesson)}
                 </div>
               )}
@@ -285,36 +343,41 @@ const submitQuiz = async () => {
         {/* Quiz Section */}
         {quizData && (
           <div className="mt-12">
-            <h3 className="text-xl font-semibold text-gray-800 mb-6 pb-2 border-b border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#B1E1FF]" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
               Module Quiz
-            </h3>
-            
-            <div className={`bg-white shadow-md rounded-xl overflow-hidden border-l-4 ${colorMap.purple.border} ${expandedId === 'quiz' ? `ring-2 ring-opacity-50 ${colorMap.purple.ring}` : ''}`}>
+            </h2>
+
+            <div className={`bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 ${colorMap.purple.border
+              } ${expandedId === 'quiz' ? `ring-2 ${colorMap.purple.ring} shadow-md` : ''
+              }`}>
               <div
-                className="flex justify-between items-center p-4 cursor-pointer"
+                className="flex justify-between items-center p-5 cursor-pointer"
                 onClick={() => setExpandedId(prev => prev === 'quiz' ? null : 'quiz')}
               >
-                <div className="flex items-center">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${colorMap.purple.bg} bg-opacity-50`}>
-                    <span className={`text-xs font-bold ${colorMap.purple.text}`}>
+                <div className="flex items-start gap-4">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${colorMap.purple.bg}`}>
+                    <span className={`text-lg font-bold ${colorMap.purple.text}`}>
                       Q
                     </span>
                   </div>
                   <div>
-                    <h3 className={`font-semibold text-md ${colorMap.purple.text}`}>
-                      Test Your Knowledge
+                    <h3 className={`font-semibold text-lg ${colorMap.purple.text}`}>
+                      Knowledge Check
                     </h3>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-sm text-gray-500 mt-1">
                       {quizData.questions_jsonb.length} questions • Pass score: {quizData.pass_score}/{quizData.max_score}
+                      {quizSubmitted && (
+                        <span className={`ml-3 font-medium ${quizScore >= quizData.pass_score ? 'text-[#7FDD53]' : 'text-[#FF8A8A]'}`}>
+                          Your score: {quizScore}/{quizData.max_score}
+                        </span>
+                      )}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  {quizSubmitted && (
-                    <span className={`text-sm font-medium ${quizScore >= quizData.pass_score ? 'text-green-600' : 'text-red-600'}`}>
-                      {quizScore}/{quizData.max_score}
-                    </span>
-                  )}
+                <div className="ml-4">
                   {expandedId === 'quiz' ? (
                     <FaChevronUp className="text-gray-400" />
                   ) : (
@@ -322,72 +385,85 @@ const submitQuiz = async () => {
                   )}
                 </div>
               </div>
-              
+
               {expandedId === 'quiz' && (
-                <div className="p-4 pt-0">
+                <div className="px-5 pb-5">
                   {!quizSubmitted ? (
                     <div className="space-y-6">
                       {quizData.questions_jsonb.map((question, qIndex) => (
-                        <div key={qIndex} className="bg-gray-50 p-4 rounded-lg">
+                        <div key={qIndex} className="bg-gray-50 p-5 rounded-lg border border-gray-100">
                           <h4 className="font-medium text-gray-800 mb-3">
-                            {question.question} <span className="text-sm text-gray-500">({question.points} point{question.points !== 1 ? 's' : ''})</span>
+                            <span className="text-gray-500 mr-2">Q{qIndex + 1}:</span>
+                            {question.question}
+                            <span className="text-sm text-gray-500 ml-2">({question.points} point{question.points !== 1 ? 's' : ''})</span>
                           </h4>
                           <div className="space-y-3">
                             {question.options.map((option, oIndex) => (
-                              <label key={oIndex} className="flex items-center space-x-3 cursor-pointer">
-                                <input
-                                  type="radio"
-                                  name={`question-${qIndex}`}
-                                  checked={quizAnswers[qIndex] === oIndex}
-                                  onChange={() => handleQuizAnswer(qIndex, oIndex)}
-                                  className="text-purple-600 focus:ring-purple-500"
-                                />
+                              <div
+                                key={oIndex}
+                                className="flex items-center space-x-3 cursor-pointer group p-3 rounded-lg hover:bg-gray-100 transition-colors"
+                                onClick={() => handleQuizAnswer(qIndex, oIndex)}
+                              >
+                                <div className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center ${quizAnswers[qIndex] === oIndex
+                                  ? 'border-[#5FBFFF] bg-[#5FBFFF]'
+                                  : 'border-gray-300'
+                                  }`}>
+                                  {quizAnswers[qIndex] === oIndex && (
+                                    <div className="w-2 h-2 rounded-full bg-white"></div>
+                                  )}
+                                </div>
                                 <span className="text-gray-700">{option}</span>
-                              </label>
+                              </div>
                             ))}
                           </div>
                         </div>
                       ))}
-                      
+
                       <button
                         onClick={submitQuiz}
                         disabled={Object.keys(quizAnswers).length !== quizData.questions_jsonb.length}
-                        className={`w-full mt-4 px-6 py-3 rounded-lg font-medium ${
-                          Object.keys(quizAnswers).length === quizData.questions_jsonb.length
-                            ? 'bg-purple-600 text-white hover:bg-purple-700'
-                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        }`}
+                        className={`w-full mt-6 px-6 py-3 rounded-lg font-medium text-lg transition-all ${Object.keys(quizAnswers).length === quizData.questions_jsonb.length
+                            ? 'bg-[#5FBFFF] text-white hover:bg-[#4FAFFF] shadow-md'
+                            : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                          }`}
                       >
                         Submit Quiz
                       </button>
                     </div>
                   ) : (
-                    <div className="bg-white p-6 rounded-lg text-center">
-                      <div className={`text-4xl font-bold mb-2 ${
-                        quizScore >= quizData.pass_score ? 'text-green-600' : 'text-red-600'
-                      }`}>
+                    <div className="bg-white p-6 rounded-lg text-center border border-gray-100">
+                      <div className={`text-5xl font-bold mb-3 ${quizScore >= quizData.pass_score ? 'text-[#7FDD53]' : 'text-[#FF8A8A]'
+                        }`}>
                         {quizScore}/{quizData.max_score}
                       </div>
-                      <div className="text-lg font-medium mb-4">
+                      <div className="text-xl font-medium mb-4">
                         {quizScore >= quizData.pass_score ? (
-                          <span className="text-green-600">Congratulations! You passed! 🎉</span>
+                          <span className="text-[#7FDD53]">Congratulations! You passed! 🎉</span>
                         ) : (
-                          <span className="text-red-600">Keep practicing! You'll get it next time! 💪</span>
+                          <span className="text-[#FF8A8A]">Keep practicing! You'll get it next time! 💪</span>
                         )}
                       </div>
-                      <div className="mb-6">
-                        <p className="text-gray-600">
-                          {quizScore >= quizData.pass_score 
-                            ? "You've demonstrated a good understanding of this module."
+                      <div className="mb-6 text-gray-600 max-w-md mx-auto">
+                        <p>
+                          {quizScore >= quizData.pass_score
+                            ? "You've demonstrated a good understanding of this module's concepts."
                             : "Review the material and try again to improve your score."}
                         </p>
                       </div>
-                      <button
-                        onClick={resetQuiz}
-                        className="px-6 py-2 bg-purple-100 text-purple-700 rounded-lg font-medium hover:bg-purple-200"
-                      >
-                        Retake Quiz
-                      </button>
+                      <div className="flex flex-col sm:flex-row justify-center gap-3">
+                        <button
+                          onClick={resetQuiz}
+                          className="px-6 py-2 bg-[#B1E1FF20] text-[#5FBFFF] rounded-lg font-medium hover:bg-[#B1E1FF30] transition-colors"
+                        >
+                          Retake Quiz
+                        </button>
+                        <button
+                          onClick={() => setExpandedId(null)}
+                          className="px-6 py-2 bg-white border border-gray-200 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          Continue Learning
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>

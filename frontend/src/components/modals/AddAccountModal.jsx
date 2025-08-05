@@ -7,7 +7,6 @@ const AddAccountModal = ({ isOpen, onClose, onAdd }) => {
     accountName: '',
     accountType: '',
     balance: '',
-    available: '',
     currency: 'ZAR',
   });
 
@@ -61,7 +60,6 @@ const AddAccountModal = ({ isOpen, onClose, onAdd }) => {
             { label: 'Bank Name', name: 'bankName', placeholder: 'FNB' },
             { label: 'Account Name', name: 'accountName', placeholder: 'Private Account' },
             { label: 'Balance', name: 'balance', placeholder: '10000' },
-            //{ label: 'Balance', name: 'balance', placeholder: '500' },
           ].map((field) => (
             <div key={field.name}>
               <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
@@ -89,6 +87,16 @@ const AddAccountModal = ({ isOpen, onClose, onAdd }) => {
               <option value="USD">USD ($)</option>
               <option value="EUR">EUR (€)</option>
               <option value="GBP">GBP (£)</option>
+              <option value="BTC">BTC (₿)</option>
+              <option value="ETH">ETH (Ξ)</option>
+              <option value="USDT">USDT (₮)</option>
+              <option value="LTC">LTC (Ł)</option>
+              <option value="XRP">XRP (✕)</option>
+              <option value="SOL">SOL (◎)</option>
+              <option value="ADA">ADA (₳)</option>
+              <option value="DOGE">DOGE (Ð)</option>
+              <option value="USDC">USDC (∩)</option>
+
             </select>
           </div>
 
