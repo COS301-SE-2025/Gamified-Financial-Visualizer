@@ -215,7 +215,7 @@ const ModuleLessonsPage = () => {
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Module Complete!</h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              You've successfully completed <span className="font-semibold text-gray-800 dark:text-gray-200">{moduleTitle}</span> with a score of {quizScore}/{quizData?.max_score} on the quiz.
+              You've successfully completed <span className="font-semibold text-gray-800 dark:text-gray-200 dark:bg-gray-700">{moduleTitle}</span> with a score of {quizScore}/{quizData?.max_score} on the quiz.
             </p>
             <div className="flex flex-col gap-2">
               <button
@@ -226,7 +226,7 @@ const ModuleLessonsPage = () => {
               </button>
               <button
                 onClick={() => navigate('/learn')}
-                className="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-all"
+                className="px-4 py-2 bg-white border border-gray-200 dark:border-gray-600 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-all dark:text-gray-800"
               >
                 Back to Courses
               </button>

@@ -457,7 +457,7 @@ const BudgetPage = () => {
 
         {/* Search Bar */}
         <div className="mb-6">
-          <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm">
+          <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm dark:bg-gray-800 ">
             <FaSearch className="text-[#76B947] mr-2" />
             <input
               type="text"

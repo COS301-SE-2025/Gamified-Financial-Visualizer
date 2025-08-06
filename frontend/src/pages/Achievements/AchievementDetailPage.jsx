@@ -70,10 +70,10 @@ const BadgeTaskCard = ({ task, colorInfo, image, isCompleted }) => {
   const isComplete = progressPercent >= 100;
 
   return (
-    <div className={`flex items-center justify-between p-5 dark:bg-gray-800 rounded-xl shadow-sm transition-all hover:shadow-md ${colorInfo.bg} border-l-4`}
+    <div className={`flex items-center justify-between p-5 rounded-xl shadow-sm transition-all hover:shadow-md  ${colorInfo.bg} border-l-4 `}
       style={{ borderLeftColor: colorInfo.hex }}>
       <div className="flex items-center gap-4 w-full">
-        <div className={`relative flex-shrink-0 w-16 h-16 flex items-center justify-center rounded-full ${isComplete ? 'ring-2 ring-yellow-400' : ''}`}
+        <div className={`relative flex-shrink-0 w-16 h-16 flex items-center justify-center rounded-full  ${isComplete ? 'ring-2 ring-yellow-400' : ''}`}
           style={{ backgroundColor: `${colorInfo.hex}20` }}>
           <img src={image} alt={task.title} className="w-10 h-10 object-contain" />
           {isComplete && (
@@ -85,7 +85,7 @@ const BadgeTaskCard = ({ task, colorInfo, image, isCompleted }) => {
 
         <div className="flex-grow">
           <div className="flex items-center justify-between">
-            <h3 className={`text-lg font-semibold dark:text-gray-200 ${colorInfo.text}`}>
+            <h3 className={`text-lg font-semibold ${colorInfo.text}`}>
               {task.title}
             </h3>
             <span className={`text-sm font-medium ${colorInfo.text}`}>
@@ -100,7 +100,7 @@ const BadgeTaskCard = ({ task, colorInfo, image, isCompleted }) => {
                 {task.progress}/{task.total} ({Math.round(progressPercent)}%)
               </span>
             </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 h-2.5 rounded-full">
+            <div className="w-full bg-gray-200 h-2.5 rounded-full">
               <div className="h-2.5 rounded-full"
                 style={{
                   width: `${progressPercent}%`,
@@ -109,14 +109,15 @@ const BadgeTaskCard = ({ task, colorInfo, image, isCompleted }) => {
             </div>
           </div>
 
-          <p className="text-xs mt-1 dark:text-gray-300" style={{ color: primaryColor }}>
-            {task.progress}/{task.total}
-          </p>
+          {task.description && (
+            <p className="text-sm text-gray-600 mt-2">{task.description}</p>
+          )}
         </div>
       </div>
     </div>
   );
 };
+
 
 const AchievementDetailPage = () => {
   const { id } = useParams();
@@ -228,8 +229,8 @@ const AchievementDetailPage = () => {
           <span className="font-medium">Back to Achievements</span>
         </button>
 
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100">
-          <div className="flex flex-col md:flex-row gap-6 items-start">
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100 dark:bg-gray-800 dark:border-gray-800">
+          <div className="flex flex-col md:flex-row gap-6 items-start ">
             <div className="flex-shrink-0">
               <div className={`w-24 h-24 rounded-full flex items-center justify-center ${colorInfo.bg}`}>
                 <img src={badgeImage} alt={id} className="w-16 h-16 object-contain" />
@@ -237,29 +238,29 @@ const AchievementDetailPage = () => {
             </div>
 
             <div className="flex-grow">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">{id}</h1>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2 dark:text-gray-200">{id}</h1>
 
               {achievementInfo?.description && (
-                <p className="text-gray-600 mb-4">{achievementInfo.description}</p>
+                <p className="text-gray-600 mb-4 ">{achievementInfo.description}</p>
               )}
 
               <div className="flex flex-wrap gap-4">
-                <div className="bg-gray-50 px-4 py-2 rounded-lg">
-                  <p className="text-sm text-gray-500">Category</p>
+                <div className="bg-gray-50 px-4 py-2 rounded-lg dark:bg-gray-700">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 ">Category</p>
                   <p className={`font-medium ${colorInfo.text}`}>
                     {colorKey.charAt(0).toUpperCase() + colorKey.slice(1)}
                   </p>
                 </div>
 
-                <div className="bg-gray-50 px-4 py-2 rounded-lg">
-                  <p className="text-sm text-gray-500">Total XP</p>
+                <div className="bg-gray-50 px-4 py-2 rounded-lg dark:bg-gray-700">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 ">Total XP</p>
                   <p className="font-medium text-gray-900">
                     {tasks.reduce((sum, task) => sum + task.points_awarded, 0)} XP
                   </p>
                 </div>
 
-                <div className="bg-gray-50 px-4 py-2 rounded-lg">
-                  <p className="text-sm text-gray-500">Completion</p>
+                <div className="bg-gray-50 px-4 py-2 rounded-lg  dark:bg-gray-700">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Completion</p>
                   <p className="font-medium text-gray-900">
                     {completedTasks}/{totalTasks} tasks ({completionPercentage}%)
                   </p>
@@ -270,9 +271,9 @@ const AchievementDetailPage = () => {
         </div>
 
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap0-2 dark:text-gray-200">
             <FaTrophy className={colorInfo.text} />
-            <span>Tasks to Complete</span>
+            <span> Tasks to Complete</span>
           </h2>
 
           {tasks.length > 0 ? (
@@ -294,8 +295,8 @@ const AchievementDetailPage = () => {
               ))}
             </div>
           ) : (
-            <div className="bg-gray-50 rounded-lg p-8 text-center">
-              <p className="text-gray-500">No tasks found for this achievement</p>
+            <div className="bg-gray-50 rounded-lg p-8 text-center dark:bg-gray-800">
+              <p className="text-gray-500 dark:text-gray-200">No tasks found for this achievement</p>
             </div>
           )}
         </div>

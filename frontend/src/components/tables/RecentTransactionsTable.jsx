@@ -160,7 +160,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
               <option value="10 Days">Last 10 Days</option>
               <option value="Last Month">Last Month</option>
             </select>
-            <select className="border px-4 py-1 rounded-full text-sm" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+            <select className="border px-4 py-1 rounded-full text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
               <option value="">Filter by type</option>
               <option value="income">Income</option>
               <option value="expense">Expense</option>
@@ -173,7 +173,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
               <button
                 onClick={() => setShowAddModal(true)}
                 disabled={!account || loading}
-                className="flex items-center gap-2 px-4 py-1 bg-[#D8F5C5] text-[#76B947] text-sm font-medium rounded-full hover:bg-[#c8ecb4] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-1 bg-[#D8F5C5] dark:bg-[#AAD977] dark:text-white text-[#76B947] text-sm font-medium rounded-full hover:bg-[#c8ecb4] transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <FaPlus /> Add
               </button>

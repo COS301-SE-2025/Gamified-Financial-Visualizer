@@ -134,12 +134,12 @@ const FriendsList = () => {
         <Toaster position="top-right" />
 
         {/* Search bar */}
-        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm dark:bg-gray-800 dark:border-[#4D7C0F]">
-          <FaSearch className="text-[#76B947] mr-2 dark:text-[#4D7C0F]" />
+        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm dark:bg-gray-800 dark:border-[#88BC46]">
+          <FaSearch className="text-[#76B947] mr-2 dark:text-[#88BC46F]" />
           <input
             type="text"
             placeholder="Search your friends..."
-            className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70"
+            className="w-full outline-none bg-transparent text-sm text-[#76B947] dark:text-[#88BC46] placeholder-[#76B947]/70"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -169,13 +169,13 @@ const FriendsList = () => {
                   </div>
                   <div className="flex gap-2">
                     <Link to={`/community/member/${friend.username}`}>
-                      <button className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#AAD977] text-white hover:bg-[#83AB55] dark:bg-[#A0E555] dark:hover:bg-[#88BC46]">
+                      <button className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#AAD977] text-white hover:bg-[#83AB55] dark:bg-[#AAD977] dark:hover:bg-[#88BC46]">
                         <FaEye /> View
                       </button>
                     </Link>
                     <button
                       onClick={() => handleRemoveFriend(friend)}
-                      className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#FA8B81] text-white hover:bg-[#F87171] dark:bg-[#FF7768] dark:hover:bg-[#E55C4C]"
+                      className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#FA8B81] text-white hover:bg-[#F87171] dark:bg-[#F47466] dark:hover:bg-[#E55C4C]"
                     >
                       <FaUserMinus /> Remove
                     </button>
@@ -205,7 +205,7 @@ const FriendsList = () => {
                 </div>
                 <div className="flex gap-2">
                   <Link to={`/community/member/${person.username}`}>
-                    <button className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#AAD977] text-white hover:bg-[#83AB55] dark:bg-[#A0E555] dark:hover:bg-[#88BC46]">
+                    <button className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#AAD977] text-white hover:bg-[#83AB55] dark:bg-[#AAD977] dark:hover:bg-[#88BC46]">
                       <FaEye /> View
                     </button>
                   </Link>

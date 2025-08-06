@@ -365,7 +365,7 @@ const currentTransactions = filteredTransactions.slice(
           <h2 className="text-2xl font-semibold text-[#1C3C78] dark:text-blue-300">Accounts</h2>
           <button
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-1 px-4 py-1 bg-[#D8F5C5] dark:bg-[#A1E358] text-[#76B947] dark:text-green-100 text-sm font-semibold rounded-full hover:bg-[#c8ecb4] dark:hover:bg-green-700 transition-colors"
+            className="flex items-center gap-1 px-4 py-1 bg-[#D8F5C5] dark:bg-[#AAD977] text-[#76B947] dark:text-white text-sm font-semibold rounded-full hover:bg-[#c8ecb4] dark:hover:bg-[#A1E358] transition-colors"
           >
             <FaPlus /> Add
           </button>
@@ -424,12 +424,12 @@ const currentTransactions = filteredTransactions.slice(
       {/* Right Panel */}
       <div className="flex-1 space-y-6">
         {/* Search */}
-        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] dark:border-green-600 rounded-full bg-white dark:bg-gray-800 shadow-sm">
-          <FaSearch className="text-[#76B947] dark:text-green-400 mr-2" />
+        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] dark:border-[#88BC46] rounded-full bg-white dark:bg-gray-800 shadow-sm">
+          <FaSearch className="text-[#76B947] dark:text-[#88BC46] mr-2" />
           <input
             type="text"
             placeholder="Search your transactions..."
-            className="w-full outline-none bg-transparent text-sm text-[#76B947] dark:text-green-200 placeholder-[#76B947]/70 dark:placeholder-green-400/70"
+            className="w-full outline-none bg-transparent text-sm text-[#76B947]  placeholder-[#76B947]/70 dark:text-[#88BC46]"
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);

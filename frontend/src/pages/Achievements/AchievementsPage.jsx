@@ -105,28 +105,29 @@ const AchievementCard = ({ achievement }) => {
   const { border, fill, text, bg } = colorMap[colorKey];
   const image = getBadgeImage(achievement_title);
 
+  {/*Achievements card*/}
   return (
     <div
       onClick={() => navigate(`/achievements/${achievement_title}`)}
-      className={`cursor-pointer border-2 ${border} rounded-xl p-4 bg-white flex flex-col items-center gap-3 hover:shadow-md transition-shadow ${bg}`}
+      className={`cursor-pointer border-2 ${border} rounded-xl p-4 bg-white dark:bg-gray-800 flex flex-col items-center gap-3 hover:shadow-md transition-shadow ${bg}`}  
       title="Click to view details and sub-achievements"
     >
       <div className="relative">
-        <img src={image} alt={achievement_title} className="w-16 h-16 object-contain" />
+        <img src={image} alt={achievement_title} className="w-16 h-16 object-contain dark:text-gray-200" />
         {percent === 100 && (
-          <div className="absolute -top-1 -right-1 bg-yellow-400 rounded-full w-5 h-5 flex items-center justify-center">
+          <div className="absolute -top-1 -right-1 bg-yellow-400 rounded-full w-5 h-5 flex items-center justify-center dark:text-gray-300">
             <span className="text-xs font-bold">✓</span>
           </div>
         )}
       </div>
 
       <div className="text-center">
-        <h3 className={`text-sm font-semibold ${text}`}>{achievement_title}</h3>
-        <p className="text-xs text-gray-500 mt-1 line-clamp-2">{achievement_description || 'Complete tasks to earn this achievement'}</p>
+        <h3 className={`text-sm font-semibold dark:text-gray-200 ${text}`}>{achievement_title}</h3>
+        <p className="text-xs text-gray-500 mt-1 line-clamp-2 dark:text-gray-300">{achievement_description || 'Complete tasks to earn this achievement'}</p>
       </div>
 
       <div className="w-full mt-1">
-        <div className="flex justify-between text-xs font-medium mb-1">
+        <div className="flex justify-between text-xs font-medium mb-1 dark:text-gray-300">
           <span className={`${text}`}>{points_awarded} XP</span>
           <span className="text-gray-600">{progress}/{total}</span>
         </div>
@@ -136,13 +137,13 @@ const AchievementCard = ({ achievement }) => {
             style={{ width: `${percent}%` }}
           />
         </div>
-        <div className="flex justify-between text-xs text-gray-600 font-medium pt-1 dark:text-gray-200">
+        <div className="flex justify-between text-xs text-gray-600 font-medium pt-1 dark:text-gray-300">
           <span>{points_awarded} XP</span>
           <span>{progress}/{total}</span>
         </div>
       </div>
 
-      <div className="text-xs text-gray-500 mt-1">
+      <div className="text-xs text-gray-500 mt-1 dark:text-gray-400">
         {percent === 100 ? 'Completed!' : 'Click for details'}
       </div>
     </div>
@@ -211,8 +212,8 @@ const AchievementsPage = () => {
         <div className="bg-gradient-to-r from-[#B1E1FF20] to-[#7FDD5320] rounded-xl p-6 mb-6 shadow-sm border border-gray-100">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">All Your Achievements</h1>
-              <p className="text-gray-600">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 dark:text-gray-200">All Your Achievements</h1>
+              <p className="text-gray-600 dark:text-gray-300">
                 Complete challenges to earn XP and unlock badges. Click on any achievement to see its sub-tasks and requirements.
               </p>
 

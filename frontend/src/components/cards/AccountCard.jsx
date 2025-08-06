@@ -68,7 +68,7 @@ const AccountCard = ({
           <div className="text-right">
             <p className="text-sm font-semibold text-black dark:text-white">{type}</p>
             <p className={`text-sm ${
-              isActive ? 'text-[#76B947] font-bold' : 'text-gray-500 dark:text-green-400'
+              isActive ? 'text-[#76B947] font-bold' : 'text-gray-500 dark:text-[#A1E358]'
             }`}>
               {isActive ? 'Active (Viewing)' : 'Active'}
             </p>

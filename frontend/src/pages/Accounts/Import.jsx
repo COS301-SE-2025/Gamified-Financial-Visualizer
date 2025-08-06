@@ -334,15 +334,15 @@ const contentType = res.headers.get('content-type');
                   )}
 
                   {/* Configuration */}
-                  <div className="bg-gray-50 p-5 rounded-xl mb-6">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-4">Import Settings</h2>
+                  <div className="bg-gray-50 p-5 rounded-xl mb-6 dark:bg-gray-700">
+                    <h2 className="text-lg font-semibold text-gray-800 mb-4 dark:text-gray-200">Import Settings</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
                           Destination Account <span className="text-red-500">*</span>
                         </label>
                         <select
-                          className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-sky-400 focus:border-transparent"
+                          className="w-full border border-gray-300 dark:bg-gray-800 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-sky-400 focus:border-transparent"
                           value={selectedAccount}
                           onChange={(e) => setSelectedAccount(e.target.value)}
                           required
@@ -359,7 +359,7 @@ const contentType = res.headers.get('content-type');
                           Bank <span className="text-red-500">*</span>
                         </label>
                         <select
-                          className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-sky-400 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                          className="w-full border border-gray-300 dark:bg-gray-800 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-sky-400 focus:border-transparent  dark:text-white"
                           value={selectedBank}
                           onChange={(e) => setSelectedBank(e.target.value)}
                           required
@@ -378,7 +378,7 @@ const contentType = res.headers.get('content-type');
                         <div className="relative">
                           <input
                             type="password"
-                            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-sky-400 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                            className="w-full border border-gray-300 dark:bg-gray-800 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-sky-400 focus:border-transparent  dark:text-white"
                             placeholder="Enter password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
