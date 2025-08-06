@@ -25,7 +25,7 @@ const app: Application = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
-  origin: ['http://localhost:3000'],
+  origin: ['https://capable-creponne-f64001.netlify.app'],
   credentials: true,
   methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type','Authorization']
@@ -36,7 +36,7 @@ app.use(express.json());
 const httpServer = http.createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: 'http://localhost:3000',
+    origin: 'https://capable-creponne-f64001.netlify.app',
     methods: ['GET','POST'],
     credentials: true
   }
