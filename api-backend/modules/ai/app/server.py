@@ -3,6 +3,7 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from typing import List
 import uvicorn
+from datetime import datetime
 
 # import your service-layer functions
 from fastapi import FastAPI, HTTPException
@@ -14,6 +15,10 @@ from typing import Optional
 from app.classifier.services.predict_classifier import classify_batch
 from app.classifier.services.train_classifier import main as train_model
 from app.classifier.services.feedback_trainer import main as train_feedback
+from app.insights.services.insights_engine import (
+    generate_wrapped_insights,
+    fetch_user_data
+)
 
 app = FastAPI(title="AI Service")
 
@@ -89,6 +94,36 @@ def get_insights(req: int):
     """
     return {"insights": []}
 
+
+@app.get("/insights/{user_id}/{month}")
+def get_monthly_insights(user_id: int, month: int):
+    """
+    Returns a Spotify-Wrapped style summary for `user_id` and `month`.
+    """
+    try:
+        # 1. Pull raw user data from your DB
+        user_data = fetch_user_data(user_id, month)
+
+        # 2. Pass into the Python insights engine
+        result = generate_wrapped_insights(user_data)
+
+        # 3. Return a combined payload
+        return {
+            "user_id": user_id,
+            "month": month,
+            **result
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/insights/{user_id}")
+def get_current_month_insights(user_id: int):
+    """
+    Shortcut: fetch insights for the current month.
+    """
+    current_month = datetime.now().month
+    return get_monthly_insights(user_id, current_month)
 
 # --- serve ---
 if __name__ == "__main__":

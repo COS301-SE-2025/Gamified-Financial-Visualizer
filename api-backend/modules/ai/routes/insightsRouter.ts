@@ -199,16 +199,58 @@ router.get('/wealth/:userId', async (req, res) => {
    }
 });
 
-// get semtiment analysis insights
-router.get('/sentiment/:userId', async (req, res) => {
-   const { userId } = req.params;
+const INSIGHTS_BASE = "http://localhost:6000/insights";
+
+// 1) Month + User → Wrapped insights
+//    e.g. GET /sentiment/7/42  → proxies to GET http://localhost:6000/insights/42/7
+router.get("/sentiment/:month/:userId", async (req, res) => {
+  const { month, userId } = req.params;
+  try {
+    const { data } = await axios.get(`${INSIGHTS_BASE}/${userId}/${month}`);
+    res.json(data);
+  } catch (err) {
+       const error = err as any;
+
+    if (err instanceof Error) {
+      console.error("Error fetching wrapped insights:", err.message);
+      res.status(error.response?.status || 500).json({
+        error: "Failed to fetch wrapped insights",
+        details: err.message
+      });
+    } else {
+      console.error("Error fetching wrapped insights:", err);
+      res.status(500).json({
+        error: "Failed to fetch wrapped insights",
+        details: String(err)
+      });
+    }
+  }
 });
 
-// get sentiment analysis insights wrapped
-router.get('/sentiment/:month/:userId', async (req, res) => {
-   const { userId } = req.params;   
-   const month = parseInt(req.params.month, 10);
+// 2) User only → current-month insights shortcut
+//    e.g. GET /sentiment/42 → proxies to GET http://localhost:6000/insights/42
+router.get("/sentiment/:userId", async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const { data } = await axios.get(`${INSIGHTS_BASE}/${userId}`);
+    res.json(data);
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error("Error fetching current-month insights:", err.message);
+      res.status((err as any).response?.status || 500).json({
+        error: "Failed to fetch current-month insights",
+        details: err.message
+      });
+    } else {
+      console.error("Error fetching current-month insights:", err);
+      res.status(500).json({
+        error: "Failed to fetch current-month insights",
+        details: String(err)
+      });
+    }
+  }
 });
+
 
 router.get('/score/:userId', async (req, res) => {
    const { userId } = req.params;
@@ -219,6 +261,7 @@ router.get('/score/:userId', async (req, res) => {
 // get impulse insights
 router.get('/impulse/:userId', async (req, res) => {
    const { userId } = req.params;
+
 });
 
 // recommend budgets
