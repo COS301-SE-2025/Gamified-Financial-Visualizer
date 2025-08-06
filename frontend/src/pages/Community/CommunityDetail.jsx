@@ -426,7 +426,7 @@ const CommunityDetail = () => {
                 value={communityData.description}
                 onChange={handleChange}
                 rows={3}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 dark:bg-gray-700 dark:text-white"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 dark:bg-gray-700 dark:text-gray-300"
                 placeholder="Enter a description for your community"
               />
             </div>
@@ -513,8 +513,8 @@ const CommunityDetail = () => {
                     alt={member.username}
                   />
                   <div>
-                    <p className="text-sm font-semibold text-[#374151]">{member.username}</p>
-                    <p className="text-xs text-[#6B7280]">{member.level}</p>
+                    <p className="text-sm font-semibold text-[#374151] dark:text-gray-200">{member.username}</p>
+                    <p className="text-xs text-[#6B7280] dark:text-gray-400">{member.level}</p>
                   </div>
 
 
@@ -677,18 +677,18 @@ const CommunityDetail = () => {
         {/* Community Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Community Progress Card */}
-          <div className="bg-white p-6 rounded-2xl shadow border border-[#E5E7EB]">
-            <h4 className="text-sm font-semibold mb-4 text-[#1F2937]">Community Progress</h4>
+          <div className="bg-white p-6 rounded-2xl shadow border border-[#E5E7EB] dark:bg-gray-800 dark:border-gray-800">
+            <h4 className="text-sm font-semibold mb-4 text-[#1F2937] dark:text-gray-200">Community Progress</h4>
 
             {/* XP Collected */}
             <div className="mb-5">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-[#374151]">XP Collected</span>
-                <span className="text-sm font-semibold text-[#F97316]">
+                <span className="text-xs font-medium text-[#374151] dark:text-gray-300">XP Collected</span>
+                <span className="text-sm font-semibold text-[#F97316] dark:text-[#E99470]">
                   {communityData.xpCollected} XP
                 </span>
               </div>
-              <div className="w-full h-4 rounded-full overflow-hidden bg-white border border-[#5FBFFF]">
+              <div className="w-full h-4 rounded-full overflow-hidden bg-white border border-[#5FBFFF] dark:bg-gray-800">
                 <div
                   className="h-full"
                   style={{
@@ -698,7 +698,7 @@ const CommunityDetail = () => {
                   }}
                 />
               </div>
-              <p className="text-xs mt-2 text-right text-[#6B7280]">
+              <p className="text-xs mt-2 text-right text-[#6B7280] dark:text-gray-300">
                 Out of {communityData.xpGoal} XP Goal
               </p>
             </div>
@@ -706,14 +706,14 @@ const CommunityDetail = () => {
             {/* Goals Completed */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-[#374151]">Challenges Completed</span>
-                <span className="text-sm font-semibold text-[#F97316]">
+                <span className="text-xs font-medium text-[#374151] dark:text-gray-300">Challenges Completed</span>
+                <span className="text-sm font-semibold text-[#F97316] dark:text-[#E99470]">
                   {communityData.goalsCompleted} / {communityData.goalsTotal}
                 </span>
               </div>
-              <div className="w-full h-4 rounded-full overflow-hidden bg-white border border-[#5FBFFF]">
+              <div className="w-full h-4 rounded-full overflow-hidden bg-white border border-[#5FBFFF] dark:bg-gray-800">
                 <div
-                  className="h-full"
+                  className="h-full "
                   style={{
                     width: `${(communityData.goalsCompleted / communityData.goalsTotal) * 100}%`,
                     background: 'linear-gradient(to right, #5FBFFF, #7FDD53)',
@@ -721,13 +721,13 @@ const CommunityDetail = () => {
                   }}
                 />
               </div>
-              <p className="text-xs mt-2 text-right text-[#6B7280]">Goals Completed</p>
+              <p className="text-xs mt-2 text-right text-[#6B7280] dark:text-gray-300">Goals Completed</p>
             </div>
           </div>
 
           {/* Contribution Score Card */}
-          <div className="bg-white p-6 rounded-2xl shadow border border-[#E5E7EB]">
-            <h4 className="text-sm font-semibold mb-4 text-[#1F2937]">Top Contributors</h4>
+          <div className="bg-white p-6 rounded-2xl shadow border border-[#E5E7EB] dark:bg-gray-800 dark:border-gray-800">
+            <h4 className="text-sm font-semibold mb-4 text-[#1F2937] dark:text-gray-300">Top Contributors</h4>
             {paginatedScores.map((member, index) => (
               <div key={member.id} className="flex items-center justify-between mb-4">
                 {/* Avatar & Name */}

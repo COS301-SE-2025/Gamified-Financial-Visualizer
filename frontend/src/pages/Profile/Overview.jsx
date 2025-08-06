@@ -106,8 +106,8 @@ const Overview = () => {
 
 
           {/* Username and Join date card */}
-          <div className="bg-white shadow-md px-4 py-2 rounded-full flex items-center gap-3">
-            <p className="text-lg font-medium text-gray-800">{profileData?.username || '...'}</p>
+          <div className="bg-white shadow-md px-4 py-2 rounded-full flex items-center gap-3 dark:bg-gray-800">
+            <p className="text-lg font-medium text-gray-800 dark:text-gray-300">{profileData?.username || '...'}</p>
             <p className="text-sm italic text-[#5FBFFF]">
               Joined: <span className="font-medium">
                 {profileData && new Date(profileData.created_at).toLocaleDateString('en-GB', {
@@ -146,14 +146,14 @@ const Overview = () => {
           </div>
 
           {/* Target Level Circle */}
-          <div className="w-10 h-10 rounded-full bg-[#f8e5b5] text-yellow-500 font-bold flex items-center justify-center shadow-sm ">
+          <div className="w-10 h-10 rounded-full bg-[#f8e5b5] dark:bg-[#FFD18C] dark:text-[#CF6108] text-yellow-500 font-bold flex items-center justify-center shadow-sm ">
             {levelProgress?.next_level ?? '—'}
           </div>
         </div>
 
         {/* Progress Bar */}
-        <div className="relative mt-2">
-          <div className="w-full h-6 bg-[#f8e5b5] rounded-full overflow-hidden">
+        <div className="relative mt-2 ">
+          <div className="w-full h-6 bg-[#f8e5b5] rounded-full overflow-hidden dark:bg-[#FFD18C] dark:text-[#CF6108]">
             <div
               className="h-full bg-gradient-to-r from-[#FFD18C] to-[#FFCE51] rounded-full"
               style={{
@@ -257,7 +257,7 @@ const Overview = () => {
                       />
                     </div>
                     <p className="text-sm font-semibold text-gray-800 mt-2">{a.achievement_title}</p>
-                    <p className="text-xs text-yellow-600 font-medium mt-2 bg-yellow-100/50 px-2 py-1 rounded-full inline-block">
+                    <p className="text-xs text-yellow-600 dark:bg-[#FFD18C] dark:text-[#CF6108] font-medium mt-2 bg-yellow-100/50 px-2 py-1 rounded-full inline-block">
                       +{a.xp_reward} XP
                     </p>
                   </motion.div>
@@ -347,7 +347,7 @@ const Overview = () => {
                     <span className="bg-[#E0F2FE] text-[#72C1F5] text-xs font-medium px-3 py-1 rounded-full">
                       {community.challenge_count} Challenges
                     </span>
-                    <span className="bg-[#FEF9C3] text-yellow-500 text-xs font-medium px-3 py-1 rounded-full ">
+                    <span className="bg-[#FEF9C3] dark:bg-[#FFD18C] dark:text-[#CF6108] text-yellow-500 text-xs font-medium px-3 py-1 rounded-full ">
                       {Math.round(community.xp_total)} XP
                     </span>
                   </div>

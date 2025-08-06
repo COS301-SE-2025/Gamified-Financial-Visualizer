@@ -234,7 +234,7 @@ const CommunityMemberPage = () => {
         <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow flex flex-col gap-4 mt-14">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full border-4 border-yellow-400 dark:border-yellow-500 text-yellow-600 dark:text-yellow-400 font-bold flex items-center justify-center shadow-sm">
+              <div className="w-10 h-10 rounded-full border-4 border-yellow-400 dark:border-[#FFD18C] dark:bg-[#FFD18C] dark:text-[#CF6108] font-bold flex items-center justify-center shadow-sm">
                 {levelProgress?.level_number ?? '—'}
               </div>
               <div>
@@ -244,15 +244,15 @@ const CommunityMemberPage = () => {
                   : 'Loading...'}</p>
               </div>
             </div>
-            <div className="w-10 h-10 rounded-full bg-[#f8e5b5] dark:bg-yellow-800 text-yellow-600 dark:text-yellow-200 font-bold flex items-center justify-center shadow-sm">
+            <div className="w-10 h-10 rounded-full bg-[#f8e5b5] dark:bg-[#FFD18C] dark:text-[#CF6108] font-bold flex items-center justify-center shadow-sm">
               {levelProgress?.next_level ?? '—'}
             </div>
           </div>
 
           <div className="relative mt-2">
-            <div className="w-full h-6 bg-yellow-100 dark:bg-yellow-900 rounded-full overflow-hidden">
+            <div className="w-full h-6 bg-yellow-100 dark:bg-[#FFD18C] dark:text-[#CF6108] rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-yellow-400 to-[#FFCE51] dark:from-yellow-500 dark:to-yellow-600 rounded-full"
+                className="h-full bg-gradient-to-r from-yellow-400 to-[#FFCE51] dark:bg-[#FFD18C] dark:text-[#CF6108] rounded-full"
                 style={{
                   width: levelProgress
                     ? `${Math.min(
@@ -263,7 +263,7 @@ const CommunityMemberPage = () => {
                 }}
               />
             </div>
-            <div className="absolute inset-0 flex justify-center items-center text-sm font-semibold text-yellow-700 dark:text-yellow-300">
+            <div className="absolute inset-0 flex justify-center items-center text-sm font-semibold text-yellow-700 dark:bg-[#FFD18C] dark:text-[#CF6108]">
               {levelProgress
                 ? `${levelProgress.current_tier_xp}/${levelProgress.tier_xp_required}`
                 : '...'}
@@ -328,7 +328,7 @@ const CommunityMemberPage = () => {
                     <div className="flex-1">
                       <div className="flex justify-between items-center mb-1">
                         <h3 className="font-medium text-gray-800 dark:text-gray-200">{item.achievement_title}</h3>
-                        <span className="text-xs bg-[#fef9c3] dark:bg-yellow-800 text-[#92400e] dark:text-yellow-200 px-2 py-1 rounded-full border border-[#fde047] dark:border-yellow-600">
+                        <span className="text-xs bg-[#fef9c3] dark:bg-[#FFD18C] dark:text-[#CF6108] text-[#92400e]  px-2 py-1 rounded-full border border-[#fde047]">
                           +{item.xp_reward} XP
                         </span>
                       </div>

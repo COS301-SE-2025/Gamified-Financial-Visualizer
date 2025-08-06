@@ -92,7 +92,7 @@ const CommunityList = () => {
       <Toaster position="top-right" />
       <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4 dark:bg-gray-900">
         {/* Search bar */}
-        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm">
+        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm dark:bg-gray-900">
           <FaSearch className="text-[#76B947] mr-2" />
           <input
             type="text"
@@ -127,7 +127,7 @@ const CommunityList = () => {
           communityList
             .filter(c => c.community_name.toLowerCase().includes(searchTerm.toLowerCase()))
             .map((community, i) => (
-              <div key={i} className="flex justify-between items-center bg-white shadow-md rounded-2xl px-4 py-4">
+              <div key={i} className="flex justify-between items-center bg-white shadow-md rounded-2xl px-4 py-4 dark:bg-gray-800">
                 <div className="flex items-center gap-4">
                   <img
                     src={`/assets/Images/${community.banner}`}
@@ -146,13 +146,13 @@ const CommunityList = () => {
                   )}
 
                     <div className="flex gap-2 mt-2">
-                      <span className="bg-[#E0F2FE] dark:bg-gray-700 text-[#72C1F5] dark:text-[#B1E1FF] text-xs font-medium px-3 py-1 rounded-full">
+                      <span className="bg-[#E0F2FE] dark:bg-[#88D1FF]  dark:text-[#065989] text-[#72C1F5]  text-xs font-medium px-3 py-1 rounded-full">
                         {community.member_count} Members
                       </span>
-                      <span className="bg-[#E0F2FE] dark:bg-gray-700 text-[#72C1F5] dark:text-[#B1E1FF] text-xs font-medium px-3 py-1 rounded-full">
+                      <span className="bg-[#E0F2FE] dark:bg-[#88D1FF]  dark:text-[#065989] text-[#72C1F5] text-xs font-medium px-3 py-1 rounded-full">
                         {community.challenge_count} Challenges
                       </span>
-                      <span className="bg-[#FEF9C3] dark:bg-gray-700 text-[#FBBF24] dark:text-[#FBBF24] text-xs font-medium px-3 py-1 rounded-full">
+                      <span className="bg-[#FEF9C3] text-[#FBBF24] text-xs font-medium px-3 py-1 rounded-full dark:bg-[#FFD18C] dark:text-[#CF6108]">
                         {Math.round(community.xp_total)} XP
                       </span>
                     </div>
@@ -191,8 +191,8 @@ const CommunityList = () => {
 
 
         {/* Discover communities */}
-        <h2 className="text-2xl font-bold text-[#1F2937] mb-4 flex items-center gap-2">
-          <FaUsers className="text-[#72C1F5]" />
+        <h2 className="text-2xl font-bold text-[#1F2937] mb-4 flex items-center gap-2 dark:text-gray-200">
+          <FaUsers className="text-[#72C1F5] " />
           Discover Communities
         </h2>
         {limitedRecommendations.length === 0 ? (
@@ -201,8 +201,8 @@ const CommunityList = () => {
           </p>
         ) : (
           limitedRecommendations.map((community, i) => (
-            <div key={i} className="flex justify-between items-center bg-white shadow-md rounded-2xl px-4 py-4">
-              <div className="flex items-center gap-4">
+            <div key={i} className="flex justify-between items-center bg-white shadow-md rounded-2xl px-4 py-4 dark:bg-gray-800">
+              <div className="flex items-center gap-4 ">
                 <img
                   src={`/assets/Images/${community.banner}`}
                   alt={community.community_name}
@@ -210,23 +210,23 @@ const CommunityList = () => {
                 />
 
                 <div>
-                  <p className="text-lg font-semibold text-gray-800">{community.community_name}</p>
+                  <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">{community.community_name}</p>
 
                   {/* DESCRIPTION BLOCK */}
                   {community.description && (
-                    <p className="text-sm text-gray-500 italic mt-1 max-w-xs line-clamp-2">
+                    <p className="text-sm text-gray-500 italic mt-1 max-w-xs line-clamp-2 dark:text-gray-400">
                       {community.description}
                     </p>
                   )}
 
                   <div className="flex gap-2 mt-2">
-                    <span className="bg-[#E0F2FE] text-[#72C1F5] text-xs font-medium px-3 py-1 rounded-full">
+                    <span className="bg-[#E0F2FE] text-[#72C1F5] text-xs font-medium px-3 py-1 rounded-full dark:bg-[#88D1FF]  dark:text-[#065989] ">
                       {community.member_count} Members
                     </span>
-                    <span className="bg-[#E0F2FE] text-[#72C1F5] text-xs font-medium px-3 py-1 rounded-full">
+                    <span className="bg-[#E0F2FE] text-[#72C1F5] text-xs font-medium px-3 py-1 rounded-full dark:bg-[#88D1FF]  dark:text-[#065989] ">
                       {community.challenge_count} Challenges
                     </span>
-                    <span className="bg-[#FEF9C3] text-[#FBBF24] text-xs font-medium px-3 py-1 rounded-full">
+                    <span className="bg-[#FEF9C3] text-[#FBBF24] text-xs font-medium px-3 py-1 rounded-full dark:bg-[#FFD18C] dark:text-[#CF6108]">
                       {Math.round(community.xp_total)} XP
                     </span>
                   </div>

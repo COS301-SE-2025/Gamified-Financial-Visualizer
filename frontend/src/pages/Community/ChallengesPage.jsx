@@ -216,7 +216,7 @@ const ChallengesPage = () => {
       <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-600">Community Challenges</h2>
+            <h2 className="text-2xl font-bold text-gray-600 dark:text-gray-200">Community Challenges</h2>
             <p className="text-gray-400">Join challenges to earn XP and level up!</p>
           </div>
           <Link to="/community/challenges/create">
@@ -227,7 +227,7 @@ const ChallengesPage = () => {
         </div>
 
 {/* Search bar */}
-        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm">
+        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm dark:bg-gray-800">
                   <FaSearch className="text-[#76B947] mr-2" />
                   <input
                     type="text"
