@@ -7,7 +7,7 @@ import CommunityHeader from '../../layouts/headers/CommunityHeader';
 import { FaHeart, FaComment, FaVrCardboard, FaTrophy, FaBullseye, FaShare, FaPen, FaEye, FaGamepad, FaPaperPlane } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
-import avatar1 from '../../assets/Images/avatars/BeachShore.png';
+import avatar1 from '../../assets/Images/avatars/Totoro.png';
 import avatar2 from '../../assets/Images/avatars/BlueSky.png';
 import postBanner1 from '../../assets/Images/banners/pixelStore.gif';
 import postBanner2 from '../../assets/Images/banners/pixelApartment.gif';

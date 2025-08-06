@@ -12,7 +12,7 @@ import AundreaImg from '../../assets/Team Profiles/Aundrea.png';
 
 // Testimonial imports
 import avatar1 from '../../assets/Images/avatars/BeachShore.png';
-import avatar2 from '../../assets/Images/avatars/BlueSky.png';
+import avatar2 from '../../assets/Images/avatars/CityBuilding.png';
 import avatar3 from '../../assets/Images/avatars/Lily.png';
 
 // Banner header images 

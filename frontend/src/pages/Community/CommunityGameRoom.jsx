@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import CommunityLayout from '../../pages/Community/CommunityLayout';
 import CommunityHeader from '../../layouts/headers/CommunityHeader';
 import {
-    FaUserFriends, FaPlay, FaClock, FaCheckCircle, FaArrowLeft,
+    FaUserFriends, FaClock, FaCheckCircle, FaArrowLeft,
     FaUser, FaTrophy, FaCrown, FaUsers, FaBolt, FaChartBar
 } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';

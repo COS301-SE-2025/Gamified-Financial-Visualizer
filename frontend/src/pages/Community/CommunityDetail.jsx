@@ -5,7 +5,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import CommunityLayout from '../../pages/Community/CommunityLayout';
 import CommunityHeader from '../../layouts/headers/CommunityHeader';
 
-import { FaChartLine, FaStar, FaPlus, FaArrowLeft, FaCrown, FaEye, FaMedal, FaUserPlus, FaEdit, FaSave, FaTimes } from 'react-icons/fa';
+import { FaPlus, FaArrowLeft, FaEye, FaUserPlus, FaEdit, FaSave, FaTimes } from 'react-icons/fa';
 
 import banner from '../../assets/Images/banners/pixelStudents.jpeg';
 import banner1 from '../../assets/Images/banners/pixelGirlAlly.gif';

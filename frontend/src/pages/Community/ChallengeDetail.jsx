@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import CommunityLayout from '../../pages/Community/CommunityLayout';
 import CommunityHeader from '../../layouts/headers/CommunityHeader';
-import { FaCoins, FaCalendarAlt, FaArrowLeft, FaPlus, FaEdit } from 'react-icons/fa';
+import { FaCoins, FaCalendarAlt, FaArrowLeft, FaPlus } from 'react-icons/fa';
 
 import bannerImg from '../../assets/Images/banners/pixelStore.gif';
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import avatar from '../../assets/Images/avatars/BeachShore.png';
+
 import { FaCoins } from 'react-icons/fa';
 
 const GoalOverviewCards = () => {

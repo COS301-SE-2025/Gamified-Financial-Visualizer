@@ -12,7 +12,7 @@ import comm2 from '../../assets/Images/banners/pixelGirlAlly.gif';
 import comm3 from '../../assets/Images/banners/pixelStudents.jpeg';
 import comm4 from '../../assets/Images/banners/pixelWindow.gif';
 
-import avatar4 from '../../assets/Images/avatars/BeachShore.png';
+import avatar4 from '../../assets/Images/avatars/Totoro.png';
 
 
 // Format amount cleanly (e.g., 7500 or 7500.14)

@@ -5,7 +5,7 @@ import { FaTrophy } from 'react-icons/fa';
 import goldMedal from '../../assets/Images/medals/goldMedal.png';
 import silverMedal from '../../assets/Images/medals/silverMedal.png';
 import bronzeMedal from '../../assets/Images/medals/bronzeMedal.png';
-import avatar from '../../assets/Images/avatars/BlueSky.png';
+import avatar from '../../assets/Images/avatars/Ramen.png';
 
 // Utility for top 3 medals
 const getMedalIcon = (rank) => {

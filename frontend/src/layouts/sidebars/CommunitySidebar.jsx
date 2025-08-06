@@ -9,7 +9,7 @@ import {
   FaCommentDots,
   FaHandshake
 } from 'react-icons/fa';
-import avatar from '../../assets/Images/avatars/BeachShore.png';
+import avatar from '../../assets/Images/avatars/BlueSky.png';
 
 const AccountsPerformanceHeader = () => {
   const [stats, setStats] = useState(null);
