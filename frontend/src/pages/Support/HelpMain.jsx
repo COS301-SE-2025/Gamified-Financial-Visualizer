@@ -18,7 +18,6 @@ const HelpMain = () => {
       ];
   });
 
-
   const toggleTask = (index) => {
     setTasks(prev => {
       const updated = prev.map((task, i) =>
@@ -28,7 +27,6 @@ const HelpMain = () => {
       return updated;
     });
   };
-
 
   // Mock user data
   const userStats = {
@@ -53,64 +51,60 @@ const HelpMain = () => {
   };
 
   const xpProgress = (userStats.xp / userStats.nextLevelXp) * 100;
-
-  // Calculate completed count
   const completedCount = tasks.filter(t => t.done).length;
 
-  // Claim reward function
   const claimReward = () => {
     if (completedCount === 3) {
       console.log('Reward Claimed! +15 XP');
-      // Reset all tasks
       setTasks(tasks.map(t => ({ ...t, done: false })));
-
     } else {
       console.log(`${3 - completedCount} more tasks to complete!`);
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+    <div className="max-w-6xl mx-auto px-4 py-8 space-y-6 dark:bg-gray-900">
       {/* Top Row - XP Overview Card */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="bg-[#ffffff] p-6 rounded-3xl shadow-md border-l-8 border-t-2 border-r-2 border-b-2 border-[#FFD18C] relative overflow-hidden"
+        className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-md dark:shadow-gray-700/50 border-l-8 border-t-2 border-r-2 border-b-2 border-[#FFD18C] relative overflow-hidden"
       >
-        <div className="absolute top-0 right-0 w-32 h-32 bg-[#fef9c3] rounded-full filter blur-3xl opacity-40 -mr-10 -mt-10"></div>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-[#fef9c3] dark:bg-yellow-900 rounded-full filter blur-3xl opacity-40 dark:opacity-20 -mr-10 -mt-10"></div>
 
         <div className="relative z-10 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-[#FFBF1A] mb-1">Knowledge Quest</h1>
-            <p className="text-[#4b5563] mb-4">Level {userStats.level} Scholar</p>
+            <h1 className="text-2xl font-bold text-sky-300 mb-1">Knowledge Quest</h1>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">Level {userStats.level} Scholar</p>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-full bg-[#f3f4f6] rounded-full h-3">
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                 <motion.div
-                  className="bg-gradient-to-r from-[#facc15] to-[#fb923c] h-3 rounded-full"
+                  className="bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53] h-3 rounded-full"
+                  // bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53] 
                   initial={{ width: 0 }}
                   animate={{ width: `${xpProgress}%` }}
                   transition={{ duration: 1, delay: 0.3 }}
                 />
               </div>
-              <span className="text-sm font-medium text-[#374151]">{userStats.xp}/{userStats.nextLevelXp} XP</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{userStats.xp}/{userStats.nextLevelXp} XP</span>
             </div>
 
             <div className="flex gap-3">
-              <div className="bg-[#fff7ed] border border-[#fed7aa] rounded-lg px-3 py-2 flex items-center gap-2">
+              <div className="bg-[#fff7ed] dark:bg-gray-700 border border-[#fed7aa] dark:border-gray-600 rounded-lg px-3 py-2 flex items-center gap-2">
                 <FaFire className="text-[#fb923c]" />
-                <span className="text-[#9a3412] text-sm">{userStats.streakDays} day streak</span>
+                <span className="text-[#9a3412] dark:text-orange-300 text-sm">{userStats.streakDays} day streak</span>
               </div>
-              <div className="bg-[#fffbeb] border border-[#fde68a] rounded-lg px-3 py-2 flex items-center gap-2">
+              <div className="bg-[#fffbeb] dark:bg-gray-700 border border-[#fde68a] dark:border-gray-600 rounded-lg px-3 py-2 flex items-center gap-2">
                 <FaTrophy className="text-[#fbbf24]" />
-                <span className="text-[#92400e] text-sm">{userStats.completedTutorials} tutorials</span>
+                <span className="text-[#92400e] dark:text-yellow-300 text-sm">{userStats.completedTutorials} tutorials</span>
               </div>
             </div>
           </div>
 
           <div className="relative">
-            <div className="w-24 h-24 bg-[#ffffff] border-4 border-[#FFD18C] rounded-full shadow-lg flex flex-col items-center justify-center">
+            <div className="w-24 h-24 bg-white dark:bg-gray-800 border-4 border-[#FFD18C] rounded-full shadow-lg flex flex-col items-center justify-center">
               <p className="text-2xl font-bold text-[#FFBF1A]">{userStats.xp}</p>
               <p className="text-xs text-[#6b7280]">XP</p>
             </div>
@@ -139,12 +133,12 @@ const HelpMain = () => {
             onHoverStart={() => setIsHovered('faq')}
             onHoverEnd={() => setIsHovered(null)}
             onClick={() => handleButtonClick('/support/faqs')}
-            className="bg-[#ffffff] p-6 rounded-2xl shadow-sm border-l-8 border-[#B1E1FF] hover:border-[#518fc5] transition-all relative overflow-hidden group w-full"
+            className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border-l-8 border-[#B1E1FF] hover:border-[#518fc5] transition-all relative overflow-hidden group w-full"
           >
             <AnimatePresence>
               {isHovered === 'faq' && (
                 <motion.div
-                  className="absolute inset-0 bg-[#bfdbfe]/30 backdrop-blur-sm"
+                  className="absolute inset-0 bg-[#CBEEA5]/30 backdrop-blur-sm"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -152,15 +146,17 @@ const HelpMain = () => {
               )}
             </AnimatePresence>
             <div className="relative z-10 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-[#dbeafe] flex items-center justify-center text-[#72C1F5] group-hover:text-[#518fc5] transition-colors">
+              <div className="w-12 h-12 rounded-xl bg-[#E8F5E9] flex items-center justify-center text-[#88BC46] group-hover:text-[#6B9E3D] transition-colors">
                 <FaQuestionCircle className="text-2xl" />
               </div>
               <div className="text-left">
-                <p className="text-lg font-semibold text-[#1f2937] group-hover:text-[#518fc5] transition-colors">FAQ Library</p>
-                <p className="text-sm text-[#4b5563]">Instant answers with XP rewards</p>
+                <p className="text-lg font-semibold text-gray-800 group-hover:text-[#6B9E3D] transition-colors">
+                  FAQ Library
+                </p>
+                <p className="text-sm text-gray-600">Instant answers with XP rewards</p>
               </div>
             </div>
-            <div className="absolute right-4 top-4 bg-[#fef9c3] text-[#e46349] text-xs font-bold px-2 py-1 rounded-full border border-[#fde047]">
+            <div className="absolute right-4 top-4 bg-[#F0F4C3] text-[#689F38] text-xs font-bold px-2 py-1 rounded-full border border-[#DCEDC8]">
               +5 XP each
             </div>
           </motion.button>
@@ -171,7 +167,7 @@ const HelpMain = () => {
             onHoverStart={() => setIsHovered('tutorials')}
             onHoverEnd={() => setIsHovered(null)}
             onClick={() => handleButtonClick('/support/tutorials')}
-            className="bg-[#ffffff] p-6 rounded-2xl shadow-sm border-l-8 border-[#f472b6] hover:border-[#ec4899] transition-all relative overflow-hidden group w-full"
+            className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border-l-8 border-[#f472b6] hover:border-[#ec4899] transition-all relative overflow-hidden group w-full"
           >
             <AnimatePresence>
               {isHovered === 'tutorials' && (
@@ -184,15 +180,15 @@ const HelpMain = () => {
               )}
             </AnimatePresence>
             <div className="relative z-10 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-[#fce7f3] flex items-center justify-center text-[#ec4899] group-hover:text-[#f584b7] transition-colors">
+              <div className="w-12 h-12 rounded-xl bg-[#fcf5e7] flex items-center justify-center text-[#FFD18C] group-hover:text-[#f5ca84] transition-colors">
                 <FaBookOpen className="text-2xl" />
               </div>
               <div className="text-left">
-                <p className="text-lg font-semibold text-[#1f2937] group-hover:text-[#ef76ad] transition-colors">Tutorial Quests</p>
+                <p className="text-lg font-semibold text-[#1f2937] group-hover:text-[#f5ca84] transition-colors">Tutorial Quests</p>
                 <p className="text-sm text-[#4b5563]">Master features with guided tours</p>
               </div>
             </div>
-            <div className="absolute right-4 top-4 bg-[#fef9c3] text-[#e46349] text-xs font-bold px-2 py-1 rounded-full border border-[#fde047]">
+            <div className="absolute right-4 top-4 bg-[#fef9c3] text-[#e89e59] text-xs font-bold px-2 py-1 rounded-full border border-[#fde047]">
               +15 XP each
             </div>
           </motion.button>
@@ -203,7 +199,7 @@ const HelpMain = () => {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="bg-[#ffffff] p-6 rounded-3xl shadow-md border-t-8 border-[#88BC46] h-full"
+          className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-md border-t-8 border-[#88BC46] h-full"
         >
           <h2 className="text-xl font-bold text-[#1f2937] mb-4 flex items-center gap-2">
             <FaTrophy className="text-[#88BC46]" /> Your Achievements
@@ -232,13 +228,12 @@ const HelpMain = () => {
         </motion.div>
       </div>
 
-
       {/* Bottom Row - Daily Challenge */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.3 }}
-        className="bg-white p-6 rounded-3xl shadow-md border-t-8 border-[#fb923c] relative overflow-hidden"
+        className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-md border-t-8 border-[#fb923c] relative overflow-hidden"
       >
         <div className="absolute top-0 right-0 w-24 h-24 bg-[#ffedd5] rounded-full filter blur-3xl opacity-40 -mr-10 -mt-10"></div>
         <div className="relative z-10">
@@ -255,7 +250,6 @@ const HelpMain = () => {
                   toggleTask(i);
                   if (!tasks[i].done && tasks[i].path) navigate(tasks[i].path);
                 }}
-
               >
                 <span className="text-sm font-medium">{item.task}</span>
                 {item.done ? (
@@ -270,7 +264,7 @@ const HelpMain = () => {
           <div className="flex items-center gap-3 mt-5">
             <div className="flex-1 bg-[#f3f4f6] rounded-full h-3">
               <div
-                className="bg-gradient-to-r from-[#f8994c] to-[#FFD18C] h-3 rounded-full"
+                className="bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53] h-3 rounded-full"
                 style={{ width: `${Math.min((completedCount / 3) * 100, 100)}%` }}
               ></div>
             </div>
@@ -278,17 +272,16 @@ const HelpMain = () => {
           </div>
 
           <button
-            className={`mt-4 px-6 py-2 ${completedCount === 3
-              ? 'bg-gradient-to-r from-[#22c55e] to-[#86efac] hover:to-[#4ade80]'
-              : 'bg-gradient-to-r from-[#fb923c] to-[#FFD18C] hover:from-[#f9925b] hover:to-[#f59e0b]'
-              } text-white font-bold rounded-full shadow-md transition-all w-full`}
+            className={`mt-4 px-6 py-2 font-bold rounded-full shadow-md transition-all w-full ${completedCount === 3
+              ? 'bg-gradient-to-r from-[#88BC46] to-[#CBEEA5] hover:to-[#A0D672] text-white'
+              : 'bg-gradient-to-r from-[#ED5E52] to-[#FFCE51] hover:from-[#F0685E] hover:to-[#F68D2B] text-white'
+              }`}
             onClick={claimReward}
           >
             {completedCount === 3 ? 'Claim Reward' : 'Start Challenge'}
           </button>
         </div>
       </motion.div>
-
     </div>
   );
 };

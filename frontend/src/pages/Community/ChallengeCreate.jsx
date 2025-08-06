@@ -9,12 +9,6 @@ import {
   FaUsers
 } from 'react-icons/fa';
 
-// Mock friend list (would come from API in production)
-const mockFriends = [
-  { name: 'snow', level: 'Silver', avatar: require('../../assets/Images/avatars/snakeAvatar.jpeg') },
-  { name: 'beached_in', level: 'Gold', avatar: require('../../assets/Images/avatars/beachAvatar.jpeg') },
-  { name: 'miss_smith', level: 'Gold', avatar: require('../../assets/Images/avatars/windowAvatar.jpeg') },
-];
 
 const ChallengeCreate = () => {
   const navigate = useNavigate();
@@ -22,7 +16,6 @@ const ChallengeCreate = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    xpReward: '',
     category: '',
     type: '',
     community: '',
@@ -35,6 +28,7 @@ const ChallengeCreate = () => {
   });
   const [searchFriend, setSearchFriend] = useState('');
   const [invitedFriends, setInvitedFriends] = useState([]);
+  const [friendsList, setFriendsList] = useState([]);
   const [isCreating, setIsCreating] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [categories, setCategories] = useState([]);
@@ -67,10 +61,23 @@ const ChallengeCreate = () => {
     }
   };
 
+  const fetchFriends = async () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user?.id) return;
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/community/friends/${user.id}`);
+      const data = await res.json();
+      setFriendsList(data.data || []);
+    } catch (err) {
+      console.error('Failed to load friends:', err);
+    }
+  }
+
   useEffect(() => {
     fetchCommunities();
+    fetchFriends();
   }, []);
-
 
   const imageOptions = [
     { id: 'store_banner', apiId: 1, src: require('../../assets/Images/banners/pixelStore.gif'), label: 'Pixel Store' },
@@ -78,7 +85,7 @@ const ChallengeCreate = () => {
     { id: 'ally_banner', apiId: 3, src: require('../../assets/Images/banners/pixelGirlAlly.gif'), label: 'Pixel Ally' },
     { id: 'students_banner', apiId: 4, src: require('../../assets/Images/banners/pixelStudents.jpeg'), label: 'Pixel Students' },
   ];
-  // 
+
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
     if (type === 'file') {
@@ -88,7 +95,6 @@ const ChallengeCreate = () => {
     }
   };
 
-  // handles sending an invite to a friend 
   const handleInvite = (friend) => {
     if (!invitedFriends.includes(friend.name)) {
       setInvitedFriends([...invitedFriends, friend.name]);
@@ -96,13 +102,11 @@ const ChallengeCreate = () => {
     }
   };
 
-  // handle the submitting of the form 
   const handleSubmit = (e) => {
     e.preventDefault();
     setShowConfirmation(true);
   };
 
-  // Challenges confirmation popup
   const confirmCreate = async () => {
     setIsCreating(true);
     setShowConfirmation(false);
@@ -113,8 +117,54 @@ const ChallengeCreate = () => {
       setIsCreating(false);
       return;
     }
+    const targetAmount = parseFloat(formData.targetAmount) || 0;
+    // date factor
+    if (targetAmount <= 0) {
+      toast.error('Target amount must be greater than 0');
+      setIsCreating(false);
+      return;
+    }
+    if (!formData.startDate || !formData.endDate) {
+      toast.error('Please select both start and end dates');
+      setIsCreating(false);
+      return;
+    }
+    if (new Date(formData.startDate) >= new Date(formData.endDate)) {
+      toast.error('End date must be after start date');
+      setIsCreating(false);
+      return;
+    }
+    if (!formData.type) {
+      toast.error('Please select a challenge type');
+      setIsCreating(false);
+      return;
+    }
+    if (!formData.community) {
+      toast.error('Please select a community');
+      setIsCreating(false);
+      return;
+    }
+    if (formData.category && !categories.some(cat => cat.category_id === formData.category)) {
+      toast.error('Invalid category selected');
+      setIsCreating(false);
+      return;
+    }
 
-    const xpReward = parseInt(formData.xpReward) || 0;
+    // if date is within 30 days, set difficulty based on target amount
+    const daysUntilDue = Math.ceil((new Date(formData.endDate) - new Date()) / (1000 * 60 * 60 * 24));
+    if (daysUntilDue < 0) {
+      toast.error('End date must be in the future');
+      setIsCreating(false);
+      return;
+    }
+
+    // Calculate XP reward based on target amount
+    const xpReward = targetAmount * 0.1 + (daysUntilDue < 30 ? 50 : 0); // Example XP calculation based on target amount
+    if (xpReward < 30) {
+      toast.error('Target amount must be at least 30 ZAR to create a challenge');
+      setIsCreating(false);
+      return;
+    }
     let difficulty;
 
     if (xpReward < 100) {
@@ -127,7 +177,6 @@ const ChallengeCreate = () => {
       difficulty = 'extreme';
     }
 
-    // Map form data to API expected structure
     const challengeData = {
       creator_id: user.id,
       community_id: formData.community,
@@ -138,9 +187,9 @@ const ChallengeCreate = () => {
       start_date: formData.startDate,
       target_date: formData.endDate,
       category_id: formData.category || null,
-      custom_category_id: null, // Not in form yet
+      custom_category_id: null,
       banner_id: formData.imageId || 1,
-      difficulty: difficulty, // Default or could add to form
+      difficulty: difficulty,
     };
 
     try {
@@ -148,7 +197,7 @@ const ChallengeCreate = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`, // Add if your API needs auth
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify(challengeData)
       });
@@ -161,10 +210,8 @@ const ChallengeCreate = () => {
 
       toast.success('Challenge created successfully!');
 
-      // Handle sending invitations if any
       if (invitedFriends.length > 0) {
         try {
-          // Assuming you have an endpoint to handle invitations
           await fetch('http://localhost:5000/api/community/challenges/invite', {
             method: 'POST',
             headers: {
@@ -172,7 +219,7 @@ const ChallengeCreate = () => {
               'Authorization': `Bearer ${localStorage.getItem('token')}`,
             },
             body: JSON.stringify({
-              challenge_id: data.data.challenge_id, // Assuming API returns the new challenge ID
+              challenge_id: data.data.challenge_id,
               invited_users: invitedFriends
             })
           });
@@ -183,7 +230,6 @@ const ChallengeCreate = () => {
         }
       }
 
-      // Redirect after success
       setTimeout(() => {
         navigate('/community');
       }, 2000);
@@ -200,23 +246,21 @@ const ChallengeCreate = () => {
     setShowConfirmation(false);
   };
 
-
   const today = new Date().toISOString().split('T')[0];
-  const filteredFriends = mockFriends.filter(f => f.name.toLowerCase().includes(searchFriend.toLowerCase()));
+  const filteredFriends = friendsList?.filter(f => f.username.toLowerCase().includes(searchFriend.toLowerCase()));
 
   return (
     <CommunityLayout>
       <Toaster position="top-right" />
-      <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
-        <CommunityHeader />
+      <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4 dark:bg-gray-900">
 
-        {/* Confrimation popup */}
+        {/* Confirmation popup */}
         {showConfirmation && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-2xl shadow-xl max-w-md w-full">
-              <h3 className="text-xl font-bold mb-4">Confirm Challenge Creation</h3>
-              <p className="mb-6">
-                Are you sure you want to create a challenge"{formData.name}"?
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl max-w-md w-full">
+              <h3 className="text-xl font-bold mb-4 dark:text-gray-200">Confirm Challenge Creation</h3>
+              <p className="mb-6 dark:text-gray-300">
+                Are you sure you want to create a challenge "{formData.name}"?
                 {invitedFriends.length > 0 && (
                   <span className="block mt-2">
                     This will invite {invitedFriends.length} member{invitedFriends.length !== 1 ? 's' : ''}.
@@ -227,7 +271,7 @@ const ChallengeCreate = () => {
                 <button
                   onClick={cancelCreate}
                   disabled={isCreating}
-                  className="px-4 py-2 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -251,42 +295,42 @@ const ChallengeCreate = () => {
           </div>
         )}
 
-        <div className="bg-white p-6 rounded-3xl shadow-md">
-          {/* Create a challenge button */}
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-md">
+          {/* Header */}
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold text-[#1F2937] flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-[#1F2937] dark:text-gray-200 flex items-center gap-2">
               <FaFire className="text-[#B1E1FF]" /> Create New Challenge
             </h2>
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 bg-[#E5E7EB] text-[#374151] px-4 py-1.5 rounded-full text-sm font-medium hover:bg-[#D1D5DB] transition"
+              className="flex items-center gap-2 bg-[#E5E7EB] dark:bg-gray-700 text-[#374151] dark:text-gray-200 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-[#D1D5DB] dark:hover:bg-gray-600 transition"
             >
               <FaArrowLeft /> Back
             </button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Title and Description */}
+            {/* Title */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
               <input
                 type="text"
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B1E1FF]"
+                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B1E1FF]"
                 required
               />
             </div>
 
             {/* Challenge Icon */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Select Challenge Image</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Challenge Image</label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {imageOptions.map((img) => (
                   <label
                     key={img.id}
-                    className={`cursor-pointer border rounded-xl overflow-hidden transition ${formData.imageId === img.id ? 'ring-2 ring-[#B1E1FF]' : 'border-gray-300'}`}
+                    className={`cursor-pointer border rounded-xl overflow-hidden transition ${formData.imageId === img.id ? 'ring-2 ring-[#B1E1FF]' : 'border-gray-300 dark:border-gray-600'}`}
                   >
                     <input
                       type="radio"
@@ -299,7 +343,7 @@ const ChallengeCreate = () => {
                       className="hidden"
                     />
                     <img src={img.src} alt={img.label} className="w-full h-24 object-cover" />
-                    <div className="p-2 text-center text-sm font-medium text-gray-700">{img.label}</div>
+                    <div className="p-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300">{img.label}</div>
                   </label>
                 ))}
               </div>
@@ -309,14 +353,14 @@ const ChallengeCreate = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Challenge type dropdown */}
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
                   <FaListUl /> Challenge Type
                 </label>
                 <select
                   name="type"
                   value={formData.type}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                  className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2"
                 >
                   <option value="">Select Type</option>
                   <option value="savings">Savings</option>
@@ -328,14 +372,14 @@ const ChallengeCreate = () => {
               </div>
               {/* Category dropdown */}
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
                   <FaTag /> Category
                 </label>
                 <select
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                  className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2"
                 >
                   <option value="">Select a category</option>
                   {categories.map((cat) => (
@@ -343,12 +387,11 @@ const ChallengeCreate = () => {
                       {cat.category_name}
                     </option>
                   ))}
-
                 </select>
               </div>
               {/* Community dropdown */}
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
                   <FaUsers /> Community
                 </label>
                 <select
@@ -356,7 +399,7 @@ const ChallengeCreate = () => {
                   name="community"
                   value={formData.community}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                  className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2"
                 >
                   <option value="">Select Type</option>
                   {communities.map((cat) => (
@@ -368,14 +411,14 @@ const ChallengeCreate = () => {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
                   <FaListUl /> Measurement Type
                 </label>
                 <select
                   name="measurementType"
                   value={formData.measurementType}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                  className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2"
                 >
                   <option value="">Select Type</option>
                   <option value="goals_completed">Goals Completed</option>
@@ -390,7 +433,7 @@ const ChallengeCreate = () => {
             {/* Target & XP */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
                   <FaCoins /> Target Amount (ZAR)
                 </label>
                 <input
@@ -399,11 +442,11 @@ const ChallengeCreate = () => {
                   value={formData.targetAmount}
                   onChange={handleChange}
                   min="1"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                  className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
                   <FaMedal /> XP Reward
                 </label>
                 <input
@@ -412,7 +455,7 @@ const ChallengeCreate = () => {
                   value={formData.xpReward}
                   onChange={handleChange}
                   min="0"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                  className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2"
                 />
               </div>
             </div>
@@ -420,7 +463,7 @@ const ChallengeCreate = () => {
             {/* Dates */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
                   <FaClock /> Start Date
                 </label>
                 <input
@@ -429,11 +472,11 @@ const ChallengeCreate = () => {
                   value={formData.startDate}
                   min={today}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                  className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
                   <FaClock /> End Date
                 </label>
                 <input
@@ -449,7 +492,7 @@ const ChallengeCreate = () => {
 
             {/* Invite Friends */}
             <div className="space-y-3">
-              <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
                 <FaUserPlus /> Invite Friends to Challenge
               </label>
               <input
@@ -457,18 +500,18 @@ const ChallengeCreate = () => {
                 placeholder="Search friend by username..."
                 value={searchFriend}
                 onChange={(e) => setSearchFriend(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2"
               />
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                 {filteredFriends.map((friend, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center gap-4 bg-gray-50 p-2 rounded-xl border border-gray-200"
+                    className="flex items-center gap-4 bg-gray-50 dark:bg-gray-700 p-2 rounded-xl border border-gray-200 dark:border-gray-600"
                   >
-                    <img src={friend.avatar} alt={friend.name} className="w-10 h-10 rounded-full object-cover" />
+                    <img src={`../../assets/Images/${friend.avatar_image_path}`} alt={friend.username} className="w-10 h-10 rounded-full object-cover" />
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-800">@{friend.name}</p>
-                      <p className="text-xs text-gray-500 italic">{friend.level}</p>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{friend.username}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 italic">{friend.tier_status}</p>
                     </div>
                     <button
                       onClick={() => handleInvite(friend)}
