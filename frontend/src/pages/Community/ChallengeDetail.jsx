@@ -2,14 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import CommunityLayout from '../../pages/Community/CommunityLayout';
 import CommunityHeader from '../../layouts/headers/CommunityHeader';
-import { FaCoins, FaCalendarAlt, FaArrowLeft, FaPlus, FaEdit } from 'react-icons/fa';
+import { FaCoins, FaCalendarAlt, FaArrowLeft, FaPlus } from 'react-icons/fa';
 
 import bannerImg from '../../assets/Images/banners/pixelStore.gif';
-import avatar1 from '../../assets/Images/avatars/beachAvatar.jpeg';
-import avatar2 from '../../assets/Images/avatars/ghostAvatar.jpeg';
-import avatar3 from '../../assets/Images/avatars/butterflyAvatar.jpeg';
-import avatar4 from '../../assets/Images/avatars/carAvatar.jpeg';
-import avatar5 from '../../assets/Images/avatars/lilyAvatar.jpeg';
 
 const ChallengeDetail = () => {
     const navigate = useNavigate();

@@ -5,12 +5,8 @@ import toast, { Toaster } from 'react-hot-toast';
 import CommunityLayout from '../../pages/Community/CommunityLayout';
 import CommunityHeader from '../../layouts/headers/CommunityHeader';
 
-import { FaChartLine, FaStar, FaPlus, FaArrowLeft, FaCrown, FaEye, FaMedal, FaUserPlus, FaEdit, FaSave, FaTimes } from 'react-icons/fa';
+import { FaPlus, FaArrowLeft, FaEye, FaUserPlus, FaEdit, FaSave, FaTimes } from 'react-icons/fa';
 
-import cindy from '../../assets/Images/avatars/beachAvatar.jpeg';
-import shark from '../../assets/Images/avatars/crossiontAvatar.jpeg';
-import bear from '../../assets/Images/avatars/butterflyAvatar.jpeg';
-import thatsMe from '../../assets/Images/avatars/stonesAvatar.jpeg';
 import banner from '../../assets/Images/banners/pixelStudents.jpeg';
 import banner1 from '../../assets/Images/banners/pixelGirlAlly.gif';
 import banner2 from '../../assets/Images/banners/pixelApartment.gif';

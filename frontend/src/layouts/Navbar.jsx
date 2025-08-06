@@ -8,7 +8,7 @@ import {
   FaVideo, FaListAlt, FaChevronDown, FaBell
 } from 'react-icons/fa';
 import logo from '../assets/Images/Logo1.png';
-import avatar from '../assets/Images/avatars/sharkAvatar.jpeg';
+import avatar from '../assets/Images/avatars/LightPost.png';
 import NotificationsPanel from '../components/notifications/NotificationsPanel';
 
 const menuItems = [

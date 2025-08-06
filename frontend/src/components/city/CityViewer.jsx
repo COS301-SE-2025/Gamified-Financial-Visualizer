@@ -64,7 +64,7 @@ const BUILDING_INFO = {
 }
 
 export function CityModel() {
-  const { scene } = useGLTF('/Full City.glb')
+  const { scene } = useGLTF('/Classic_Day_City.glb')
   const [activeBuilding, setActiveBuilding] = useState(null)
   const [interactiveObjects, setInteractiveObjects] = useState([])
 
