@@ -8,6 +8,19 @@ from app.insights.services.insight_rules import (
 )
 from app.insights.services.summary_generator import generate_summary_text
 
+def convert_numpy_types(obj):
+   if isinstance(obj, np.integer):
+      return int(obj)
+   elif isinstance(obj, np.floating):
+      return float(obj)
+   elif isinstance(obj, np.ndarray):
+      return obj.tolist()
+   elif isinstance(obj, dict):
+      return {k: convert_numpy_types(v) for k, v in obj.items()}
+   elif isinstance(obj, list):
+      return [convert_numpy_types(i) for i in obj]
+   return obj
+
 def generate_wrapped_insights(user_data):
    # 1. Extract behavior features
    features = extract_features(user_data)
@@ -23,19 +36,19 @@ def generate_wrapped_insights(user_data):
    # 3. Generate narrative summary
    summary_text = generate_summary_text(features, sentiment)
 
-   return {
+   return convert_numpy_types({
       "sentiment": sentiment,
       "summaryText": summary_text,
       "cluster": cluster_id,
       "clusterLabel": cluster_label,
       "insights": insights,
       "tips": tips
-   }
+   })
 
 
 
 def load_cluster_model():
-    with open("services/insights/ml/cluster_model.pkl", "rb") as f:
+    with open("app/insights/ml/cluster_model.pkl", "rb") as f:
         kmeans, scaler = pickle.load(f)
     return kmeans, scaler
 

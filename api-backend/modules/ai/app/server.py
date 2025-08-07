@@ -17,7 +17,9 @@ from app.classifier.services.train_classifier import main as train_model
 from app.classifier.services.feedback_trainer import main as train_feedback
 from app.insights.services.insights_engine import (
     generate_wrapped_insights,
-    fetch_user_data
+    extract_features,
+    load_cluster_model,
+    get_user_cluster
 )
 
 app = FastAPI(title="AI Service")
@@ -48,6 +50,33 @@ class FeedbackItem(BaseModel):
 
 class FeedbackTrainReq(BaseModel):
     feedback: List[FeedbackItem]
+
+
+class Transaction1(BaseModel):
+    date: str
+    description: str
+    amount: float
+    transaction_type: str
+    category: str
+
+class Goal(BaseModel):
+    id: int
+    title: str
+    status: str
+    target_amount: float
+    progress: float
+
+class Budget(BaseModel):
+    category: str
+    amount: float
+
+
+
+class UserData(BaseModel):
+    transactions: List[Transaction1]
+    goals: List[Goal]
+    budgets: List[Budget]
+
 
 # ---- Endpoints ----
 @app.post("/classifier/predict", response_model=PredictRes)
@@ -96,14 +125,11 @@ def get_insights(req: int):
 
 
 @app.get("/insights/{user_id}/{month}")
-def get_monthly_insights(user_id: int, month: int):
+def get_monthly_insights(user_id: int, month: int, user_data: UserData):
     """
     Returns a Spotify-Wrapped style summary for `user_id` and `month`.
     """
     try:
-        # 1. Pull raw user data from your DB
-        user_data = fetch_user_data(user_id, month)
-
         # 2. Pass into the Python insights engine
         result = generate_wrapped_insights(user_data)
 
@@ -124,6 +150,16 @@ def get_current_month_insights(user_id: int):
     """
     current_month = datetime.now().month
     return get_monthly_insights(user_id, current_month)
+
+@app.post("/insights/user/{user_id}/{month}")
+def wrapped_insights(user_id: int, month: int, user_data: UserData):
+    try:
+        result = generate_wrapped_insights(user_data.dict())
+        return result
+    except Exception as e:
+        print(f"Error generating insights for user {user_id} in month {month}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 # --- serve ---
 if __name__ == "__main__":

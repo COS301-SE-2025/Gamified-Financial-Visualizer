@@ -1,7 +1,8 @@
 import express from 'express';
+import axios from 'axios';
 import pool from '../../../config/db';
 import { logger } from '../../../config/logger';
-import {redisClient } from '../../../config/redis';
+import { redisClient } from '../../../config/redis';
 import * as insightsService from '../services/insights.service';
 const router = express.Router();
 
@@ -19,11 +20,11 @@ router.get('/transactions/:userId', async (req, res) => {
       // Fetch transactions from the database split between income and expenses per month
       const transactions = await pool.query(
          `SELECT EXTRACT(MONTH FROM transaction_date) AS month, 
-         SUM(CASE WHEN transaction_type = \'income\' THEN  transaction_amount ELSE 0 END)  OR transaction_type = \'deposit\'  OR transaction_type = \'transfer\' AS income, 
-         SUM(CASE WHEN transaction_type = \'expense\'  OR transaction_type = \'transfer\'  OR transaction_type = \'fee\'  OR transaction_type = \'withdrawal\' THEN transaction_amount ELSE 0 END) AS expense
-         FROM transactions WHERE user_id = $1 AND EXTRACT(YEAR FROM transaction_date) = $2 
-         GROUP BY month ORDER BY month`,
-         [userId, year]
+            SUM(CASE WHEN transaction_type = \'income\' THEN  transaction_amount ELSE 0 END)  OR transaction_type = \'deposit\'  OR transaction_type = \'transfer\' AS income, 
+            SUM(CASE WHEN transaction_type = \'expense\'  OR transaction_type = \'transfer\'  OR transaction_type = \'fee\'  OR transaction_type = \'withdrawal\' THEN transaction_amount ELSE 0 END) AS expense
+            FROM transactions WHERE user_id = $1 AND EXTRACT(YEAR FROM transaction_date) = $2 
+            GROUP BY month ORDER BY month`,
+         [ userId, year ]
       );
 
       if (transactions.rows.length === 0) {
@@ -56,41 +57,41 @@ router.get('/category/:userId', async (req, res) => {
       // Step 1: User's total spending per category
       const userSpending = await pool.query(
          `SELECT categories.category_name AS category, 
-                 SUM(transaction_amount) AS user_spent
-          FROM transactions
-          JOIN categories ON transactions.category_id = categories.id
-          WHERE user_id = $1 
-            AND transaction_type IN ('expense', 'withdrawal', 'fee', 'transfer')
-            AND EXTRACT(YEAR FROM transaction_date) = $2
-          GROUP BY category`,
-         [userId, year]
+                  SUM(transaction_amount) AS user_spent
+            FROM transactions
+            JOIN categories ON transactions.category_id = categories.id
+            WHERE user_id = $1 
+               AND transaction_type IN ('expense', 'withdrawal', 'fee', 'transfer')
+               AND EXTRACT(YEAR FROM transaction_date) = $2
+            GROUP BY category`,
+         [ userId, year ]
       );
 
       // Step 2: Average spending per category across all users
       const avgSpending = await pool.query(
          `SELECT category, 
-                 AVG(total_spent) AS avg_spent
-          FROM (
-            SELECT user_id, categories.category_name AS category, SUM(transaction_amount) AS total_spent
-            FROM transactions
-            JOIN categories ON transactions.category_id = categories.id
-            WHERE transaction_type IN ('expense', 'withdrawal', 'fee', 'transfer')
-              AND EXTRACT(YEAR FROM transaction_date) = $1
-            GROUP BY user_id, category
-          ) AS user_totals
-          GROUP BY category`
-         , [year]
+                  AVG(total_spent) AS avg_spent
+            FROM (
+               SELECT user_id, categories.category_name AS category, SUM(transaction_amount) AS total_spent
+               FROM transactions
+               JOIN categories ON transactions.category_id = categories.id
+               WHERE transaction_type IN ('expense', 'withdrawal', 'fee', 'transfer')
+               AND EXTRACT(YEAR FROM transaction_date) = $1
+               GROUP BY user_id, category
+            ) AS user_totals
+            GROUP BY category`
+         , [ year ]
       );
 
       // Step 3: Merge results
-      const avgMap: { [category: string]: number } = {};
+      const avgMap: { [ category: string ]: number } = {};
       avgSpending.rows.forEach(row => {
-         avgMap[row.category] = parseFloat(row.avg_spent);
+         avgMap[ row.category ] = parseFloat(row.avg_spent);
       });
 
       const comparison = userSpending.rows.map(row => {
          const userSpent = parseFloat(row.user_spent);
-         const avgSpent = avgMap[row.category] || 0;
+         const avgSpent = avgMap[ row.category ] || 0;
          const status = userSpent > avgSpent ? 'higher' : 'lower';
 
          return {
@@ -116,9 +117,9 @@ router.get('/wealth/:userId', async (req, res) => {
       // Get all financial accounts for the user
       const accounts = await pool.query(
          `SELECT account_name, account_type, account_balance, currency
-          FROM accounts
-          WHERE user_id = $1`,
-         [userId]
+            FROM accounts
+            WHERE user_id = $1`,
+         [ userId ]
       );
 
       // convert all crypto balances to fiat
@@ -151,11 +152,11 @@ router.get('/wealth/:userId', async (req, res) => {
             }
          }).then(res => res.json());
 
-         const priceMap: { [symbol: string]: number } = {};
+         const priceMap: { [ symbol: string ]: number } = {};
          let totalPercentChange = 0;
          let percentChangeCount = 0;
          cryptoPrices.data.forEach((coin: { symbol: string; quote: { USD: { price: number; percent_change_24h: number } } }) => {
-            priceMap[coin.symbol] = coin.quote.USD.price * USD_TO_ZAR; // Convert to ZAR
+            priceMap[ coin.symbol ] = coin.quote.USD.price * USD_TO_ZAR; // Convert to ZAR
             totalPercentChange += coin.quote.USD.percent_change_24h;
             percentChangeCount++;
          });
@@ -166,9 +167,9 @@ router.get('/wealth/:userId', async (req, res) => {
          // Convert crypto balances to fiat
          cryptoAccounts.forEach(acc => {
             const symbol = acc.currency.toUpperCase();
-            if (priceMap[symbol]) {
-               acc.account_balance = (parseFloat(acc.account_balance) * priceMap[symbol]).toFixed(2);
-               acc.account_type = 'crypto'; 
+            if (priceMap[ symbol ]) {
+               acc.account_balance = (parseFloat(acc.account_balance) * priceMap[ symbol ]).toFixed(2);
+               acc.account_type = 'crypto';
 
             }
          });
@@ -202,60 +203,94 @@ router.get('/wealth/:userId', async (req, res) => {
 const INSIGHTS_BASE = "http://localhost:6000/insights";
 
 // 1) Month + User → Wrapped insights
-//    e.g. GET /sentiment/7/42  → proxies to GET http://localhost:6000/insights/42/7
-router.get("/sentiment/:month/:userId", async (req, res) => {
-  const { month, userId } = req.params;
-  try {
-    const { data } = await axios.get(`${INSIGHTS_BASE}/${userId}/${month}`);
-    res.json(data);
-  } catch (err) {
-       const error = err as any;
+//    e.g. GET /sentiment/user/42/7  → proxies to GET http://localhost:6000/insights/42/7
+router.get("/sentiment/user/:userId/:month", async (req, res) => {
+   const { userId, month } = req.params;
+   try {
+      const [ txRes, goalsRes, budgetsRes ] = await Promise.all([
+         insightsService.getRawTransactions(userId, parseInt(month)),
+         insightsService.getRawGoals(userId, parseInt(month)),
+         insightsService.getRawBudgets(userId)
+      ]);
 
-    if (err instanceof Error) {
-      console.error("Error fetching wrapped insights:", err.message);
-      res.status(error.response?.status || 500).json({
-        error: "Failed to fetch wrapped insights",
-        details: err.message
-      });
-    } else {
-      console.error("Error fetching wrapped insights:", err);
-      res.status(500).json({
-        error: "Failed to fetch wrapped insights",
-        details: String(err)
-      });
-    }
-  }
+
+      const transformedTransactions = txRes.map(t => ({
+      ...t,
+      date: new Date(t.date).toISOString().replace('Z', '+00:00')
+      }));
+
+      const transformedGoals = goalsRes.map(g => ({
+         id: g.goal_id,
+         title: g.goal_name,
+         status: g.goal_status,
+         target_amount: parseFloat(g.target_amount),
+         progress: parseFloat(g.current_amount)
+      }));
+      const transformedBudgets = budgetsRes.map(b => ({
+         category: b.category,
+         amount: parseFloat(b.current_amount)
+      }));
+      const userData = {
+         transactions: transformedTransactions,
+         goals: transformedGoals,
+         budgets: transformedBudgets
+      };
+
+      // send JSON to Python endpoint
+      const { data } = await axios.post(
+         `http://localhost:6000/insights/user/${userId}/${month}`,
+         userData
+      ); 
+
+      res.status(200).json(data);
+   } catch (err) {
+      console.error("Error proxying to Python insights:", err);
+      if (err instanceof Error) {
+         res.status(400).json({ error: err.message });
+      } else {
+         res.status(500).json({ error: String(err) });
+      }
+   }
 });
 
+
 // 2) User only → current-month insights shortcut
-//    e.g. GET /sentiment/42 → proxies to GET http://localhost:6000/insights/42
-router.get("/sentiment/:userId", async (req, res) => {
-  const { userId } = req.params;
-  try {
-    const { data } = await axios.get(`${INSIGHTS_BASE}/${userId}`);
-    res.json(data);
-  } catch (err) {
-    if (err instanceof Error) {
-      console.error("Error fetching current-month insights:", err.message);
-      res.status((err as any).response?.status || 500).json({
-        error: "Failed to fetch current-month insights",
-        details: err.message
-      });
-    } else {
-      console.error("Error fetching current-month insights:", err);
-      res.status(500).json({
-        error: "Failed to fetch current-month insights",
-        details: String(err)
-      });
-    }
-  }
+//    e.g. GET /sentiment/user/42 → proxies to GET http://localhost:6000/insights/42
+router.get("/sentiment/user/:userId", async (req, res) => {
+   const { userId } = req.params;
+   try {
+      const { data } = await axios.get(`${INSIGHTS_BASE}/${userId}`);
+      res.json(data);
+   } catch (err) {
+      if (err instanceof Error) {
+         console.error("Error fetching current-month insights:", err.message);
+         res.status((err as any).response?.status || 500).json({
+            error: "Failed to fetch current-month insights",
+            details: err.message
+         });
+      } else {
+         console.error("Error fetching current-month insights:", err);
+         res.status(500).json({
+            error: "Failed to fetch current-month insights",
+            details: String(err)
+         });
+      }
+   }
 });
 
 
 router.get('/score/:userId', async (req, res) => {
    const { userId } = req.params;
 
-   
+   try {
+      // Get insights based on the score
+      const insights = insightsService.getUserScore(userId);
+
+      res.status(200).json(insights);
+   } catch (error) {
+      logger.error('Error fetching user score:', error);
+      res.status(500).json({ error: 'Internal server error' });
+   }
 });
 
 // get impulse insights
@@ -273,14 +308,14 @@ router.get('/budget/:userId', async (req, res) => {
       // Fetch user's total spending per category
       const userSpending = await pool.query(
          `SELECT categories.category_name AS category, 
-                 SUM(transaction_amount) AS total_spent
-          FROM transactions
-          JOIN categories ON transactions.category_id = categories.id
-          WHERE user_id = $1 
-            AND transaction_type IN ('expense', 'withdrawal', 'fee', 'transfer')
-            AND EXTRACT(YEAR FROM transaction_date) = $2
-          GROUP BY category`,
-         [userId, year]
+                  SUM(transaction_amount) AS total_spent
+            FROM transactions
+            JOIN categories ON transactions.category_id = categories.id
+            WHERE user_id = $1 
+               AND transaction_type IN ('expense', 'withdrawal', 'fee', 'transfer')
+               AND EXTRACT(YEAR FROM transaction_date) = $2
+            GROUP BY category`,
+         [ userId, year ]
       );
 
       // Calculate recommended budget based on average spending

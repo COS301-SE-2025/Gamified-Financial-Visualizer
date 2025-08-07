@@ -2,32 +2,173 @@ import pool from '../../../config/db';
 import { logger } from '../../../config/logger';
 import {redisClient } from '../../../config/redis';
 
+// 1) Raw transactions for a given month
+export async function getRawTransactions(userId: string, month: number) {
+  const year = new Date().getFullYear();
+  try {
+  const { rows } = await pool.query(`
+    SELECT
+      transaction_date AS date,
+      transaction_name AS description,
+      transaction_amount AS amount,
+      transaction_type,
+      c.category_name AS category
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.category_id
+    JOIN accounts a ON t.account_id = a.account_id
+    WHERE a.user_id = $1
+      AND EXTRACT(YEAR FROM transaction_date) = $2
+      AND EXTRACT(MONTH FROM transaction_date) = $3
+    ORDER BY transaction_date
+  `, [userId, year, month]);
+
+  return rows;
+  } catch (error) {
+    logger.error('Error fetching raw transactions:', error);
+    throw error;
+  }
+};
+
+// 2) Raw goals for a given month
+export async function getRawGoals(userId: string, month: number) {
+  const year = new Date().getFullYear();
+  try {
+  const { rows } = await pool.query(`
+    SELECT goal_id, goal_name, goal_status, target_amount, current_amount
+    FROM goals
+    WHERE user_id = $1
+      AND EXTRACT(YEAR FROM start_date) = $2
+      AND EXTRACT(MONTH FROM start_date) = $3
+  `, [userId, year, month]);
+  return rows;
+  } catch (error) {
+    logger.error('Error fetching raw goals:', error);
+    throw error;
+  }
+};
+
+// 3) Raw budgets
+export async function getRawBudgets(userId: string) {
+  const year = new Date().getFullYear();
+  try {
+    const { rows } = await pool.query(`
+      SELECT b.budget_name, bc.current_amount, c.category_name AS category
+      FROM budgets b
+      JOIN budget_categories bc ON b.budget_id = bc.budget_id
+      JOIN categories c ON bc.category_id = c.category_id
+      WHERE b.user_id = $1
+    `, [userId]);
+    return rows;
+  } catch (error) {
+    logger.error('Error fetching raw budgets:', error);
+    throw error;
+  }
+};
+
 // Data insights service for fetching user insights
-export async function getUserScore(userId: string) {
-   // calculate user score based on transactions
-
-   // calculate avg user score based on all users
-
-   // calculate savings rate with user vs avg user savings rate
-
-   // calculate spending rate with user vs avg user spending rate
-
-   // calculate investment rate with user vs avg user investment rate
+// services/insights.service.ts
 
 
-   // show insights based on the above calculations
 
-   return {
-      userScore: 0, // Placeholder for user score calculation
-      avgUserScore: 0, // Placeholder for average user score calculation
-      savingsRate: 0, // Placeholder for savings rate calculation
-      avgSavingsRate: 0, // Placeholder for average savings rate calculation
-      spendingRate: 0, // Placeholder for spending rate calculation
-      avgSpendingRate: 0, // Placeholder for average spending rate calculation
-      investmentRate: 0, // Placeholder for investment rate calculation
-      avgInvestmentRate: 0 // Placeholder for average investment rate calculation
-   };
+interface UserScore {
+  userScore: number;
+  avgUserScore: number;
+  savingsRate: number;
+  avgSavingsRate: number;
+  spendingRate: number;
+  avgSpendingRate: number;
+  investmentRate: number;
+  avgInvestmentRate: number;
+  insights: string[];
+}
 
+export async function getUserScore(userId: string): Promise<UserScore> {
+  try {
+    // 1) Per-user totals
+    const { rows: u } = await pool.query(`
+      SELECT
+        COALESCE(SUM(CASE WHEN transaction_type IN ('income','deposit','transfer') THEN transaction_amount END),0) AS income,
+        COALESCE(SUM(CASE WHEN transaction_type IN ('expense','withdrawal','fee') THEN transaction_amount END),0) AS expenses,
+        COALESCE(SUM(CASE WHEN LOWER(category) = 'investment' THEN transaction_amount END),0) AS investments
+      FROM transactions
+      WHERE user_id = $1
+    `, [userId]);
+    const userIncome     = parseFloat(u[0].income) || 0;
+    const userExpenses   = parseFloat(u[0].expenses) || 0;
+    const userInvestments= parseFloat(u[0].investments)|| 0;
+
+    // 2) All-users averages of those totals
+    const { rows: a } = await pool.query(`
+      SELECT
+        AVG(income)       AS avg_income,
+        AVG(expenses)     AS avg_expenses,
+        AVG(investments)  AS avg_investments
+      FROM (
+        SELECT
+          user_id,
+          SUM(CASE WHEN transaction_type IN ('income','deposit','transfer') THEN transaction_amount END) AS income,
+          SUM(CASE WHEN transaction_type IN ('expense','withdrawal','fee') THEN transaction_amount END)     AS expenses,
+          SUM(CASE WHEN LOWER(category) = 'investment' THEN transaction_amount END)                       AS investments
+        FROM transactions
+        GROUP BY user_id
+      ) t
+    `);
+    const avgIncome      = parseFloat(a[0].avg_income)      || 0;
+    const avgExpenses    = parseFloat(a[0].avg_expenses)    || 0;
+    const avgInvestments = parseFloat(a[0].avg_investments) || 0;
+
+    // 3) Compute rates (0–100)
+    const savingsRate   = userIncome > 0 ? ((userIncome - userExpenses) / userIncome) * 100 : 0;
+    const spendingRate  = userIncome > 0 ? (userExpenses / userIncome) * 100 : 0;
+    const investmentRate= userIncome > 0 ? (userInvestments / userIncome) * 100 : 0;
+
+    const avgSavingsRate   = avgIncome > 0 ? ((avgIncome - avgExpenses) / avgIncome) * 100 : 0;
+    const avgSpendingRate  = avgIncome > 0 ? (avgExpenses / avgIncome) * 100 : 0;
+    const avgInvestmentRate= avgIncome > 0 ? (avgInvestments / avgIncome) * 100 : 0;
+
+    // 4) Composite scores
+    //    simple average of the three rates
+    const userScore    = (savingsRate + (100 - spendingRate) + investmentRate) / 3;
+    const avgUserScore = (avgSavingsRate + (100 - avgSpendingRate) + avgInvestmentRate) / 3;
+
+    // 5) Insights based on comparisons
+    const insights: string[] = [];
+    insights.push(
+      savingsRate >= avgSavingsRate
+        ? "Your savings rate is above average."
+        : "Your savings rate is below average."
+    );
+    insights.push(
+      spendingRate <= avgSpendingRate
+        ? "You spend less of your income than most users."
+        : "You spend more of your income than most users."
+    );
+    insights.push(
+      investmentRate >= avgInvestmentRate
+        ? "Your investment rate is at or above average."
+        : "Your investment rate is below average."
+    );
+    insights.push(
+      userScore >= avgUserScore
+        ? `Overall, your financial health score (${userScore.toFixed(1)}) is above the average (${avgUserScore.toFixed(1)}).`
+        : `Overall, your financial health score (${userScore.toFixed(1)}) is below the average (${avgUserScore.toFixed(1)}).`
+    );
+
+    return {
+      userScore:    +userScore.toFixed(1),
+      avgUserScore: +avgUserScore.toFixed(1),
+      savingsRate:    +savingsRate.toFixed(1),
+      avgSavingsRate: +avgSavingsRate.toFixed(1),
+      spendingRate:    +spendingRate.toFixed(1),
+      avgSpendingRate: +avgSpendingRate.toFixed(1),
+      investmentRate:    +investmentRate.toFixed(1),
+      avgInvestmentRate: +avgInvestmentRate.toFixed(1),
+      insights
+    };
+  } catch (err) {
+    logger.error("Error in getUserScore:", err);
+    throw new Error("Internal server error");
+  }
 }
 
 export async function getUserInsightsWrapped(userId: string, month: number) {
@@ -100,14 +241,13 @@ export async function generateWrappedInsights(userId: string, month: number ) {
 
   const burnRate = totalSpent / 30;
   const runwayDays = totalIncome > 0 ? (totalIncome / burnRate) : 0;
-/*
+
   const topCategory = getTopSpendingCategory(transactions);
   const largestTransaction = getLargestTransaction(transactions);
   const budgetEfficiency = computeBudgetEfficiency(budgets, transactions);
   const goalStats = computeGoalSummary(goals);
 
   const impulseScore = detectImpulseScore(transactions);
-  const recurringCharges = detectRecurringCharges(transactions);
 
   const sentiment = analyzeFinancialSentiment({
     savings_rate: savingsRate,
@@ -129,36 +269,86 @@ export async function generateWrappedInsights(userId: string, month: number ) {
     budgetEfficiency,
     goalStats,
     impulseScore,
-    recurringCharges,
     sentiment,
     summaryText: generateSummaryText(sentiment, topCategory, goalStats)
   };
-  */
 }
 
 export async function radarChartInsights(userId: number) {
-  // get savings rate
-  // get investing rate
-  // get smart spending
-  // get spending discipline
-  // get financial literacy state
-  // get financial health score
-
   try {
-    const { rows: accounts } = await pool.query(
-      `SELECT account_name, account_balance, account_type FROM accounts WHERE user_id = $1`,
-      [userId]
+    // 1. Get transactions
+    const { rows: transactions } = await pool.query(`
+      SELECT transaction_amount AS amount, transaction_type, category_name AS category
+      FROM transactions
+      JOIN categories ON transactions.category_id = categories.category_id
+      WHERE user_id = $1
+    `, [userId]);
+
+    // 2. Get budgets
+    const { rows: budgets } = await pool.query(`
+      SELECT b.budget_id, b.budget_name, bc.current_amount, c.category_name AS category
+      FROM budgets b
+      JOIN budget_categories bc ON b.budget_id = bc.budget_id
+      JOIN categories c ON bc.category_id = c.category_id
+      WHERE b.user_id = $1
+    `, [userId]);
+
+    // 3. Get AI score (already calculated previously)
+    const { rows: scoreRes } = await pool.query(`
+      SELECT ai_score
+      FROM user_scores
+      WHERE user_id = $1
+    `, [userId]);
+
+    const income = transactions
+      .filter(t => t.transaction_type === 'income')
+      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+
+    const expenses = transactions
+      .filter(t => t.transaction_type === 'expense')
+      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+
+    const savingsRate = income > 0 ? ((income - expenses) / income) * 100 : 0;
+
+    const impulseCount = transactions.filter(
+      t => t.transaction_type === 'expense' && parseFloat(t.amount) < 150
+    ).length;
+
+    const impulseScore = Math.min(impulseCount / 10, 1.0) * 100; // scale to 100
+
+    const smartSpending = 100 - impulseScore;
+
+    const underBudget = budgets.filter(b => parseFloat(b.current_amount) <= 0).length;
+    const totalBudgets = budgets.length;
+    const budgetDiscipline = totalBudgets > 0 ? (underBudget / totalBudgets) * 100 : 50;
+
+    // category investments, crypto purchase, crypto sale, forex, dividends to calculate investing rate
+    const investmentTransactions = transactions.filter(t =>
+      t.category === 'Investments' ||
+      t.category === 'Crypto Purchase' ||
+      t.category === 'Crypto Sale' ||
+      t.category === 'Forex' ||
+      t.category === 'Dividends'
     );
 
-    if (accounts.length === 0) {
-      return { error: 'No accounts found for this user' };
-    }
+    const totalInvestment = investmentTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+    const totalIncomeForInvesting = income > 0 ? income : 1; // Avoid division by zero
+    const investingRate = (totalInvestment / totalIncomeForInvesting) * 100;
 
-      // Calculate 24h percent change
-      const percentChange = 0; // Placeholder for actual calculation logic
+    const financialLiteracy = 70; // Placeholder — can integrate with learning module table
 
+    const financialHealthScore = scoreRes.length ? parseFloat(scoreRes[0].ai_score) : 50;
 
-      
+    return {
+      radar: [
+        { axis: "Savings Rate", value: Math.round(savingsRate) },
+        { axis: "Investing Rate", value: investingRate },
+        { axis: "Smart Spending", value: Math.round(smartSpending) },
+        { axis: "Spending Discipline", value: Math.round(budgetDiscipline) },
+        { axis: "Financial Literacy", value: financialLiteracy },
+        { axis: "Financial Health", value: Math.round(financialHealthScore) }
+      ]
+    };
 
   } catch (error) {
     logger.error('Error fetching radar chart insights:', error);
@@ -273,4 +463,80 @@ function detectImpulseScore(transactions: Transaction[]): number {
   return Math.min(smallExpenses.length / 10, 1.0); // Cap at 1.0
 }
 
-// LLM insights service
+function generateSummaryText(
+  sentiment: any,
+  topCategory: TopSpendingCategory | null,
+  goalStats: GoalSummary
+): string {
+  const goalText =
+    goalStats.created > 0
+      ? `You set ${goalStats.created} goal${goalStats.created > 1 ? 's' : ''} and completed ${goalStats.completed}.`
+      : `No goals set this month.`;
+
+  const topCategoryText = topCategory
+    ? `Your top spending category: ${topCategory.name} (R${topCategory.amount.toLocaleString()})`
+    : `No spending categories found.`;
+
+  const sentimentText = sentiment && sentiment.label
+    ? `Financial Sentiment: ${sentiment.label}. ${sentiment.summary || ''}`
+    : `Financial Sentiment: Data not available.`;
+
+  return [
+    goalText,
+    topCategoryText,
+    sentimentText
+  ].join(' ');
+}
+
+function analyzeFinancialSentiment({
+  savings_rate,
+  burn_rate,
+  goal_completion_ratio,
+  impulse_score,
+  budget_usage_variance
+}: {
+  savings_rate: number;
+  burn_rate: number;
+  goal_completion_ratio: number;
+  impulse_score: number;
+  budget_usage_variance: number;
+}) {
+  // Simple scoring logic based on weighted factors
+  let score = 0;
+  score += savings_rate * 40; // Savings is important
+  score += goal_completion_ratio * 20; // Goal completion
+  score += (1 - impulse_score) * 15; // Less impulse, better
+  score += (100 - Math.min(budget_usage_variance, 100)) * 15; // Lower variance, better
+
+  // Burn rate: lower is better
+  score += (100 - Math.min(burn_rate, 100)) * 10;
+
+  // Normalize score to 0-100
+  score = Math.max(0, Math.min(Math.round(score / 100), 100));
+
+  let label = 'Stable';
+  let summary = 'You\'re building consistency and control.';
+
+  if (score >= 80) {
+    label = 'Excellent';
+    summary = 'Your financial habits are outstanding!';
+  } else if (score >= 60) {
+    label = 'Good';
+    summary = 'You\'re on track with your financial goals.';
+  } else if (score >= 40) {
+    label = 'Stable';
+    summary = 'You\'re building consistency and control.';
+  } else if (score >= 20) {
+    label = 'Caution';
+    summary = 'Consider reviewing your spending and savings habits.';
+  } else {
+    label = 'Risk';
+    summary = 'Your financial health needs attention.';
+  }
+
+  return {
+    label,
+    score,
+    summary
+  };
+}
