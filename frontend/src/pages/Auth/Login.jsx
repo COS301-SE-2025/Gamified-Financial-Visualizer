@@ -5,6 +5,8 @@ import logoImg from '../../assets/Images/Logo.png';
 import { FaEye, FaEyeSlash, FaLock } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 const Login = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ username: '', password: '' });
@@ -18,7 +20,7 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('http://localhost:5000/api/auth/login', {
+      const res = await fetch(`${BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -28,7 +30,7 @@ const Login = () => {
       if (res.ok) {
         const username = result.data.user.username;
 
-        const idRes = await fetch(`http://localhost:5000/api/auth/user-id/${username}`);
+        const idRes = await fetch(`${BASE_URL}/api/auth/user-id/${username}`);
         const idResult = await idRes.json();
 
         if (idRes.ok && idResult.data?.user_id) {
