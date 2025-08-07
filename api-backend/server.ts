@@ -15,7 +15,7 @@ import { registerAuthModule } from './modules/auth';
 import { registerTransactionModule } from './modules/transactions';
 import { registerGoalModule } from './modules/goals';
 import { registerLearningModule } from './modules/learning';
-import { registerClassifierModule } from './modules/classifier';
+import { registerClassifierModule } from './modules/ai';
 import { registerCommunityModule } from './modules/community';
 import { registerAchievementModule } from './modules/achievements';
 import { registerNotificationsModule } from './modules/notifications';

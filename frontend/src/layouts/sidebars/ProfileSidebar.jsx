@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import avatar from '../../assets/Images/avatars/totoroAvatar.jpeg';
-
+import React, {useEffect, useState} from 'react';
 import {
+  FaUsers,
   FaBolt,
   FaChartBar,
   FaHourglassHalf,
@@ -9,13 +8,14 @@ import {
   FaTimes,
   FaBan,
 } from 'react-icons/fa';
+import avatar from '../../assets/Images/avatars/BlueSky.png';
 
-const ProfileSidebar = () => {
+const AccountsPerformanceHeader = () => {
   const [sidebarStats, setSidebarStats] = useState(null);
   const [performanceSummary, setPerformanceSummary] = useState(null);
-
+  const user = JSON.parse(localStorage.getItem('user'));
+  
   const fetchSidebarData = () => {
-    const user = JSON.parse(localStorage.getItem('user'));
     if (!user?.id) return;
 
     fetch(`http://localhost:5000/api/auth/sidebar/${user.id}`)
@@ -23,7 +23,7 @@ const ProfileSidebar = () => {
       .then(data => setSidebarStats(data.data))
       .catch(err => console.error('Sidebar stats error:', err));
 
-    fetch(`http://localhost:5000/api/auth/profile/performance-summary/${user.id}`)
+    fetch(`http://localhost:5000/api/auth/profile/performance-summary/${user?.id}`)
       .then(res => res.json())
       .then(data => setPerformanceSummary(data.data))
       .catch(err => console.error('Performance summary error:', err));
@@ -39,75 +39,60 @@ const ProfileSidebar = () => {
   }, []);
 
   return (
-    <aside className="space-y-6">
-      {/* Goal Performance */}
-      <div className="bg-white rounded-2xl p-4 shadow text-center">
-        <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-3 py-1 rounded-full inline-block mb-2">
-          Overall Performance
-        </p>
-
-        <div className="relative w-40 h-40 mx-auto">
-          <svg viewBox="0 0 100 100" className="w-full h-full">
-            <circle cx="50" cy="50" r="45" fill="none" stroke="#E8F0FA" strokeWidth="10" />
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              fill="none"
-              stroke="url(#gradient)"
-              strokeWidth="10"
-              strokeDasharray="282.6"
-              strokeDashoffset={
-                performanceSummary?.performance_score !== undefined
-                  ? 282.6 - (performanceSummary.performance_score / 1000) * 282.6
-                  : 282.6
-              }
-              strokeLinecap="round"
-              transform="rotate(-90 50 50)"
-            />
-            <defs>
-              <linearGradient id="gradient" x1="1" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#60A5FA" />
-                <stop offset="100%" stopColor="#93C5FD" />
-              </linearGradient>
-            </defs>
-          </svg>
-
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <p className="text-[24px] font-bold text-[#2D3748]">
-              {performanceSummary?.performance_score ?? '0'}
-            </p>
-            <p className="text-sm text-[#718096]">
-              {performanceSummary?.performance_label ?? '0'}
-            </p>
-            <img
-              src={
-                performanceSummary?.avatar_image_path
-                  ? `/assets/Images/${performanceSummary.avatar_image_path}`
-                  : avatar
-              }
-              alt="User Avatar"
-              className="w-8 h-8 mt-1 rounded-full object-cover"
-            />
-          </div>
-
-          <div className="absolute top-[6px] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full flex items-center justify-center">
-            <div className="w-4 h-4 bg-blue-400 rounded-full" />
-          </div>
+    <div className="flex flex-wrap justify-between gap-6 items-start w-full mb-6">
+      {/* Left Label */}
+      <div className="text-center lg:text-left">
+        <div className="flex items-center justify-center lg:justify-start gap-2 text-[#B4DFA4]">
+          <FaUsers className="text-6xl" />
+          <h1 className="text-5xl font-light">Profile</h1>
         </div>
-
-        <p className="text-sm text-[#F56565] mt-2 font-medium">
-          Lv {performanceSummary?.level_number ?? '?'}: {performanceSummary?.tier_level ?? '0'}
+        <p className="text-lg text-gray-400 mt-1 max-w-xs mx-auto lg:mx-0">
+          Manage your personal details, track XP, and monitor progress toward your goals and achievements.
         </p>
       </div>
 
-      {/* Goal Statistics */}
-      <div className="bg-white rounded-2xl p-4 shadow text-center">
-        <p className="text-sm font-semibold text-[#4A5568] bg-[#D6EAFE] px-4 py-1 rounded-full inline-block mb-4">
-          Overall Statistics
-        </p>
+      {/* Right Section (Performance Card + Stat Grid) */}
+      <div className="flex flex-col gap-4 flex-1">
+        {/* Center Performance Card */}
+        <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col sm:flex-row items-center justify-between gap-6 dark:bg-gray-800">
+          {/* Avatar + Info */}
+          <div className="flex items-center gap-6 ">
+            <img src={
+                performanceSummary?.avatar_image_path
+                  ? `/assets/Images/${performanceSummary.avatar_image_path}`
+                  : avatar
+              } className="w-16 h-16 rounded-full object-cover" alt="Avatar" />
+            <div>
+              <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">{performanceSummary?.performance_score}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{performanceSummary?.performance_label }</p>
+              <p className="text-sm text-[#F97156] font-medium">Lv {performanceSummary?.level_number ?? '?'}: {performanceSummary?.tier_level ?? '0'}</p>
+            </div>
+          </div>
 
-        <div className="grid grid-cols-2 gap-4">
+          {/* Progress Bar */}
+          <div className="w-full">
+            <p className="text-sm font-medium text-[#7FBCE9] mb-1">Overall Performance</p>
+            <div className="relative h-4 w-full rounded-full bg-[#f5f5f5] overflow-hidden">
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${performanceSummary?.performance_score/500 *100}%`,
+                  background: 'linear-gradient(to right, #4FC3F7, #B3E5FC)'
+                }}
+              />
+              <div
+                className="absolute top-1/2 w-5 h-5 bg-[#B3E5FC] rounded-full border-2 border-white shadow-md"
+                style={{
+                  left: `calc(${performanceSummary?.performance_score/500 *100}% - 10px)`,
+                  transform: 'translateY(-50%)'
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Stat Blocks*/}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 w-full">
           {[
             { value: sidebarStats?.total_goals ?? '...', label: 'Goals', icon: <FaBolt />, color: '#FF8A8A' },
             { value: `${sidebarStats?.achievement_percentage ?? '...'}%`, label: 'Achievements', icon: <FaCheck />, color: '#7FDD53' },
@@ -115,32 +100,30 @@ const ProfileSidebar = () => {
             { value: sidebarStats?.recent_transactions ?? '...', label: 'Recent Transactions', icon: <FaHourglassHalf />, color: '#FFC541' },
             { value: `${sidebarStats?.lessons_completed_percentage ?? '...'}%`, label: 'Lessons', icon: <FaTimes />, color: '#F68D2B' },
             { value: sidebarStats?.total_communities ?? '...', label: 'Communities', icon: <FaBan />, color: '#FF7F9E' },
-          ].map(({ value, label, icon, color }, i) => (
-            <div key={i} className="relative bg-white rounded-xl shadow-md p-3 flex items-center justify-between">
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: color + '20' }}
-              >
-                <div className="text-white" style={{ color }}>
-                  {icon}
+          ].map(({ label, value, icon, color }, index) => (
+            <div key={index} className="relative bg-white rounded-xl shadow-sm overflow-hidden dark:bg-gray-800">
+              <div className="flex items-center justify-between px-4 py-3">
+                {/* Icon circle with soft background */}
+                <div className="w-10 h-10 flex items-center justify-center rounded-full dark:text-gray-400" style={{ backgroundColor: `${color}20` }}>
+                  <span className="text-xl" style={{ color }}>{icon}</span>
+                </div>
+
+                {/* Stat content */}
+                <div className="text-right">
+                  <div className="text-lg font-bold text-gray-900 dark:text-gray-200">{value}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">{label}</div>
                 </div>
               </div>
 
-              <div className="text-right">
-                <p className="text-lg font-bold text-gray-900">{value}</p>
-                <p className="text-sm text-gray-500">{label}</p>
-              </div>
-
-              <div
-                className="absolute bottom-0 left-0 h-[5px] w-full rounded-b-xl"
-                style={{ backgroundColor: color }}
-              />
+              {/* Bottom colored bar */}
+              <div className="absolute bottom-0 left-0 h-[5px] w-full rounded-b-xl" style={{ backgroundColor: color }} />
             </div>
           ))}
         </div>
+
       </div>
-    </aside>
+    </div>
   );
 };
 
-export default ProfileSidebar;
+export default AccountsPerformanceHeader;

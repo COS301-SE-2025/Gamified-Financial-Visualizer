@@ -8,7 +8,7 @@ import badge2 from '../../assets/Images/badges/trophy.png';
 import badge3 from '../../assets/Images/badges/hi5.png';
 import badge4 from '../../assets/Images/badges/investment.png';
 import badge5 from '../../assets/Images/badges/money-bag.png';
-import badge6 from '../../assets/Images/badges/mountainIcon.png';
+import badge6 from '../../assets/Images/badges/goal.png';
 import badge7 from '../../assets/Images/badges/banknote.png';
 import badge8 from '../../assets/Images/badges/balance-scale.png';
 import badge9 from '../../assets/Images/badges/growth.png';

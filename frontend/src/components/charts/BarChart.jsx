@@ -30,13 +30,11 @@ const BarChart = () => {
           `http://localhost:5000/api/goal/${user.id}/progress-frequency`
         );
         const result = await res.json();
-        const apiData = result.data; // [{ day_label, count }, ...]
+        const apiData = result.data;
 
-        // highlight today
         const today = new Date();
         const currentDayName = daysOfWeek[today.getDay()];
 
-        // map API → chart format
         const mapped = daysOfWeek.map(day => {
           const entry = apiData.find(d => d.day_label === day);
           return {
@@ -48,7 +46,6 @@ const BarChart = () => {
 
         setData(mapped);
 
-        // recalc performance
         const totalProgress = mapped.reduce((sum, d) => sum + d.value, 0);
         const activeDays = mapped.filter(d => d.value > 0).length;
 
@@ -100,18 +97,41 @@ const BarChart = () => {
 
   return (
     <div className="w-full">
-      <div className="bg-white rounded-2xl shadow p-4">
-        <h3 className="text-md font-semibold text-gray-600 mb-4">
+      <div className="bg-white rounded-2xl shadow p-4 dark:bg-gray-800">
+        <h3 className="text-md font-semibold text-gray-600 dark:text-gray-300 mb-4">
           Weekly Goal Completion
         </h3>
 
         <div className="h-48">
           <ResponsiveContainer width="100%" height="100%">
             <ReBarChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="day" axisLine={false} tick={{ fontSize: 12 }} />
+              <CartesianGrid 
+                strokeDasharray="3 3" 
+                vertical={false} 
+                stroke="#E5E7EB"
+                strokeOpacity={0.2}
+              />
+              <XAxis 
+                dataKey="day" 
+                axisLine={false} 
+                tick={{ 
+                  fontSize: 12,
+                  fill: '#6B7280',
+                  strokeOpacity: 0.5
+                }}
+                tickLine={false}
+              />
               <YAxis hide />
-              <Tooltip />
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: '#1F2937',
+                  borderColor: '#374151',
+                  borderRadius: '0.5rem',
+                  color: '#F3F4F6'
+                }}
+                itemStyle={{ color: '#F3F4F6' }}
+                labelStyle={{ color: '#F3F4F6' }}
+              />
               <Bar dataKey="value" radius={[10, 10, 0, 0]}>
                 {data.map((entry, idx) => (
                   <Cell
@@ -126,16 +146,16 @@ const BarChart = () => {
 
         {/* Bottom Message */}
         <div className="mt-[70px] flex items-center justify-center gap-2">
-          <div className="w-10 h-10 rounded-full bg-[#FEEBCB] flex items-center justify-center">
-            <span className="text-[#FF955A] font-bold text-lg">
+          <div className="w-10 h-10 rounded-full bg-[#FEEBCB] dark:bg-gray-700 flex items-center justify-center">
+            <span className="text-[#FF955A] dark:text-yellow-400 font-bold text-lg">
               {performanceMessage.emoji}
             </span>
           </div>
           <div>
-            <p className="text-sm font-semibold text-gray-700">
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
               {performanceMessage.main}
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               {performanceMessage.sub}
             </p>
           </div>

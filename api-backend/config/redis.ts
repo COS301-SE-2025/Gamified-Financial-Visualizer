@@ -41,14 +41,15 @@ export const redisConnection: RedisOptions = {
 };
 
 // Create Redis client using the full URL
-export const redisClient = createClient({
-  url: process.env.REDIS_URL || 'redis://localhost:6379'
-});
 
+export const redisClient: RedisClientType = createClient({ url: redisUrl });
 redisClient.on('error', err => console.error('[Redis] Client Error', err));
 
-// Duplicate for pub/sub (so subscriptions don't block normal commands)
-export const redisSubscriber = redisClient.duplicate();
+// …and a duplicate for pub/sub (so subscriptions don’t block normal commands)
+// Subscriber client (for pub/sub)
+export const redisSubscriber: RedisClientType = createClient({url:redisUrl});
+redisSubscriber.on('error', err => console.error('[Redis] Subscriber Error', err));
+
 
 (async () => {
   try {
