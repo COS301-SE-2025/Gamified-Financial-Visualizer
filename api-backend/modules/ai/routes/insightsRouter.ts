@@ -253,6 +253,27 @@ router.get("/sentiment/user/:userId/:month", async (req, res) => {
    }
 });
 
+router.get("/wrapped/user/:userId/:month/", async (req, res) => {
+   const { userId, month } = req.params;
+   try {
+      const data = await insightsService.generateWrappedInsights(parseInt(userId), parseInt(month));
+      res.json(data);
+   } catch (err) {
+      if (err instanceof Error) {
+         console.error("Error fetching wrapped insights:", err.message);
+         res.status((err as any).response?.status || 500).json({
+            error: "Failed to fetch wrapped insights",
+            details: err.message
+         });
+      } else {
+         console.error("Error fetching wrapped insights:", err);
+         res.status(500).json({
+            error: "Failed to fetch wrapped insights",
+            details: String(err)
+         });
+      }
+   }
+});
 
 // 2) User only → current-month insights shortcut
 //    e.g. GET /sentiment/user/42 → proxies to GET http://localhost:6000/insights/42
@@ -278,6 +299,26 @@ router.get("/sentiment/user/:userId", async (req, res) => {
    }
 });
 
+
+router.get('/trends/:userId', async (req, res) => {
+   const { userId } = req.params;
+
+   try {
+      // Fetch trends data from the database
+      const trends = await axios.post(`http://localhost:6000/insights/trends/`);
+
+      if (!trends.data) {
+         res.status(404).json({ error: 'No trends data found for this user' });
+         return;
+      }
+
+      // Return the trends data
+      res.status(200).json(trends.data);
+   } catch (error) {
+      logger.error('Error fetching trends:', error);
+      res.status(500).json({ error: 'Internal server error' });
+   }
+});
 
 router.get('/score/:userId', async (req, res) => {
    const { userId } = req.params;

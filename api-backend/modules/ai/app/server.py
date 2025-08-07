@@ -15,6 +15,9 @@ from typing import Optional
 from app.classifier.services.predict_classifier import classify_batch
 from app.classifier.services.train_classifier import main as train_model
 from app.classifier.services.feedback_trainer import main as train_feedback
+from app.insights.services.trend_analysis import (
+   run_trend_analysis
+)
 from app.insights.services.insights_engine import (
     generate_wrapped_insights,
     extract_features,
@@ -158,6 +161,19 @@ def wrapped_insights(user_id: int, month: int, user_data: UserData):
         return result
     except Exception as e:
         print(f"Error generating insights for user {user_id} in month {month}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/insights/trends")
+def get_trends(user_data: UserData):
+    """
+    Returns a dictionary of trends for the user.
+    """
+    try:
+        # Extract features from user data
+        result = run_trend_analysis(user_data.dict())
+        return result
+    except Exception as e:
+        print(f"Error generating trends for user: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

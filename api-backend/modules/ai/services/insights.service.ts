@@ -203,14 +203,16 @@ export async function getUserInsightsWrapped(userId: string, month: number) {
    }
 }
 
-export async function generateWrappedInsights(userId: string, month: number ) {
+export async function generateWrappedInsights(userId: number, month: number ) {
   const currentYear = new Date().getFullYear();
 
   // Fetch transactions for the month
   const { rows: transactions } = await pool.query(
-    `SELECT amount, category, description, transaction_type, transaction_date
+    `SELECT transaction_amount, category_name, transaction_description, transaction_type, transaction_date
      FROM transactions
-     WHERE user_id = $1
+     JOIN accounts ON transactions.account_id = accounts.account_id
+     JOIN categories ON transactions.category_id = categories.category_id
+     WHERE accounts.user_id = $1
      AND EXTRACT(MONTH FROM transaction_date) = $2
      AND EXTRACT(YEAR FROM transaction_date) = $3`,
     [userId, month, currentYear]
