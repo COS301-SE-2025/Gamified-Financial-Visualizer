@@ -8,7 +8,7 @@ import {
   FaTimes,
   FaBan,
 } from 'react-icons/fa';
-import avatar from '../../assets/Images/avatars/sharkAvatar.jpeg';
+import avatar from '../../assets/Images/avatars/BlueSky.png';
 
 const AccountsPerformanceHeader = () => {
   const [sidebarStats, setSidebarStats] = useState(null);
@@ -54,17 +54,17 @@ const AccountsPerformanceHeader = () => {
       {/* Right Section (Performance Card + Stat Grid) */}
       <div className="flex flex-col gap-4 flex-1">
         {/* Center Performance Card */}
-        <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col sm:flex-row items-center justify-between gap-6 dark:bg-gray-800">
           {/* Avatar + Info */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-6 ">
             <img src={
                 performanceSummary?.avatar_image_path
                   ? `/assets/Images/${performanceSummary.avatar_image_path}`
                   : avatar
               } className="w-16 h-16 rounded-full object-cover" alt="Avatar" />
             <div>
-              <p className="text-2xl font-bold text-gray-800">{performanceSummary?.performance_score}</p>
-              <p className="text-sm text-gray-500">{performanceSummary?.performance_label }</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">{performanceSummary?.performance_score}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{performanceSummary?.performance_label }</p>
               <p className="text-sm text-[#F97156] font-medium">Lv {performanceSummary?.level_number ?? '?'}: {performanceSummary?.tier_level ?? '0'}</p>
             </div>
           </div>
@@ -101,17 +101,17 @@ const AccountsPerformanceHeader = () => {
             { value: `${sidebarStats?.lessons_completed_percentage ?? '...'}%`, label: 'Lessons', icon: <FaTimes />, color: '#F68D2B' },
             { value: sidebarStats?.total_communities ?? '...', label: 'Communities', icon: <FaBan />, color: '#FF7F9E' },
           ].map(({ label, value, icon, color }, index) => (
-            <div key={index} className="relative bg-white rounded-xl shadow-sm overflow-hidden">
+            <div key={index} className="relative bg-white rounded-xl shadow-sm overflow-hidden dark:bg-gray-800">
               <div className="flex items-center justify-between px-4 py-3">
                 {/* Icon circle with soft background */}
-                <div className="w-10 h-10 flex items-center justify-center rounded-full" style={{ backgroundColor: `${color}20` }}>
+                <div className="w-10 h-10 flex items-center justify-center rounded-full dark:text-gray-400" style={{ backgroundColor: `${color}20` }}>
                   <span className="text-xl" style={{ color }}>{icon}</span>
                 </div>
 
                 {/* Stat content */}
                 <div className="text-right">
-                  <div className="text-lg font-bold text-gray-900">{value}</div>
-                  <div className="text-sm text-gray-500">{label}</div>
+                  <div className="text-lg font-bold text-gray-900 dark:text-gray-200">{value}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">{label}</div>
                 </div>
               </div>
 

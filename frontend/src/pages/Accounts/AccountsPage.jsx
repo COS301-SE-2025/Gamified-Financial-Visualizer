@@ -19,13 +19,13 @@ const AccountsPage = () => {
   const transactionsRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Transaction pagination (existing)
+  // Transaction pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [transactionsPerPage] = useState(10);
 
-  // Account pagination (new)
+  // Account pagination
   const [currentAccountPage, setCurrentAccountPage] = useState(1);
-  const [accountsPerPage] = useState(2); // Show only 2 accounts at a time
+  const [accountsPerPage] = useState(2);
 
   // Get current accounts
   const indexOfLastAccount = currentAccountPage * accountsPerPage;
@@ -59,11 +59,10 @@ const currentTransactions = filteredTransactions.slice(
   // Change account page
   const paginateAccounts = (pageNumber) => {
     setCurrentAccountPage(pageNumber);
-    // Reset to first page when changing accounts
     setCurrentPage(1);
   };
 
-  // Change transaction page (existing)
+  // Change transaction page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const userData = JSON.parse(localStorage.getItem('user') || '{}');
@@ -112,7 +111,7 @@ const currentTransactions = filteredTransactions.slice(
       }));
 
       setTransactions(mapped);
-      setCurrentPage(1); // Reset to first page when transactions change
+      setCurrentPage(1);
     } catch (err) {
       console.error(err);
       setError(err.message);
@@ -194,7 +193,7 @@ const currentTransactions = filteredTransactions.slice(
       }));
 
       setTransactions(mapped);
-      setCurrentPage(1); // Reset to first page when account changes
+      setCurrentPage(1);
     } catch (err) {
       console.error(err);
       setError(err.message);
@@ -241,7 +240,7 @@ const currentTransactions = filteredTransactions.slice(
       const data = await response.json();
       const newAccountWithId = { ...newAccount, account_id: data.data.account_id, user_id: userId };
       setAccounts((prev) => [...prev, newAccountWithId]);
-      setCurrentAccountPage(Math.ceil((accounts.length + 1) / accountsPerPage)); // Go to last page
+      setCurrentAccountPage(Math.ceil((accounts.length + 1) / accountsPerPage));
       setShowModal(false);
     } catch (err) {
       setError(err.message);
@@ -268,7 +267,7 @@ const currentTransactions = filteredTransactions.slice(
         throw new Error(errorData.message || 'Failed to delete account');
       }
       setAccounts((prev) => prev.filter((_, index) => index !== indexToDelete));
-      setCurrentAccountPage(1); // reset the first page 
+      setCurrentAccountPage(1);
       if (activeAccount?.account_id === accountId) {
         setActiveAccount(null);
         setTransactions([]);
@@ -327,12 +326,10 @@ const currentTransactions = filteredTransactions.slice(
     if (accountId && activeAccount?.account_id === accountId) {
       await fetchTransactionsForAccount(accountId);
     } else {
-      // If no specific account, refresh all user transactions
       await fetchAllUserTransactions();
     }
   };
 
-  // Fixed: Handle transaction operations with proper refresh
   const handleAddTransaction = async (newTransaction) => {
     if (activeAccount?.account_id) {
       await fetchTransactionsForAccount(activeAccount.account_id);
@@ -350,8 +347,6 @@ const currentTransactions = filteredTransactions.slice(
   };
 
   const handleDeleteTransaction = async (index) => {
-    // The transaction was already deleted in database in RecentTransactionsTable
-    // Refresh the appropriate transactions list
     if (activeAccount?.account_id) {
       await fetchTransactionsForAccount(activeAccount.account_id);
     } else {
@@ -363,21 +358,21 @@ const currentTransactions = filteredTransactions.slice(
     ? `${activeAccount.account_name || activeAccount.accountName} Transactions`
     : 'Recent Transactions';
   return (
-    <div className="flex gap-6 px-6 py-6 bg-[#F8F9FA] min-h-screen">
+    <div className="flex gap-6 px-6 py-6 bg-[#F8F9FA] min-h-screen dark:bg-gray-900">
       {/* Left Panel */}
       <div className="w-[360px] flex-shrink-0">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-semibold text-[#1C3C78]">Accounts</h2>
+          <h2 className="text-2xl font-semibold text-[#1C3C78] dark:text-blue-300">Accounts</h2>
           <button
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-1 px-4 py-1 bg-[#D8F5C5] text-[#76B947] text-sm font-semibold rounded-full hover:bg-[#c8ecb4]"
+            className="flex items-center gap-1 px-4 py-1 bg-[#D8F5C5] dark:bg-[#AAD977] text-[#76B947] dark:text-white text-sm font-semibold rounded-full hover:bg-[#c8ecb4] dark:hover:bg-[#A1E358] transition-colors"
           >
             <FaPlus /> Add
           </button>
         </div>
         <p className="gap-6 pb-3 mb-2 text-sm text-gray-500">Click an account to view its transactions</p>
 
-        {/* Render currentAccounts instead of accounts */}
+        {/* Render currentAccounts */}
         <div className="space-y-4">
           {currentAccounts.map((acc, idx) => (
             <AccountCard
@@ -391,10 +386,10 @@ const currentTransactions = filteredTransactions.slice(
               isActive={activeAccount?.account_id === acc.account_id}
               onClick={() => handleCardClick(acc)}
               onDelete={() => handleDeleteAccount(
-                indexOfFirstAccount + idx // Calculate the correct index in the full array
+                indexOfFirstAccount + idx
               )}
               onEdit={() => handleEditAccount(
-                indexOfFirstAccount + idx // Calculate the correct index in the full array
+                indexOfFirstAccount + idx
               )}
             />
           ))}
@@ -406,19 +401,19 @@ const currentTransactions = filteredTransactions.slice(
             <button
               onClick={() => paginateAccounts(Math.max(1, currentAccountPage - 1))}
               disabled={currentAccountPage === 1}
-              className="flex items-center gap-1 px-3 py-1 text-sm text-[#1C3C78] disabled:opacity-50"
+              className="flex items-center gap-1 px-3 py-1 text-sm text-[#1C3C78] dark:text-blue-300 disabled:opacity-50"
             >
               <FaChevronLeft /> Previous
             </button>
 
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-gray-600 dark:text-gray-300">
               Page {currentAccountPage} of {Math.ceil(accounts.length / accountsPerPage)}
             </span>
 
             <button
               onClick={() => paginateAccounts(currentAccountPage + 1)}
               disabled={currentAccountPage === Math.ceil(accounts.length / accountsPerPage)}
-              className="flex items-center gap-1 px-3 py-1 text-sm text-[#1C3C78] disabled:opacity-50"
+              className="flex items-center gap-1 px-3 py-1 text-sm text-[#1C3C78] dark:text-blue-300 disabled:opacity-50"
             >
               Next <FaChevronRight />
             </button>
@@ -429,12 +424,12 @@ const currentTransactions = filteredTransactions.slice(
       {/* Right Panel */}
       <div className="flex-1 space-y-6">
         {/* Search */}
-        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm">
-          <FaSearch className="text-[#76B947] mr-2" />
+        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] dark:border-[#88BC46] rounded-full bg-white dark:bg-gray-800 shadow-sm">
+          <FaSearch className="text-[#76B947] dark:text-[#88BC46] mr-2" />
           <input
             type="text"
             placeholder="Search your transactions..."
-            className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70"
+            className="w-full outline-none bg-transparent text-sm text-[#76B947]  placeholder-[#76B947]/70 dark:text-[#88BC46]"
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -478,7 +473,11 @@ const currentTransactions = filteredTransactions.slice(
               <button
                 key={pageNumber}
                 onClick={() => paginate(pageNumber)}
-                className={`px-3 py-1 rounded ${currentPage === pageNumber ? 'bg-[#B1E1FF] text-white' : 'bg-gray-200'}`}
+                className={`px-3 py-1 rounded ${
+                  currentPage === pageNumber 
+                    ? 'bg-[#B1E1FF] dark:bg-blue-600 text-white' 
+                    : 'bg-gray-200 dark:bg-gray-700 dark:text-gray-300'
+                }`}
               >
                 {pageNumber}
               </button>

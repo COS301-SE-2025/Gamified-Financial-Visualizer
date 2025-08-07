@@ -9,19 +9,19 @@ import {
 const notificationStyles = {
   friend_request: {
     useAvatar: true,
-    iconColor: 'text-[#5FBFFF]', // Matches Leaderboard color
-    textColor: 'text-[#2D3748]', // Dark text from performance score
-    borderColor: 'border-[#D6EAFE]', // Community Performance bg
-    bgColor: 'bg-[#E8F0FA]', // Circle bg color
-    className: 'rounded-2xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 border-l-4 border-[#5FBFFF]',
+    iconColor: 'text-blue-500 dark:text-blue-400',
+    textColor: 'text-gray-800 dark:text-gray-100',
+    borderColor: 'border-blue-100 dark:border-blue-900',
+    bgColor: 'bg-blue-50 dark:bg-gray-800',
+    className: 'rounded-2xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 border-l-4 border-blue-500 dark:border-blue-400',
     gamification: (p) => (
       <div className="flex items-center mt-2 space-x-3">
-        <div className="flex items-center px-3 py-1 rounded-full bg-white shadow text-xs font-semibold text-[#4A5568] border border-[#D6EAFE]">
-          <FaMedal className="text-[#FFC541] mr-1.5" /> {/* Games Played color */}
+        <div className="flex items-center px-3 py-1 rounded-full bg-white dark:bg-gray-700 shadow text-xs font-semibold text-gray-700 dark:text-gray-200 border border-blue-100 dark:border-gray-600">
+          <FaMedal className="text-yellow-500 dark:text-yellow-400 mr-1.5" />
           Lvl {p.tierStatus}
         </div>
-        <div className="flex items-center px-3 py-1 rounded-full bg-white shadow text-xs font-semibold text-[#4A5568] border border-[#D6EAFE]">
-          <FaFire className="text-[#F68D2B] mr-1.5" /> {/* Friends color */}
+        <div className="flex items-center px-3 py-1 rounded-full bg-white dark:bg-gray-700 shadow text-xs font-semibold text-gray-700 dark:text-gray-200 border border-blue-100 dark:border-gray-600">
+          <FaFire className="text-orange-500 dark:text-orange-400 mr-1.5" />
           {p.totalPoints} XP
         </div>
       </div>
@@ -30,14 +30,14 @@ const notificationStyles = {
 
   friend_request_accepted: {
     useAvatar: true,
-    iconColor: 'text-[#FF7F9E]', // Social Post color
-    textColor: 'text-[#2D3748]',
-    borderColor: 'border-[#FFE4EC]',
-    bgColor: 'bg-[#FFE4EC]', // Softened Social Post color
-    className: 'rounded-2xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 border-l-4 border-[#FF7F9E]',
+    iconColor: 'text-pink-500 dark:text-pink-400',
+    textColor: 'text-gray-800 dark:text-gray-100',
+    borderColor: 'border-pink-100 dark:border-pink-900',
+    bgColor: 'bg-pink-50 dark:bg-gray-800',
+    className: 'rounded-2xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 border-l-4 border-pink-500 dark:border-pink-400',
     gamification: () => (
-      <div className="inline-flex items-center mt-2 px-3 py-1 rounded-full bg-white shadow text-xs font-semibold text-[#4A5568] border border-[#D6EAFE]">
-        <FaCoins className="text-[#FFC541] mr-1.5 animate-pulse" /> {/* Games Played color */}
+      <div className="inline-flex items-center mt-2 px-3 py-1 rounded-full bg-white dark:bg-gray-700 shadow text-xs font-semibold text-gray-700 dark:text-gray-200 border border-blue-100 dark:border-gray-600">
+        <FaCoins className="text-yellow-500 dark:text-yellow-400 mr-1.5 animate-pulse" />
         +10 Social Points
       </div>
     )
@@ -45,18 +45,18 @@ const notificationStyles = {
 
   achievement: {
     icon: <FaTrophy />,
-    iconColor: 'text-[#FFC541]', // Games Played color
-    textColor: 'text-[#2D3748]',
-    borderColor: 'border-[#FFF6E5]',
-    bgColor: 'bg-[#FFF6E5]', // Lightened Games Played color
-    className: 'rounded-2xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 border-l-4 border-[#FFC541]',
+    iconColor: 'text-yellow-500 dark:text-yellow-400',
+    textColor: 'text-gray-800 dark:text-gray-100',
+    borderColor: 'border-yellow-100 dark:border-yellow-900',
+    bgColor: 'bg-yellow-50 dark:bg-gray-800',
+    className: 'rounded-2xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 border-l-4 border-yellow-500 dark:border-yellow-400',
     gamification: (p) => (
       <div className="flex justify-between items-center mt-2">
-        <div className="flex items-center px-3 py-1 rounded-full bg-white shadow text-xs font-semibold text-[#4A5568] border border-[#D6EAFE]">
-          <FaGem className="text-[#FFC541] mr-1.5" />
+        <div className="flex items-center px-3 py-1 rounded-full bg-white dark:bg-gray-700 shadow text-xs font-semibold text-gray-700 dark:text-gray-200 border border-blue-100 dark:border-gray-600">
+          <FaGem className="text-yellow-500 dark:text-yellow-400 mr-1.5" />
           +{p.reward} Coins
         </div>
-        <span className="px-3 py-1 rounded-full bg-[#FFF6E5] text-[#F68D2B] text-xs font-bold shadow border border-[#FFE4B5]">
+        <span className="px-3 py-1 rounded-full bg-yellow-50 dark:bg-gray-700 text-orange-500 dark:text-orange-400 text-xs font-bold shadow border border-yellow-200 dark:border-gray-600">
           {p.badge?.toUpperCase()} BADGE
         </span>
       </div>
@@ -65,14 +65,14 @@ const notificationStyles = {
 
   insight: {
     icon: <FaChartBar />,
-    iconColor: 'text-[#7FDD53]', // Challenges color
-    textColor: 'text-[#2D3748]',
-    borderColor: 'border-[#E8F0FA]',
-    bgColor: 'bg-[#E8F0FA]', // Circle bg color
-    className: 'rounded-2xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 border-l-4 border-[#7FDD53]',
+    iconColor: 'text-green-500 dark:text-green-400',
+    textColor: 'text-gray-800 dark:text-gray-100',
+    borderColor: 'border-blue-100 dark:border-blue-900',
+    bgColor: 'bg-blue-50 dark:bg-gray-800',
+    className: 'rounded-2xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 border-l-4 border-green-500 dark:border-green-400',
     gamification: (p) => (
-      <div className="inline-flex items-center mt-2 px-3 py-1 rounded-full bg-white shadow text-xs font-semibold text-[#4A5568] border border-[#D6EAFE]">
-        <FaFire className="text-[#F68D2B] mr-1.5" /> {/* Friends color */}
+      <div className="inline-flex items-center mt-2 px-3 py-1 rounded-full bg-white dark:bg-gray-700 shadow text-xs font-semibold text-gray-700 dark:text-gray-200 border border-blue-100 dark:border-gray-600">
+        <FaFire className="text-orange-500 dark:text-orange-400 mr-1.5" />
         {p.streak}-day {p.category} streak
       </div>
     )
@@ -80,29 +80,29 @@ const notificationStyles = {
 
   budget_due: {
     icon: <FaCalendarAlt />,
-    iconColor: 'text-[#F68D2B]', // Friends color
-    textColor: 'text-[#2D3748]',
-    borderColor: 'border-[#FFF6E5]',
-    bgColor: 'bg-[#FFF6E5]', // Lightened Friends color
-    className: 'rounded-2xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 border-l-4 border-[#F68D2B]'
+    iconColor: 'text-orange-500 dark:text-orange-400',
+    textColor: 'text-gray-800 dark:text-gray-100',
+    borderColor: 'border-yellow-100 dark:border-yellow-900',
+    bgColor: 'bg-yellow-50 dark:bg-gray-800',
+    className: 'rounded-2xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 border-l-4 border-orange-500 dark:border-orange-400'
   },
 
   budget_over: {
     icon: <FaExclamationTriangle />,
-    iconColor: 'text-[#FF8A8A]', // Communities color
-    textColor: 'text-[#2D3748]',
-    borderColor: 'border-[#FFE4EC]',
-    bgColor: 'bg-[#FFE4EC]', // Lightened Communities color
-    className: 'rounded-2xl shadow-md animate-pulse hover:shadow-lg transition-all duration-200 border-l-4 border-[#FF8A8A]'
+    iconColor: 'text-red-500 dark:text-red-400',
+    textColor: 'text-gray-800 dark:text-gray-100',
+    borderColor: 'border-red-100 dark:border-red-900',
+    bgColor: 'bg-red-50 dark:bg-gray-800',
+    className: 'rounded-2xl shadow-md animate-pulse hover:shadow-lg transition-all duration-200 border-l-4 border-red-500 dark:border-red-400'
   },
 
   default: {
     icon: <FaBell />,
-    iconColor: 'text-[#718096]', // Performance label color
-    textColor: 'text-[#2D3748]',
-    borderColor: 'border-[#E8F0FA]',
-    bgColor: 'bg-[#E8F0FA]', // Circle bg color
-    className: 'rounded-2xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 border-l-4 border-[#718096]'
+    iconColor: 'text-gray-500 dark:text-gray-400',
+    textColor: 'text-gray-800 dark:text-gray-100',
+    borderColor: 'border-gray-100 dark:border-gray-700',
+    bgColor: 'bg-gray-50 dark:bg-gray-800',
+    className: 'rounded-2xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 border-l-4 border-gray-500 dark:border-gray-400'
   }
 };
 
@@ -155,23 +155,21 @@ const NotificationsPanel = ({ onClose }) => {
   const handleViewMore = (goalId) => navigate(`/goals/details/${goalId}`);
   const handleViewUser = (username) => navigate(`/community/member/${username}`);
 
-const renderNotification = (note) => {
+  const renderNotification = (note) => {
     const style = notificationStyles[note.type] || notificationStyles.default;
     const payload = note.payload;
     const avatarSrc = payload?.avatar ? `/assets/Images/${payload.avatar}` : '/default-avatar.png';
 
     return (
-      <div key={note.timestamp} className={`bg-white border ${style.borderColor} rounded-lg p-4 shadow-sm`}>
+      <div key={note.timestamp} className={`${style.bgColor} border ${style.borderColor} rounded-lg p-4 shadow-sm dark:shadow-md dark:shadow-gray-800`}>
         <div className="flex items-start">
-          {/* Show avatar for friend-related notifications */}
           {style.useAvatar ? (
             <img
               src={avatarSrc}
               alt="user avatar"
-              className="w-12 h-12 rounded-full object-cover border mr-3"
+              className="w-12 h-12 rounded-full object-cover border mr-3 border-gray-200 dark:border-gray-600"
             />
           ) : (
-            // Show icon for other notifications
             <div className="mr-3 mt-0.5">
               {React.cloneElement(style.icon, { className: `${style.iconColor} text-xl` })}
             </div>
@@ -187,13 +185,13 @@ const renderNotification = (note) => {
                 <div className="flex gap-2 mt-3">
                   <button
                     onClick={() => respondRequest('accepted', payload.from)}
-                    className="bg-[#5FBFFF] hover:bg-[#4CA8E0] text-white text-xs px-3 py-1 rounded-full shadow-sm transition-colors"
+                    className="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white text-xs px-3 py-1 rounded-full shadow-sm transition-colors"
                   >
                     Accept
                   </button>
                   <button
                     onClick={() => respondRequest('declined', payload.from)}
-                    className="border border-[#D6EAFE] hover:border-[#C4DDF5] text-[#4A5568] text-xs px-3 py-1 rounded-full shadow-sm transition-colors"
+                    className="border border-gray-200 hover:border-gray-300 dark:border-gray-600 dark:hover:border-gray-500 text-gray-700 dark:text-gray-200 text-xs px-3 py-1 rounded-full shadow-sm transition-colors"
                   >
                     Decline
                   </button>
@@ -209,7 +207,7 @@ const renderNotification = (note) => {
                 {style.gamification?.(payload)}
                 <button
                   onClick={() => handleViewMore(payload.goalId)}
-                 className="mt-2 border border-[#FFC541] bg-[#FFF6E5] hover:bg-[#FFC541] hover:text-white text-[#F68D2B] text-xs px-3 py-1 rounded-full shadow-sm transition-colors duration-200"
+                  className="mt-2 border border-yellow-500 bg-yellow-50 hover:bg-yellow-500 hover:text-white text-yellow-500 dark:text-yellow-400 dark:bg-gray-700 dark:hover:bg-yellow-600 text-xs px-3 py-1 rounded-full shadow-sm transition-colors duration-200"
                 >
                   View Goal
                 </button>
@@ -236,13 +234,13 @@ const renderNotification = (note) => {
                 <p className={`font-medium ${style.textColor}`}>
                   Budget exceeded in {payload.category}
                 </p>
-                <p className="text-xs text-[#FF8A8A] mt-1">Spent: R{payload.spent} / Limit: R{payload.limit}</p>
+                <p className="text-xs text-red-500 dark:text-red-400 mt-1">Spent: R{payload.spent} / Limit: R{payload.limit}</p>
               </>
             )}
           </div>
           <button 
             onClick={() => dismiss(note.timestamp)} 
-            className="ml-2 text-[#718096] hover:text-[#2D3748] transition-colors"
+            className="ml-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
           >
             <FaTimes className="text-sm" />
           </button>
@@ -252,16 +250,19 @@ const renderNotification = (note) => {
   };
 
   return (
-    <div className="fixed top-0 right-0 w-[400px] h-full bg-white shadow-2xl z-50 rounded-l-3xl border-l border-gray-200 overflow-y-auto">
-      <div className="flex justify-between items-center px-6 py-4 border-b bg-gray-50">
-        <h2 className="text-[#E5794B] font-semibold text-xl flex items-center gap-2">
-          <FaBell className="text-[#E5794B]" /> Notifications
+    <div className="fixed top-0 right-0 w-full sm:w-[400px] h-full bg-white dark:bg-gray-900 shadow-2xl z-50 rounded-l-3xl border-l border-gray-200 dark:border-gray-700 overflow-y-auto">
+      <div className="flex justify-between items-center px-6 py-4 border-b bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+        <h2 className="text-orange-500 dark:text-orange-400 font-semibold text-xl flex items-center gap-2">
+          <FaBell className="text-orange-500 dark:text-orange-400" /> Notifications
         </h2>
-        <FaTimes onClick={onClose} className="text-[#E5794B] text-xl cursor-pointer" />
+        <FaTimes 
+          onClick={onClose} 
+          className="text-orange-500 dark:text-orange-400 text-xl cursor-pointer hover:text-orange-600 dark:hover:text-orange-300" 
+        />
       </div>
       <div className="p-4 space-y-4">
         {notes.length === 0 ? (
-          <div className="text-center text-gray-400 mt-24">
+          <div className="text-center text-gray-400 dark:text-gray-500 mt-24">
             <FaBell className="text-3xl mx-auto mb-2" />
             <p>No notifications</p>
           </div>

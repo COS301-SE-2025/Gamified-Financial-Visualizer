@@ -89,7 +89,7 @@ const BudgetForm = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm p-6 mb-4 border border-gray-100">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 mb-4 border border-gray-100 dark:border-gray-700">
       <form onSubmit={handleSubmit}>
         <div className="flex items-start gap-4">
           <div className={`w-12 h-12 ${iconData.color} rounded-xl flex items-center justify-center text-xl`}>
@@ -99,13 +99,13 @@ const BudgetForm = ({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {isEdit ? (
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Budget Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Budget Name</label>
                   <input
                     type="text"
                     name="budget_name"
                     value={formData.budget_name}
                     onChange={handleChange}
-                    className="w-full p-3 border rounded-lg"
+                    className="w-full p-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#467D35] focus:border-[#467D35] dark:bg-gray-700 dark:text-gray-200"
                     required
                     placeholder="Enter budget name"
                   />
@@ -113,12 +113,12 @@ const BudgetForm = ({
               ) : (
                 <>
                   <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
                     <select
                       name="category_id"
                       value={formData.category_id}
                       onChange={handleChange}
-                      className="w-full p-3 border rounded-lg"
+                      className="w-full p-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#467D35] focus:border-[#467D35] dark:bg-gray-700 dark:text-gray-200"
                       required
                     >
                       <option value="">Select Category</option>
@@ -130,13 +130,13 @@ const BudgetForm = ({
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Target Amount</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target Amount</label>
                     <input
                       type="number"
                       name="target_amount"
                       value={formData.target_amount}
                       onChange={handleChange}
-                      className="w-full p-3 border rounded-lg"
+                      className="w-full p-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#467D35] focus:border-[#467D35] dark:bg-gray-700 dark:text-gray-200"
                       required
                       min="0"
                       step="0.01"
@@ -150,7 +150,7 @@ const BudgetForm = ({
               <button
                 type="button"
                 onClick={onCancel}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition"
               >
                 Cancel
               </button>
@@ -176,7 +176,6 @@ const BudgetCard = ({
   onEdit,
   onDelete
 }) => {
-  // Convert values to numbers and provide defaults if undefined
   const targetAmount = Number(total_target) || 0;
   const usedAmount = Number(used) || 0;
   const remainingAmount = targetAmount - usedAmount;
@@ -186,7 +185,7 @@ const BudgetCard = ({
   const iconData = categoryIcons[categoryName] || categoryIcons.default;
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm p-6 mb-4 border border-gray-100 hover:shadow-md transition w-full">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 mb-4 border border-gray-100 dark:border-gray-700 hover:shadow-md transition w-full">
       <Toaster position="top-center" />
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4 w-full">
@@ -194,15 +193,15 @@ const BudgetCard = ({
             {iconData.icon}
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-800">{budget_name}</h3>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{budget_name}</h3>
             <div className="flex flex-wrap items-center gap-4 mt-1">
-              <span className="text-sm text-gray-600">Target: <span className="font-medium">R{targetAmount.toFixed(2)}</span></span>
-              <span className="text-sm text-gray-600">Used: <span className="font-medium">R{usedAmount.toFixed(2)}</span></span>
-              <span className="text-sm text-gray-600">Remaining: <span className="font-medium">R{remainingAmount.toFixed(2)}</span></span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Target: <span className="font-medium dark:text-gray-300">R{targetAmount.toFixed(2)}</span></span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Used: <span className="font-medium dark:text-gray-300">R{usedAmount.toFixed(2)}</span></span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Remaining: <span className="font-medium dark:text-gray-300">R{remainingAmount.toFixed(2)}</span></span>
             </div>
 
             <div className="mt-3 w-full">
-              <div className="w-full h-2.5 rounded-full bg-gray-100 overflow-hidden">
+              <div className="w-full h-2.5 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-500 ease-out"
                   style={{
@@ -224,6 +223,7 @@ const BudgetCard = ({
           >
             <FaEdit /> Edit
           </button> */}
+          
           <button
             onClick={onDelete}
             className="flex items-center gap-1 bg-red-100 text-red-400 px-4 py-1 rounded-full hover:bg-red-200"
@@ -437,7 +437,7 @@ const BudgetPage = () => {
     <AccountsLayout>
       <div className="p-6 w-full">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">Budget Management</h2>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Budget Management</h2>
           <button
             onClick={handleCreate}
             className="flex items-center gap-2 px-5 py-2.5 bg-[#AAD977] text-white text-sm font-medium rounded-lg hover:bg-[#6d9140] transition shadow-sm"
@@ -447,7 +447,7 @@ const BudgetPage = () => {
         </div>
 
         {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 text-red-500 p-4 mb-6 rounded">
+          <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 text-red-500 dark:text-red-300 p-4 mb-6 rounded">
             <div className="flex items-center">
               <FaTimes className="mr-2" />
               <span>{error}</span>
@@ -457,7 +457,7 @@ const BudgetPage = () => {
 
         {/* Search Bar */}
         <div className="mb-6">
-          <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm">
+          <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm dark:bg-gray-800 ">
             <FaSearch className="text-[#76B947] mr-2" />
             <input
               type="text"
@@ -504,11 +504,11 @@ const BudgetPage = () => {
 
           {budgets.length === 0 && !isCreating && (
             <div className="text-center py-12">
-              <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <FaWallet className="text-gray-400 text-3xl" />
+              <div className="mx-auto w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
+                <FaWallet className="text-gray-400 dark:text-gray-500 text-3xl" />
               </div>
-              <h3 className="text-lg font-medium text-gray-700 mb-1">No budgets yet</h3>
-              <p className="text-gray-500 mb-4">Create your first budget to start tracking your expenses</p>
+              <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-1">No budgets yet</h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-4">Create your first budget to start tracking your expenses</p>
               <button
                 onClick={handleCreate}
                 className="px-5 py-2.5 bg-[#AAD977] text-white rounded-lg hover:bg-[#6d9140] transition"

@@ -58,14 +58,14 @@ const AchievementCard = ({ ach }) => {
 
   return (
     <div onClick={() => navigate(`/achievements/${achievement_title}`)}
-      className={`cursor-pointer border-2 ${border} rounded-xl px-4 pt-4 pb-3 bg-white flex flex-col items-center gap-2`}>
+      className={`cursor-pointer border-2 ${border} rounded-xl px-4 pt-4 pb-3 bg-white flex flex-col items-center gap-2 dark:bg-gray-800`}>
       <h3 className={`text-sm font-semibold ${text} text-center`}>{achievement_title}</h3>
       <img src={image} alt={achievement_title} className="w-14 h-14 object-contain" />
       <div className="w-full mt-1">
-        <div className="h-2 bg-gray-200 rounded-full">
+        <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-600">
           <div className={`${fill} h-2 rounded-full`} style={{ width: `${percent}%` }} />
         </div>
-        <div className="flex justify-between text-xs text-gray-600 font-medium pt-1">
+        <div className="flex justify-between text-xs text-gray-600 font-medium pt-1 dark:text-gray-200">
           <span>{points_awarded} XP</span>
           <span>{progress_value}/{total}</span>
         </div>
@@ -74,7 +74,7 @@ const AchievementCard = ({ ach }) => {
   );
 };
 
-const CompleteAchievement = () => {
+const IncompleteAchievement = () => {
   const [achievements, setAchievements] = useState([]);
 
   useEffect(() => {
@@ -110,10 +110,10 @@ const CompleteAchievement = () => {
   return (
     <AchievementsLayout>
       <div className="space-y-6 px-6 pt-10 pb-6 -mt-8">
-        <h2 className="text-xl font-semibold text-cyan-500 bg-blue-50 inline-block px-4 py-1 rounded-full shadow-sm">
+        <h2 className="text-xl font-semibold text-cyan-500 bg-blue-50 inline-block px-4 py-1 rounded-full shadow-sm dark:bg-gray-800">
           Incomplete Achievements
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 ">
           {achievements.map((ach, idx) => (
             <AchievementCard key={idx} ach={ach} />
           ))}
@@ -123,4 +123,4 @@ const CompleteAchievement = () => {
   );
 };
 
-export default CompleteAchievement;
+export default IncompleteAchievement;

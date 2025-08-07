@@ -46,27 +46,27 @@ const GoalsPage = () => {
 
   return (
     <GoalsViewLayout>
-      <div className="flex flex-col gap-6 px-4 sm:px-6 py-6 items-center w-full">
+      <div className="flex flex-col gap-6 px-4 sm:px-6 py-6 items-center w-full ">
         {/* Top Charts and Overview */}
         <div className="grid grid-cols-4 gap-6 w-full px-16 max-w-screen-2xl mx-auto">
           {/* Card 1: Goal Totals */}
-          <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col gap-4 min-h-[280px]">
+          <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col gap-4 min-h-[280px] dark:bg-gray-800">
             <GoalOverviewCards />
             <UpcomingDeadlinesCard />
           </div>
 
           {/* Card 2: Bar Chart */}
-          <div className="bg-white rounded-2xl shadow-md p-4 min-h-[280px]">
+          <div className="bg-white rounded-2xl shadow-md p-4 min-h-[280px] dark:bg-gray-800">
             <BarChart />
           </div>
 
           {/* Card 3: Donut Chart */}
-          <div className="bg-white rounded-2xl shadow-md p-4 min-h-[280px] overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-md p-4 min-h-[280px] overflow-hidden dark:bg-gray-800">
             <DonutChart />
           </div>
 
           {/* Card 4: Latest Accomplished Goal */}
-          <div className="bg-white rounded-2xl shadow-md p-4 min-h-[280px]">
+          <div className="bg-white rounded-2xl shadow-md p-4 min-h-[280px] dark:bg-gray-800">
             {latestGoal ? (
               <GoalCard
                 goalId={latestGoal.goal_id}
@@ -89,7 +89,7 @@ const GoalsPage = () => {
         </div>
 
         {/*Search Input */}
-        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm">
+        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm dark:bg-gray-800">
           <FaSearch className="text-[#76B947] mr-2" />
           <input
             type="text"
