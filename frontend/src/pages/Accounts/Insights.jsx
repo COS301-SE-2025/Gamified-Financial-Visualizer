@@ -775,19 +775,19 @@ const InsightsPage = () => {
 
   return (
     <AccountsLayout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 dark:bg-gray-900">
         {/* AI Insights Section */}
-        <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3 mb-4">
             <div className="bg-indigo-100 p-3 rounded-lg text-indigo-600">
               <FaRobot size={20} />
             </div>
-            <h2 className="text-xl font-bold text-gray-800">AI Financial Advisor</h2>
+            <h2 className="text-xl font-bold text-gray-800 dark:text-white">AI Financial Advisor</h2>
           </div>
 
           {/* Prompt Input */}
           <div className="mb-6">
-            <label htmlFor="ai-prompt" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="ai-prompt" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Ask for specific analysis:
             </label>
             <div className="flex gap-2">
@@ -811,19 +811,19 @@ const InsightsPage = () => {
                 )}
               </button>
             </div>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
               Try: "Review my debt strategy" or "Investment suggestions"
             </p>
           </div>
 
           {/* AI Response */}
           {aiResponse && (
-            <div className="border-t pt-4 mt-4">
+            <div className="border-t pt-4 mt-4 border-gray-200 dark:border-gray-700">
               <div className="flex justify-between items-start mb-3">
-                <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                  <FaLightbulb className="text-yellow-400" /> Analysis for: "{aiResponse.prompt}"
+                <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                  <FaLightbulb className="text-yellow-400 dark:text-yellow-500" /> Analysis for: "{aiResponse.prompt}"
                 </h3>
-                <span className="text-xs text-gray-500">{aiResponse.generatedAt}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">{aiResponse.generatedAt}</span>
               </div>
 
               <div className="bg-indigo-50 p-4 rounded-lg mb-4 border-l-4 border-indigo-400">
@@ -845,7 +845,7 @@ const InsightsPage = () => {
           {/* Predefined Quick Prompts */}
           {!aiResponse && (
             <div className="mt-6">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Quick analysis prompts:</h4>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Quick analysis prompts:</h4>
               <div className="flex flex-wrap gap-2">
                 {[
                   "Optimize my budget",
@@ -859,7 +859,7 @@ const InsightsPage = () => {
                       setPrompt(quickPrompt);
                       getAiAnalysis(quickPrompt);
                     }}
-                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1.5 rounded-lg text-sm transition-colors duration-200 border border-gray-200"
+                    className="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 px-3 py-1.5 rounded-lg text-sm transition-colors duration-200 border border-gray-200 dark:border-gray-600"
                   >
                     {quickPrompt}
                   </button>

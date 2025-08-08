@@ -10,7 +10,6 @@ import {
 } from 'react-icons/fa';
 import avatar from '../../assets/Images/avatars/BlueSky.png';
 
-
 const AccountsPerformanceHeader = () => {
   const user = JSON.parse(localStorage.getItem('user'));
   const id = user ? user.id : null;
@@ -46,8 +45,6 @@ const AccountsPerformanceHeader = () => {
       .then(res => setLevelProgress(res.data))
       .catch(err => console.error('Failed to load level progress:', err));
 
-
-
     if (id) fetchData();
   }, [id]);
 
@@ -56,7 +53,7 @@ const AccountsPerformanceHeader = () => {
     if (!score) return { level: 'Beginner', color: '#60A5FA', tier: 'Bronze' };
     if (score >= 800) return { level: 'Excellent', color: '#93C5FD', tier: 'Diamond' };
     if (score >= 600) return { level: 'Good', color: '#60A5FA', tier: 'Gold' };
-    if (score >= 400) return { level: 'Average', color: '#60A5FA', tier: 'Silver' }; // color must remain consistent
+    if (score >= 400) return { level: 'Average', color: '#60A5FA', tier: 'Silver' };
     return { level: 'Beginner', color: '#60A5FA', tier: 'Bronze' };
   };
 
@@ -76,7 +73,7 @@ const AccountsPerformanceHeader = () => {
           <FaUsers className="text-6xl" />
           <h1 className="text-5xl font-light">Learn</h1>
         </div>
-        <p className="text-lg text-gray-400 mt-1 max-w-xs mx-auto lg:mx-0">
+        <p className="text-lg text-gray-400 mt-1 max-w-xs mx-auto lg:mx-0 dark:text-gray-300">
           Boost your financial knowledge with interactive modules, lessons, and quizzes.
         </p>
       </div>
@@ -84,7 +81,7 @@ const AccountsPerformanceHeader = () => {
       {/* Right Section (Performance Card + Stat Grid) */}
       <div className="flex flex-col gap-4 flex-1">
         {/* Center Performance Card */}
-        <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col sm:flex-row items-center justify-between gap-6 dark:bg-gray-800">
           {/* Avatar + Info */}
           <div className="flex items-center gap-6">
             <img src={
@@ -92,8 +89,8 @@ const AccountsPerformanceHeader = () => {
               } className="w-16 h-16 rounded-full object-cover" alt="Avatar" />
             <div>
               <p className="text-sm text-gray-500">Score</p>
-              <p className="text-2xl font-bold text-gray-800">{summary ? summary.score : '--'}</p>
-              <p className="text-sm text-gray-500">{performance.label}</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">{summary ? summary.score : '--'}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{performance.label}</p>
               <p className="text-sm text-[#F97156] font-medium"> Lv {levelProgress?.level_number ?? '—'}: {levelProgress?.tier_status ?? '—'}</p>
             </div>
           </div>
@@ -101,7 +98,7 @@ const AccountsPerformanceHeader = () => {
           {/* Progress Bar */}
           <div className="w-full">
             <p className="text-sm font-medium text-[#7FBCE9] mb-1">Learn Performance</p>
-            <div className="relative h-4 w-full rounded-full bg-[#f5f5f5] overflow-hidden">
+            <div className="relative h-4 w-full rounded-full bg-[#f5f5f5] dark:bg-gray-700 overflow-hidden">
               <div
                 className="h-full rounded-full"
                 style={{
@@ -160,17 +157,17 @@ const AccountsPerformanceHeader = () => {
               color: '#FF8A8A'
             }
           ].map(({ label, value, icon, color }, index) => (
-            <div key={index} className="relative bg-white rounded-xl shadow-sm overflow-hidden">
+            <div key={index} className="relative bg-white rounded-xl shadow-sm overflow-hidden dark:bg-gray-800">
               <div className="flex items-center justify-between px-4 py-3">
                 {/* Icon circle with soft background */}
-                <div className="w-10 h-10 flex items-center justify-center rounded-full" style={{ backgroundColor: `${color}20` }}>
+                <div className="w-10 h-10 flex items-center justify-center rounded-full dark:text-gray-400" style={{ backgroundColor: `${color}20` }}>
                   <span className="text-xl" style={{ color }}>{icon}</span>
                 </div>
 
                 {/* Stat content */}
                 <div className="text-right">
-                  <div className="text-lg font-bold text-gray-900">{value}</div>
-                  <div className="text-sm text-gray-500">{label}</div>
+                  <div className="text-lg font-bold text-gray-900 dark:text-gray-200">{value}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-300">{label}</div>
                 </div>
               </div>
 
@@ -179,7 +176,6 @@ const AccountsPerformanceHeader = () => {
             </div>
           ))}
         </div>
-
       </div>
     </div>
   );

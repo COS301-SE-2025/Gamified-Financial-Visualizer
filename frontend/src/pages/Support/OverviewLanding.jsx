@@ -103,38 +103,38 @@ const OverviewLanding = () => {
     }, 800);
   };
 
-  return (
+   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
       {/* XP Header Card */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="bg-white p-6 rounded-3xl shadow-md border-l-8 border-t-2 border-r-2 border-b-2 border-[#72C1F5] relative overflow-hidden"
+        className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-md dark:shadow-gray-700/50 border-l-8 border-t-2 border-r-2 border-b-2 border-[#FFD18C] relative overflow-hidden"
       >
-        <div className="absolute top-0 right-0 w-32 h-32 bg-[#c3fafe] rounded-full filter blur-3xl opacity-40 -mr-10 -mt-10"></div>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-[#fef9c3] dark:bg-yellow-900 rounded-full filter blur-3xl opacity-40 dark:opacity-20 -mr-10 -mt-10"></div>
         
         <div className="relative z-10 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-sky-300 mb-1">Adventure Guide</h1>
-            <p className="text-gray-600 mb-4">Explore different areas of your financial journey</p>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">Explore different areas of your financial journey</p>
             
             <div className="flex gap-3">
-              <div className="bg-[#fff7ed] border border-[#fed7aa] rounded-lg px-3 py-2 flex items-center gap-2">
+              <div className="bg-[#fff7ed] dark:bg-gray-800 border border-[#fed7aa] dark:border-gray-700 rounded-lg px-3 py-2 flex items-center gap-2">
                 <FaFire className="text-[#fb923c]" />
-                <span className="text-[#9a3412] text-sm">{userStats.streakDays} day streak</span>
+                <span className="text-[#9a3412] dark:text-orange-300 text-sm">{userStats.streakDays} day streak</span>
               </div>
-              <div className="bg-[#fffbeb] border border-[#fde68a] rounded-lg px-3 py-2 flex items-center gap-2">
+              <div className="bg-[#fffbeb] dark:bg-gray-800 border border-[#fde68a] dark:border-gray-700 rounded-lg px-3 py-2 flex items-center gap-2">
                 <FaTrophy className="text-[#fbbf24]" />
-                <span className="text-[#92400e] text-sm">7 areas to explore</span>
+                <span className="text-[#92400e] dark:text-yellow-300 text-sm">7 areas to explore</span>
               </div>
             </div>
           </div>
 
           <div className="relative">
-            <div className="w-24 h-24 bg-white border-4 border-[#FFD18C] rounded-full shadow-lg flex flex-col items-center justify-center">
+            <div className="w-24 h-24 bg-white dark:bg-gray-800 border-4 border-[#FFD18C] rounded-full shadow-lg dark:shadow-gray-700/50 flex flex-col items-center justify-center">
               <p className="text-2xl font-bold text-[#FFBF1A]">{userStats.xp}</p>
-              <p className="text-xs text-gray-500">XP</p>
+              <p className="text-xs text-gray-500 dark:text-gray-300">XP</p>
             </div>
             {showXpAnimation && (
               <motion.div
@@ -161,13 +161,13 @@ const OverviewLanding = () => {
             onHoverStart={() => setIsHovered(id)}
             onHoverEnd={() => setIsHovered(null)}
             onClick={() => handleButtonClick(`/support/overview/${id}`, xpReward)}
-            className="bg-white p-6 rounded-2xl shadow-sm border-l-8 hover:shadow-md transition-all relative overflow-hidden group cursor-pointer"
+            className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm dark:shadow-gray-700/50 border-l-8 hover:shadow-md dark:hover:shadow-gray-600/50 transition-all relative overflow-hidden group cursor-pointer"
             style={{ borderLeftColor: color }}
           >
             <AnimatePresence>
               {isHovered === id && (
                 <motion.div
-                  className="absolute inset-0 bg-white/30 backdrop-blur-sm"
+                  className="absolute inset-0 bg-white/30 dark:bg-gray-700/30 backdrop-blur-sm"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -186,8 +186,8 @@ const OverviewLanding = () => {
                 {icon}
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-800">{label}</h3>
-                <p className="text-sm text-gray-600 mt-1">{desc}</p>
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{label}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{desc}</p>
                 <motion.div 
                   className="flex items-center mt-3 text-xs font-medium"
                   style={{ color }}
@@ -201,7 +201,7 @@ const OverviewLanding = () => {
               </div>
             </div>
             
-            <div className="absolute right-4 top-4 bg-[#fef9c3] text-[#e46349] text-xs font-bold px-2 py-1 rounded-full border border-[#fde047]">
+            <div className="absolute right-4 top-4 bg-[#fef9c3] dark:bg-yellow-900/50 text-[#e46349] dark:text-yellow-300 text-xs font-bold px-2 py-1 rounded-full border border-[#fde047] dark:border-yellow-700">
               +{xpReward} XP
             </div>
           </motion.div>

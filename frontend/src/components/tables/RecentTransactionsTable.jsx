@@ -120,31 +120,47 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-md px-6 py-6">
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-md px-6 py-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-[#336699]">{heading}</h2>
         {(
           <div className="flex gap-2 items-center">
-            <select className="border px-4 py-1 rounded-full text-sm" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+            <select 
+              className="border dark:border-gray-600 px-4 py-1 rounded-full text-sm dark:bg-gray-700 dark:text-gray-300" 
+              value={sortBy} 
+              onChange={(e) => setSortBy(e.target.value)}
+            >
               <option value="">Sort by</option>
               <option value="Name">Name</option>
               <option value="AmountAsc">Amount Asc</option>
               <option value="AmountDsc">Amount Dsc</option>
               <option value="Date">Date</option>
             </select>
-            <select className="border px-4 py-1 rounded-full text-sm" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} disabled={categoriesLoading}>
-              <option value="">{categoriesLoading ? 'Loading categories...' : 'Filter by categories'}</option>
+
+            <select 
+              className="border dark:border-gray-600 px-4 py-1 rounded-full text-sm dark:bg-gray-700 dark:text-gray-300" 
+              value={categoryFilter} 
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              disabled={categoriesLoading}
+            >
+              <option value="">
+                {categoriesLoading ? 'Loading categories...' : 'Filter by categories'}
+              </option>
               {categories.map(category => (
                 <option key={category.category_id} value={category.category_name}>{toTitleCase(category.category_name)}</option>
               ))}
             </select>
-            <select className="border px-4 py-1 rounded-full text-sm" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
+            <select 
+              className="border dark:border-gray-600 px-4 py-1 rounded-full text-sm dark:bg-gray-700 dark:text-gray-300" 
+              value={dateFilter} 
+              onChange={(e) => setDateFilter(e.target.value)}
+            >
               <option value="">Filter by date</option>
               <option value="7 Days">Last 7 Days</option>
               <option value="10 Days">Last 10 Days</option>
               <option value="Last Month">Last Month</option>
             </select>
-            <select className="border px-4 py-1 rounded-full text-sm" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+            <select className="border px-4 py-1 rounded-full text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
               <option value="">Filter by type</option>
               <option value="income">Income</option>
               <option value="expense">Expense</option>
@@ -157,7 +173,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
               <button
                 onClick={() => setShowAddModal(true)}
                 disabled={!account || loading}
-                className="flex items-center gap-2 px-4 py-1 bg-[#D8F5C5] text-[#76B947] text-sm font-medium rounded-full hover:bg-[#c8ecb4] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-1 bg-[#D8F5C5] dark:bg-[#AAD977] dark:text-white text-[#76B947] text-sm font-medium rounded-full hover:bg-[#c8ecb4] transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <FaPlus /> Add
               </button>
@@ -167,15 +183,15 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded p-3 mb-4 text-red-700 text-sm">
+        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded p-3 mb-4 text-red-700 dark:text-red-300 text-sm">
           {error}
-          <button onClick={() => setError('')} className="ml-2 text-red-500 hover:text-red-700">×</button>
+          <button onClick={() => setError('')} className="ml-2 text-red-500 dark:text-red-300 hover:text-red-700 dark:hover:text-red-400">×</button>
         </div>
       )}
 
       <div className="overflow-x-auto">
-        <table className="min-w-full text-sm text-left text-gray-700">
-          <thead className="border-b">
+        <table className="min-w-full text-sm text-left text-gray-700 dark:text-gray-300">
+          <thead className="border-b dark:border-gray-700">
             <tr>
               <th className="px-4 py-2">Name</th>
               <th className="px-4 py-2">Date</th>
@@ -187,7 +203,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
           <tbody>
             {filteredSortedTransactions.length === 0 ? (
               <tr>
-                <td colSpan="5" className="px-4 py-8 text-center text-gray-500">
+                <td colSpan="5" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                   {isAccountView ? (account ? 'No transactions found for this account' : 'Select an account to view transactions') : 'No transactions available'}
                 </td>
               </tr>
@@ -316,8 +332,8 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
 
       {loading && (
         <div className="flex justify-center items-center py-4">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#336699]"></div>
-          <span className="ml-2 text-gray-600">Processing...</span>
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#336699] dark:border-blue-400"></div>
+          <span className="ml-2 text-gray-600 dark:text-gray-400">Processing...</span>
         </div>
       )}
 

@@ -40,6 +40,7 @@ import {
   FaSpinner
 } from 'react-icons/fa';
 
+
 const performance = {
   score: 350,
   level: 'Lv 3: Silver',
@@ -116,10 +117,10 @@ const getCategoryColor = (categoryKey, index = 0) => {
 };
 
 const AccountsPerformanceHeader = () => {
-   const [categorySummary, setCategorySummary] = useState([]);
+  const [categorySummary, setCategorySummary] = useState([]);
   const [userTransactions, setUserTransactions] = useState([]);
   const [error, setError] = useState(null);
-   const [performanceSummary, setPerformanceSummary] = useState(null);
+  const [performanceSummary, setPerformanceSummary] = useState(null);
   const [userId, setUserId] = useState(null);
 
   // Get user ID from localStorage
@@ -131,7 +132,6 @@ const AccountsPerformanceHeader = () => {
         
         if (userData) {
           const parsedUser = JSON.parse(userData);
-          // Handle different possible user object structures
           const id = parsedUser.id || parsedUser.user_id || parsedUser.userId;
           setUserId(id);
         } else {
@@ -195,11 +195,10 @@ const AccountsPerformanceHeader = () => {
       }
     };
 
-     fetch(`http://localhost:5000/api/auth/profile/performance-summary/${userId}`)
+    fetch(`http://localhost:5000/api/auth/profile/performance-summary/${userId}`)
       .then(res => res.json())
       .then(data => setPerformanceSummary(data.data))
       .catch(err => console.error('Performance summary error:', err));
-
 
     fetchData();
   }, [userId]);
@@ -207,16 +206,9 @@ const AccountsPerformanceHeader = () => {
   // Calculate performance metrics based on transactions
   const performanceMetrics = useMemo(() => {
     if (!userTransactions || userTransactions.length === 0) {
-      return {
-        /* score: 150,
-        level: 'Silver',
-        levelNumber: 3,
-        description: 'Excellent',
-        progressPercentage: 75 */
-      };
+      return {};
     }
 
-    // Calculate totals by transaction type
     const totals = userTransactions.reduce((acc, transaction) => {
       const amount = parseFloat(transaction.transaction_amount) || 0;
       const type = transaction.transaction_type?.toLowerCase();
@@ -232,26 +224,15 @@ const AccountsPerformanceHeader = () => {
       return acc;
     }, { income: 0, expenses: 0, transfers: 0 });
 
-    // Calculate performance score
-    // Base score starts at 100
     let score = 100;
-    
-    // Income boosts score (every R100 income = +5 points, max +100)
     const incomeBonus = Math.min((totals.income / 100) * 5, 100);
     score += incomeBonus;
-    
-    // Expenses reduce score (every R100 expense = -3 points, max -80)
     const expenseReduction = Math.min((totals.expenses / 100) * 3, 80);
     score -= expenseReduction;
-    
-    // Transfers have neutral impact but show activity (+1 point per R100, max +20)
     const transferBonus = Math.min((totals.transfers / 100) * 1, 20);
     score += transferBonus;
-    
-    // Keep score within reasonable bounds
     score = Math.max(0, Math.min(300, score));
     
-    // Determine level based on score
     let level, levelNumber, description;
     
     if (score >= 250) {
@@ -280,7 +261,6 @@ const AccountsPerformanceHeader = () => {
       description = 'Getting Started';
     }
     
-    // Calculate progress percentage for the circle (0-100%)
     const progressPercentage = Math.min((score / 300) * 100, 100);
     
     return {
@@ -322,11 +302,11 @@ const AccountsPerformanceHeader = () => {
     <div className="flex flex-wrap justify-between gap-6 items-start w-full mb-6">
       {/* Left Label */}
       <div className="text-center lg:text-left">
-        <div className="flex items-center justify-center lg:justify-start gap-2 text-[#B4DFA4]">
+        <div className="flex items-center justify-center lg:justify-start gap-2 text-[#B4DFA4] dark:text-[#88BC46]">
           <FaUsers className="text-6xl" />
-          <h1 className="text-5xl font-light">Accounts</h1>
+          <h1 className="text-5xl font-light dark:text-white">Accounts</h1>
         </div>
-        <p className="text-lg text-gray-400 mt-1 max-w-xs mx-auto lg:mx-0">
+        <p className="text-lg text-gray-400 dark:text-gray-300 mt-1 max-w-xs mx-auto lg:mx-0">
           View and manage all your linked accounts and track recent transactions in one place.
         </p>
       </div>
@@ -334,22 +314,22 @@ const AccountsPerformanceHeader = () => {
       {/* Right Section (Performance Card + Stat Grid) */}
       <div className="flex flex-col gap-4 flex-1">
         {/* Center Performance Card */}
-        <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-4 flex flex-col sm:flex-row items-center justify-between gap-6">
           {/* Avatar + Info */}
           <div className="flex items-center gap-6">
             <img src={`/assets/Images/${performanceSummary?.avatar_image_path}`} className="w-16 h-16 rounded-full object-cover" alt="Avatar" />
             <div>
               <p className="text-sm text-gray-500">Score</p>
-              <p className="text-2xl font-bold text-gray-800">{performanceMetrics.score}</p>
-              <p className="text-sm text-gray-500">{performanceMetrics.description}</p>
-              <p className="text-sm text-[#F97156] font-medium">Lv {performanceMetrics.levelNumber}: {performanceMetrics.level}</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-white">{performanceMetrics.score}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{performanceMetrics.description}</p>
+              <p className="text-sm text-[#F97156] dark:text-[#FF955A] font-medium">Lv {performanceMetrics.levelNumber}: {performanceMetrics.level}</p>
             </div>
           </div>
 
           {/* Progress Bar */}
           <div className="w-full">
-            <p className="text-sm font-medium text-[#7FBCE9] mb-1">Accounts Performance</p>
-            <div className="relative h-4 w-full rounded-full bg-[#f5f5f5] overflow-hidden">
+            <p className="text-sm font-medium text-[#7FBCE9] dark:text-[#5FBFFF] mb-1">Accounts Performance</p>
+            <div className="relative h-4 w-full rounded-full bg-[#f5f5f5] dark:bg-gray-700 overflow-hidden">
               <div
                 className="h-full rounded-full"
                 style={{
@@ -358,7 +338,7 @@ const AccountsPerformanceHeader = () => {
                 }}
               />
               <div
-                className="absolute top-1/2 w-5 h-5 bg-[#B3E5FC] rounded-full border-2 border-white shadow-md"
+                className="absolute top-1/2 w-5 h-5 bg-[#B3E5FC] rounded-full border-2 border-white dark:border-gray-800 shadow-md"
                 style={{
                   left: `calc(${performanceMetrics.progressPercentage}% - 10px)`,
                   transform: 'translateY(-50%)'
@@ -371,7 +351,7 @@ const AccountsPerformanceHeader = () => {
         {/* Stat Blocks*/}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 w-full">
           {categoryTotals.map((category, i) => (
-            <div key={i} className="relative bg-white rounded-xl shadow-sm overflow-hidden">
+            <div key={i} className="relative bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
               <div className="flex items-center justify-between px-4 py-3">
                 {/* Icon circle with soft background */}
                 <div className="w-10 h-10 flex items-center justify-center rounded-full" style={{ backgroundColor: `${category.color}20` }}>
@@ -380,8 +360,8 @@ const AccountsPerformanceHeader = () => {
 
                 {/* Stat content */}
                 <div className="text-right">
-                  <div className="text-lg font-bold text-gray-900">R{category.total.toFixed(2)}</div>
-                  <div className="text-sm text-gray-500">{category.name}</div>
+                  <div className="text-lg font-bold text-gray-900 dark:text-white">R{category.total.toFixed(2)}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">{category.name}</div>
                 </div>
               </div>
 
@@ -390,7 +370,6 @@ const AccountsPerformanceHeader = () => {
             </div>
           ))}
         </div>
-
       </div>
     </div>
   );
