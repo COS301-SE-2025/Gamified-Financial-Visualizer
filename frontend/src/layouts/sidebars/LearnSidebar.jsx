@@ -8,7 +8,8 @@ import {
   FaClock,
   FaRedoAlt
 } from 'react-icons/fa';
-import avatar from '../../assets/Images/avatars/sharkAvatar.jpeg';
+import avatar from '../../assets/Images/avatars/BlueSky.png';
+
 
 const AccountsPerformanceHeader = () => {
   const user = JSON.parse(localStorage.getItem('user'));

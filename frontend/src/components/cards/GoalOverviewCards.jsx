@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import avatar from '../../assets/Images/avatars/totoroAvatar.jpeg';
 
 import { FaCoins } from 'react-icons/fa';
 

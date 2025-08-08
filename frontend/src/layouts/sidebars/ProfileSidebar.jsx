@@ -8,7 +8,8 @@ import {
   FaTimes,
   FaBan,
 } from 'react-icons/fa';
-import avatar from '../../assets/Images/avatars/sharkAvatar.jpeg';
+import avatar from '../../assets/Images/avatars/BlueSky.png';
+
 
 const AccountsPerformanceHeader = () => {
   const [sidebarStats, setSidebarStats] = useState(null);
