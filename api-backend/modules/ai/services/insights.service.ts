@@ -1,12 +1,12 @@
 import pool from '../../../config/db';
 import { logger } from '../../../config/logger';
-import {redisClient } from '../../../config/redis';
+import { redisClient } from '../../../config/redis';
 
 // 1) Raw transactions for a given month
 export async function getRawTransactions(userId: string, month: number) {
   const year = new Date().getFullYear();
   try {
-  const { rows } = await pool.query(`
+    const { rows } = await pool.query(`
     SELECT
       transaction_date AS date,
       transaction_name AS description,
@@ -20,9 +20,9 @@ export async function getRawTransactions(userId: string, month: number) {
       AND EXTRACT(YEAR FROM transaction_date) = $2
       AND EXTRACT(MONTH FROM transaction_date) = $3
     ORDER BY transaction_date
-  `, [userId, year, month]);
+  `, [ userId, year, month ]);
 
-  return rows;
+    return rows;
   } catch (error) {
     logger.error('Error fetching raw transactions:', error);
     throw error;
@@ -33,14 +33,14 @@ export async function getRawTransactions(userId: string, month: number) {
 export async function getRawGoals(userId: string, month: number) {
   const year = new Date().getFullYear();
   try {
-  const { rows } = await pool.query(`
+    const { rows } = await pool.query(`
     SELECT goal_id, goal_name, goal_status, target_amount, current_amount
     FROM goals
     WHERE user_id = $1
       AND EXTRACT(YEAR FROM start_date) = $2
       AND EXTRACT(MONTH FROM start_date) = $3
-  `, [userId, year, month]);
-  return rows;
+  `, [ userId, year, month ]);
+    return rows;
   } catch (error) {
     logger.error('Error fetching raw goals:', error);
     throw error;
@@ -57,7 +57,7 @@ export async function getRawBudgets(userId: string) {
       JOIN budget_categories bc ON b.budget_id = bc.budget_id
       JOIN categories c ON bc.category_id = c.category_id
       WHERE b.user_id = $1
-    `, [userId]);
+    `, [ userId ]);
     return rows;
   } catch (error) {
     logger.error('Error fetching raw budgets:', error);
@@ -92,10 +92,10 @@ export async function getUserScore(userId: string): Promise<UserScore> {
         COALESCE(SUM(CASE WHEN LOWER(category) = 'investment' THEN transaction_amount END),0) AS investments
       FROM transactions
       WHERE user_id = $1
-    `, [userId]);
-    const userIncome     = parseFloat(u[0].income) || 0;
-    const userExpenses   = parseFloat(u[0].expenses) || 0;
-    const userInvestments= parseFloat(u[0].investments)|| 0;
+    `, [ userId ]);
+    const userIncome = parseFloat(u[ 0 ].income) || 0;
+    const userExpenses = parseFloat(u[ 0 ].expenses) || 0;
+    const userInvestments = parseFloat(u[ 0 ].investments) || 0;
 
     // 2) All-users averages of those totals
     const { rows: a } = await pool.query(`
@@ -113,22 +113,22 @@ export async function getUserScore(userId: string): Promise<UserScore> {
         GROUP BY user_id
       ) t
     `);
-    const avgIncome      = parseFloat(a[0].avg_income)      || 0;
-    const avgExpenses    = parseFloat(a[0].avg_expenses)    || 0;
-    const avgInvestments = parseFloat(a[0].avg_investments) || 0;
+    const avgIncome = parseFloat(a[ 0 ].avg_income) || 0;
+    const avgExpenses = parseFloat(a[ 0 ].avg_expenses) || 0;
+    const avgInvestments = parseFloat(a[ 0 ].avg_investments) || 0;
 
     // 3) Compute rates (0–100)
-    const savingsRate   = userIncome > 0 ? ((userIncome - userExpenses) / userIncome) * 100 : 0;
-    const spendingRate  = userIncome > 0 ? (userExpenses / userIncome) * 100 : 0;
-    const investmentRate= userIncome > 0 ? (userInvestments / userIncome) * 100 : 0;
+    const savingsRate = userIncome > 0 ? ((userIncome - userExpenses) / userIncome) * 100 : 0;
+    const spendingRate = userIncome > 0 ? (userExpenses / userIncome) * 100 : 0;
+    const investmentRate = userIncome > 0 ? (userInvestments / userIncome) * 100 : 0;
 
-    const avgSavingsRate   = avgIncome > 0 ? ((avgIncome - avgExpenses) / avgIncome) * 100 : 0;
-    const avgSpendingRate  = avgIncome > 0 ? (avgExpenses / avgIncome) * 100 : 0;
-    const avgInvestmentRate= avgIncome > 0 ? (avgInvestments / avgIncome) * 100 : 0;
+    const avgSavingsRate = avgIncome > 0 ? ((avgIncome - avgExpenses) / avgIncome) * 100 : 0;
+    const avgSpendingRate = avgIncome > 0 ? (avgExpenses / avgIncome) * 100 : 0;
+    const avgInvestmentRate = avgIncome > 0 ? (avgInvestments / avgIncome) * 100 : 0;
 
     // 4) Composite scores
     //    simple average of the three rates
-    const userScore    = (savingsRate + (100 - spendingRate) + investmentRate) / 3;
+    const userScore = (savingsRate + (100 - spendingRate) + investmentRate) / 3;
     const avgUserScore = (avgSavingsRate + (100 - avgSpendingRate) + avgInvestmentRate) / 3;
 
     // 5) Insights based on comparisons
@@ -155,13 +155,13 @@ export async function getUserScore(userId: string): Promise<UserScore> {
     );
 
     return {
-      userScore:    +userScore.toFixed(1),
+      userScore: +userScore.toFixed(1),
       avgUserScore: +avgUserScore.toFixed(1),
-      savingsRate:    +savingsRate.toFixed(1),
+      savingsRate: +savingsRate.toFixed(1),
       avgSavingsRate: +avgSavingsRate.toFixed(1),
-      spendingRate:    +spendingRate.toFixed(1),
+      spendingRate: +spendingRate.toFixed(1),
       avgSpendingRate: +avgSpendingRate.toFixed(1),
-      investmentRate:    +investmentRate.toFixed(1),
+      investmentRate: +investmentRate.toFixed(1),
       avgInvestmentRate: +avgInvestmentRate.toFixed(1),
       insights
     };
@@ -172,38 +172,38 @@ export async function getUserScore(userId: string): Promise<UserScore> {
 }
 
 export async function getUserInsightsWrapped(userId: string, month: number) {
-   try {
-  // 1. Get transactions from DB for that user/month
+  try {
+    // 1. Get transactions from DB for that user/month
 
-  // 2. Get goals & budget activity
+    // 2. Get goals & budget activity
 
-  // 3. Generate feature vector
+    // 3. Generate feature vector
 
-  // 4. Run sentiment engine
+    // 4. Run sentiment engine
 
-  // 5. Build summary response
+    // 5. Build summary response
 
 
-  /*
-   "You set 4 goals and crushed 2 of them. Fastest: Emergency Fund (3 weeks early!)"
-
- "Your top spending category: Dining (R3,820)"
-
- "Biggest splurge: R2,100 @ Takealot on July 15th"
-
- "Savings Rate: 18% — higher than 70% of users your age!"
-
- "Financial Sentiment: Stable. You’re building consistency and control."
-
- "Best Week: Week 2 — 3-day no-spend streak and budget adherence!"
-   */
-   } catch (error) {
-      logger.error('Error fetching user insights:', error);
-      throw error;
-   }
+    /*
+     "You set 4 goals and crushed 2 of them. Fastest: Emergency Fund (3 weeks early!)"
+  
+   "Your top spending category: Dining (R3,820)"
+  
+   "Biggest splurge: R2,100 @ Takealot on July 15th"
+  
+   "Savings Rate: 18% — higher than 70% of users your age!"
+  
+   "Financial Sentiment: Stable. You’re building consistency and control."
+  
+   "Best Week: Week 2 — 3-day no-spend streak and budget adherence!"
+     */
+  } catch (error) {
+    logger.error('Error fetching user insights:', error);
+    throw error;
+  }
 }
 
-export async function generateWrappedInsights(userId: number, month: number ) {
+export async function generateWrappedInsights(userId: number, month: number) {
   const currentYear = new Date().getFullYear();
 
   // Fetch transactions for the month
@@ -215,18 +215,18 @@ export async function generateWrappedInsights(userId: number, month: number ) {
      WHERE accounts.user_id = $1
      AND EXTRACT(MONTH FROM transaction_date) = $2
      AND EXTRACT(YEAR FROM transaction_date) = $3`,
-    [userId, month, currentYear]
+    [ userId, month, currentYear ]
   );
 
   // Fetch goals and budgets
   const { rows: goals } = await pool.query(
     `SELECT * FROM goals WHERE user_id = $1 AND EXTRACT(MONTH FROM start_date) = $2`,
-    [userId, month]
+    [ userId, month ]
   );
 
   const { rows: budgets } = await pool.query(
     `SELECT * FROM budgets WHERE user_id = $1`,
-    [userId]
+    [ userId ]
   );
 
   // === Derived Insights ===
@@ -278,79 +278,207 @@ export async function generateWrappedInsights(userId: number, month: number ) {
 
 export async function radarChartInsights(userId: number) {
   try {
-    // 1. Get transactions
-    const { rows: transactions } = await pool.query(`
-      SELECT transaction_amount AS amount, transaction_type, category_name AS category
-      FROM transactions
-      JOIN categories ON transactions.category_id = categories.category_id
-      WHERE user_id = $1
-    `, [userId]);
+    // 1) USER-SCOPED DATA
+    const { rows: transactions } = await pool.query(
+      `
+      SELECT
+        t.transaction_amount AS amount,
+        t.transaction_type,
+        c.category_name       AS category,
+        t.transaction_date    AS date
+      FROM transactions t
+      JOIN categories c ON t.category_id = c.category_id
+      JOIN accounts   a ON t.account_id   = a.account_id
+      WHERE a.user_id = $1
+      `,
+      [userId]
+    );
 
-    // 2. Get budgets
-    const { rows: budgets } = await pool.query(`
+    const { rows: budgets } = await pool.query(
+      `
       SELECT b.budget_id, b.budget_name, bc.current_amount, c.category_name AS category
       FROM budgets b
       JOIN budget_categories bc ON b.budget_id = bc.budget_id
-      JOIN categories c ON bc.category_id = c.category_id
+      JOIN categories c         ON bc.category_id = c.category_id
       WHERE b.user_id = $1
-    `, [userId]);
+      `,
+      [userId]
+    );
 
-    // 3. Get AI score (already calculated previously)
-    const { rows: scoreRes } = await pool.query(`
-      SELECT ai_score
-      FROM user_scores
-      WHERE user_id = $1
-    `, [userId]);
+    const { rows: scoreRes } = await pool.query(
+      `SELECT score_value AS ai_score FROM ai_scores WHERE user_id = $1`,
+      [userId]
+    );
 
+    // ---- USER METRICS ----
     const income = transactions
-      .filter(t => t.transaction_type === 'income')
-      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+      .filter(t => ['income','deposit','transfer'].includes(t.transaction_type))
+      .reduce((s, t) => s + Number(t.amount), 0);
 
     const expenses = transactions
-      .filter(t => t.transaction_type === 'expense')
-      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+      .filter(t => ['expense','withdrawal','fee'].includes(t.transaction_type))
+      .reduce((s, t) => s + Number(t.amount), 0);
 
     const savingsRate = income > 0 ? ((income - expenses) / income) * 100 : 0;
 
     const impulseCount = transactions.filter(
-      t => t.transaction_type === 'expense' && parseFloat(t.amount) < 150
+      t => ['expense','withdrawal','fee'].includes(t.transaction_type) && Number(t.amount) < 150
     ).length;
-
-    const impulseScore = Math.min(impulseCount / 10, 1.0) * 100; // scale to 100
-
+    const impulseScore = Math.min(impulseCount / 10, 1.0) * 100; // 0..100
     const smartSpending = 100 - impulseScore;
 
-    const underBudget = budgets.filter(b => parseFloat(b.current_amount) <= 0).length;
+    const underBudget = budgets.filter(b => Number(b.current_amount) <= 0).length;
     const totalBudgets = budgets.length;
     const budgetDiscipline = totalBudgets > 0 ? (underBudget / totalBudgets) * 100 : 50;
 
-    // category investments, crypto purchase, crypto sale, forex, dividends to calculate investing rate
-    const investmentTransactions = transactions.filter(t =>
-      t.category === 'Investments' ||
-      t.category === 'Crypto Purchase' ||
-      t.category === 'Crypto Sale' ||
-      t.category === 'Forex' ||
-      t.category === 'Dividends'
-    );
+    // investing categories (case-insensitive match is safer)
+    const investCats = new Set(['investments','crypto purchase','crypto sale','forex','dividends']);
+    const totalInvestment = transactions
+      .filter(t => investCats.has(String(t.category).toLowerCase()))
+      .reduce((s, t) => s + Number(t.amount), 0);
+    const investingRate = income > 0 ? (totalInvestment / income) * 100 : 0;
 
-    const totalInvestment = investmentTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
-    const totalIncomeForInvesting = income > 0 ? income : 1; // Avoid division by zero
-    const investingRate = (totalInvestment / totalIncomeForInvesting) * 100;
+    // cash-flow stability: use last 6 months of net flows
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    const netFlows = transactions
+      .filter(t => new Date(t.date) >= sixMonthsAgo)
+      .map(t => {
+        const amt = Number(t.amount);
+        const sign = ['income','deposit','transfer'].includes(t.transaction_type) ? 1 : -1;
+        return amt * sign;
+      });
 
-    const financialLiteracy = 70; // Placeholder — can integrate with learning module table
+    const cashFlowStability = cashFlowStabilityScore(netFlows); // keep your helper (0..100)
 
-    const financialHealthScore = scoreRes.length ? parseFloat(scoreRes[0].ai_score) : 50;
+    const financialHealthScore = scoreRes.length ? Number(scoreRes[0].ai_score) : 50;
 
-    return {
-      radar: [
-        { axis: "Savings Rate", value: Math.round(savingsRate) },
-        { axis: "Investing Rate", value: investingRate },
-        { axis: "Smart Spending", value: Math.round(smartSpending) },
-        { axis: "Spending Discipline", value: Math.round(budgetDiscipline) },
-        { axis: "Financial Literacy", value: financialLiteracy },
-        { axis: "Financial Health", value: Math.round(financialHealthScore) }
-      ]
-    };
+    // 2) GLOBAL AVERAGES (per-user averages → then average across users)
+    //    (Uses last 6 months for stability; others are lifetime in this example – adjust to your needs.)
+    // Try to get globalAgg from Redis cache first
+    const cacheKey = 'globalAggRadarMetrics';
+    let globalAgg: any[] | null = null;
+
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+      globalAgg = JSON.parse(cached);
+    } else {
+      const { rows } = await pool.query(`
+      WITH tx AS (
+        SELECT
+        a.user_id,
+        t.transaction_date,
+        t.transaction_amount,
+        t.transaction_type,
+        LOWER(c.category_name) AS category
+        FROM transactions t
+        JOIN accounts a  ON t.account_id = a.account_id
+        JOIN categories c ON t.category_id = c.category_id
+      ),
+      per_user_flows AS (
+        SELECT
+        user_id,
+        SUM(CASE WHEN transaction_type IN ('income','deposit','transfer')  THEN transaction_amount ELSE 0 END) AS income,
+        SUM(CASE WHEN transaction_type IN ('expense','withdrawal','fee')   THEN transaction_amount ELSE 0 END) AS expense,
+        SUM(CASE WHEN transaction_type IN ('expense','withdrawal','fee') AND transaction_amount < 150 THEN 1 ELSE 0 END) AS impulse_cnt
+        FROM tx
+        GROUP BY user_id
+      ),
+      per_user_investing AS (
+        SELECT
+        user_id,
+        SUM(CASE WHEN category IN ('investments','crypto purchase','crypto sale','forex','dividends')
+             THEN transaction_amount ELSE 0 END) AS invest_total
+        FROM tx
+        GROUP BY user_id
+      ),
+      per_user_budget AS (
+        SELECT
+        b.user_id,
+        AVG(CASE WHEN bc.current_amount <= 0 THEN 100.0 ELSE 0.0 END) AS budget_discipline
+        FROM budgets b
+        JOIN budget_categories bc ON b.budget_id = bc.budget_id
+        GROUP BY b.user_id
+      ),
+      per_user_scores AS (
+        SELECT user_id, AVG(score_value) AS health
+        FROM ai_scores
+        GROUP BY user_id
+      ),
+      last6 AS (
+        SELECT
+        user_id,
+        date_trunc('month', transaction_date) AS m,
+        SUM(
+          CASE WHEN transaction_type IN ('income','deposit','transfer') THEN transaction_amount
+             WHEN transaction_type IN ('expense','withdrawal','fee')  THEN -transaction_amount
+             ELSE 0 END
+        ) AS net
+        FROM tx
+        WHERE transaction_date >= (CURRENT_DATE - INTERVAL '6 months')
+        GROUP BY user_id, m
+      ),
+      per_user_stability AS (
+        SELECT
+        user_id,
+        COALESCE(stddev_samp(net), 0) AS sd,
+        NULLIF(AVG(ABS(net)), 0)      AS mean_abs
+        FROM last6
+        GROUP BY user_id
+      ),
+      per_user_metrics AS (
+        SELECT
+        f.user_id,
+        CASE WHEN f.income > 0 THEN ((f.income - f.expense) / f.income) * 100 ELSE 0 END AS savings_rate,
+        CASE WHEN f.income > 0 THEN LEAST(i.invest_total / f.income, 1.0) * 100 ELSE 0 END AS investing_rate,
+        100 - LEAST(f.impulse_cnt / 10.0, 1.0) * 100 AS smart_spending,
+        COALESCE(b.budget_discipline, 50) AS budget_discipline,
+        COALESCE(s.health, 50) AS financial_health,
+        -- stability scaled to 0..100: 100 - (sd/mean_abs)*100 (clamped)
+        CASE
+          WHEN u.mean_abs IS NULL OR u.mean_abs = 0 THEN 50
+          ELSE GREATEST(0, LEAST(100, 100 - (u.sd / u.mean_abs) * 100))
+        END AS cash_flow_stability
+        FROM per_user_flows f
+        LEFT JOIN per_user_investing i ON i.user_id = f.user_id
+        LEFT JOIN per_user_budget    b ON b.user_id = f.user_id
+        LEFT JOIN per_user_scores    s ON s.user_id = f.user_id
+        LEFT JOIN per_user_stability u ON u.user_id = f.user_id
+      )
+      SELECT
+        AVG(savings_rate)        AS avg_savings_rate,
+        AVG(investing_rate)      AS avg_investing_rate,
+        AVG(smart_spending)      AS avg_smart_spending,
+        AVG(budget_discipline)   AS avg_budget_discipline,
+        AVG(cash_flow_stability) AS avg_cash_flow_stability,
+        AVG(financial_health)    AS avg_financial_health
+      FROM per_user_metrics;
+      `);
+      globalAgg = rows;
+      // Cache for 1 hour
+      await redisClient.set(cacheKey, JSON.stringify(globalAgg), { EX: 3600*60 });
+    }
+
+    const g = globalAgg?.[0] || {};
+    const radar = [
+      { axis: "Savings Rate",        value: Math.round(savingsRate) },
+      { axis: "Investing Rate",      value: Math.round(investingRate) },
+      { axis: "Smart Spending",      value: Math.round(smartSpending) },
+      { axis: "Spending Discipline", value: Math.round(budgetDiscipline) },
+      { axis: "Cash Flow Stability", value: Math.round(cashFlowStability) },
+      { axis: "Financial Health",    value: Math.round(financialHealthScore) }
+    ];
+
+    const radarAverage = [
+      { axis: "Savings Rate",        value: Math.round(Number(g.avg_savings_rate ?? 0)) },
+      { axis: "Investing Rate",      value: Math.round(Number(g.avg_investing_rate ?? 0)) },
+      { axis: "Smart Spending",      value: Math.round(Number(g.avg_smart_spending ?? 0)) },
+      { axis: "Spending Discipline", value: Math.round(Number(g.avg_budget_discipline ?? 50)) },
+      { axis: "Cash Flow Stability", value: Math.round(Number(g.avg_cash_flow_stability ?? 50)) },
+      { axis: "Financial Health",    value: Math.round(Number(g.avg_financial_health ?? 50)) }
+    ];
+
+    return { radar, radarAverage };
 
   } catch (error) {
     logger.error('Error fetching radar chart insights:', error);
@@ -358,30 +486,44 @@ export async function radarChartInsights(userId: number) {
   }
 }
 
+
+function cashFlowStabilityScore(netFlows: number[]): number {
+  if (netFlows.length === 0) return 50; // fallback score
+
+  const mean = netFlows.reduce((a, b) => a + b, 0) / netFlows.length;
+  const variance = netFlows.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / netFlows.length;
+  const stdDev = Math.sqrt(variance);
+
+  const maxExpectedDeviation = 1000; // adjust based on your user base
+  const stability = Math.max(0, 100 - (stdDev / maxExpectedDeviation) * 100);
+  return Math.round(stability);
+}
+
+// Helper functions for insights calculations
 interface Transaction {
-   amount:  number;
-   category: string;
-   description?: string;
-   transaction_type: string;
-   transaction_date?: string | Date;
+  amount: number;
+  category: string;
+  description?: string;
+  transaction_type: string;
+  transaction_date?: string | Date;
 }
 
 interface TopSpendingCategory {
-   name: string;
-   amount: number;
+  name: string;
+  amount: number;
 }
 
 function getTopSpendingCategory(transactions: Transaction[]): TopSpendingCategory | null {
-   const categoryMap: Record<string, number> = {};
+  const categoryMap: Record<string, number> = {};
 
-   transactions.forEach((tx: Transaction) => {
-      if (tx.transaction_type === 'expense') {
-         categoryMap[tx.category] = (categoryMap[tx.category] || 0) + tx.amount;
-      }
-   });
+  transactions.forEach((tx: Transaction) => {
+    if (tx.transaction_type === 'expense') {
+      categoryMap[ tx.category ] = (categoryMap[ tx.category ] || 0) + tx.amount;
+    }
+  });
 
-   const sorted = Object.entries(categoryMap).sort((a, b) => b[1] - a[1]);
-   return sorted.length > 0 ? { name: sorted[0][0], amount: sorted[0][1] } : null;
+  const sorted = Object.entries(categoryMap).sort((a, b) => b[ 1 ] - a[ 1 ]);
+  return sorted.length > 0 ? { name: sorted[ 0 ][ 0 ], amount: sorted[ 0 ][ 1 ] } : null;
 }
 
 function getLargestTransaction(transactions: Transaction[]) {
@@ -394,23 +536,23 @@ function getLargestTransaction(transactions: Transaction[]) {
 
 interface Budget {
   category_id: string;
-  amount: number ;
-  [key: string]: any;
+  amount: number;
+  [ key: string ]: any;
 }
 
 function computeBudgetEfficiency(budgets: Budget[], transactions: Transaction[]) {
   const usage: Record<string, { limit: number; spent: number }> = {};
 
   budgets.forEach(budget => {
-    usage[budget.category_id] = {
+    usage[ budget.category_id ] = {
       limit: (budget.amount),
       spent: 0
     };
   });
 
   transactions.forEach(tx => {
-    if (tx.transaction_type === 'expense' && usage[tx.category]) {
-      usage[tx.category].spent += tx.amount;
+    if (tx.transaction_type === 'expense' && usage[ tx.category ]) {
+      usage[ tx.category ].spent += tx.amount;
     }
   });
 
@@ -428,34 +570,34 @@ function computeBudgetEfficiency(budgets: Budget[], transactions: Transaction[])
 }
 
 function stdDev(arr: number[]): number {
-   const mean = arr.reduce((a, b) => a + b) / arr.length;
-   return Math.sqrt(arr.map(x => (x - mean) ** 2).reduce((a, b) => a + b) / arr.length);
+  const mean = arr.reduce((a, b) => a + b) / arr.length;
+  return Math.sqrt(arr.map(x => (x - mean) ** 2).reduce((a, b) => a + b) / arr.length);
 }
 
 
 interface Goal {
-   id?: string;
-   user_id?: string;
-   name?: string;
-   status: string;
-   start_date?: string | Date;
-   end_date?: string | Date;
-   [key: string]: any;
+  id?: string;
+  user_id?: string;
+  name?: string;
+  status: string;
+  start_date?: string | Date;
+  end_date?: string | Date;
+  [ key: string ]: any;
 }
 
 interface GoalSummary {
-   created: number;
-   completed: number;
-   completionRatio: number;
+  created: number;
+  completed: number;
+  completionRatio: number;
 }
 
 function computeGoalSummary(goals: Goal[]): GoalSummary {
-   const completed = goals.filter((g: Goal) => g.status === 'completed');
-   return {
-      created: goals.length,
-      completed: completed.length,
-      completionRatio: goals.length > 0 ? completed.length / goals.length : 0
-   };
+  const completed = goals.filter((g: Goal) => g.status === 'completed');
+  return {
+    created: goals.length,
+    completed: completed.length,
+    completionRatio: goals.length > 0 ? completed.length / goals.length : 0
+  };
 }
 
 function detectImpulseScore(transactions: Transaction[]): number {

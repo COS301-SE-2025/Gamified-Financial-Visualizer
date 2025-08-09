@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import AccountsLayout from './AccountsLayout';
 import {
   FaChartBar,
@@ -13,7 +13,7 @@ import {
   FaRobot,
   FaPaperPlane,
   FaLightbulb,
-  FaExchangeAlt, FaChartLine, FaTags 
+  FaExchangeAlt, FaChartLine, FaTags
 } from 'react-icons/fa';
 
 import {
@@ -45,75 +45,136 @@ const COLORS = {
   groceries: '#4f46e5',
   dining: '#10b981',
   transport: '#f59e0b',
-  utilities: '#f43f5e'
+  utilities: '#f43f5e',
+
+  avgIncome: '#1b3de5',     // alias of averageIncome
+  avgExpense: '#f87171',    // alias of averageExpense
+  you: '#4f46e5',           // for radar “You”
+  avg: '#93c5fd'            // for radar “Average”
+
 };
 
-// Mock data
-const monthlyData = [
-  { month: 'Jan', income: 8000, expense: 6500, avgIncome: 9500, avgExpense: 7000 },
-  { month: 'Feb', income: 8500, expense: 6200, avgIncome: 7600, avgExpense: 7100 },
-  { month: 'Mar', income: 7800, expense: 6900, avgIncome: 7700, avgExpense: 6950 },
-  { month: 'Apr', income: 9000, expense: 7200, avgIncome: 7900, avgExpense: 7300 },
-  { month: 'May', income: 8200, expense: 6800, avgIncome: 6000, avgExpense: 7050 },
-  { month: 'Jun', income: 9500, expense: 7500, avgIncome: 8000, avgExpense: 7200 },
-  { month: 'Jul', income: 8700, expense: 7000, avgIncome: 8500, avgExpense: 7400 },
-  { month: 'Aug', income: 9200, expense: 7300, avgIncome: 9000, avgExpense: 7500 },
-  { month: 'Sep', income: 8800, expense: 7100, avgIncome: 8700, avgExpense: 7600 },
-  { month: 'Oct', income: 9400, expense: 7700, avgIncome: 9200, avgExpense: 7800 },
-  { month: 'Nov', income: 9100, expense: 7400, avgIncome: 8900, avgExpense: 7700 },
-  { month: 'Dec', income: 9600, expense: 8000, avgIncome: 9500, avgExpense: 8000 }
+const MONTHS_ORDER = Array.from({ length: new Date().getMonth() + 1 }, (_, i) =>
+  new Date(2000, i, 1).toLocaleString('en-US', { month: 'short' })
+);
+const ZAR = (n) => `R${Number(n ?? 0).toLocaleString()}`;
+const PALETTE = ["#4f46e5", "#10b981", "#f59e0b", "#ef4444", "#06b6d4", "#a855f7", "#f43f5e", "#84cc16", "#22c55e", "#14b8a6", "#eab308", "#f97316", "#8b5cf6", "#60a5fa", "#94a3b8"];
+
+const AXIS_DESCRIPTIONS = {
+  "Savings Rate": "Share of income left after expenses.",
+  "Investing Rate": "Share of income allocated to investments.",
+  "Smart Spending": "Lower impulse spending = higher score.",
+  "Spending Discipline": "% of budgets staying at/under target.",
+  "Cash Flow Stability": "Consistency of monthly net flow.",
+  "Financial Health": "Composite score from your AI model."
+};
+
+const AXIS_ORDER = [
+  "Savings Rate",
+  "Investing Rate",
+  "Smart Spending",
+  "Spending Discipline",
+  "Cash Flow Stability",
+  "Financial Health"
 ];
 
-const accountData = [
-  { name: 'Checking', value: 12000, income: 8000, expense: 6500 },
-  { name: 'Savings', value: 8000, income: 2000, expense: 500 },
-  { name: 'Investment', value: 15000, income: 1500, expense: 300 },
-];
+function getAllAccounts(spendingData) {
+  const set = new Set();
+  (spendingData || []).forEach(m => {
+    Object.keys(m.accounts || {}).forEach(a => set.add(a));
+  });
+  return Array.from(set).sort();
+}
 
-const radarStats = [
-  {
-    axis: 'Savings Rate',
-    value: 70,
-    average: 55,
-    ideal: 80,
-    description: 'Percentage of income saved each month'
-  },
-  {
-    axis: 'Investing Rate',
-    value: 65,
-    average: 45,
-    ideal: 70,
-    description: 'Percentage of income invested'
-  },
-  {
-    axis: 'Smart Spending',
-    value: 80,
-    average: 60,
-    ideal: 85,
-    description: 'Ratio of needs vs wants spending'
-  },
-  {
-    axis: 'Spending Discipline',
-    value: 75,
-    average: 50,
-    ideal: 75,
-    description: 'Consistency in sticking to budget'
-  },
-  {
-    axis: 'Financial Literacy',
-    value: 60,
-    average: 40,
-    ideal: 90,
-    description: 'Understanding of financial concepts'
-  },
-  {
-    axis: 'Financial Health',
-    value: 85,
-    average: 65,
-    ideal: 90,
-    description: 'Overall financial wellbeing score'
-  }
-];
+function getCategoryUnion(spendingData, account) {
+  const set = new Set();
+  (spendingData || []).forEach(m => {
+    const src = account && account !== "all" ? (m.accounts?.[account] || {}) : (m.totals || {});
+    Object.keys(src).forEach(c => set.add(c));
+  });
+  return Array.from(set).sort();
+}
+
+function pickTopCategories(spendingData, account = "all", limit = 6) {
+  const totals = {};
+  (spendingData || []).forEach(m => {
+    const src = account && account !== "all" ? (m.accounts?.[account] || {}) : (m.totals || {});
+    Object.entries(src).forEach(([cat, val]) => {
+      totals[cat] = (totals[cat] || 0) + Number(val || 0);
+    });
+  });
+  return Object.entries(totals)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([cat]) => cat);
+}
+
+// Build stacked series per month for selected account + categories
+function buildCategorySeries(spendingData, selectedAccount, selectedCategories) {
+  const monthsSorted = [...(spendingData || [])].sort(
+    (a, b) => MONTHS_ORDER.indexOf(a.month) - MONTHS_ORDER.indexOf(b.month)
+  );
+
+  return monthsSorted.map(m => {
+    const src = selectedAccount && selectedAccount !== "all"
+      ? (m.accounts?.[selectedAccount] || {})
+      : (m.totals || {});
+    const row = { month: m.month };
+    selectedCategories.forEach(cat => {
+      row[cat] = Number(src[cat] || 0);
+    });
+    return row;
+  });
+}
+
+function makeCategoryColors(categories) {
+  const map = {};
+  categories.forEach((c, i) => { map[c] = PALETTE[i % PALETTE.length]; });
+  return map;
+}
+
+const init12 = () => Array.from({ length: 12 }, () => 0);
+
+// Transform API -> recharts data
+function buildMonthlyData(api, viewMode, selectedAccount) {
+  if (!api) return [];
+
+  const inc = init12();
+  const exp = init12();
+
+  // Sum user income/expense by month (optionally by account)
+  (api.insights || []).forEach((r) => {
+    const mIdx = Math.max(0, Math.min(11, parseInt(r.month, 10) - 1));
+    if (viewMode === "byAccount" && selectedAccount && r.accountName !== selectedAccount) return;
+    inc[mIdx] += Number(r.income || 0);
+    exp[mIdx] += Number(r.expense || 0);
+  });
+
+  // Map global averages for that month
+  const avgMap = new Map();
+  (api.globalAvg?.monthlyAverages || []).forEach((m) => {
+    avgMap.set(m.month, { avgIncome: m.avgIncome, avgExpense: m.avgExpense });
+  });
+
+  return MONTHS_ORDER.map((label, i) => {
+    const mKey = String(i + 1);
+    const avg = avgMap.get(mKey) || {};
+    return {
+      month: label,
+      income: inc[i] || 0,
+      expense: exp[i] || 0,
+      avgIncome: avg.avgIncome ?? null,
+      avgExpense: avg.avgExpense ?? null,
+    };
+  });
+}
+
+// Get unique account names
+function getAccounts(api) {
+  if (!api || !api.insights) return [];
+  return Array.from(new Set((api.insights || []).map((i) => i.accountName))).sort();
+}
+
 
 const comparisonData = {
   categorySpending: [
@@ -198,58 +259,148 @@ const generateMockData = () => {
 
 const analysisData = generateMockData();
 
-// Transform data for visualization
-const chartData = Object.entries(analysisData.categoryTrends).map(([month, categories], index) => ({
-  month,
-  ...categories,
-  totalSpending: analysisData.globalTrend.spending[index],
-  forecast: index === analysisData.globalTrend.months.length - 1
-    ? analysisData.spendingForecast.next_month_forecast
-    : null,
-  volatility: analysisData.volatility[month],
-  anomalies: analysisData.anomalies.filter(a => a.month === month).length
-}));
 
-// Custom tooltip
-const CustomTooltip = ({ active, payload, label }) => {
-  if (active && payload) {
-    const monthData = chartData.find(d => d.month === label);
-    return (
-      <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
-        <p className="font-bold mb-2">{label}</p>
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <p className="text-red-500">Total: R{monthData?.totalSpending.toLocaleString()}</p>
-            {payload.map((entry, index) => (
-              <p key={index} style={{ color: entry.color }}>
-                {entry.name}: R{entry.value?.toLocaleString() || '0'}
-              </p>
-            ))}
-          </div>
-          <div className="pl-4 border-l">
-            <p className="text-sm">Volatility: {monthData?.volatility.toLocaleString()}</p>
-            <p className="text-sm">Anomalies: {monthData?.anomalies}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  return null;
-};
-
-const trendData = monthlyData.map(d => ({
-  ...d,
-  forecast: d.expense * 1.1,
-  rollingAvg: (d.expense + (d.expense * 1.1)) / 2,
-  budgetTarget: d.expense * 0.9
-}));
 
 const InsightsPage = () => {
+  const userData = JSON.parse(localStorage.getItem('user') || '{}');
+  const userId = userData?.id || null;
+
   const [prompt, setPrompt] = useState('');
   const [aiResponse, setAiResponse] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [viewMode, setViewMode] = useState('overall'); // 'overall' or 'byAccount'
   const [activePieIndex, setActivePieIndex] = useState(null);
+  const [apiData, setApiData] = useState(null);
+  const [account, setAccount] = React.useState("");
+  const [wealth, setWealthData] = useState([]);
+  const [categoryApi, setCategoryApi] = useState(null);
+  const [selectedAccount, setSelectedAccount] = useState("all");
+  const [selectedCategories, setSelectedCategories] = useState([]); // will initialize after fetch
+  const [radarData, setRadarData] = useState(null);
+  const [sentiment, setSentimentData] = useState(null);
+  const [trend, setTrendData] = useState(null);
+
+  useEffect(() => {
+    if (!userId) return;
+    (async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/insights/transactions/${userId}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        // normalize numbers/strings
+        data.insights = (data.insights || []).map(r => ({
+          ...r,
+          month: String(r.month),
+          income: Number(r.income ?? 0),
+          expense: Number(r.expense ?? 0),
+        }));
+
+        if (data.globalAvg?.monthlyAverages) {
+          data.globalAvg.monthlyAverages = data.globalAvg.monthlyAverages.map(m => ({
+            month: String(m.month),
+            avgIncome: Number(m.avgIncome ?? 0),
+            avgExpense: Number(m.avgExpense ?? 0),
+          }));
+        }
+        setApiData(data);
+
+
+        // fetch account wealth data
+        const wealthRes = await fetch(`http://localhost:5000/api/insights/wealth/${userId}`);
+        if (!wealthRes.ok) throw new Error(`HTTP ${wealthRes.status}`);
+        const wealthData = await wealthRes.json();
+        setWealthData(wealthData);
+
+        // fetch category data
+        const catRes = await fetch(`http://localhost:5000/api/insights/category/${userId}`);
+        if (!catRes.ok) throw new Error(`HTTP ${catRes.status}`);
+        const categoryData = await catRes.json();
+        setCategoryApi(categoryData);
+
+        // fetch radar insights
+        const radarRes = await fetch(`http://localhost:5000/api/insights/radar/${userId}`);
+        if (!radarRes.ok) throw new Error(`HTTP ${radarRes.status}`);
+        const radarData = await radarRes.json();
+        setRadarData(radarData);
+
+        // fetch sentiment
+        const monthId = new Date().getMonth() + 1; // 1-based month
+        const sentimentRes = await fetch(`http://localhost:5000/api/insights/sentiment/user/${userId}/${monthId}`);
+        if (!sentimentRes.ok) throw new Error(`HTTP ${sentimentRes.status}`);
+        const sentimentData = await sentimentRes.json();
+        setSentimentData(sentimentData);
+
+        // fetch trend data
+        const trendRes = await fetch(`http://localhost:5000/api/insights/trends/${userId}`);
+        if (!trendRes.ok) throw new Error(`HTTP ${trendRes.status}`);
+        const trendData = await trendRes.json();
+        setTrendData(trendData);
+
+      } catch (e) {
+        console.error("Error fetching monthly data:", e);
+      }
+    })();
+  }, [userId]);
+
+
+  // Initialize categories (top-N overall) after data arrives
+  useEffect(() => {
+    if (!categoryApi?.spendingData) return;
+    setSelectedCategories(prev =>
+      prev.length ? prev : pickTopCategories(categoryApi.spendingData, "all", 6)
+    );
+  }, [categoryApi]);
+
+  // Keep category list valid when switching account
+  useEffect(() => {
+    if (!categoryApi?.spendingData || !selectedCategories.length) return;
+    // ensure selected categories exist in new account context (fallback to topN)
+    const union = getCategoryUnion(categoryApi.spendingData, selectedAccount);
+    const stillValid = selectedCategories.filter(c => union.includes(c));
+    if (stillValid.length) {
+      setSelectedCategories(stillValid);
+    } else {
+      setSelectedCategories(pickTopCategories(categoryApi.spendingData, selectedAccount, 6));
+    }
+  }, [selectedAccount]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Build chart rows + colors
+  const filteredData = useMemo(() => (
+    buildCategorySeries(categoryApi?.spendingData || [], selectedAccount, selectedCategories)
+  ), [categoryApi, selectedAccount, selectedCategories]);
+
+  const CATEGORY_COLORS = useMemo(() => makeCategoryColors(selectedCategories), [selectedCategories]);
+  const accounts = useMemo(() => getAccounts(apiData), [apiData]);
+
+  const monthlyData = useMemo(() => {
+    // fallback to [] to avoid undefined
+    return buildMonthlyData(apiData, viewMode, account || null) || [];
+  }, [apiData, viewMode, account]);
+
+
+  const radarStats = useMemo(() => {
+    const items = radarData?.radar || [];
+    const byAxis = new Map(items.map(p => [p.axis, p]));
+    // enforce order + add descriptions
+    return AXIS_ORDER.map(axis => {
+      const row = byAxis.get(axis) || { user: 0, average: 0 };
+      return {
+        axis,
+        user: Number(row.user ?? 0),
+        average: Number(row.average ?? 0),
+        description: AXIS_DESCRIPTIONS[axis] || ""
+      };
+    });
+  }, [radarData]);
+
+
+  const trendData = monthlyData.map(d => ({
+    ...d,
+    forecast: d.expense * 1.1,
+    rollingAvg: (d.expense + (d.expense * 1.1)) / 2,
+    budgetTarget: d.expense * 0.9
+  }));
 
   const getAiAnalysis = async (userPrompt) => {
     setIsLoading(true);
@@ -280,7 +431,69 @@ const InsightsPage = () => {
     setIsLoading(false);
   };
 
-  const totalNetWorth = accountData.reduce((sum, a) => sum + a.value, 0);
+  // Transform data for visualization
+  const chartData = Object.entries(analysisData.categoryTrends).map(([month, categories], index) => ({
+    month,
+    ...categories,
+    totalSpending: analysisData.globalTrend.spending[index],
+    forecast: index === analysisData.globalTrend.months.length - 1
+      ? analysisData.spendingForecast.next_month_forecast
+      : null,
+    volatility: analysisData.volatility[month],
+    anomalies: analysisData.anomalies.filter(a => a.month === month).length
+  }));
+
+  // Custom tooltip for trends
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload) {
+      const monthData = chartData.find(d => d.month === label);
+      return (
+        <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
+          <p className="font-bold mb-2">{label}</p>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <p className="text-red-500">Total: R{monthData?.totalSpending.toLocaleString()}</p>
+              {payload.map((entry, index) => (
+                <p key={index} style={{ color: entry.color }}>
+                  {entry.name}: R{entry.value?.toLocaleString() || '0'}
+                </p>
+              ))}
+            </div>
+            <div className="pl-4 border-l">
+              <p className="text-sm">Volatility: {monthData?.volatility.toLocaleString()}</p>
+              <p className="text-sm">Anomalies: {monthData?.anomalies}</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Polished tooltip
+  function ChartTooltip({ active, payload, label }) {
+    if (!active || !payload || !payload.length) return null;
+    const rows = payload
+      .filter((p) => p.value != null)
+      .map((p) => ({
+        name: p.name || p.dataKey,
+        value: ZAR(p.value),
+        color: p.color,
+      }));
+
+    return (
+      <div className="rounded-xl border border-gray-200 bg-white/90 backdrop-blur px-3 py-2 shadow">
+        <div className="text-xs text-gray-500 mb-1">{label}</div>
+        {rows.map((r) => (
+          <div key={r.name} className="flex items-center gap-2 text-sm">
+            <span className="inline-block h-2 w-2 rounded-full" style={{ background: r.color }} />
+            <span className="text-gray-600">{r.name}</span>
+            <span className="ml-auto font-medium text-gray-800">{r.value}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   // Custom tooltip components
   const CustomPieTooltip = ({ active, payload }) => {
@@ -290,8 +503,8 @@ const InsightsPage = () => {
         <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
           <p className="font-bold">{data.name}</p>
           <p className="text-sm">Net Worth: R{data.value.toLocaleString()}</p>
-          <p className="text-sm text-green-600">Income: R{data.income.toLocaleString()}</p>
-          <p className="text-sm text-red-500">Expenses: R{data.expense.toLocaleString()}</p>
+          <p className="text-sm text-green-600">Income: R{data.currentMonthIncome.toLocaleString()}</p>
+          <p className="text-sm text-red-500">Expenses: R{data.currentMonthExpense.toLocaleString()}</p>
         </div>
       );
     }
@@ -299,60 +512,22 @@ const InsightsPage = () => {
   };
 
   const CustomRadarTooltip = ({ active, payload }) => {
-    if (active && payload && payload.length) {
-      const data = radarStats.find(item => item.axis === payload[0].payload.axis);
-      return (
-        <div className="bg-white p-3 rounded-lg shadow-md border border-gray-200 text-sm">
-          <p className="font-bold">{data.axis}</p>
-          <div className="grid grid-cols-2 gap-2 mt-1">
-            <div>
-              <p className="text-indigo-600">You: {payload[0].value}/100</p>
-              <p className="text-gray-500">Avg: {data.average}/100</p>
-              <p className="text-green-600">Ideal: {data.ideal}/100</p>
-            </div>
-            <div className="border-l pl-2">
-              <p className="text-gray-600 text-xs">{data.description}</p>
-            </div>
+    if (!active || !payload || !payload.length) return null;
+    const { axis, user, average, description } = payload[0].payload;
+    return (
+      <div className="bg-white p-3 rounded-lg shadow-md border border-gray-200 text-sm">
+        <p className="font-bold">{axis}</p>
+        <div className="grid grid-cols-2 gap-2 mt-1">
+          <div>
+            <p className="text-indigo-600">You: {Math.round(user)}/100</p>
+            <p className="text-gray-500">Avg: {Math.round(average)}/100</p>
+          </div>
+          <div className="border-l pl-2">
+            <p className="text-gray-600 text-xs">{description || ""}</p>
           </div>
         </div>
-      );
-    }
-    return null;
-  };
-
-  const CustomLineTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      const data = trendData.find(item => item.month === label);
-      return (
-        <div className="bg-white p-3 rounded-lg shadow-md border border-gray-200">
-          <p className="font-bold mb-2">{label}</p>
-          <div className="space-y-1">
-            <div className="flex items-center">
-              <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-              <span>Actual: R{data.expense.toLocaleString()}</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-              <span>Forecast: R{data.forecast.toLocaleString()}</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-3 h-3 bg-purple-500 rounded-full mr-2 border border-gray-300"></div>
-              <span>Budget Target: R{data.budgetTarget.toLocaleString()}</span>
-            </div>
-            <div className="pt-2 mt-2 border-t border-gray-100">
-              <p className="text-sm">
-                {data.expense > data.forecast ? (
-                  <span className="text-red-500">↑ Overspending by {(data.expense / data.forecast * 100 - 100).toFixed(1)}%</span>
-                ) : (
-                  <span className="text-green-500">↓ Underspending by {(100 - data.expense / data.forecast * 100).toFixed(1)}%</span>
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
-      );
-    }
-    return null;
+      </div>
+    );
   };
 
 
@@ -387,391 +562,31 @@ const InsightsPage = () => {
     margin: '0 auto'
   };
 
+  const totalNetWorth = wealth?.netWorth ?? 0;
+  // Show loading with details about missing data
+  if (!apiData || !categoryApi || !radarData || !sentiment  || !wealth) {
+    const missing = [
+      !apiData && "Transactions",
+      !categoryApi && "Category Data",
+      !radarData && "Radar Insights",
+      !sentiment && "Sentiment",
+      !trend && "Trend Data",
+      !wealth && "Wealth Data"
+    ].filter(Boolean);
 
-  const spendingData = [
-    {
-      month: 'Jan',
-      accounts: {
-        checking: {
-          groceries: 1200,
-          dining: 800,
-          transport: 600,
-          utilities: 400
-        },
-        savings: {
-          groceries: 300,
-          dining: 200,
-          transport: 150,
-          utilities: 100
-        },
-        investment: {
-          groceries: 0,
-          dining: 50,
-          transport: 0,
-          utilities: 0
-        }
-      },
-      totals: {
-        groceries: 1500,
-        dining: 1050,
-        transport: 750,
-        utilities: 500
-      }
-    },
-    // ... more months following same structure
-    {
-      month: 'Feb',
-      accounts: {
-        checking: {
-          groceries: 1100,
-          dining: 900,
-          transport: 550,
-          utilities: 450
-        },
-        savings: {
-          groceries: 400,
-          dining: 150,
-          transport: 200,
-          utilities: 120
-        },
-        investment: {
-          groceries: 0,
-          dining: 75,
-          transport: 0,
-          utilities: 0
-        }
-      },
-      totals: {
-        groceries: 1500,
-        dining: 1125,
-        transport: 750,
-        utilities: 570
-      }
-    },
-    {
-      month: 'Mar',
-      accounts: {
-        checking: {
-          groceries: 1300,
-          dining: 700,
-          transport: 650,
-          utilities: 480
-        },
-        savings: {
-          groceries: 200,
-          dining: 250,
-          transport: 100,
-          utilities: 90
-        },
-        investment: {
-          groceries: 0,
-          dining: 100,
-          transport: 0,
-          utilities: 0
-        }
-      },
-      totals: {
-        groceries: 1500,
-        dining: 1050,
-        transport: 750,
-        utilities: 570
-      }
-    },
-    {
-      month: 'Apr',
-      accounts: {
-        checking: {
-          groceries: 1300,
-          dining: 700,
-          transport: 650,
-          utilities: 480
-        },
-        savings: {
-          groceries: 200,
-          dining: 250,
-          transport: 100,
-          utilities: 90
-        },
-        investment: {
-          groceries: 0,
-          dining: 100,
-          transport: 0,
-          utilities: 0
-        }
-      },
-      totals: {
-        groceries: 1500,
-        dining: 1050,
-        transport: 750,
-        utilities: 570
-      }
-    },
-    {
-      month: 'Apr',
-      accounts: {
-        checking: {
-          groceries: 1300,
-          dining: 700,
-          transport: 650,
-          utilities: 480
-        },
-        savings: {
-          groceries: 200,
-          dining: 250,
-          transport: 100,
-          utilities: 90
-        },
-        investment: {
-          groceries: 0,
-          dining: 100,
-          transport: 0,
-          utilities: 0
-        }
-      },
-      totals: {
-        groceries: 1500,
-        dining: 1050,
-        transport: 750,
-        utilities: 570
-      }
-    },
-    {
-      month: 'May',
-      accounts: {
-        checking: {
-          groceries: 1300,
-          dining: 700,
-          transport: 650,
-          utilities: 480
-        },
-        savings: {
-          groceries: 200,
-          dining: 250,
-          transport: 100,
-          utilities: 90
-        },
-        investment: {
-          groceries: 0,
-          dining: 100,
-          transport: 0,
-          utilities: 0
-        }
-      },
-      totals: {
-        groceries: 1500,
-        dining: 1050,
-        transport: 750,
-        utilities: 570
-      }
-    },
-    {
-      month: 'June',
-      accounts: {
-        checking: {
-          groceries: 1300,
-          dining: 700,
-          transport: 650,
-          utilities: 480
-        },
-        savings: {
-          groceries: 200,
-          dining: 250,
-          transport: 100,
-          utilities: 90
-        },
-        investment: {
-          groceries: 0,
-          dining: 100,
-          transport: 0,
-          utilities: 0
-        }
-      },
-      totals: {
-        groceries: 1500,
-        dining: 1050,
-        transport: 750,
-        utilities: 570
-      }
-    },
-    {
-      month: 'Aug',
-      accounts: {
-        checking: {
-          groceries: 1300,
-          dining: 700,
-          transport: 650,
-          utilities: 480
-        },
-        savings: {
-          groceries: 200,
-          dining: 250,
-          transport: 100,
-          utilities: 90
-        },
-        investment: {
-          groceries: 0,
-          dining: 100,
-          transport: 0,
-          utilities: 0
-        }
-      },
-      totals: {
-        groceries: 1500,
-        dining: 1050,
-        transport: 750,
-        utilities: 570
-      }
-    },
-    {
-      month: 'Sep',
-      accounts: {
-        checking: {
-          groceries: 1300,
-          dining: 700,
-          transport: 650,
-          utilities: 480
-        },
-        savings: {
-          groceries: 200,
-          dining: 250,
-          transport: 100,
-          utilities: 90
-        },
-        investment: {
-          groceries: 0,
-          dining: 100,
-          transport: 0,
-          utilities: 0
-        }
-      },
-      totals: {
-        groceries: 1500,
-        dining: 1050,
-        transport: 750,
-        utilities: 570
-      }
-    },
-    {
-      month: 'Oct',
-      accounts: {
-        checking: {
-          groceries: 1300,
-          dining: 700,
-          transport: 650,
-          utilities: 480
-        },
-        savings: {
-          groceries: 200,
-          dining: 250,
-          transport: 100,
-          utilities: 90
-        },
-        investment: {
-          groceries: 0,
-          dining: 100,
-          transport: 0,
-          utilities: 0
-        }
-      },
-      totals: {
-        groceries: 1500,
-        dining: 1050,
-        transport: 750,
-        utilities: 570
-      }
-    },
-    {
-      month: 'Nov',
-      accounts: {
-        checking: {
-          groceries: 1300,
-          dining: 700,
-          transport: 650,
-          utilities: 480
-        },
-        savings: {
-          groceries: 200,
-          dining: 250,
-          transport: 300,
-          utilities: 90
-        },
-        investment: {
-          groceries: 0,
-          dining: 100,
-          transport: 0,
-          utilities: 0
-        }
-      },
-      totals: {
-        groceries: 1500,
-        dining: 1050,
-        transport: 750,
-        utilities: 570
-      }
-    },
-    {
-      month: 'Dec',
-      accounts: {
-        checking: {
-          groceries: 100,
-          dining: 700,
-          transport: 650,
-          utilities: 480
-        },
-        savings: {
-          groceries: 200,
-          dining: 250,
-          transport: 100,
-          utilities: 50
-        },
-        investment: {
-          groceries: 10,
-          dining: 100,
-          transport: 0,
-          utilities: 0
-        }
-      },
-      totals: {
-        groceries: 1500,
-        dining: 1050,
-        transport: 750,
-        utilities: 570
-      }
-    }
-  ];
-
-  // Color mapping for categories
-  const CATEGORY_COLORS = {
-    groceries: '#4f46e5',
-    dining: '#10b981',
-    transport: '#f59e0b',
-    utilities: '#f43f5e'
-  };
-
-  const [selectedAccount, setSelectedAccount] = useState('all');
-  const [selectedCategories, setSelectedCategories] = useState(['groceries', 'dining', 'transport', 'utilities']);
-
-
-  // Process data based on filters
-  const filteredData = useMemo(() => {
-    return spendingData.map(monthData => {
-      const result = { month: monthData.month };
-
-      if (selectedAccount === 'all') {
-        // Show totals for all accounts
-        selectedCategories.forEach(category => {
-          result[category] = monthData.totals[category];
-        });
-      } else {
-        // Show data for selected account
-        selectedCategories.forEach(category => {
-          result[category] = monthData.accounts[selectedAccount]?.[category] || 0;
-        });
-      }
-
-      return result;
-    });
-  }, [selectedAccount, selectedCategories]);
+    return (
+      <AccountsLayout>
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-gray-500 text-center">
+            <div>Loading insights...</div>
+            <div className="mt-2 text-sm">
+              Missing: {missing.join(", ")}
+            </div>
+          </div>
+        </div>
+      </AccountsLayout>
+    );
+  }
 
   return (
     <AccountsLayout>
@@ -901,7 +716,6 @@ const InsightsPage = () => {
           </p>
         </div>
 
-
         {/* AI-Generated Monthly Summary */}
         <div className="bg-gradient-to-r from-sky-300 to-blue-300 dark:from-sky-600 dark:to-blue-600 p-6 rounded-xl shadow-lg text-white">
           <div className="flex justify-between items-start">
@@ -939,9 +753,10 @@ const InsightsPage = () => {
 
         {/* 2-Column Layout for Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          {/* Sentiment */}
           <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
             <h2 className="text-xl font-bold text-gray-800 mb-4">Financial Sentiment</h2>
-
             <div className="flex flex-col items-center">
               {/* Gauge Chart */}
               <div style={chartStyle}>
@@ -1010,12 +825,13 @@ const InsightsPage = () => {
             </div>
           </div>
 
+          {/* Monthly Spending by Category Bar Chart */}
           <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200 mb-8">
             <div className="flex flex-wrap justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-gray-800">Monthly Spending by Category</h2>
 
               <div className="flex flex-wrap gap-4 mt-4 sm:mt-0">
-                {/* Account Selector */}
+                {/* Account Selector (dynamic) */}
                 <div>
                   <label htmlFor="account-select" className="block text-sm font-medium text-gray-700 mb-1">
                     Account
@@ -1027,38 +843,38 @@ const InsightsPage = () => {
                     className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   >
                     <option value="all">All Accounts</option>
-                    <option value="checking">Checking</option>
-                    <option value="savings">Savings</option>
-                    <option value="investment">Investment</option>
+                    {accounts.map(a => <option key={a} value={a}>{a}</option>)}
                   </select>
                 </div>
 
-                {/* Category Multi-select */}
+                {/* Category Multi-select (from selectedCategories) */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Categories
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {Object.keys(CATEGORY_COLORS).map(category => (
-                      <button
-                        key={category}
-                        onClick={() => {
-                          if (selectedCategories.includes(category)) {
-                            setSelectedCategories(selectedCategories.filter(c => c !== category));
-                          } else {
-                            setSelectedCategories([...selectedCategories, category]);
-                          }
-                        }}
-                        className={`px-3 py-1 text-sm rounded-lg flex items-center ${selectedCategories.includes(category)
-                          ? 'bg-indigo-100 text-indigo-700'
-                          : 'bg-gray-100 text-gray-700'}`}
-                      >
-                        {selectedCategories.includes(category) && (
-                          <span className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: CATEGORY_COLORS[category] }}></span>
-                        )}
-                        {category.charAt(0).toUpperCase() + category.slice(1)}
-                      </button>
-                    ))}
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Categories</label>
+                  <div className="flex flex-wrap gap-2 max-w-[640px]">
+                    {getCategoryUnion(categoryApi?.spendingData || [], selectedAccount).map(category => {
+                      const active = selectedCategories.includes(category);
+                      return (
+                        <button
+                          key={category}
+                          onClick={() => {
+                            if (active) {
+                              setSelectedCategories(selectedCategories.filter(c => c !== category));
+                            } else {
+                              setSelectedCategories([...selectedCategories, category]);
+                            }
+                          }}
+                          className={`px-3 py-1 text-sm rounded-lg flex items-center ${active ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-700'
+                            }`}
+                          title={category}
+                        >
+                          <span
+                            className="w-2 h-2 rounded-full mr-2"
+                            style={{ backgroundColor: CATEGORY_COLORS[category] || '#ddd' }}
+                          />
+                          {category.charAt(0).toUpperCase() + category.slice(1)}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -1070,13 +886,15 @@ const InsightsPage = () => {
                 <BarChart
                   data={filteredData}
                   margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                  stackOffset="expand" // Optional: use for percentage view
+                // stackOffset="expand" // if you want percentage view, uncomment & change tooltip below
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="month" />
-                  <YAxis />
+                  <YAxis
+                    tickFormatter={(v) => `R${Number(v).toLocaleString()}`}
+                  />
                   <Tooltip
-                    formatter={(value) => [`R${value.toLocaleString()}`, '']}
+                    formatter={(value, name) => [`R${Number(value).toLocaleString()}`, name]}
                     contentStyle={{
                       backgroundColor: '#ffffff',
                       border: '1px solid #e5e7eb',
@@ -1085,6 +903,7 @@ const InsightsPage = () => {
                     }}
                   />
                   <Legend />
+
                   {selectedCategories.map(category => (
                     <Bar
                       key={category}
@@ -1093,109 +912,84 @@ const InsightsPage = () => {
                       stackId="a"
                       fill={CATEGORY_COLORS[category]}
                       radius={[4, 4, 0, 0]}
+                      isAnimationActive={false}
                     />
                   ))}
                 </BarChart>
               </ResponsiveContainer>
             </div>
-
-            {/* Insights Panel */}
-            <div className="mt-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <h3 className="font-medium text-gray-800 mb-2">Insights</h3>
-              {selectedAccount === 'all' ? (
-                <p className="text-sm text-gray-700">
-                  Showing combined spending across all accounts.
-                  {selectedCategories.includes('dining') && (
-                    <span className="text-indigo-600 font-medium"> Dining out accounts for {(1050 / 3825 * 100).toFixed(1)}% of total spending.</span>
-                  )}
-                </p>
-              ) : (
-                <p className="text-sm text-gray-700">
-                  Showing spending only from your {selectedAccount} account.
-                  {selectedAccount === 'checking' && selectedCategories.includes('groceries') && (
-                    <span className="text-indigo-600 font-medium"> Groceries make up {(1200 / 3100 * 100).toFixed(1)}% of this account's spending.</span>
-                  )}
-                </p>
-              )}
-            </div>
           </div>
 
           {/* Income vs Expense Bar Chart */}
           <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
               <h2 className="text-xl font-bold text-gray-800">Income vs Expenses</h2>
+
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setViewMode('overall')}
-                  className={`px-3 py-1 text-sm rounded-md ${viewMode === 'overall' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-700'}`}
+                  onClick={() => setViewMode("overall")}
+                  className={`px-3 py-1 text-sm rounded-md ${viewMode === "overall"
+                    ? "bg-indigo-100 text-indigo-700"
+                    : "bg-gray-100 text-gray-700"
+                    }`}
                 >
                   Overall
                 </button>
                 <button
-                  onClick={() => setViewMode('byAccount')}
-                  className={`px-3 py-1 text-sm rounded-md ${viewMode === 'byAccount' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-700'}`}
+                  onClick={() => setViewMode("byAccount")}
+                  className={`px-3 py-1 text-sm rounded-md ${viewMode === "byAccount"
+                    ? "bg-indigo-100 text-indigo-700"
+                    : "bg-gray-100 text-gray-700"
+                    }`}
                 >
                   By Account
                 </button>
+
+                {viewMode === "byAccount" && (
+                  <select
+                    value={account}
+                    onChange={(e) => setAccount(e.target.value)}
+                    className="ml-2 px-3 py-1 text-sm rounded-md border border-gray-300 bg-white"
+                  >
+                    <option value="">All accounts</option>
+                    {accounts.map((a) => (
+                      <option key={a} value={a}>{a}</option>
+                    ))}
+                  </select>
+                )}
               </div>
             </div>
 
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart
-                  data={monthlyData}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                >
+                <ComposedChart data={monthlyData} margin={{ top: 16, right: 20, left: 8, bottom: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke={COLORS.grid} />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
+                  <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#6b7280" }} />
+                  <YAxis tickFormatter={(v) => `R${Number(v).toLocaleString()}`} tick={{ fontSize: 12, fill: "#6b7280" }} />
+                  <Tooltip content={<ChartTooltip />} />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
 
-                  <Bar
-                    dataKey="income"
-                    fill={COLORS.income}
-                    name="Money In"
-                    radius={[4, 4, 0, 0]}
-                  />
-                  <Bar
-                    dataKey="expense"
-                    fill={COLORS.expense}
-                    name="Money Out"
-                    radius={[4, 4, 0, 0]}
-                  />
+                  <Bar dataKey="income" name="Money In" fill={COLORS.income} radius={[6, 6, 0, 0]} maxBarSize={30} />
+                  <Bar dataKey="expense" name="Money Out" fill={COLORS.expense} radius={[6, 6, 0, 0]} maxBarSize={30} />
 
-                  <Line
-                    type="monotone"
-                    dataKey="avgIncome"
-                    stroke={COLORS.averageIncome}
-                    strokeWidth={2}
-                    strokeDasharray="5 5"
-                    name="Avg Income"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="avgExpense"
-                    stroke={COLORS.averageExpense}
-                    strokeWidth={2}
-                    strokeDasharray="5 5"
-                    name="Avg Expense"
-                  />
+                  {/* use avgIncome/avgExpense keys that match COLORS */}
+                  <Line type="monotone" dataKey="avgIncome" name="Avg Income" stroke={COLORS.avgIncome} strokeDasharray="6 6" strokeWidth={2} dot={false} connectNulls />
+                  <Line type="monotone" dataKey="avgExpense" name="Avg Expense" stroke={COLORS.avgExpense} strokeDasharray="6 6" strokeWidth={2} dot={false} connectNulls />
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
 
-            <div className="mt-4 flex justify-center gap-4">
+            <div className="mt-4 flex flex-wrap justify-center gap-4">
               <div className="flex items-center">
-                <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                <span className="w-3 h-3 rounded-full mr-2" style={{ background: COLORS.income }} />
                 <span className="text-sm">Income</span>
               </div>
               <div className="flex items-center">
-                <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                <span className="w-3 h-3 rounded-full mr-2" style={{ background: COLORS.expense }} />
                 <span className="text-sm">Expenses</span>
               </div>
               <div className="flex items-center">
-                <div className="w-3 h-3 bg-purple-500 rounded-full mr-2 border border-gray-300"></div>
+                <span className="w-3 h-3 rounded-full mr-2 border border-gray-300" style={{ background: "#fff" }} />
                 <span className="text-sm">Averages</span>
               </div>
             </div>
@@ -1208,7 +1002,7 @@ const InsightsPage = () => {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={accountData}
+                    data={wealth?.breakdown ?? []}
                     dataKey="value"
                     nameKey="name"
                     cx="50%"
@@ -1219,7 +1013,7 @@ const InsightsPage = () => {
                     onMouseEnter={(_, index) => setActivePieIndex(index)}
                     onMouseLeave={() => setActivePieIndex(null)}
                   >
-                    {accountData.map((entry, index) => (
+                    {wealth?.breakdown.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
                         fill={
@@ -1254,7 +1048,7 @@ const InsightsPage = () => {
               </ResponsiveContainer>
             </div>
             <div className="mt-4 flex justify-center gap-4 flex-wrap">
-              {accountData.map((account, index) => (
+              {wealth?.breakdown.map((account, index) => (
                 <div key={index} className="flex items-center">
                   <div
                     className="w-3 h-3 rounded-full mr-2"
@@ -1274,6 +1068,7 @@ const InsightsPage = () => {
           {/* Radar Chart */}
           <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
             <h2 className="text-xl font-bold text-gray-800 mb-4">Financial Health Radar</h2>
+
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarStats}>
@@ -1282,32 +1077,34 @@ const InsightsPage = () => {
                   <PolarRadiusAxis angle={30} domain={[0, 100]} />
                   <Radar
                     name="You"
-                    dataKey="value"
-                    stroke={COLORS.radar}
-                    fill={COLORS.radar}
-                    fillOpacity={0.4}
+                    dataKey="user"
+                    stroke={COLORS.you}
+                    fill={COLORS.you}
+                    fillOpacity={0.35}
                     strokeWidth={2}
                   />
-
                   <Radar
                     name="Average"
                     dataKey="average"
-                    stroke="#9ca3af"
-                    fill="#9ca3af"
+                    stroke={COLORS.avg}
+                    fill={COLORS.avg}
                     fillOpacity={0.2}
                     strokeWidth={2}
                     strokeDasharray="5 5"
                   />
+                  <Legend />
                   <Tooltip content={<CustomRadarTooltip />} />
                 </RadarChart>
               </ResponsiveContainer>
             </div>
+
+            {/* Tiny KPI grid */}
             <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
-              {radarStats.map((stat, index) => (
-                <div key={index} className="bg-gray-50 p-2 rounded">
+              {radarStats.map((stat, i) => (
+                <div key={i} className="bg-gray-50 p-2 rounded">
                   <p className="font-medium">{stat.axis}</p>
-                  <p className={`${stat.value > stat.average ? 'text-green-600' : 'text-red-600'}`}>
-                    {stat.value > stat.average ? '↑' : '↓'} {Math.abs(stat.value - stat.average)}pts
+                  <p className={`${stat.user > stat.average ? 'text-green-600' : 'text-red-600'}`}>
+                    {stat.user > stat.average ? '↑' : '↓'} {Math.abs(Math.round(stat.user - stat.average))}pts
                   </p>
                 </div>
               ))}
@@ -1315,7 +1112,6 @@ const InsightsPage = () => {
           </div>
 
           {/* Trend Line Chart */}
-
           <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
             <div className="flex justify-between items-start mb-6">
               <div>
@@ -1373,97 +1169,97 @@ const InsightsPage = () => {
               </div>
             </div>
 
-           <div className="h-96">
-      <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={chartData}>
-          {/* Grid and Axes */}
-          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-          <XAxis
-            dataKey="month"
-            label={{ value: 'Month', position: 'insideBottom', offset: -5 }}
-          />
-          <YAxis
-            yAxisId="left"
-            label={{ value: 'Spending (ZAR)', angle: -90, position: 'insideLeft' }}
-          />
-          <YAxis
-            yAxisId="right"
-            orientation="right"
-            label={{ value: 'Volatility', angle: 90, position: 'insideRight' }}
-          />
+            <div className="h-96">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={chartData}>
+                  {/* Grid and Axes */}
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis
+                    dataKey="month"
+                    label={{ value: 'Month', position: 'insideBottom', offset: -5 }}
+                  />
+                  <YAxis
+                    yAxisId="left"
+                    label={{ value: 'Spending (ZAR)', angle: -90, position: 'insideLeft' }}
+                  />
+                  <YAxis
+                    yAxisId="right"
+                    orientation="right"
+                    label={{ value: 'Volatility', angle: 90, position: 'insideRight' }}
+                  />
 
-          {/* Tooltip and Legend */}
-          <Tooltip content={<CustomTooltip />} />
-          <Legend />
+                  {/* Tooltip and Legend */}
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend />
 
-          {/* Total Spending Area */}
-          <Area
-            yAxisId="left"
-            type="monotone"
-            dataKey="totalSpending"
-            fill={COLORS.expense}
-            stroke={COLORS.expense}
-            fillOpacity={0.3}
-            name="Total Spending"
-          />
+                  {/* Total Spending Area */}
+                  <Area
+                    yAxisId="left"
+                    type="monotone"
+                    dataKey="totalSpending"
+                    fill={COLORS.expense}
+                    stroke={COLORS.expense}
+                    fillOpacity={0.3}
+                    name="Total Spending"
+                  />
 
-          {/* Top Categories Lines */}
-          {  ['groceries', 'dining', 'transport', 'utilities'].map(category => (
-            <Line
-              key={category}
-              yAxisId="left"
-              type="monotone"
-              dataKey={category}
-              stroke={COLORS[category]}
-              strokeWidth={2}
-              dot={{ r: 2 }}
-              name={category.charAt(0).toUpperCase() + category.slice(1)}
-            />
-          ))}
+                  {/* Top Categories Lines */}
+                  {['groceries', 'dining', 'transport', 'utilities'].map(category => (
+                    <Line
+                      key={category}
+                      yAxisId="left"
+                      type="monotone"
+                      dataKey={category}
+                      stroke={COLORS[category]}
+                      strokeWidth={2}
+                      dot={{ r: 2 }}
+                      name={category.charAt(0).toUpperCase() + category.slice(1)}
+                    />
+                  ))}
 
-          {/* Forecast Line */}
-          <Line
-            yAxisId="left"
-            type="monotone"
-            dataKey="forecast"
-            stroke={COLORS.forecast}
-            strokeWidth={2}
-            strokeDasharray="5 5"
-            name="Forecast"
-          />
+                  {/* Forecast Line */}
+                  <Line
+                    yAxisId="left"
+                    type="monotone"
+                    dataKey="forecast"
+                    stroke={COLORS.forecast}
+                    strokeWidth={2}
+                    strokeDasharray="5 5"
+                    name="Forecast"
+                  />
 
-          {/* Volatility Bars */}
-          <Bar
-            yAxisId="right"
-            dataKey="volatility"
-            fill={COLORS.volatility}
-            opacity={0.4}
-            name="Volatility"
-            radius={[4, 4, 0, 0]}
-          />
+                  {/* Volatility Bars */}
+                  <Bar
+                    yAxisId="right"
+                    dataKey="volatility"
+                    fill={COLORS.volatility}
+                    opacity={0.4}
+                    name="Volatility"
+                    radius={[4, 4, 0, 0]}
+                  />
 
-          {/* Anomaly Indicators */}
-          {chartData.map((entry, index) =>
-            entry.anomalies > 0 ? (
-              <ReferenceLine
-                key={index}
-                x={entry.month}
-                yAxisId="left"
-                stroke={COLORS.anomaly}
-                strokeWidth={2}
-                label={{
-                  value: `${entry.anomalies} ⚠️`,
-                  position: 'top',
-                  fill: COLORS.anomaly,
-                  fontSize: 10,
-                  fontWeight: 'bold'
-                }}
-              />
-            ) : null
-          )}
-        </ComposedChart>
-      </ResponsiveContainer>
-    </div>
+                  {/* Anomaly Indicators */}
+                  {chartData.map((entry, index) =>
+                    entry.anomalies > 0 ? (
+                      <ReferenceLine
+                        key={index}
+                        x={entry.month}
+                        yAxisId="left"
+                        stroke={COLORS.anomaly}
+                        strokeWidth={2}
+                        label={{
+                          value: `${entry.anomalies} ⚠️`,
+                          position: 'top',
+                          fill: COLORS.anomaly,
+                          fontSize: 10,
+                          fontWeight: 'bold'
+                        }}
+                      />
+                    ) : null
+                  )}
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
 
 
             <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
