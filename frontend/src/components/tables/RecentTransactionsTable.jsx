@@ -15,6 +15,12 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [editTransactionId, setEditTransactionId] = useState(null);
   const [editValues, setEditValues] = useState({});
+  // New state for delete confirmation
+  const [deleteConfirmation, setDeleteConfirmation] = useState({
+    show: false,
+    index: null,
+    transaction: null
+  });
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -69,11 +75,10 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
     if (sortBy === 'Name') filtered.sort((a, b) => a.name.localeCompare(b.name));
     else if (sortBy === 'AmountAsc') filtered.sort((a, b) => parseFloat(a.amount.replace(/[^\d.-]/g, '')) - parseFloat(b.amount.replace(/[^\d.-]/g, '')));
     else if (sortBy === 'AmountDsc') filtered.sort((a, b) => parseFloat(b.amount.replace(/[^\d.-]/g, '')) - parseFloat(a.amount.replace(/[^\d.-]/g, '')));
-
     else if (sortBy === 'Date') filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
     return filtered;
   }, [transactions, sortBy, categoryFilter, dateFilter, typeFilter]);
-
+  
   const handleAddTransaction = async (newTransaction) => {
     try {
       setError('');
@@ -96,18 +101,37 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
     }
   };
 
-  const handleDeleteTransaction = async (index) => {
-    const transaction = transactions[index];
+  const showDeleteConfirmation = (index) => {
+    setDeleteConfirmation({
+      show: true,
+      index,
+      transaction: transactions[index]
+    });
+  };
+
+  const hideDeleteConfirmation = () => {
+    setDeleteConfirmation({
+      show: false,
+      index: null,
+      transaction: null
+    });
+  };
+
+  const handleDeleteTransaction = async () => {
+    const { index, transaction } = deleteConfirmation;
+    
     if (!transaction.transaction_id) {
       setError('Cannot delete transaction: missing transaction ID');
+      hideDeleteConfirmation();
       return;
     }
 
-  
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`http://localhost:5000/api/transactions/${transaction.transaction_id}`, { method: 'DELETE' });
+      const response = await fetch(`http://localhost:5000/api/transactions/${transaction.transaction_id}`, { 
+        method: 'DELETE' 
+      });
       if (!response.ok) throw new Error((await response.json()).message || 'Failed to delete transaction');
       onDelete(index);
       if (onRefresh) await onRefresh(account?.account_id);
@@ -116,11 +140,63 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
       console.error('Error deleting transaction:', err);
     } finally {
       setLoading(false);
+      hideDeleteConfirmation();
     }
   };
 
   return (
     <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-md px-6 py-6">
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmation.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={hideDeleteConfirmation}
+          />
+          <div 
+            className="relative z-10 w-[92%] max-w-md rounded-2xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-600">
+                <FaTrash />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Delete transaction?
+              </h3>
+            </div>
+
+            <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">
+              You're about to delete a transaction of{' '}
+              <span className="font-semibold">
+                {deleteConfirmation.transaction.amount}
+              </span>{' '}
+              for <span className="font-semibold">{deleteConfirmation.transaction.name}</span>.
+              This action cannot be undone.
+            </p>
+
+            <div className="mt-6 flex flex-wrap gap-3 justify-end">
+              <button
+                onClick={hideDeleteConfirmation}
+                className="px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteTransaction}
+                disabled={loading}
+                className={`px-4 py-2 rounded-full text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-red-400
+                  ${loading ? 'bg-red-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'}`}
+              >
+                {loading ? 'Deleting...' : 'Yes, delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rest of the component remains the same */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-[#336699]">{heading}</h2>
         {(
@@ -150,6 +226,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
                 <option key={category.category_id} value={category.category_name}>{toTitleCase(category.category_name)}</option>
               ))}
             </select>
+            
             <select 
               className="border dark:border-gray-600 px-4 py-1 rounded-full text-sm dark:bg-gray-700 dark:text-gray-300" 
               value={dateFilter} 
@@ -210,8 +287,6 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
             ) : (
               filteredSortedTransactions.map((txn, idx) => {
                 const isEditing = editTransactionId === txn.transaction_id;
-                // Determine color and sign based on transaction type
-                // Determine color and sign based on transaction type
                 const isExpense = ['expense', 'withdrawal', 'fee'].includes(txn.transaction_type);
                 const isIncome = ['income', 'deposit'].includes(txn.transaction_type);
                 const isTransfer = txn.transaction_type === 'Transfer';
@@ -225,11 +300,6 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
                   : isIncome ? '+'
                     : isTransfer ? '→'
                       : '';
-
-                // In your JSX:
-                <td className={`px-4 py-2 font-semibold ${amountColor}`}>
-                  {amountSign} {txn.amount.replace(/[+-]/g, '')}
-                </td>
 
                 return (
                   <tr key={txn.transaction_id || idx} className="border-b hover:bg-gray-50">
@@ -317,7 +387,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
                           ><FaEdit /></button>
                           <button
                             className="text-red-500 hover:text-red-600 text-sm"
-                            onClick={() => handleDeleteTransaction(idx)}
+                            onClick={() => showDeleteConfirmation(idx)}
                           ><FaTrash /></button>
                         </>
                       )}

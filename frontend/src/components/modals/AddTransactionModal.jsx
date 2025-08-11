@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { FaSave, FaTimes } from 'react-icons/fa';
 
+// Helper to get today's date in local time (YYYY-MM-DD)
+const getTodayLocal = () => {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const y = d.getFullYear();
+  const m = pad(d.getMonth() + 1);
+  const day = pad(d.getDate());
+  return `${y}-${m}-${day}`;
+};
+
 const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
   const [form, setForm] = useState({
     type: '',
@@ -83,8 +93,6 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
     }
   };
 
-
-
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError('');
@@ -113,16 +121,21 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
         return;
       }
 
+      // Ensure date is today or earlier
+      const today = getTodayLocal();
+      const chosen = form.date ? form.date : today;
+      const safeDate = chosen > today ? today : chosen;
+
       const transactionData = {
         account_id: activeAccount.account_id,
         transaction_name: form.name,
         transaction_amount: parseFloat(form.amount),
         transaction_type: form.type,
-        transaction_date: form.date || new Date().toISOString().split('T')[0],
+        transaction_date: safeDate,
         category_id: form.categories ? parseInt(form.categories) : null,
         custom_category_id: null,
         budget_id: form.budget ? parseInt(form.budget) : null,
-        is_recurring: form.recurring ? true : false,
+        is_recurring: !!form.recurring,
         linked_goal_id: form.goals ? parseInt(form.goals) : null,
         linked_challenge_id: form.challenges ? parseInt(form.challenges) : null,
         points_awarded: 0
@@ -150,7 +163,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
       const newTransaction = {
         name: form.name,
         type: form.type,
-        date: form.date || new Date().toISOString().split('T')[0],
+        date: safeDate,
         category: form.categories ?
           categories.find(cat => cat.category_id === parseInt(form.categories))?.category_name || 'Unknown' :
           form.newCategories || 'Uncategorized',
@@ -280,7 +293,16 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
               name="date"
               type="date"
               value={form.date}
-              onChange={handleChange}
+              max={getTodayLocal()} // ✅ no future dates
+              onChange={(e) => {
+                const today = getTodayLocal();
+                const v = e.target.value;
+                setForm((prev) => ({
+                  ...prev,
+                  date: v && v > today ? today : v
+                }));
+                setError('');
+              }}
               className="border dark:border-gray-700 p-2 rounded dark:bg-gray-700 dark:text-gray-200"
             />
           </div>
@@ -303,7 +325,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
             </select>
           </div>
 
-          {/* Categories (dropdown) */}
+          {/* Categories */}
           <div className="flex flex-col">
             <label className="text-gray-600 dark:text-gray-300 mb-1">Categories</label>
             <select 
@@ -321,7 +343,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
             </select>
           </div>
 
-          {/* New Category (alternative input) */}
+          {/* New Category */}
           <div className="flex flex-col">
             <label className="text-gray-600 dark:text-gray-300 mb-1">New Category</label>
             <input
@@ -333,7 +355,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
             />
           </div>
 
-          {/* Goals Dropdown */}
+          {/* Goals */}
           <div className="flex flex-col">
             <label className="text-gray-600 dark:text-gray-300 mb-1">Goals</label>
             <select 
@@ -351,7 +373,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
             </select>
           </div>
 
-          {/* Challenges Dropdown */}
+          {/* Challenges */}
           <div className="flex flex-col">
             <label className="text-gray-600 dark:text-gray-300 mb-1">Challenges</label>
             <select 

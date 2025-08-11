@@ -341,6 +341,8 @@ const BudgetPage = () => {
       duration: 10000,
     });
   }
+
+  
   const handleDelete = async (id) => {
     // Show a confirmation toast instead of window.confirm
     // We'll use a simple state to handle confirmation
@@ -486,7 +488,7 @@ const BudgetPage = () => {
                 initialData={{ budget_name: budget.budget_name }}
                 onSave={handleSave}
                 onCancel={handleCancel}
-                categories={categories}
+                categories={categories.slice(0, 10)}  // Only pass first 10 categories
                 isEdit={true}
               />
             ) : (
@@ -501,7 +503,7 @@ const BudgetPage = () => {
               />
             )
           ))}
-
+          
           {budgets.length === 0 && !isCreating && (
             <div className="text-center py-12">
               <div className="mx-auto w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
