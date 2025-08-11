@@ -186,6 +186,7 @@ const Navbar = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [performance, setPerformance] = useState(null);
   const [notifications, setNotifications] = useState(0);
+  
   const [user, setUser] = useState(() => {
     const userData = localStorage.getItem('user');
     return userData ? JSON.parse(userData) : {
@@ -203,18 +204,21 @@ const Navbar = () => {
     navigate('/landing');
   };
 
+  // menu toggle
   const toggleMenu = (label) => {
     setActiveMenu(activeMenu === label ? null : label);
     setProfileOpen(false);
     setShowNotifications(false);
   };
 
+  // profile toggle
   const toggleProfile = () => {
     setProfileOpen(!profileOpen);
     setActiveMenu(null);
     setShowNotifications(false);
   };
 
+  // notification togggle
   const toggleNotifications = () => {
     setShowNotifications(!showNotifications);
     setActiveMenu(null);
@@ -233,7 +237,8 @@ const Navbar = () => {
         if (user?.id) {
           const res = await fetch(`http://localhost:5000/api/notifications/${user.id}`);
           const data = await res.json();
-          setNotifications(data.data?.length || 0);
+          const activeCount = (data.data || []).filter(n => !n.read && !n.dismissed).length;
+          setNotifications(activeCount);
         }
       } catch (err) {
         console.error('Failed to load notifications:', err);

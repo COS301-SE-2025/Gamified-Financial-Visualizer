@@ -7,6 +7,8 @@ import GoalsViewLayout from './GoalsViewLayout';
 
 const GoalCreatePage = () => {
   const [showConfirm, setShowConfirm] = useState(false);
+
+  //form set states 
   const [form, setForm] = useState({
     name: '',
     amount: '',
@@ -20,6 +22,15 @@ const GoalCreatePage = () => {
   const user = JSON.parse(localStorage.getItem('user'));
   const [categories, setCategories] = useState([]);
 
+  // taody string helper handler
+  const toLocalISO = (d) => {
+    const x = new Date(d);
+    x.setMinutes(x.getMinutes() - x.getTimezoneOffset());
+    return x.toISOString().split('T')[0];
+  };
+  const today = toLocalISO(new Date());
+
+  // fetch categories
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -34,20 +45,25 @@ const GoalCreatePage = () => {
     fetchCategories();
   }, []);
 
+  // guard submit button
+  const datesValid = form.startDate && form.endDate && form.endDate >= form.startDate;
   const handleSubmit = async (e) => {
     e?.preventDefault();
+    if (!datesValid) return;
 
+    // banner mapping
     const bannerIdMap = {
       [goal1]: 1,
       [goal2]: 2,
       [goal3]: 3
     };
 
+    // paayload information mapping
     const goalPayload = {
       user_id: user?.id,
       goal_name: form.name,
       target_amount: parseFloat(form.amount),
-      goal_type: form.type, 
+      goal_type: form.type,
       start_date: form.startDate,
       target_date: form.endDate,
       banner_id: bannerIdMap[form.image],
@@ -73,13 +89,25 @@ const GoalCreatePage = () => {
     }
   };
 
+  // chaneg handler
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    // keep endDate >= startDate
+    if (name === 'startDate') {
+      setForm(prev => {
+        const nextEnd = prev.endDate && prev.endDate < value ? value : prev.endDate;
+        return { ...prev, startDate: value, endDate: nextEnd };
+      });
+      return;
+    }
+    if (name === 'endDate') {
+      setForm(prev => ({ ...prev, endDate: value }));
+      return;
+    }
+    setForm(prev => ({ ...prev, [name]: value }));
   };
+
 
   const handleImageSelect = (img) => {
     setForm((prev) => ({ ...prev, image: img }));
@@ -129,7 +157,7 @@ const GoalCreatePage = () => {
                 name="startDate"
                 value={form.startDate}
                 onChange={handleChange}
-                min={new Date().toISOString().split('T')[0]}
+                min={today}
                 className="rounded-xl px-4 py-2 border dark:border-gray-600 shadow dark:shadow-none w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
@@ -140,7 +168,7 @@ const GoalCreatePage = () => {
                 name="endDate"
                 value={form.endDate}
                 onChange={handleChange}
-                min={new Date().toISOString().split('T')[0]}
+                min={form.startDate || today}
                 className="rounded-xl px-4 py-2 border dark:border-gray-600 shadow dark:shadow-none w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
@@ -184,7 +212,7 @@ const GoalCreatePage = () => {
                     <option key={cat.category_id} value={cat.category_id}>
                       {cat.category_name}
                     </option>
-                  ))} 
+                  ))}
                 </select>
                 <FaChevronDown className="absolute right-4 top-3 text-gray-400 dark:text-gray-500 pointer-events-none" />
               </div>
@@ -208,11 +236,10 @@ const GoalCreatePage = () => {
                   src={img}
                   alt={`Goal option ${i}`}
                   onClick={() => handleImageSelect(img)}
-                  className={`w-36 h-20 rounded-xl cursor-pointer object-cover border-2 ${
-                    form.image === img 
-                      ? 'border-green-400 dark:border-green-500' 
-                      : 'border-transparent'
-                  }`}
+                  className={`w-36 h-20 rounded-xl cursor-pointer object-cover border-2 ${form.image === img
+                    ? 'border-green-400 dark:border-green-500'
+                    : 'border-transparent'
+                    }`}
                 />
                 <span className="text-xs mt-1 text-gray-500 dark:text-gray-400">
                   {i === 0 ? 'Apartment' : i === 1 ? 'House' : 'Office'}
@@ -226,11 +253,20 @@ const GoalCreatePage = () => {
         <div className="pt-4 text-right">
           <button
             type="button"
-            onClick={() => setShowConfirm(true)}
-            className="px-8 py-3 bg-gradient-to-r from-[#B4CB98] to-[#AAD977] dark:from-[#7FDD53] dark:to-[#86EFAC] text-white rounded-full shadow-lg hover:from-[#AAD977] hover:to-[#B4CB98] dark:hover:from-[#86EFAC] dark:hover:to-[#7FDD53] transition-all font-medium"
+            onClick={() => datesValid ? setShowConfirm(true) : null}
+            disabled={!datesValid}
+            className={`px-8 py-3 rounded-full font-medium transition-all
+              ${datesValid
+                ? 'bg-gradient-to-r from-[#B4CB98] to-[#AAD977] text-white hover:from-[#AAD977] hover:to-[#B4CB98]'
+                : 'bg-gray-300 text-gray-600 cursor-not-allowed'}`}
           >
             Create Goal
           </button>
+
+          {form.startDate && form.endDate && form.endDate < form.startDate && (
+            <p className="mt-2 text-sm text-red-500">End date can’t be before start date.</p>
+          )}
+
         </div>
       </form>
 
