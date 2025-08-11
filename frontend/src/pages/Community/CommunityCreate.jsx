@@ -49,11 +49,13 @@ const CommunityCreate = () => {
   });
   const [search, setSearch] = useState('');
 
+  // chaneg handler
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
+  // send full invite handler 
   const handleInvite = (friend) => {
     if (!invitedFriends.includes(friend.username)) {
       setInvitedFriends([...invitedFriends, friend.username]);
@@ -61,6 +63,7 @@ const CommunityCreate = () => {
     }
   };
 
+  // handle submit
   const handleSubmit = (e) => {
     e.preventDefault();
     setShowConfirmation(true);
@@ -68,6 +71,7 @@ const CommunityCreate = () => {
 
   const filteredFriends = friendsList.filter((f) => f.username.toLowerCase().includes(search.toLowerCase()));
 
+  // creation confirmation
   const confirmCreate = async () => {
     setIsCreating(true);
     setShowConfirmation(false);
@@ -253,7 +257,7 @@ const CommunityCreate = () => {
                       className="w-10 h-10 rounded-full object-cover" 
                     />
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200">@{friend.username}</p>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{friend.username}</p>
                     </div>
                     <button
                       onClick={() => handleInvite(friend)}

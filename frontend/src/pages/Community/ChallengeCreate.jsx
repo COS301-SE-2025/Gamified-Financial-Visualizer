@@ -48,6 +48,7 @@ const ChallengeCreate = () => {
     fetchCategories();
   }, []);
 
+  // fetch communities 
   const fetchCommunities = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user?.id) return;
@@ -61,6 +62,7 @@ const ChallengeCreate = () => {
     }
   };
 
+  // fetch friends 
   const fetchFriends = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user?.id) return;
@@ -86,6 +88,7 @@ const ChallengeCreate = () => {
     { id: 'students_banner', apiId: 4, src: require('../../assets/Images/banners/pixelStudents.jpeg'), label: 'Pixel Students' },
   ];
 
+  // chnage handler
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
     if (type === 'file') {
@@ -95,6 +98,7 @@ const ChallengeCreate = () => {
     }
   };
 
+  // handle invites
   const handleInvite = (friend) => {
     if (!invitedFriends.includes(friend.name)) {
       setInvitedFriends([...invitedFriends, friend.name]);
@@ -102,11 +106,13 @@ const ChallengeCreate = () => {
     }
   };
 
+  // handle the submits
   const handleSubmit = (e) => {
     e.preventDefault();
     setShowConfirmation(true);
   };
 
+  // confirm the creation 
   const confirmCreate = async () => {
     setIsCreating(true);
     setShowConfirmation(false);
@@ -231,7 +237,7 @@ const ChallengeCreate = () => {
       }
 
       setTimeout(() => {
-        navigate('/community');
+        navigate('/community/challenges');
       }, 2000);
 
     } catch (error) {
@@ -242,6 +248,7 @@ const ChallengeCreate = () => {
     }
   };
 
+  // create cancels functions
   const cancelCreate = () => {
     setShowConfirmation(false);
   };
@@ -330,20 +337,43 @@ const ChallengeCreate = () => {
                 {imageOptions.map((img) => (
                   <label
                     key={img.id}
-                    className={`cursor-pointer border rounded-xl overflow-hidden transition ${formData.imageId === img.id ? 'ring-2 ring-[#B1E1FF]' : 'border-gray-300 dark:border-gray-600'}`}
+                    role="radio"
+                    tabIndex={0}
+                    aria-checked={formData.imageId === img.apiId}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setFormData({ ...formData, imageId: img.apiId });
+                      }
+                    }}
+                    className={`relative cursor-pointer group border rounded-xl overflow-hidden transition focus:outline-none
+        ${formData.imageId === img.apiId
+                        ? 'ring-2 ring-[#B1E1FF] border-[#B1E1FF]'
+                        : 'border-gray-300 dark:border-gray-600'}`}
+                    onClick={() => setFormData({ ...formData, imageId: img.apiId })}
                   >
                     <input
                       type="radio"
                       name="imageId"
-                      value={img.id}
-                      onChange={(e) => {
-                        const selected = imageOptions.find(i => i.id === e.target.value);
-                        setFormData({ ...formData, imageId: selected?.apiId || null });
-                      }}
-                      className="hidden"
+                      value={img.apiId}
+                      checked={formData.imageId === img.apiId}
+                      onChange={() => setFormData({ ...formData, imageId: img.apiId })}
+                      className="sr-only"
                     />
                     <img src={img.src} alt={img.label} className="w-full h-24 object-cover" />
-                    <div className="p-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300">{img.label}</div>
+                    <div className="p-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {img.label}
+                    </div>
+
+                    {/* subtle overlay + tick when selected */}
+                    {formData.imageId === img.apiId && (
+                      <>
+                        <div className="absolute inset-0 ring-inset ring-2 ring-[#B1E1FF] pointer-events-none" />
+                        <span className="absolute top-2 right-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#B1E1FF] text-white text-xs">
+                          ✓
+                        </span>
+                      </>
+                    )}
                   </label>
                 ))}
               </div>

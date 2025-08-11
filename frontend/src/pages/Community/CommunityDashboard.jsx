@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 
 import CommunityLayout from '../../pages/Community/CommunityLayout';
 import CommunityHeader from '../../layouts/headers/CommunityHeader';
 
-import { FaHeart, FaComment, FaVrCardboard, FaTrophy, FaBullseye, FaShare, FaPen, FaEye, FaGamepad, FaPaperPlane } from 'react-icons/fa';
+import { FaHeart, FaComment, FaVrCardboard, FaTrophy, FaBullseye, FaShare, FaPen, FaEye, FaGamepad, FaPaperPlane, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 import avatar1 from '../../assets/Images/avatars/Totoro.png';
@@ -59,6 +59,7 @@ const CommunityDashboard = () => {
   const [imageFile, setImageFile] = useState(null);
   const [isPublic, setIsPublic] = useState(true);
 
+  // post handler
   const handlePost = () => {
     if (!newPost.trim()) {
       toast.error('Post cannot be empty');
@@ -82,6 +83,7 @@ const CommunityDashboard = () => {
     setPostType('');
   };
 
+  // like handler
   const handleLike = (postId) => {
     setPosts(posts.map(post => {
       if (post.id === postId) {
@@ -101,6 +103,7 @@ const CommunityDashboard = () => {
     );
   };
 
+  // comment handler
   const handleComment = (postId) => {
     if (!commentInputs[postId]?.trim()) return;
 
@@ -123,6 +126,20 @@ const CommunityDashboard = () => {
 
     setCommentInputs(prev => ({ ...prev, [postId]: '' }));
   };
+
+  // pagination state for the posts 
+  const POSTS_PER_PAGE = 2;           // show 3 posts per page on the right
+  const [postPage, setPostPage] = useState(1);
+
+  const totalPostPages = Math.max(1, Math.ceil(posts.length / POSTS_PER_PAGE));
+  const startIndex = (postPage - 1) * POSTS_PER_PAGE;
+  const visiblePosts = posts.slice(startIndex, startIndex + POSTS_PER_PAGE);
+
+  // keep page in range if posts length changes
+  useEffect(() => {
+    if (postPage > totalPostPages) setPostPage(totalPostPages);
+  }, [postPage, totalPostPages, posts.length]);
+
 
   return (
     <CommunityLayout>
@@ -169,7 +186,7 @@ const CommunityDashboard = () => {
             </button>
 
             {/* Posts */}
-            {posts.map((post) => (
+            {visiblePosts.map((post) => (
               <div
                 key={post.id}
                 className="bg-white rounded-3xl shadow-md p-6 space-y-4 border border-gray-100 hover:shadow-xl transition-all dark:bg-gray-800 dark:border-gray-700"
@@ -282,6 +299,32 @@ const CommunityDashboard = () => {
                 </div>
               </div>
             ))}
+            {/* Pagination */}
+            {posts.length > POSTS_PER_PAGE && (
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => setPostPage(p => Math.max(1, p - 1))}
+                  disabled={postPage === 1}
+                  className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border dark:border-gray-600
+        ${postPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                >
+                  <FaChevronLeft /> Prev
+                </button>
+
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  Page {postPage} of {totalPostPages}
+                </span>
+
+                <button
+                  onClick={() => setPostPage(p => Math.min(totalPostPages, p + 1))}
+                  disabled={postPage === totalPostPages}
+                  className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border dark:border-gray-600
+        ${postPage === totalPostPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                >
+                  Next <FaChevronRight />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -337,8 +380,8 @@ const CommunityDashboard = () => {
                   key={idx}
                   onClick={() => setPostType(btn.type)}
                   className={`flex items-center gap-2 px-4 py-1.5 text-sm rounded-full font-medium shadow transition ${postType === btn.type
-                      ? 'text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                    ? 'text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                     }`}
                   style={postType === btn.type ? { backgroundColor: btn.color } : {}}
                 >
