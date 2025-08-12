@@ -50,6 +50,7 @@ const FriendsList = () => {
     setModalOpen(true);
   };
 
+  // friend request handler
   const handleFriendRequest = (user) => {
     const currentUser = JSON.parse(localStorage.getItem('user'));
     openModal(`Send a friend request to @${user.username}?`, user, async () => {
@@ -80,6 +81,7 @@ const FriendsList = () => {
     });
   };
 
+  // friend remove handler
   const handleRemoveFriend = (user) => {
     const currentUser = JSON.parse(localStorage.getItem('user'));
     openModal(`Remove @${user.username} from your friends list?`, user, async () => {
@@ -117,6 +119,7 @@ const FriendsList = () => {
     });
   };
 
+  // friend filter
   const filteredFriends = yourFriends.filter(f =>
     f.username.toLowerCase().includes(search.toLowerCase())
   );
@@ -129,7 +132,7 @@ const FriendsList = () => {
 
   const someoneList = search ? filteredMembers : recommended;
 
- return (
+  return (
     <CommunityLayout>
       <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4 dark:bg-gray-900">
         <Toaster position="top-right" />
@@ -158,10 +161,10 @@ const FriendsList = () => {
               filteredFriends.map((friend, i) => (
                 <div key={i} className="flex justify-between items-center py-2 border-b border-[#F3F4F6] last:border-0 dark:border-gray-700">
                   <div className="flex items-center gap-4">
-                    <img 
-                      src={`/assets/Images/${friend.avatar_image_path}`} 
-                      alt={friend.username} 
-                      className="w-10 h-10 rounded-full object-cover border dark:border-gray-600" 
+                    <img
+                      src={`/assets/Images/${friend.avatar_image_path}`}
+                      alt={friend.username}
+                      className="w-10 h-10 rounded-full object-cover border dark:border-gray-600"
                     />
                     <div>
                       <p className="text-sm font-semibold text-[#111827] dark:text-gray-200">{friend.username}</p>
@@ -194,10 +197,10 @@ const FriendsList = () => {
             {someoneList.map((person, i) => (
               <div key={i} className="flex justify-between items-center py-2 border-b border-[#F3F4F6] last:border-0 dark:border-gray-700">
                 <div className="flex items-center gap-4">
-                  <img 
-                    src={`/assets/Images/${person.avatar_image_path}`} 
-                    alt={person.username} 
-                    className="w-10 h-10 rounded-full object-cover border dark:border-gray-600" 
+                  <img
+                    src={`/assets/Images/${person.avatar_image_path}`}
+                    alt={person.username}
+                    className="w-10 h-10 rounded-full object-cover border dark:border-gray-600"
                   />
                   <div>
                     <p className="text-sm font-semibold text-[#111827] dark:text-gray-200">{person.username}</p>

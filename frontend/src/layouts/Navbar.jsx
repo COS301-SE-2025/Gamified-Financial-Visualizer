@@ -241,9 +241,9 @@ const Navbar = () => {
     };
 
     fetch(`http://localhost:5000/api/community/performance-summary/${user.id}`)
-    .then(res => res.json())
-    .then(data => setPerformance(data?.data))
-    .catch(err => console.error('Community performance summary error:', err));
+      .then(res => res.json())
+      .then(data => setPerformance(data?.data))
+      .catch(err => console.error('Community performance summary error:', err));
 
     fetchNotifications();
 
@@ -268,6 +268,7 @@ const Navbar = () => {
             <div key={menu.label} className="relative">
               {menu.items.length === 1 ? (
                 <NavLink
+                  end
                   to={menu.items[0].to}
                   className={({ isActive }) =>
                     `flex items-center gap-1 text-sm font-semibold transition-colors ${
@@ -302,6 +303,7 @@ const Navbar = () => {
                       <div className="space-y-1">
                         {menu.items.map((item) => (
                           <NavLink
+                            end
                             key={item.label}
                             to={item.to}
                             onClick={closeAll}
@@ -375,6 +377,7 @@ const Navbar = () => {
             {profileOpen && (
               <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg p-2 z-50 border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
                 <NavLink
+                  end
                   to="/profile"
                   onClick={closeAll}
                   className={({ isActive }) => `
@@ -390,6 +393,7 @@ const Navbar = () => {
                   <span className="text-sm">Profile</span>
                 </NavLink>
                 <NavLink
+                  end
                   to="/profile/settings"
                   onClick={closeAll}
                   className={({ isActive }) => `
