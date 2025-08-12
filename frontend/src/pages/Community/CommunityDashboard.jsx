@@ -305,9 +305,6 @@ const CommunityDashboard = () => {
                       <FaComment />
                       <span>{post.comments.length}</span>
                     </div>
-                    <button className="flex items-center gap-1 hover:text-[#88BC46] dark:hover:text-[#4D7C0F]">
-                      <FaShare />
-                    </button>
                   </div>
                   <Link
                     to={`/community/member/${post.user.name}`}
@@ -492,7 +489,6 @@ const CommunityDashboard = () => {
                     )}
                   </div>
                 )}
-
 
                 {/* Preview */}
                 {bannerPreview && (
