@@ -67,38 +67,25 @@ const LearningCompletePage = () => {
     setFilteredModules(filtered);
   }, [searchTerm, difficultyFilter, topicFilter, modulesData]);
 
-
-  // LOADER GOES HERE
-  /*
-  if (isLoading) {
-    return (
-      <LearnLayout>
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#5FBFFF]"></div>
-        </div>
-      </LearnLayout>
-    );
-  }
-*/
   if (error) {
     return (
       <LearnLayout>
         <div className="max-w-6xl mx-auto p-4">
-          <div className="bg-red-50 border-l-4 border-[#FF8A8A] p-4 rounded-r-lg">
+          <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-[#FF8A8A] dark:border-[#F97156] p-4 rounded-r-lg">
             <div className="flex">
               <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-[#FF8A8A]" viewBox="0 0 20 20" fill="currentColor">
+                <svg className="h-5 w-5 text-[#FF8A8A] dark:text-[#F97156]" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                 </svg>
               </div>
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-[#FF8A8A]">Error loading completed courses</h3>
-                <div className="mt-2 text-sm text-[#FF8A8A]">
+                <h3 className="text-sm font-medium text-[#FF8A8A] dark:text-[#F97156]">Error loading completed courses</h3>
+                <div className="mt-2 text-sm text-[#FF8A8A] dark:text-[#F97156]">
                   <p>{error}</p>
                 </div>
                 <button
                   onClick={() => window.location.reload()}
-                  className="mt-3 inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#FF8A8A] hover:bg-[#FF6B6B] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF8A8A]"
+                  className="mt-3 inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#FF8A8A] dark:bg-[#F97156] hover:bg-[#FF6B6B] dark:hover:bg-[#E5794B] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF8A8A] dark:focus:ring-[#F97156]"
                 >
                   Try Again
                 </button>
@@ -116,11 +103,11 @@ const LearningCompletePage = () => {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">Completed Courses</h1>
-            <p className="text-gray-600">Review the courses you've successfully completed</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Completed Courses</h1>
+            <p className="text-gray-600 dark:text-gray-400">Review the courses you've successfully completed</p>
           </div>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#7FDD5320] text-[#7FDD53]">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#7FDD5320] dark:bg-[#14532D] text-[#7FDD53] dark:text-[#86EFAC]">
               <FaCheckCircle className="mr-1" /> {filteredModules.length} Completed
             </span>
           </div>
@@ -130,12 +117,12 @@ const LearningCompletePage = () => {
         <div className="mb-8">
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-6">
             {/* Search section */}
-            <div className="flex items-center w-full px-4 py-2 border border-[#5FBFFF] rounded-full bg-white shadow-sm">
-              <FaSearch className="text-[#5FBFFF] mr-2" />
+            <div className="flex items-center w-full px-4 py-2 border border-[#5FBFFF] dark:border-[#93C5FD] rounded-full bg-white dark:bg-gray-800 shadow-sm">
+              <FaSearch className="text-[#5FBFFF] dark:text-[#93C5FD] mr-2" />
               <input
                 type="text"
                 placeholder="Search your completed courses..."
-                className="w-full outline-none bg-transparent text-sm text-gray-700 placeholder-gray-400"
+                className="w-full outline-none bg-transparent text-sm text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -144,10 +131,10 @@ const LearningCompletePage = () => {
             {/* Filter button */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-[#5FBFFF] rounded-lg shadow-sm hover:bg-[#5FBFFF10] transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-[#5FBFFF] dark:border-[#93C5FD] rounded-lg shadow-sm hover:bg-[#5FBFFF10] dark:hover:bg-[#1E3A8A30] transition-colors"
             >
-              <FaFilter className="text-[#5FBFFF]" />
-              <span className="text-[#5FBFFF]">Filters</span>
+              <FaFilter className="text-[#5FBFFF] dark:text-[#93C5FD]" />
+              <span className="text-[#5FBFFF] dark:text-[#93C5FD]">Filters</span>
             </button>
           </div>
   
@@ -158,42 +145,58 @@ const LearningCompletePage = () => {
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.2 }}
-              className="bg-white p-4 rounded-lg shadow-md border border-gray-200 mb-6"
+              className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 mb-6"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Difficulty</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Difficulty</label>
                   <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => setDifficultyFilter('all')}
-                      className={`px-3 py-1 rounded-full text-sm ${difficultyFilter === 'all' ? 'bg-[#5FBFFF] text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
+                      className={`px-3 py-1 rounded-full text-sm ${
+                        difficultyFilter === 'all' 
+                          ? 'bg-[#5FBFFF] dark:bg-[#1E40AF] text-white' 
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      }`}
                     >
                       All Levels
                     </button>
                     <button
                       onClick={() => setDifficultyFilter('beginner')}
-                      className={`px-3 py-1 rounded-full text-sm ${difficultyFilter === 'beginner' ? 'bg-[#7FDD53] text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
+                      className={`px-3 py-1 rounded-full text-sm ${
+                        difficultyFilter === 'beginner' 
+                          ? 'bg-[#7FDD53] dark:bg-[#166534] text-white' 
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      }`}
                     >
                       Beginner
                     </button>
                     <button
                       onClick={() => setDifficultyFilter('intermediate')}
-                      className={`px-3 py-1 rounded-full text-sm ${difficultyFilter === 'intermediate' ? 'bg-[#FFC541] text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
+                      className={`px-3 py-1 rounded-full text-sm ${
+                        difficultyFilter === 'intermediate' 
+                          ? 'bg-[#FFC541] dark:bg-[#854D0E] text-white' 
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      }`}
                     >
                       Intermediate
                     </button>
                     <button
                       onClick={() => setDifficultyFilter('advanced')}
-                      className={`px-3 py-1 rounded-full text-sm ${difficultyFilter === 'advanced' ? 'bg-[#F68D2B] text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
+                      className={`px-3 py-1 rounded-full text-sm ${
+                        difficultyFilter === 'advanced' 
+                          ? 'bg-[#F68D2B] dark:bg-[#9A3412] text-white' 
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      }`}
                     >
                       Advanced
                     </button>
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Topic</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Topic</label>
                   <select
-                    className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#5FBFFF] focus:border-transparent rounded-lg"
+                    className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-[#5FBFFF] dark:focus:ring-[#93C5FD] focus:border-transparent rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300"
                     value={topicFilter}
                     onChange={(e) => setTopicFilter(e.target.value)}
                   >
@@ -226,12 +229,12 @@ const LearningCompletePage = () => {
             ))}
           </div>
         ) : (
-          <div className="bg-gray-50 rounded-xl p-8 text-center">
-            <div className="mx-auto w-16 h-16 flex items-center justify-center bg-[#5FBFFF20] rounded-full mb-4">
-              <FaSearch className="text-[#5FBFFF] text-xl" />
+          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-8 text-center border border-gray-200 dark:border-gray-700">
+            <div className="mx-auto w-16 h-16 flex items-center justify-center bg-[#5FBFFF20] dark:bg-[#1E40AF30] rounded-full mb-4">
+              <FaSearch className="text-[#5FBFFF] dark:text-[#93C5FD] text-xl" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No courses found</h3>
-            <p className="text-gray-600 max-w-md mx-auto">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No courses found</h3>
+            <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
               {searchTerm ? 
                 `No completed courses match your search for "${searchTerm}". Try adjusting your filters.` : 
                 "You haven't completed any courses yet. Start learning to see them here!"}

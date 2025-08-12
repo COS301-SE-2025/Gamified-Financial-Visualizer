@@ -485,132 +485,131 @@ const SectionDetail = () => {
     };
 
     return (
-        <div className="max-w-6xl mx-auto px-4 py-8">
-            <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.5 }}
-                className="bg-white p-8 rounded-3xl shadow-md border-l-8 border-t-2 border-r-2 border-b-2 relative overflow-hidden"
-                style={{ borderLeftColor: info.color }}
-            >
-                <AnimatePresence>
-                    {showXpAnimation && (
-                        <motion.div
-                            className="absolute inset-0 flex items-center justify-center z-20"
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1.5, opacity: 1 }}
-                            exit={{ scale: 0, opacity: 0 }}
-                            transition={{ duration: 0.8 }}
-                        >
-                            <div className="text-[#f59e0b] text-3xl font-bold">+{info.xpReward} XP</div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-
-                <motion.button
-                    whileHover={{ x: -3 }}
-                    onClick={handleBackClick}
-                    className="absolute top-6 left-6 text-sm text-gray-600 hover:text-black transition flex items-center gap-1 z-10"
-                >
-                    <FaArrowLeft /> Back to Map
-                </motion.button>
-
-                <div className="flex flex-col items-center text-center mt-4 space-y-4 relative z-10">
-                    <div
-                        className="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl mb-3"
-                        style={{ backgroundColor: `${info.color}20`, color: info.color }}
+    <div className="max-w-6xl mx-auto px-4 py-8">
+        <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-md dark:shadow-gray-700/50 border-l-8 border-t-2 border-r-2 border-b-2 dark:border-gray-700 relative overflow-hidden"
+            style={{ borderLeftColor: info.color }}
+        >
+            <AnimatePresence>
+                {showXpAnimation && (
+                    <motion.div
+                        className="absolute inset-0 flex items-center justify-center z-20"
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1.5, opacity: 1 }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        transition={{ duration: 0.8 }}
                     >
-                        {info.icon}
-                    </div>
-                    <h2 className="text-3xl font-bold text-gray-800">{info.title}</h2>
-                    <p className="text-gray-600 max-w-lg whitespace-pre-line">{info.content}</p>
-                </div>
+                        <div className="text-[#f59e0b] text-3xl font-bold">+{info.xpReward} XP</div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
-                <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {info.features.map((feature, index) => (
-                        <motion.div
+            <motion.button
+                whileHover={{ x: -3 }}
+                onClick={handleBackClick}
+                className="absolute top-6 left-6 text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition flex items-center gap-1 z-10"
+            >
+                <FaArrowLeft /> Back to Map
+            </motion.button>
+
+            <div className="flex flex-col items-center text-center mt-4 space-y-4 relative z-10">
+                <div
+                    className="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl mb-3"
+                    style={{ backgroundColor: `${info.color}20`, color: info.color }}
+                >
+                    {info.icon}
+                </div>
+                <h2 className="text-3xl font-bold text-gray-800 dark:text-white">{info.title}</h2>
+                <p className="text-gray-600 dark:text-gray-300 max-w-lg whitespace-pre-line">{info.content}</p>
+            </div>
+
+            <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+                {info.features.map((feature, index) => (
+                    <motion.div
+                        key={index}
+                        whileHover={{ y: -5 }}
+                        className="bg-white dark:bg-gray-700 p-5 rounded-xl border-l-4 shadow-sm dark:shadow-gray-600/20"
+                        style={{ borderLeftColor: info.color }}
+                    >
+                        <div className="flex items-center gap-3 mb-3">
+                            <div
+                                className="w-10 h-10 rounded-lg flex items-center justify-center"
+                                style={{ backgroundColor: `${info.color}20`, color: info.color }}
+                            >
+                                {feature.icon}
+                            </div>
+                            <h3 className="font-bold text-gray-800 dark:text-white">{feature.title}</h3>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">{feature.description}</p>
+                    </motion.div>
+                ))}
+            </div>
+
+            <div className="mt-10 bg-[#f8fafc] dark:bg-gray-700 p-6 rounded-xl">
+                <h3 className="font-bold text-lg text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                    <FaStar className="text-[#f59e0b]" /> XP Earning Opportunities
+                </h3>
+                <div className="space-y-3">
+                    {info.xpOpportunities.map((opp, index) => (
+                        <div
                             key={index}
-                            whileHover={{ y: -5 }}
-                            className="bg-white p-5 rounded-xl border-l-4 shadow-sm"
-                            style={{ borderLeftColor: info.color }}
+                            className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-gray-600"
                         >
-                            <div className="flex items-center gap-3 mb-3">
+                            <div className="flex items-center gap-3">
                                 <div
-                                    className="w-10 h-10 rounded-lg flex items-center justify-center"
+                                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
                                     style={{ backgroundColor: `${info.color}20`, color: info.color }}
                                 >
-                                    {feature.icon}
+                                    {index + 1}
                                 </div>
-                                <h3 className="font-bold text-gray-800">{feature.title}</h3>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-800 dark:text-white">{opp.action}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">{opp.frequency}</p>
+                                </div>
                             </div>
-                            <p className="text-sm text-gray-600">{feature.description}</p>
-                        </motion.div>
+                            <span className="text-sm font-bold" style={{ color: info.color }}>{opp.xp}</span>
+                        </div>
                     ))}
                 </div>
+            </div>
 
-                <div className="mt-10 bg-[#f8fafc] p-6 rounded-xl">
-                    <h3 className="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2">
-                        <FaStar className="text-[#f59e0b]" /> XP Earning Opportunities
+            <div className="mt-8 p-5 rounded-xl border-2 border-dashed dark:border-gray-600" style={{ borderColor: info.color }}>
+                <div className="flex items-start gap-3">
+                    <div
+                        className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white"
+                        style={{ backgroundColor: info.color }}
+                    >
+                        <FaLightbulb />
+                    </div>
+                    <div>
+                        <h4 className="font-bold text-gray-800 dark:text-white mb-1">Pro Tip</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">{info.proTip}</p>
+                    </div>
+                </div>
+            </div>
+
+            {info.upcomingFeatures.length > 0 && (
+                <div className="mt-10">
+                    <h3 className="font-bold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
+                        <FaMagic className="text-purple-500" /> Coming Soon
                     </h3>
-                    <div className="space-y-3">
-                        {info.xpOpportunities.map((opp, index) => (
-                            <div
+                    <div className="flex flex-wrap gap-2">
+                        {info.upcomingFeatures.map((feature, index) => (
+                            <span
                                 key={index}
-                                className="flex justify-between items-center pb-2 border-b border-gray-100"
+                                className="text-xs px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-200 border border-gray-200 dark:border-gray-500"
                             >
-                                <div className="flex items-center gap-3">
-                                    <div
-                                        className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
-                                        style={{ backgroundColor: `${info.color}20`, color: info.color }}
-                                    >
-                                        {index + 1}
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-800">{opp.action}</p>
-                                        <p className="text-xs text-gray-500">{opp.frequency}</p>
-                                    </div>
-                                </div>
-                                <span className="text-sm font-bold" style={{ color: info.color }}>{opp.xp}</span>
-                            </div>
+                                {feature}
+                            </span>
                         ))}
                     </div>
                 </div>
-
-                <div className="mt-8 p-5 rounded-xl border-2 border-dashed" style={{ borderColor: info.color }}>
-                    <div className="flex items-start gap-3">
-                        <div
-                            className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white"
-                            style={{ backgroundColor: info.color }}
-                        >
-                            <FaLightbulb />
-                        </div>
-                        <div>
-                            <h4 className="font-bold text-gray-800 mb-1">Pro Tip</h4>
-                            <p className="text-sm text-gray-600">{info.proTip}</p>
-                        </div>
-                    </div>
-                </div>
-
-                {info.upcomingFeatures.length > 0 && (
-                    <div className="mt-10">
-                        <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-                            <FaMagic className="text-purple-500" /> Coming Soon
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                            {info.upcomingFeatures.map((feature, index) => (
-                                <span
-                                    key={index}
-                                    className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600 border border-gray-200"
-                                >
-                                    {feature}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </motion.div>
-        </div>
-    );
+            )}
+        </motion.div>
+    </div>
+);
 };
-
 export default SectionDetail;

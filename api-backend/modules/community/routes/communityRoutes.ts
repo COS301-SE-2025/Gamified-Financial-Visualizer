@@ -5,6 +5,7 @@ import * as communityService from '../services/community.service';
 import * as au from '../../auth/services/auth.service';
 import { notifyUser } from '../../notifications/services/notifications.services';
 import { redisClient } from '../../../config/redis';
+import { error } from 'console';
 
 const router = Router();
 
@@ -230,6 +231,7 @@ router.post('/', async (req: Request, res: Response) => {
   const { owner_id, community_name, description, banner_id, invited_usernames } = req.body;
 
   if (!owner_id || !community_name) {
+    logger.error('[Community] Missing required fields for community creation');
     res.status(400).json({ status: 'error', message: 'Missing required fields.' });
     return;
   }
@@ -276,12 +278,14 @@ router.post('/', async (req: Request, res: Response) => {
  * @route GET /api/community/banners
  * @desc Fetch all available banner options
  */
-router.get('/banners', async (_req, res) => {
+router.get('/banners/banners', async (_req: Request, res: Response) => {
   try {
     const banners = await communityService.getAllBanners();
     res.status(200).json({ status: 'success', data: banners });
+    return;
   } catch (err) {
     res.status(500).json({ status: 'error', message: 'Could not fetch banners.' });
+    return;
   }
 });
 
@@ -301,6 +305,10 @@ router.get('/friends/:userId', async (req, res) => {
     const friends = await communityService.getUserFriendsWithAvatars(userId);
     res.status(200).json({ status: 'success', data: friends });
   } catch (err) {
+      logger.error(
+      `[Community] Failed to fetch friends for user ID ${userId}:`,
+      err
+    );
     res.status(500).json({ status: 'error', message: 'Could not fetch friends.' });
   }
 });
@@ -313,6 +321,11 @@ router.put('/:communityId', async (req, res) => {
     return;
   }
 
+  if (!community_name || !description) {
+    logger.error('[Community] Missing required fields for community update');
+    res.status(400).json({ status: 'error', message: 'Missing required fields.' });
+    return;
+  }
   try {
     const updatedCommunity = await communityService.updateCommunity(communityId, {
       community_name,
@@ -482,6 +495,7 @@ router.post('/membership/respond', async (req: Request, res: Response) => {
   const { community_id, user_id, action } = req.body;
   
   if (!community_id || !user_id || !action) {
+    logger.error('[Community] Missing required fields for membership response.');
     res.status(400).json({ status: 'error', message: 'Missing required fields.' });
     return;
   }
@@ -489,6 +503,7 @@ router.post('/membership/respond', async (req: Request, res: Response) => {
   // c
 
   if (action !== 'accepted' && action !== 'declined') {
+    logger.error('[Community] Invalid action for membership response');
     res.status(400).json({ status: 'error', message: 'Invalid action.' });
     return;
   }
@@ -534,6 +549,7 @@ router.delete('/friends/remove/:sender/:receiver', async (req: Request, res: Res
 router.patch('/friends/update', async (req: Request, res: Response) => {
   const { user_id, friend_id, action } = req.body;
   if (!user_id || !friend_id) {
+    logger.error('[Community] Missing user_id or friend_id in request body');
     res.status(400).json({ status: 'error', message: 'Missing sender or receiver ID.' });
     return;
   }
@@ -545,7 +561,7 @@ router.patch('/friends/update', async (req: Request, res: Response) => {
 
   try {
     const request = await communityService.respondToFriendRequests(user_id, friend_id, action);
-    res.status(200).json({ status: 'success', message: 'Friendship status updated sent.', data: request });
+    res.status(200).json({ status: 'success', message: 'Friendship status updated successfully.', data: request });
 
     // get username
     const user = await au.getUserById(user_id);
@@ -670,7 +686,7 @@ router.post('/challenges', async (req: Request, res: Response) => {
     .map(([ key ]) => key);
 
   if (missingFields.length > 0) {
-    logger.debug(`[Community] Missing required challenge fields: ${missingFields.join(', ')}`);
+    logger.error(`[Community] Missing required challenge fields: ${missingFields.join(', ')}`);
     res.status(400).json({
       status: 'error',
       message: `Missing required challenge fields: ${missingFields.join(', ')}`,

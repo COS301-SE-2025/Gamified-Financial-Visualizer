@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from 'react'
-import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Environment, useGLTF, Html } from '@react-three/drei'
-import { Suspense } from 'react'
+import { useState, useEffect, useRef } from 'react';
+import { Canvas } from '@react-three/fiber';
+import * as THREE from 'three';
+import { OrbitControls, Environment, useGLTF, Html } from '@react-three/drei';
+import { Suspense } from 'react';
 import { FaBuilding, FaBank, FaCoffee, FaShoppingCart, FaHospital, FaHotel, FaPoliceBox, FaHome, FaBandAid } from 'react-icons/fa';
-import { HiOfficeBuilding } from 'react-icons/hi'
-import { GiPoliceBadge } from 'react-icons/gi'
+import { HiOfficeBuilding } from 'react-icons/hi';
+import { GiPoliceBadge } from 'react-icons/gi';
 
 // Interactive buildings in the 3D city model
 const INTERACTIVE_BUILDINGS = [
@@ -64,7 +65,7 @@ const BUILDING_INFO = {
 }
 
 export function CityModel() {
-  const { scene } = useGLTF('/Full City.glb')
+  const { scene } = useGLTF('/Classic_Day_City.glb')
   const [activeBuilding, setActiveBuilding] = useState(null)
   const [interactiveObjects, setInteractiveObjects] = useState([])
 

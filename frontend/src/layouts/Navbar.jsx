@@ -8,7 +8,7 @@ import {
   FaVideo, FaListAlt, FaChevronDown, FaBell
 } from 'react-icons/fa';
 import logo from '../assets/Images/Logo1.png';
-import avatar from '../assets/Images/avatars/sharkAvatar.jpeg';
+import avatar from '../assets/Images/avatars/LightPost.png';
 import NotificationsPanel from '../components/notifications/NotificationsPanel';
 
 const menuItems = [
@@ -241,9 +241,9 @@ const Navbar = () => {
     };
 
     fetch(`http://localhost:5000/api/community/performance-summary/${user.id}`)
-    .then(res => res.json())
-    .then(data => setPerformance(data?.data))
-    .catch(err => console.error('Community performance summary error:', err));
+      .then(res => res.json())
+      .then(data => setPerformance(data?.data))
+      .catch(err => console.error('Community performance summary error:', err));
 
     fetchNotifications();
 
@@ -255,7 +255,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="bg-white shadow px-6 py-2 flex items-center justify-between relative z-50">
+      <nav className="bg-white shadow px-6 py-2 flex items-center justify-between relative z-50 dark:bg-gray-800">
         {/* Logo */}
         <div className="flex items-center gap-2">
           <img src={logo} alt="Logo" className="w-16 h-16" />
@@ -268,9 +268,11 @@ const Navbar = () => {
             <div key={menu.label} className="relative">
               {menu.items.length === 1 ? (
                 <NavLink
+                  end
                   to={menu.items[0].to}
                   className={({ isActive }) =>
-                    `flex items-center gap-1 text-sm font-semibold transition-colors ${isActive ? 'text-[#83AB55]' : 'text-gray-700 hover:text-[#83AB55]'
+                    `flex items-center gap-1 text-sm font-semibold transition-colors ${
+                      isActive ? 'text-[#83AB55]' : 'text-gray-700 hover:text-[#83AB55] dark:text-gray-200 dark:hover:text-[#83AB55]'
                     }`
                   }
                   onClick={closeAll}
@@ -280,39 +282,45 @@ const Navbar = () => {
                 </NavLink>
               ) : (
                 <>
-                {/* Adds the button highlight */}
                   <button
                     onClick={() => toggleMenu(menu.label)}
-                    className={`flex items-center gap-1 text-sm font-semibold transition-colors ${menu.items.some(item => location.pathname.startsWith(item.to)) || activeMenu === menu.label
+                    className={`flex items-center gap-1 text-sm font-semibold transition-colors ${
+                      menu.items.some(item => location.pathname.startsWith(item.to)) || activeMenu === menu.label
                         ? 'text-[#83AB55]'
-                        : 'text-gray-700 hover:text-[#83AB55]'
-                      }`}
+                        : 'text-gray-700 hover:text-[#83AB55] dark:text-gray-200 dark:hover:text-[#83AB55]'
+                    }`}
                   >
                     {menu.icon}
                     <span>{menu.label}</span>
-                    <FaChevronDown className={`text-xs mt-0.5 transition-transform ${activeMenu === menu.label ? 'rotate-180' : ''
-                      }`} />
+                    <FaChevronDown className={`text-xs mt-0.5 transition-transform ${
+                      activeMenu === menu.label ? 'rotate-180' : ''
+                    }`} />
                   </button>
 
                   {activeMenu === menu.label && (
-                    <div className="absolute left-0 top-full mt-2 w-64 bg-white rounded-xl shadow-lg p-3 z-50 border border-gray-100">
+                    <div className="absolute left-0 top-full mt-2 w-64 bg-white rounded-xl shadow-lg p-3 z-50 border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
                       <p className="text-[#83AB55] font-bold mb-2 px-2">{menu.label}</p>
                       <div className="space-y-1">
                         {menu.items.map((item) => (
                           <NavLink
+                            end
                             key={item.label}
                             to={item.to}
                             onClick={closeAll}
                             className={({ isActive }) => `
                               flex items-center justify-between px-3 py-2 rounded-lg transition-colors
-                              ${isActive ? 'bg-green-50 text-[#83AB55]' : 'hover:bg-gray-50 text-gray-700'}
+                              ${
+                                isActive 
+                                  ? 'bg-green-50 text-[#83AB55] dark:bg-gray-700' 
+                                  : 'hover:bg-gray-50 text-gray-700 dark:text-gray-200 dark:hover:bg-gray-700'
+                              }
                             `}
                           >
                             <div className="flex items-center gap-3">
                               <span className="text-lg">{item.icon}</span>
                               <div>
                                 <p className="text-sm font-medium">{item.label}</p>
-                                <p className="text-xs text-gray-500">{item.sub}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{item.sub}</p>
                               </div>
                             </div>
                             <FaChevronRight className="text-gray-400 text-xs" />
@@ -333,9 +341,9 @@ const Navbar = () => {
           <div className="relative">
             <button
               onClick={toggleNotifications}
-              className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+              className="p-1 rounded-full hover:bg-gray-100 transition-colors dark:hover:bg-gray-700"
             >
-              <FaBell className="text-xl text-gray-700 hover:text-[#83AB55]" />
+              <FaBell className="text-xl text-gray-700 hover:text-[#83AB55] dark:text-gray-200" />
               {notifications > 0 && (
                 <span className="absolute -top-1 -right-1 bg-[#72C1F5] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                   {notifications}
@@ -351,7 +359,7 @@ const Navbar = () => {
               className="flex items-center gap-2 cursor-pointer"
             >
               <div className="text-right">
-                <p className="text-sm font-medium text-gray-700">{user.username}</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-200">{user.username}</p>
                 <p className="text-xs text-gray-400">{user.tier}</p>
               </div>
               <img
@@ -359,31 +367,42 @@ const Navbar = () => {
                   ? `/assets/Images/${performance.avatar_image_path}`
                   : avatar}
                 alt="avatar"
-                className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+                className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
               />
-              <FaChevronDown className={`text-xs text-gray-500 transition-transform ${profileOpen ? 'rotate-180' : ''
-                }`} />
+              <FaChevronDown className={`text-xs text-gray-500 transition-transform ${
+                profileOpen ? 'rotate-180' : ''
+              }`} />
             </button>
 
             {profileOpen && (
-              <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg p-2 z-50 border border-gray-100">
+              <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg p-2 z-50 border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
                 <NavLink
+                  end
                   to="/profile"
                   onClick={closeAll}
                   className={({ isActive }) => `
                     flex items-center gap-2 px-3 py-2 rounded-lg transition-colors
-                    ${isActive ? 'bg-green-50 text-[#83AB55]' : 'hover:bg-gray-50 text-gray-700'}
+                    ${
+                      isActive 
+                        ? 'bg-green-50 text-[#83AB55] dark:bg-gray-700' 
+                        : 'hover:bg-gray-50 text-gray-700 dark:text-gray-200 dark:hover:bg-gray-700'
+                    }
                   `}
                 >
                   <FaUser className="text-gray-500" />
                   <span className="text-sm">Profile</span>
                 </NavLink>
                 <NavLink
+                  end
                   to="/profile/settings"
                   onClick={closeAll}
                   className={({ isActive }) => `
                     flex items-center gap-2 px-3 py-2 rounded-lg transition-colors
-                    ${isActive ? 'bg-green-50 text-[#83AB55]' : 'hover:bg-gray-50 text-gray-700'}
+                    ${
+                      isActive 
+                        ? 'bg-green-50 text-[#83AB55] dark:bg-gray-700' 
+                        : 'hover:bg-gray-50 text-gray-700 dark:text-gray-200 dark:hover:bg-gray-700'
+                    }
                   `}
                 >
                   <FaCog className="text-gray-500" />
@@ -391,7 +410,7 @@ const Navbar = () => {
                 </NavLink>
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500 transition-colors"
+                  className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500 transition-colors dark:text-gray-200 dark:hover:bg-gray-700"
                 >
                   <FaSignOutAlt />
                   <span>Logout</span>
@@ -419,5 +438,4 @@ const Navbar = () => {
     </>
   );
 };
-
 export default Navbar;
