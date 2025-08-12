@@ -1,4 +1,4 @@
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect } from 'react';
 import AccountsLayout from './AccountsLayout';
 import {
   FaEdit, FaTrash, FaUtensils, FaBus, FaBolt, FaFilm, FaHeartbeat,
@@ -9,10 +9,8 @@ import {
   FaCoins, FaExchangeAlt, FaPlus, FaTimes, FaCheck,
   FaSearch
 } from 'react-icons/fa';
-
 import toast, { Toaster } from 'react-hot-toast';
 
-// Enhanced category icons with colors
 const categoryIcons = {
   groceries: { icon: <FaUtensils />, color: 'bg-orange-100 text-orange-500' },
   transport: { icon: <FaBus />, color: 'bg-blue-100 text-blue-500' },
@@ -64,7 +62,7 @@ const categoryIcons = {
 };
 
 const BudgetForm = ({
-  initialData = { budget_name: '', category_id: '', target_amount: '' }, // Changed default target_amount to empty string
+  initialData = { budget_name: '', category_id: '', target_amount: '' },
   onSave,
   onCancel,
   categories = [],
@@ -186,7 +184,6 @@ const BudgetCard = ({
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 mb-4 border border-gray-100 dark:border-gray-700 hover:shadow-md transition w-full">
-      <Toaster position="top-center" />
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4 w-full">
           <div className={`w-12 h-12 ${iconData.color} rounded-xl flex items-center justify-center text-xl`}>
@@ -207,7 +204,6 @@ const BudgetCard = ({
                   style={{
                     width: `${percentageUsed}%`,
                     background: 'linear-gradient(90deg, #5FBFFF 0%, #91BE59 100%)'
-                    // bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53] 
                   }}
                 ></div>
               </div>
@@ -216,14 +212,6 @@ const BudgetCard = ({
         </div>
 
         <div className="flex gap-2">
-          {/* Removing this feature for the time being */}
-          {/* <button
-            onClick={onEdit}
-            className="flex items-center gap-1 bg-sky-100 text-sky-500 px-4 py-1 rounded-full hover:bg-sky-200"
-          >
-            <FaEdit /> Edit
-          </button> */}
-          
           <button
             onClick={onDelete}
             className="flex items-center gap-1 bg-red-100 text-red-400 px-4 py-1 rounded-full hover:bg-red-200"
@@ -244,11 +232,14 @@ const BudgetPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [deleteConfirmation, setDeleteConfirmation] = useState({
+    show: false,
+    budgetId: null,
+    budgetName: ''
+  });
 
   const user = JSON.parse(localStorage.getItem('user'));
-
   const userId = user?.id;
-
 
   const fetchBudgets = async () => {
     try {
@@ -257,10 +248,11 @@ const BudgetPage = () => {
       const result = await response.json();
 
       if (result.status === 'success') {
-        // Sort budgets by creation date (newest first)
-        const sortedBudgets = result.data.sort((a, b) =>
-          new Date(b.created_at || 0) - new Date(a.created_at || 0)
-        );
+        const sortedBudgets = result.data.sort((a, b) => {
+          const dateA = a?.created_at ? new Date(a.created_at) : new Date(0);
+          const dateB = b?.created_at ? new Date(b.created_at) : new Date(0);
+          return dateB - dateA; // Newest first
+        });
         setBudgets(sortedBudgets);
       } else {
         setError(result.message || 'Failed to fetch budgets');
@@ -273,10 +265,11 @@ const BudgetPage = () => {
     }
   };
 
-  // Filter budgets based on search term
-  const filteredBudgets = budgets.filter(budget =>
-    budget.budget_name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredBudgets = budgets.filter(budget => {
+    if (!budget) return false;
+    const name = budget.budget_name || '';
+    return name.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   const fetchCategories = async () => {
     try {
@@ -308,65 +301,50 @@ const BudgetPage = () => {
     fetchCategories();
   }, []);
 
-
-  function handleDeleteWithConfirm(budget_id) {
-    toast.custom((t) => (
-      <div
-        className={`max-w-sm w-full bg-white rounded-2xl shadow-lg border border-gray-200 px-5 py-4 text-sm transition-all ${t.visible ? 'animate-enter' : 'animate-leave'
-          }`}
-      >
-        <p className="text-gray-800 mb-3">
-          Are you sure you want to delete this budget?
-        </p>
-        <div className="flex justify-end gap-2">
-          <button
-            className="px-4 py-1.5 bg-red-500 text-white rounded-full text-sm font-medium hover:bg-red-600 transition"
-            onClick={() => {
-              handleDelete(budget_id);
-              toast.success('Budget deleted');
-              toast.dismiss(t.id);
-            }}
-          >
-            Delete
-          </button>
-          <button
-            className="px-4 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200 transition"
-            onClick={() => toast.dismiss(t.id)}
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    ), {
-      duration: 10000,
+  const handleDeleteClick = (budget_id, budget_name) => {
+    setDeleteConfirmation({
+      show: true,
+      budgetId: budget_id,
+      budgetName: budget_name
     });
-  }
+  };
 
-  
-  const handleDelete = async (id) => {
-    // Show a confirmation toast instead of window.confirm
-    // We'll use a simple state to handle confirmation
+  const cancelDelete = () => {
+    setDeleteConfirmation({
+      show: false,
+      budgetId: null,
+      budgetName: ''
+    });
+  };
 
+  const confirmDelete = async () => {
+    if (!deleteConfirmation.budgetId) return;
+    
     try {
-      const response = await fetch(`http://localhost:5000/api/budget/${id}`, {
+      const response = await fetch(`http://localhost:5000/api/budget/${deleteConfirmation.budgetId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ user_id: userId }),  // Pass user_id if needed
-        // Remove the body since your backend likely doesn't need it for DELETE
       });
 
       const result = await response.json();
 
       if (result.status === 'success') {
-        setBudgets(budgets.filter(budget => budget.budget_id !== id));
+        setBudgets(prevBudgets => 
+          prevBudgets.filter(budget => budget.budget_id !== deleteConfirmation.budgetId)
+        );
+        toast.success('Budget deleted successfully');
       } else {
         setError(result.message || 'Failed to delete budget');
+        toast.error(result.message || 'Failed to delete budget');
       }
     } catch (err) {
       setError('Failed to delete budget');
+      toast.error('Failed to delete budget');
       console.error('Error deleting budget:', err);
+    } finally {
+      cancelDelete();
     }
   };
 
@@ -387,12 +365,15 @@ const BudgetPage = () => {
         const result = await response.json();
 
         if (result.status === 'success') {
-          setBudgets(budgets.map(budget =>
-            budget.budget_id === editingId
-              ? { ...budget, budget_name: formData.budget_name }
-              : budget
-          ));
+          setBudgets(prevBudgets => 
+            prevBudgets.map(budget =>
+              budget.budget_id === editingId
+                ? { ...budget, budget_name: formData.budget_name }
+                : budget
+            )
+          );
           setEditingId(null);
+          toast.success('Budget updated successfully');
         } else {
           setError(result.message || 'Failed to update budget');
         }
@@ -417,8 +398,9 @@ const BudgetPage = () => {
         const result = await response.json();
 
         if (result.status === 'success') {
-          await fetchBudgets();
+          setBudgets(prevBudgets => [result.data, ...prevBudgets]);
           setIsCreating(false);
+          toast.success('Budget created successfully');
         } else {
           setError(result.message || 'Failed to create budget');
         }
@@ -434,10 +416,54 @@ const BudgetPage = () => {
     setIsCreating(false);
   };
 
-
   return (
     <AccountsLayout>
       <div className="p-6 w-full">
+        <Toaster position="top-center" />
+        
+        {deleteConfirmation.show && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div 
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={cancelDelete}
+            />
+            <div 
+              className="relative z-10 w-[92%] max-w-md rounded-2xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-600">
+                  <FaTrash />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  Delete budget?
+                </h3>
+              </div>
+
+              <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">
+                You're about to delete the budget for{' '}
+                <span className="font-semibold">{deleteConfirmation.budgetName}</span>.
+                This action cannot be undone.
+              </p>
+
+              <div className="mt-6 flex flex-wrap gap-3 justify-end">
+                <button
+                  onClick={cancelDelete}
+                  className="px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="px-4 py-2 rounded-full text-sm font-semibold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 transition"
+                >
+                  Delete Budget
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Budget Management</h2>
           <button
@@ -457,9 +483,8 @@ const BudgetPage = () => {
           </div>
         )}
 
-        {/* Search Bar */}
         <div className="mb-6">
-          <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm dark:bg-gray-800 ">
+          <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm dark:bg-gray-800">
             <FaSearch className="text-[#76B947] mr-2" />
             <input
               type="text"
@@ -488,7 +513,7 @@ const BudgetPage = () => {
                 initialData={{ budget_name: budget.budget_name }}
                 onSave={handleSave}
                 onCancel={handleCancel}
-                categories={categories.slice(0, 10)}  // Only pass first 10 categories
+                categories={categories.slice(0, 10)}
                 isEdit={true}
               />
             ) : (
@@ -499,7 +524,7 @@ const BudgetPage = () => {
                 total_target={budget.total_target}
                 used={budget.used}
                 onEdit={() => handleEdit(budget.budget_id)}
-                onDelete={() => handleDeleteWithConfirm(budget.budget_id)}
+                onDelete={() => handleDeleteClick(budget.budget_id, budget.budget_name)}
               />
             )
           ))}
