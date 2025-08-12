@@ -14,11 +14,11 @@ const AchievementsLayout = ({ children }) => {
   return (
     <div className="relative min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Loader */}
-      {/* {isLoading && (
+       {isLoading && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-white">
           <PacmanLoader />
         </div>
-      )} */}
+      )} 
 
       {/* Main Layout */}
       <div className={`${isLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'} transition-opacity duration-500`}>

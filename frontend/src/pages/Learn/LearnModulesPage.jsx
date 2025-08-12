@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaSearch, FaFilter, FaCheckCircle } from 'react-icons/fa';
+import { FaSearch, FaFilter } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import LearnLayout from '../../pages/Learn/LearnLayout';
 import CourseCard from '../../components/cards/CoursesCard';
@@ -10,7 +10,6 @@ import banner4 from '../../assets/Images/banners/pixelCafe.gif';
 import banner5 from '../../assets/Images/banners/pixelCornerStore.gif';
 import banner6 from '../../assets/Images/banners/pixelGirl.gif';
 
-// Map of banner images to use for courses
 const bannerImages = {
   1: banner1,
   2: banner2,
@@ -22,7 +21,6 @@ const bannerImages = {
 
 const LearningPage = () => {
   const [modulesData, setModulesData] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -32,23 +30,15 @@ const LearningPage = () => {
   useEffect(() => {
     const fetchModules = async () => {
       try {
-        setIsLoading(true);
         const response = await fetch('http://localhost:5000/api/learning');
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         setModulesData(data.data);
       } catch (error) {
         console.error('Error fetching modules:', error);
         setError(error.message);
-      } finally {
-        setIsLoading(false);
       }
     };
-
     fetchModules();
   }, []);
 
@@ -59,35 +49,12 @@ const LearningPage = () => {
     return matchesSearch && matchesDifficulty && matchesTopic;
   });
 
-  // Extract unique topics for filter
   const uniqueTopics = [...new Set(modulesData.map(module => module.topic))];
-
-  if (error) {
-    return (
-      <LearnLayout>
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded dark:bg-red-900 dark:border-red-700 dark:text-red-100" role="alert">
-            <div className="flex items-center">
-              <div className="py-1">
-                <svg className="w-6 h-6 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-              </div>
-              <div>
-                <p className="font-bold">Error loading courses</p>
-                <p>{error}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </LearnLayout>
-    );
-  }
 
   return (
     <LearnLayout>
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header Section */}
+        {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">All Courses</h1>
@@ -95,10 +62,9 @@ const LearningPage = () => {
           </div>
         </div>
 
-        {/* Search and Filter Section */}
+        {/* Search and Filters */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-6">
-            {/* search section */}
             <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white dark:bg-gray-800 shadow-sm dark:border-[#AAD977]">
               <FaSearch className="text-[#76B947] dark:text-[#AAD977] mr-2" />
               <input
@@ -109,7 +75,6 @@ const LearningPage = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            {/* fiter button */}
             <button
               onClick={() => setShowFilters(!showFilters)}
               className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-gray-800 border border-[#76B947] dark:border-[#AAD977] rounded-lg shadow-sm hover:bg-lime-100 dark:hover:bg-gray-700 transition-colors"
@@ -119,7 +84,6 @@ const LearningPage = () => {
             </button>
           </div>
 
-          {/* Filter Panel */}
           {showFilters && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
@@ -129,36 +93,35 @@ const LearningPage = () => {
               className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 mb-6"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Difficulty */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Difficulty</label>
-                  {/* filter levels  */}
                   <div className="flex flex-wrap gap-2">
-                    <button
-                      onClick={() => setDifficultyFilter('all')}
-                      className={`px-3 py-1 rounded-full text-sm ${difficultyFilter === 'all' ? 'bg-[#AAD977] dark:bg-[#76B947] text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
-                    >
-                      All Levels
-                    </button>
-                    <button
-                      onClick={() => setDifficultyFilter('beginner')}
-                      className={`px-3 py-1 rounded-full text-sm ${difficultyFilter === 'beginner' ? 'bg-[#B1E1FF] dark:bg-[#5FBFFF] text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
-                    >
-                      Beginner
-                    </button>
-                    <button
-                      onClick={() => setDifficultyFilter('intermediate')}
-                      className={`px-3 py-1 rounded-full text-sm ${difficultyFilter === 'intermediate' ? 'bg-[#FFD18C] dark:bg-[#FFC541] text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
-                    >
-                      Intermediate
-                    </button>
-                    <button
-                      onClick={() => setDifficultyFilter('advanced')}
-                      className={`px-3 py-1 rounded-full text-sm ${difficultyFilter === 'advanced' ? 'bg-[#FE9B90] dark:bg-[#F97156] text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
-                    >
-                      Advanced
-                    </button>
+                    {['all', 'beginner', 'intermediate', 'advanced'].map(level => (
+                      <button
+                        key={level}
+                        onClick={() => setDifficultyFilter(level)}
+                        className={`px-3 py-1 rounded-full text-sm ${
+                          difficultyFilter === level
+                            ? level === 'beginner'
+                              ? 'bg-[#B1E1FF] dark:bg-[#5FBFFF] text-white'
+                              : level === 'intermediate'
+                              ? 'bg-[#FFD18C] dark:bg-[#FFC541] text-white'
+                              : level === 'advanced'
+                              ? 'bg-[#FE9B90] dark:bg-[#F97156] text-white'
+                              : 'bg-[#AAD977] dark:bg-[#76B947] text-white'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        {level === 'all'
+                          ? 'All Levels'
+                          : level.charAt(0).toUpperCase() + level.slice(1)}
+                      </button>
+                    ))}
                   </div>
                 </div>
+
+                {/* Topics */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Topic</label>
                   <select
@@ -177,7 +140,7 @@ const LearningPage = () => {
           )}
         </div>
 
-        {/* Courses Section */}
+        {/* Courses */}
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             {filteredModules.length} {filteredModules.length === 1 ? 'Course' : 'Courses'} Available
@@ -189,17 +152,10 @@ const LearningPage = () => {
           )}
         </div>
 
-        {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-pulse flex flex-col items-center">
-              <div className="w-16 h-16 bg-[#E5794B] dark:bg-[#d46b3f] rounded-full mb-4"></div>
-              <p className="text-gray-600 dark:text-gray-400">Loading courses...</p>
-            </div>
-          </div>
-        ) : filteredModules.length === 0 ? (
+        {filteredModules.length === 0 ? (
           <div className="text-center py-12">
             <div className="mx-auto w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
-              <svg className="w-12 h-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <svg className="w-12 h-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
             </div>
@@ -220,7 +176,7 @@ const LearningPage = () => {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filteredModules.map((module) => (
+            {filteredModules.map(module => (
               <CourseCard
                 key={module.module_id}
                 id={module.module_id}

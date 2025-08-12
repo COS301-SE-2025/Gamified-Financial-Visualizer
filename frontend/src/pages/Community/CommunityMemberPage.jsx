@@ -142,12 +142,6 @@ const CommunityMemberPage = () => {
   if (!profileData || !communityData || !summary || !performanceStats || !levelProgress || numComplete === null) {
     return (
       <CommunityLayout>
-        <Toaster position="top-right" />
-        <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4 dark:bg-gray-900">
-          <div className="text-center py-10">
-            <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">Loading profile data...</p>
-          </div>
-        </div>
       </CommunityLayout>
     );
   }
