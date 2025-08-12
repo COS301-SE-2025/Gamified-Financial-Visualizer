@@ -24,6 +24,8 @@ import {
 } from 'recharts';
 
 import GaugeChart from 'react-gauge-chart';
+import CalendarHeatmap from 'react-calendar-heatmap';
+import { format } from 'date-fns';
 
 // Color palette
 const COLORS = {
@@ -50,8 +52,13 @@ const COLORS = {
   avgIncome: '#1b3de5',     // alias of averageIncome
   avgExpense: '#f87171',    // alias of averageExpense
   you: '#4f46e5',           // for radar “You”
-  avg: '#93c5fd'            // for radar “Average”
-
+  avg: '#93c5fd',          // for radar “Average”
+  total: "#2563eb",
+  forecast: "#7c3aed",
+  vol: "rgba(124,58,237,0.25)", // soft purple
+  deltaPos: "#16a34a",
+  deltaNeg: "#dc2626",
+  cats: ["#059669", "#dc2626", "#d97706", "#0ea5e9", "#16a34a"]
 };
 
 const MONTHS_ORDER = Array.from({ length: new Date().getMonth() + 1 }, (_, i) =>
@@ -212,54 +219,6 @@ const comparisonData = {
   }
 };
 
-// Mock data generator
-const generateMockData = () => {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const categories = ['groceries', 'dining', 'transport', 'utilities'];
-
-  return {
-    categoryTrends: months.reduce((acc, month) => {
-      acc[month] = categories.reduce((catAcc, category) => {
-        catAcc[category] = Math.floor(Math.random() * 3000) + 500;
-        return catAcc;
-      }, {});
-      return acc;
-    }, {}),
-
-    globalTrend: {
-      months,
-      spending: months.map(() => Math.floor(Math.random() * 8000) + 2000),
-      delta: months.map(() => (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 500))
-    },
-
-    categoryShift: {
-      previous: categories[Math.floor(Math.random() * categories.length)],
-      current: categories[Math.floor(Math.random() * categories.length)],
-      changed: Math.random() > 0.5
-    },
-
-    behavioralTags: ['Impulsive Spender', 'Frugal'].filter(() => Math.random() > 0.5),
-
-    spendingForecast: {
-      next_month_forecast: Math.floor(Math.random() * 8000) + 2000
-    },
-
-    anomalies: Array(Math.floor(Math.random() * 5)).fill().map(() => ({
-      amount: Math.floor(Math.random() * 5000) + 1000,
-      category: categories[Math.floor(Math.random() * categories.length)],
-      month: months[Math.floor(Math.random() * months.length)]
-    })),
-
-    volatility: months.reduce((acc, month) => {
-      acc[month] = Math.floor(Math.random() * 500) + 100;
-      return acc;
-    }, {})
-  };
-};
-
-const analysisData = generateMockData();
-
-
 
 const InsightsPage = () => {
   const userData = JSON.parse(localStorage.getItem('user') || '{}');
@@ -279,6 +238,7 @@ const InsightsPage = () => {
   const [radarData, setRadarData] = useState(null);
   const [sentiment, setSentimentData] = useState(null);
   const [trend, setTrendData] = useState(null);
+  const [heatmapData, setHeatmapData] = useState(null);
 
   useEffect(() => {
     if (!userId) return;
@@ -337,12 +297,33 @@ const InsightsPage = () => {
         const trendData = await trendRes.json();
         setTrendData(trendData);
 
+        // fetch heatmap data
+        const heatmapRes = await fetch(`http://localhost:5000/api/insights/transactions/heatmap/${userId}`);
+        if (!heatmapRes.ok) throw new Error(`HTTP ${heatmapRes.status}`);
+        const heatmap = await heatmapRes.json();
+        setHeatmapData(heatmap);
+
       } catch (e) {
         console.error("Error fetching monthly data:", e);
       }
     })();
   }, [userId]);
 
+  const [selectedCats, setSelectedCats] = React.useState(() => getTopCategories(trend, 3));
+  const data = React.useMemo(() => buildTrendChartData(trend, selectedCats), [trend, selectedCats]);
+
+  const deltas = data.map(d => d.delta).filter(v => typeof v === "number");
+  const deltaMin = Math.min(0, ...deltas);
+  const deltaMax = Math.max(0, ...deltas);
+
+  // list all category options the API knows about (for a small toggle row)
+  const allCats = React.useMemo(() => {
+    const s = new Set();
+    Object.values(trend?.categoryTrends || {}).forEach(cats =>
+      Object.keys(cats || {}).forEach(c => s.add(c))
+    );
+    return Array.from(s);
+  }, [trend]);
 
   // Initialize categories (top-N overall) after data arrives
   useEffect(() => {
@@ -373,6 +354,13 @@ const InsightsPage = () => {
   const CATEGORY_COLORS = useMemo(() => makeCategoryColors(selectedCategories), [selectedCategories]);
   const accounts = useMemo(() => getAccounts(apiData), [apiData]);
 
+  const SENTIMENT_ORDER = ["Anxious", "Unstable", "Stable", "Confident"];
+
+  // center the needle in each colored band
+  const sentimentToPercent = (s) => {
+    const i = SENTIMENT_ORDER.indexOf(s);
+    return i === -1 ? 0.5 : (i + 0.5) / SENTIMENT_ORDER.length; // 0..1
+  };
   const monthlyData = useMemo(() => {
     // fallback to [] to avoid undefined
     return buildMonthlyData(apiData, viewMode, account || null) || [];
@@ -394,13 +382,6 @@ const InsightsPage = () => {
     });
   }, [radarData]);
 
-
-  const trendData = monthlyData.map(d => ({
-    ...d,
-    forecast: d.expense * 1.1,
-    rollingAvg: (d.expense + (d.expense * 1.1)) / 2,
-    budgetTarget: d.expense * 0.9
-  }));
 
   const getAiAnalysis = async (userPrompt) => {
     setIsLoading(true);
@@ -431,44 +412,6 @@ const InsightsPage = () => {
     setIsLoading(false);
   };
 
-  // Transform data for visualization
-  const chartData = Object.entries(analysisData.categoryTrends).map(([month, categories], index) => ({
-    month,
-    ...categories,
-    totalSpending: analysisData.globalTrend.spending[index],
-    forecast: index === analysisData.globalTrend.months.length - 1
-      ? analysisData.spendingForecast.next_month_forecast
-      : null,
-    volatility: analysisData.volatility[month],
-    anomalies: analysisData.anomalies.filter(a => a.month === month).length
-  }));
-
-  // Custom tooltip for trends
-  const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload) {
-      const monthData = chartData.find(d => d.month === label);
-      return (
-        <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
-          <p className="font-bold mb-2">{label}</p>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <p className="text-red-500">Total: R{monthData?.totalSpending.toLocaleString()}</p>
-              {payload.map((entry, index) => (
-                <p key={index} style={{ color: entry.color }}>
-                  {entry.name}: R{entry.value?.toLocaleString() || '0'}
-                </p>
-              ))}
-            </div>
-            <div className="pl-4 border-l">
-              <p className="text-sm">Volatility: {monthData?.volatility.toLocaleString()}</p>
-              <p className="text-sm">Anomalies: {monthData?.anomalies}</p>
-            </div>
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
 
   // Polished tooltip
   function ChartTooltip({ active, payload, label }) {
@@ -502,9 +445,7 @@ const InsightsPage = () => {
       return (
         <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
           <p className="font-bold">{data.name}</p>
-          <p className="text-sm">Net Worth: R{data.value.toLocaleString()}</p>
-          <p className="text-sm text-green-600">Income: R{data.currentMonthIncome.toLocaleString()}</p>
-          <p className="text-sm text-red-500">Expenses: R{data.currentMonthExpense.toLocaleString()}</p>
+          <p className="text-sm">Balance: R{data.value.toLocaleString()}</p>
         </div>
       );
     }
@@ -530,6 +471,63 @@ const InsightsPage = () => {
     );
   };
 
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const ZAR = v => `R${Number(v ?? 0).toLocaleString()}`;
+
+  function getTopCategories(trendApi, k = 3) {
+    if (!trendApi?.categoryTrends) return [];
+    const totals = {};
+    for (const month of Object.keys(trendApi.categoryTrends)) {
+      const cats = trendApi.categoryTrends[month] || {};
+      Object.entries(cats).forEach(([cat, val]) => {
+        totals[cat] = (totals[cat] || 0) + Number(val || 0);
+      });
+    }
+    return Object.entries(totals)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, k)
+      .map(([cat]) => cat);
+  }
+
+  function buildTrendChartData(trendApi, selectedCategories = []) {
+    if (!trendApi?.globalTrend) return [];
+    const { months, spending, delta } = trendApi.globalTrend;
+    const catTrends = trendApi.categoryTrends || {};
+    const anomalies = trendApi.anomalies || [];
+    const vol = trendApi.volatility || {};
+    const forecastValue = trendApi.spendingForecast?.next_month_forecast ?? null;
+
+    const anomalyCount = Object.fromEntries(months.map(m => [m, 0]));
+    anomalies.forEach(a => { if (anomalyCount[a.month] != null) anomalyCount[a.month] += 1; });
+
+    const rows = months.map((m, i) => {
+      const base = {
+        month: m,
+        totalSpending: Number(spending[i] || 0),
+        delta: Number(delta?.[i] ?? 0),        // <— add delta
+        volatility: Number(vol[m] || 0),       // <— already present
+        anomalies: anomalyCount[m] || 0
+      };
+      selectedCategories.forEach(cat => (base[cat] = Number(catTrends[m]?.[cat] || 0)));
+      return base;
+    });
+
+    if (forecastValue != null && months.length) {
+      rows.push({
+        month: "Next",
+        totalSpending: null,
+        forecast: Number(forecastValue),
+        delta: null,           // <— no delta for forecast stub
+        volatility: null,
+        anomalies: 0,
+        ...Object.fromEntries(selectedCategories.map(c => [c, null]))
+      });
+    }
+    return rows;
+  }
+
+  const currencyTick = (v) => `R${Number(v).toLocaleString()}`;
+  const tooltipFormatter = (value, name) => [ZAR(value), name];
 
   const getSentiment = (features) => {
     if (features.savings_rate < 0.05 && features.impulse_score > 0.6) return "Anxious";
@@ -562,16 +560,165 @@ const InsightsPage = () => {
     margin: '0 auto'
   };
 
+  const [mode, setMode] = useState("count"); // 'count' | 'amount'
+
+  const startOfYear = useMemo(
+    () => {
+      const now = new Date();
+      const yearAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      yearAgo.setMonth(yearAgo.getMonth() - 12);
+      return yearAgo;
+    },
+    []
+  );
+  const today = useMemo(() => new Date(), []);
+
+  // Build the values array CalendarHeatmap expects
+  // (If your source is different, normalize to this shape)
+  const values = useMemo(() => {
+    // Accept only arrays for this mapper
+    if (!Array.isArray(heatmapData)) return [];
+
+    // Helper: normalize to local YYYY-MM-DD
+    const toLocalYMD = (d) => {
+      const dt = new Date(d);              // handles ISO with Z
+      const yyyy = dt.getFullYear();
+      const mm = String(dt.getMonth() + 1).padStart(2, "0");
+      const dd = String(dt.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}`;
+    };
+
+    // Aggregate per day in case API returns multiple rows for same date
+    const byDay = new Map();
+    for (const row of heatmapData) {
+      const key = toLocalYMD(row.date);
+      const count = Number(row.transactions ?? 0);
+      const amount = Number(row.amount ?? 0);
+
+      const prev = byDay.get(key) || { date: key, count: 0, amount: 0 };
+      prev.count += isFinite(count) ? count : 0;
+      prev.amount += isFinite(amount) ? amount : 0;
+      byDay.set(key, prev);
+    }
+
+    return [...byDay.values()].sort((a, b) => a.date.localeCompare(b.date));
+  }, [heatmapData]);
+
+  // Thresholds per mode (tweak to taste)
+  const thresholds = useMemo(
+    () => (mode === "amount" ? [0, 250, 1000, 2500, 5000] : [0, 2, 5, 10, 15]),
+    [mode]
+  );
+
+  // Tailwind-driven fill for each day cell
+  const fillClassFor = (metric) =>
+    metric <= thresholds[1]
+      ? "fill-blue-100"
+      : metric <= thresholds[2]
+        ? "fill-blue-300"
+        : metric <= thresholds[3]
+          ? "fill-blue-400"
+          : "fill-blue-600";
+
+
+  // state + ref near top of component
+  const heatmapRef = React.useRef(null);
+  const [tip, setTip] = React.useState({ show: false, text: "", x: 0, y: 0 });
+
+  const showTip = (e, text) => {
+    const box = heatmapRef.current?.getBoundingClientRect();
+    const x = e.clientX - (box?.left ?? 0) + 12; // offset from cursor
+    const y = e.clientY - (box?.top ?? 0) + 12;
+    setTip({ show: true, text, x, y });
+  };
+  const hideTip = () => setTip(t => ({ ...t, show: false }));
+
+  // Paint each rect + add tooltip + click
+  // Paint each rect + native SVG tooltip + click
+  const transformDayElement = (element, value) => {
+    if (!value) {
+      return React.cloneElement(
+        element,
+        {
+          className:
+            "fill-gray-100 hover:stroke-indigo-600 hover:stroke-2 transition cursor-default",
+          onMouseLeave: hideTip,
+        },
+        <>
+          <title></title>
+          {element.props.children}
+        </>
+      );
+    }
+
+    const metric = mode === "amount" ? Number(value.amount ?? 0) : Number(value.count ?? 0);
+    const label = new Date(value.date).toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+    const tooltipText =
+      mode === "amount"
+        ? `${label}: R${metric.toLocaleString()} spent (${Number(value.count ?? 0)} tx)`
+        : `${label}: ${metric} transactions (R${Number(value.amount ?? 0).toLocaleString()} spent)`;
+
+    const cls = `transition hover:stroke-indigo-600 hover:stroke-2 ${metric ? "cursor-pointer" : "cursor-default"
+      } ${fillClassFor(metric)}`;
+
+    return React.cloneElement(
+      element,
+      {
+        className: cls,
+        onMouseEnter: (e) => showTip(e, tooltipText),
+        onMouseMove: (e) => showTip(e, tooltipText),
+        onMouseLeave: hideTip,
+      },
+      <>
+        {/* keep native tooltip as a fallback if you like */}
+        <title>{tooltipText}</title>
+        {element.props.children}
+      </>
+    );
+  };
+
+
+  // state near top of component
+  const [catOpen, setCatOpen] = useState(false);
+  const [catQuery, setCatQuery] = useState("");
+
+  // derive list
+  const allCategories = React.useMemo(
+    () => getCategoryUnion(categoryApi?.spendingData || [], selectedAccount),
+    [categoryApi, selectedAccount]
+  );
+
+  const filteredCategories = React.useMemo(() => {
+    const q = catQuery.trim().toLowerCase();
+    return q ? allCategories.filter(c => c.toLowerCase().includes(q)) : allCategories;
+  }, [allCategories, catQuery]);
+
+  // helpers
+  const toggleCat = (cat) =>
+    setSelectedCategories(prev =>
+      prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
+    );
+
+  const selectAll = () => setSelectedCategories(filteredCategories);
+  const clearAll = () => setSelectedCategories([]);
+
   const totalNetWorth = wealth?.netWorth ?? 0;
+
+
   // Show loading with details about missing data
-  if (!apiData || !categoryApi || !radarData || !sentiment  || !wealth) {
+  if (!apiData || !categoryApi || !radarData || !sentiment || !wealth || !trend || !heatmapData) {
     const missing = [
       !apiData && "Transactions",
       !categoryApi && "Category Data",
       !radarData && "Radar Insights",
       !sentiment && "Sentiment",
       !trend && "Trend Data",
-      !wealth && "Wealth Data"
+      !wealth && "Wealth Data",
+      !heatmapData && "Heatmap Data"
     ].filter(Boolean);
 
     return (
@@ -756,73 +903,108 @@ const InsightsPage = () => {
 
           {/* Sentiment */}
           <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Financial Sentiment</h2>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xl font-bold text-gray-800">Financial Sentiment</h2>
+              {sentiment?.clusterLabel && (
+                <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700">
+                  {sentiment.clusterLabel}
+                </span>
+              )}
+            </div>
+
+
             <div className="flex flex-col items-center">
-              {/* Gauge Chart */}
-              <div style={chartStyle}>
+              {/* Gauge */}
+              <div style={{ width: 280, maxWidth: "100%" }}>
                 <GaugeChart
                   id="financial-sentiment-gauge"
                   nrOfLevels={4}
-                  percent={sentimentToValue[currentSentiment]}
-                  colors={["#ef4444", "#f59e0b", "#10b981", "#3b82f6"]}
+                  percent={sentimentToPercent(sentiment?.sentiment)}
+                  colors={["#ef4444", "#f59e0b", "#10b981", "#3b82f6"]} // matches SENTIMENT_ORDER left→right
                   arcWidth={0.3}
                   arcPadding={0.02}
                   cornerRadius={3}
                   textColor="#6b7280"
                   needleColor="#4b5563"
                   needleBaseColor="#4b5563"
-                  formatTextValue={() => currentSentiment}
-                  animate={true}
-                  animateDuration={1000}
+                  formatTextValue={() => sentiment?.sentiment ?? "—"}
+                  animate
+                  animateDuration={900}
                 />
               </div>
 
               {/* Legend */}
               <div className="flex justify-between w-full max-w-xs mt-4">
-                {["Anxious", "Unstable", "Stable", "Confident"].map((label, index) => (
-                  <div key={index} className="flex flex-col items-center">
+                {SENTIMENT_ORDER.map((label) => (
+                  <div key={label} className="flex flex-col items-center">
                     <div
                       className="w-4 h-4 rounded-full mb-1"
                       style={{
                         backgroundColor:
                           label === "Anxious" ? "#ef4444" :
                             label === "Unstable" ? "#f59e0b" :
-                              label === "Stable" ? "#10b981" : "#3b82f6"
+                              label === "Stable" ? "#10b981" :
+                                "#3b82f6"
                       }}
-                    ></div>
+                    />
                     <span className="text-xs text-gray-600">{label}</span>
                   </div>
                 ))}
               </div>
 
-              {/* Insights */}
+              {/* Summary */}
+              {sentiment?.summaryText && (
+                <p className="mt-4 text-sm text-gray-700 text-center max-w-2xl">{sentiment.summaryText}</p>
+              )}
+
+              {/* Quick highlights (first 3) */}
+              {!!sentiment?.insights?.length && (
+                <ul className="mt-4 text-sm text-gray-700 space-y-1">
+                  {sentiment.insights.slice(0, 3).map((i, idx) => (
+                    <li key={idx}>• {i}</li>
+                  ))}
+                </ul>
+              )}
+
+              {/* Adaptive callout based on sentiment */}
               <div className="mt-6 w-full">
-                {currentSentiment === "Anxious" && (
+                {sentiment?.sentiment === "Anxious" && (
                   <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">
                     <p>Your savings rate is low while impulse spending is high.</p>
                     <p className="font-medium mt-1">Action: Set up spending limits and automate savings.</p>
                   </div>
                 )}
-                {currentSentiment === "Unstable" && (
+                {sentiment?.sentiment === "Unstable" && (
                   <div className="p-3 rounded-lg bg-yellow-50 text-yellow-600 text-sm">
                     <p>Your burn rate is higher than recommended.</p>
                     <p className="font-medium mt-1">Action: Review recurring expenses and subscriptions.</p>
                   </div>
                 )}
-                {currentSentiment === "Stable" && (
+                {sentiment?.sentiment === "Stable" && (
                   <div className="p-3 rounded-lg bg-green-50 text-green-600 text-sm">
                     <p>Your finances are in good shape.</p>
                     <p className="font-medium mt-1">Action: Consider increasing investments for long-term goals.</p>
                   </div>
                 )}
-                {currentSentiment === "Confident" && (
+                {sentiment?.sentiment === "Confident" && (
                   <div className="p-3 rounded-lg bg-blue-50 text-blue-600 text-sm">
                     <p>Excellent financial health and goal progress!</p>
                     <p className="font-medium mt-1">Action: Explore advanced investment strategies.</p>
                   </div>
                 )}
               </div>
+
+              {/* Optional: show a few tips */}
+              {!!sentiment?.tips?.length && (
+                <div className="mt-4 w-full">
+                  <h4 className="text-sm font-semibold text-gray-800 mb-1">Tips</h4>
+                  <ul className="text-sm text-gray-700 list-disc pl-5 space-y-1">
+                    {sentiment.tips.slice(0, 3).map((t, i) => <li key={i}>{t}</li>)}
+                  </ul>
+                </div>
+              )}
             </div>
+
           </div>
 
           {/* Monthly Spending by Category Bar Chart */}
@@ -847,36 +1029,96 @@ const InsightsPage = () => {
                   </select>
                 </div>
 
-                {/* Category Multi-select (from selectedCategories) */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Categories</label>
-                  <div className="flex flex-wrap gap-2 max-w-[640px]">
-                    {getCategoryUnion(categoryApi?.spendingData || [], selectedAccount).map(category => {
-                      const active = selectedCategories.includes(category);
-                      return (
-                        <button
-                          key={category}
-                          onClick={() => {
-                            if (active) {
-                              setSelectedCategories(selectedCategories.filter(c => c !== category));
-                            } else {
-                              setSelectedCategories([...selectedCategories, category]);
-                            }
-                          }}
-                          className={`px-3 py-1 text-sm rounded-lg flex items-center ${active ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-700'
-                            }`}
-                          title={category}
-                        >
-                          <span
-                            className="w-2 h-2 rounded-full mr-2"
-                            style={{ backgroundColor: CATEGORY_COLORS[category] || '#ddd' }}
-                          />
-                          {category.charAt(0).toUpperCase() + category.slice(1)}
-                        </button>
-                      );
-                    })}
+                {/* Category Multi-select (collapsible) */}
+                <div className="w-full">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Categories
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setCatOpen(v => !v)}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      aria-expanded={catOpen}
+                      aria-controls="category-panel"
+                    >
+                      {catOpen ? "Hide" : "Show"} ({selectedCategories.length} selected)
+                      <svg
+                        className={`h-4 w-4 transition-transform ${catOpen ? "rotate-180" : ""}`}
+                        viewBox="0 0 20 20" fill="currentColor"
+                      >
+                        <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" />
+                      </svg>
+                    </button>
                   </div>
+
+                  {/* Collapsible panel */}
+                  <div
+                    id="category-panel"
+                    className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out
+                ${catOpen ? "max-h-[480px] opacity-100 mt-3" : "max-h-0 opacity-0"}`}
+                  >
+                    {/* Controls */}
+                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                      <button
+                        type="button"
+                        onClick={selectAll}
+                        className="px-2.5 py-1.5 text-xs rounded-md bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
+                      >
+                        Select all (filtered)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={clearAll}
+                        className="px-2.5 py-1.5 text-xs rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      >
+                        Clear
+                      </button>
+                    </div>
+
+                    {/* Chips */}
+                    <div className="flex flex-wrap gap-2 max-w-[640px]">
+                      {filteredCategories.map((category) => {
+                        const active = selectedCategories.includes(category);
+                        return (
+                          <button
+                            key={category}
+                            type="button"
+                            onClick={() => toggleCat(category)}
+                            className={`px-3 py-1 text-sm rounded-lg flex items-center
+                        ${active ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 text-gray-700"}`}
+                            title={category}
+                          >
+                            <span
+                              className="w-2 h-2 rounded-full mr-2"
+                              style={{ backgroundColor: CATEGORY_COLORS[category] || "#ddd" }}
+                            />
+                            {category.charAt(0).toUpperCase() + category.slice(1)}
+                          </button>
+                        );
+                      })}
+                      {filteredCategories.length === 0 && (
+                        <span className="text-sm text-gray-500">No categories match your search.</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Optional: compact summary row when collapsed */}
+                  {!catOpen && selectedCategories.length > 0 && (
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-600">
+                      <span className="opacity-70">Selected:</span>
+                      {selectedCategories.slice(0, 6).map(c => (
+                        <span key={c} className="px-2 py-0.5 rounded-full bg-gray-100">
+                          {c}
+                        </span>
+                      ))}
+                      {selectedCategories.length > 6 && (
+                        <span className="opacity-70">+{selectedCategories.length - 6} more</span>
+                      )}
+                    </div>
+                  )}
                 </div>
+
               </div>
             </div>
 
@@ -1113,190 +1355,294 @@ const InsightsPage = () => {
 
           {/* Trend Line Chart */}
           <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
-            <div className="flex justify-between items-start mb-6">
+            <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                  <FaLightbulb className="text-blue-500" /> Financial Trend Analysis
-                </h2>
-                <p className="text-sm text-gray-500">Last 12 months with forecast</p>
-              </div>
+                <h2 className="text-xl font-bold text-gray-800">Spending Trend</h2>
+                <p className="text-sm text-gray-500">
+                  Monthly trends this year so far, including spending volatility and month-over-month changes.
+                </p>
 
-              {analysisData.behavioralTags.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <FaTags className="text-gray-400" />
-                  <div className="flex flex-wrap gap-1">
-                    {analysisData.behavioralTags.map(tag => (
-                      <span key={tag} className="bg-gray-100 px-2 py-1 rounded-full text-xs">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
+                <div className="bg-indigo-50 rounded-lg px-3 py-2 text-indigo-700 text-xs font-medium inline-block mb-2">
+                  Your spending characteristics: <span className="font-semibold">{trend?.behavioralTags.join(", ")}</span>
+                </div>                </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <p className="text-sm text-blue-700 font-medium">Current Top Category</p>
-                <p className="text-xl font-bold capitalize">
-                  {analysisData.categoryShift.current || 'N/A'}
-                </p>
-                {analysisData.categoryShift.changed && (
-                  <p className="text-xs text-blue-600 mt-1">
-                    Changed from {analysisData.categoryShift.previous}
-                  </p>
-                )}
-              </div>
-
-              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                <p className="text-sm text-green-700 font-medium">Next Month Forecast</p>
-                <p className="text-xl font-bold">
-                  R{analysisData.spendingForecast.next_month_forecast.toLocaleString()}
-                </p>
-                <p className="text-xs text-green-600 mt-1">
-                  Based on {chartData.length} months of data
-                </p>
-              </div>
-
-              <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                <p className="text-sm text-purple-700 font-medium">Spending Trend</p>
-                <p className="text-xl font-bold">
-                  {analysisData.globalTrend.delta.slice(-1)[0] > 0 ? '↑ Increasing' : '↓ Decreasing'}
-                </p>
-                <p className="text-xs text-purple-600 mt-1">
-                  Last change: R{Math.abs(analysisData.globalTrend.delta.slice(-1)[0]).toLocaleString()}
-                </p>
-              </div>
+            {/* simple category toggles (optional) */}
+            <div className="flex flex-wrap gap-2">
+              {allCats.slice(0, 8).map((cat) => {
+                const active = selectedCats.includes(cat);
+                return (
+                  <button
+                    key={cat}
+                    onClick={() =>
+                      setSelectedCats(
+                        active ? selectedCats.filter(c => c !== cat)
+                          : [...selectedCats, cat].slice(-5) // cap to 5 for clarity
+                      )
+                    }
+                    className={`px-2 py-1 rounded-md text-xs ${active ? "bg-indigo-100 text-indigo-700"
+                      : "bg-gray-100 text-gray-700"
+                      }`}
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="h-96">
+            <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={chartData}>
-                  {/* Grid and Axes */}
+                <ComposedChart data={data} margin={{ top: 12, right: 24, left: 8, bottom: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis
-                    dataKey="month"
-                    label={{ value: 'Month', position: 'insideBottom', offset: -5 }}
-                  />
+                  <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#6b7280" }} />
+                  {/* Left axis: spending */}
+                  <YAxis yAxisId="left" tickFormatter={currencyTick} tick={{ fontSize: 12, fill: "#6b7280" }} />
+                  {/* Right axis (visible): volatility */}
                   <YAxis
-                    yAxisId="left"
-                    label={{ value: 'Spending (ZAR)', angle: -90, position: 'insideLeft' }}
-                  />
-                  <YAxis
-                    yAxisId="right"
+                    yAxisId="rightVol"
                     orientation="right"
-                    label={{ value: 'Volatility', angle: 90, position: 'insideRight' }}
+                    tickFormatter={currencyTick}
+                    tick={{ fontSize: 12, fill: "#6b7280" }}
+                  />
+                  {/* Hidden right axis for delta so ticks don't appear */}
+                  <YAxis
+                    yAxisId="rightDelta"
+                    orientation="right"
+                    domain={[deltaMin * 1.1, deltaMax * 1.1]}
+                    hide
                   />
 
-                  {/* Tooltip and Legend */}
-                  <Tooltip content={<CustomTooltip />} />
+                  <Tooltip
+                    formatter={tooltipFormatter}
+                    content={({ active, payload, label }) => {
+                      if (!active || !payload || !payload.length) return null;
+                      // Find anomalies/categories for this month
+                      const row = data.find(d => d.month === label);
+                      return (
+                        <div className="rounded-xl border border-gray-200 bg-white/90 backdrop-blur px-3 py-2 shadow">
+                          <div className="text-xs text-gray-500 mb-1">{label}</div>
+                          {payload
+                            .filter(p => p.value != null)
+                            .map((p, idx) => (
+                              <div key={idx} className="flex items-center gap-2 text-sm">
+                                <span className="inline-block h-2 w-2 rounded-full" style={{ background: p.color }} />
+                                <span className="text-gray-600">{p.name || p.dataKey}</span>
+                                <span className="ml-auto font-medium text-gray-800">{ZAR(p.value)}</span>
+                              </div>
+                            ))}
+                          {/* Show anomalies if present */}
+                          {row?.anomalies > 0 && (
+                            <div className="mt-2 text-xs text-red-600 flex items-center gap-1">
+                              <FaTimesCircle className="inline-block" /> {row.anomalies} anomaly{row.anomalies > 1 ? "ies" : "y"} detected <br />
+                              {/* Show highest anomaly category for this month */}
+                              {Array.isArray(trend?.anomalies) && (
+                                (() => {
+                                  // Find anomalies for this month
+                                  const anomaliesForMonth = trend.anomalies.filter(a => a.month === label);
+                                  if (anomaliesForMonth.length) {
+                                    // Find the anomaly with the highest value
+                                    const highest = anomaliesForMonth.reduce((max, curr) =>
+                                      (curr.value ?? 0) > (max.value ?? 0) ? curr : max, anomaliesForMonth[0]);
+                                    return (
+                                      <span>
+                                        &nbsp;Highest anomaly category: <span className="font-semibold">{highest.category}</span>
+                                      </span>
+                                    );
+                                  }
+                                  return null;
+                                })()
+                              )}
+                            </div>
+                          )}
+
+                          {/* Show top categories for this month */}
+                          {selectedCats.length > 0 && (
+                            <div className="mt-2 text-xs text-gray-600">
+                              <span className="font-medium">Categories:</span>{" "}
+                              {selectedCats.map(cat => (
+                                <span key={cat} className="inline-block mr-2">
+                                  {cat}: <span className="font-semibold">{ZAR(row?.[cat])}</span>
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }}
+                  />
                   <Legend />
 
-                  {/* Total Spending Area */}
-                  <Area
+                  {/* Volatility bars (soft background) */}
+                  <Bar
+                    yAxisId="rightVol"
+                    dataKey="volatility"
+                    name="Volatility"
+                    fill={COLORS.vol}
+                    radius={[4, 4, 0, 0]}
+                    barSize={18}
+                  />
+
+                  {/* Delta bars (thin, red/green around zero) */}
+                  <Bar
+                    yAxisId="rightVol"
+                    dataKey="delta"
+                    name="MoM Change"
+                    barSize={8}
+                  >
+                    {data.map((d, i) => (
+                      <Cell key={`cell-${i}`} fill={(d.delta ?? 0) >= 0 ? COLORS.deltaPos : COLORS.deltaNeg} />
+                    ))}
+                  </Bar>
+                  {/* zero baseline for delta */}
+                  <ReferenceLine y={0} yAxisId="rightDelta" stroke="#9ca3af" strokeDasharray="4 4" />
+
+                  {/* Total spending line (bold) */}
+                  <Line
                     yAxisId="left"
                     type="monotone"
                     dataKey="totalSpending"
-                    fill={COLORS.expense}
-                    stroke={COLORS.expense}
-                    fillOpacity={0.3}
                     name="Total Spending"
+                    stroke={COLORS.total}
+                    strokeWidth={3}
+                    dot={{ r: 3 }}
+                    connectNulls
+                    isAnimationActive={false}
                   />
 
-                  {/* Top Categories Lines */}
-                  {['groceries', 'dining', 'transport', 'utilities'].map(category => (
-                    <Line
-                      key={category}
-                      yAxisId="left"
-                      type="monotone"
-                      dataKey={category}
-                      stroke={COLORS[category]}
-                      strokeWidth={2}
-                      dot={{ r: 2 }}
-                      name={category.charAt(0).toUpperCase() + category.slice(1)}
-                    />
-                  ))}
-
-                  {/* Forecast Line */}
+                  {/* Forecast (dashed, only on 'Next') */}
                   <Line
                     yAxisId="left"
                     type="monotone"
                     dataKey="forecast"
-                    stroke={COLORS.forecast}
-                    strokeWidth={2}
-                    strokeDasharray="5 5"
                     name="Forecast"
+                    stroke={COLORS.forecast}
+                    strokeDasharray="6 6"
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                    connectNulls
+                    isAnimationActive={false}
                   />
 
-                  {/* Volatility Bars */}
-                  <Bar
-                    yAxisId="right"
-                    dataKey="volatility"
-                    fill={COLORS.volatility}
-                    opacity={0.4}
-                    name="Volatility"
-                    radius={[4, 4, 0, 0]}
-                  />
-
-                  {/* Anomaly Indicators */}
-                  {chartData.map((entry, index) =>
-                    entry.anomalies > 0 ? (
-                      <ReferenceLine
-                        key={index}
-                        x={entry.month}
-                        yAxisId="left"
-                        stroke={COLORS.anomaly}
-                        strokeWidth={2}
-                        label={{
-                          value: `${entry.anomalies} ⚠️`,
-                          position: 'top',
-                          fill: COLORS.anomaly,
-                          fontSize: 10,
-                          fontWeight: 'bold'
-                        }}
-                      />
-                    ) : null
-                  )}
+                  {/* Optional: top categories as thin lines */}
+                  {selectedCats.map((cat, i) => (
+                    <Line
+                      key={cat}
+                      yAxisId="left"
+                      type="monotone"
+                      dataKey={cat}
+                      name={cat}
+                      stroke={COLORS.cats[i % COLORS.cats.length]}
+                      strokeWidth={1.75}
+                      dot={false}
+                      connectNulls
+                      isAnimationActive={false}
+                    />
+                  ))}
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
 
+            <div className="mt-3 text-xs text-gray-500">
+              Delta = change vs last month. Volatility = spread of your expense amounts in that month.
+            </div>
 
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <h3 className="font-medium text-gray-800 mb-2">Key Insights</h3>
-                <ul className="text-sm text-gray-700 space-y-2">
-                  {analysisData.globalTrend.delta.slice(-1)[0] > 0 && (
-                    <li>• Spending increased last month by R{Math.abs(analysisData.globalTrend.delta.slice(-1)[0]).toLocaleString()}</li>
-                  )}
-                  {analysisData.anomalies.length > 0 && (
-                    <li>• Detected {analysisData.anomalies.length} unusual transactions</li>
-                  )}
-                  {analysisData.categoryShift.changed && (
-                    <li>• Spending focus shifted from {analysisData.categoryShift.previous} to {analysisData.categoryShift.current}</li>
-                  )}
-                </ul>
+            {/* Small footnote with auto-insights */}
+            <div className="mt-4 text-sm text-gray-600">
+              <ul className="list-disc pl-5 space-y-1">
+                {!!trend?.categoryShift?.changed && (
+                  <li>
+                    Top category shifted from <span className="font-medium">{trend.categoryShift.previous}</span> to{" "}
+                    <span className="font-medium">{trend.categoryShift.current}</span>.
+                  </li>
+                )}
+                {Array.isArray(trend?.anomalies) && trend.anomalies.length > 0 && (
+                  <li>Detected {trend.anomalies.length} unusual transactions this year so far.</li>
+                )}
+                {!!trend?.spendingForecast?.next_month_forecast && (
+                  <li>
+                    Next-month forecast: <span className="font-medium">
+                      R{Number(trend.spendingForecast.next_month_forecast).toLocaleString()}
+                    </span>.
+                  </li>
+                )}
+              </ul>
+            </div>
+          </div>
+
+          {/* Heatmap Chart */}
+          <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200 lg:col-span-2">
+            {/* Header */}
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div>
+                <h2 className="text-xl font-bold text-gray-800">Transactions Heatmap</h2>
+                <p className="text-sm text-gray-500">
+                  Visualizing your daily transaction activity over the past year — the darker the shade, the busier the day.
+                </p>
               </div>
 
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <h3 className="font-medium text-gray-800 mb-2">Recommendations</h3>
-                <ul className="text-sm text-gray-700 space-y-2">
-                  {analysisData.behavioralTags.includes('Impulsive Spender') && (
-                    <li>• Consider setting spending limits for discretionary categories</li>
-                  )}
-                  {analysisData.spendingForecast.next_month_forecast > chartData.slice(-1)[0]?.totalSpending && (
-                    <li>• Projected spending increase next month - review upcoming expenses</li>
-                  )}
-                  {analysisData.volatility[Object.keys(analysisData.volatility).slice(-1)[0]] > 500 && (
-                    <li>• High spending volatility detected - consider smoothing expenses</li>
-                  )}
-                </ul>
+              {/* Mode toggle */}
+              <div className="inline-flex rounded-md border border-gray-300 overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setMode("count")}
+                  className={`px-3 py-1.5 text-sm ${mode === "count"
+                    ? "bg-indigo-100 text-indigo-700"
+                    : "bg-white text-gray-700"
+                    }`}
+                >
+                  Count
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMode("amount")}
+                  className={`px-3 py-1.5 text-sm border-l border-gray-300 ${mode === "amount"
+                    ? "bg-indigo-100 text-indigo-700"
+                    : "bg-white text-gray-700"
+                    }`}
+                >
+                  Amount
+                </button>
               </div>
+            </div>
+
+            {/* Heatmap */}
+            <div className="overflow-x-auto pb-2">
+              <div className="min-w-[680px]">
+                <CalendarHeatmap
+                  startDate={startOfYear}
+                  endDate={today}
+                  values={values}
+                  showWeekdayLabels
+                  gutterSize={2}
+                  classForValue={() => ""}
+                  transformDayElement={transformDayElement}
+                  weekdayLabelClass="text-[0.625rem] text-gray-500" // SIZE DOES NOT WANT TO CHANGE :()
+                  monthLabelClass="text-[0.625rem] text-gray-500"
+                />
+              </div>
+            </div>
+
+            {/* Legend */}
+            <div className="mt-4 flex items-center flex-wrap gap-2 text-xs text-gray-600">
+              <span className="opacity-70">Less</span>
+              <span className="inline-block w-3 h-3 rounded bg-blue-100 border border-gray-200" />
+              <span className="inline-block w-3 h-3 rounded bg-blue-300 border border-gray-200" />
+              <span className="inline-block w-3 h-3 rounded bg-blue-400 border border-gray-200" />
+              <span className="inline-block w-3 h-3 rounded bg-blue-600 border border-gray-200" />
+              <span className="opacity-70">More</span>
+
+              <span className="ml-3 opacity-60">
+                {mode === "amount"
+                  ? `≤ ${ZAR(thresholds[1])}, ≤ ${ZAR(thresholds[2])}, ≤ ${ZAR(
+                    thresholds[3]
+                  )}, > ${ZAR(thresholds[3])}`
+                  : `≤ ${thresholds[1]}, ≤ ${thresholds[2]}, ≤ ${thresholds[3]}, > ${thresholds[3]}`}
+              </span>
             </div>
           </div>
         </div>
       </div>
-    </AccountsLayout>
+    </AccountsLayout >
   );
 };
 

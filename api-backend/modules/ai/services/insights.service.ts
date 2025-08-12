@@ -29,6 +29,7 @@ export async function getRawTransactions(userId: string, month: number) {
   }
 };
 
+
 // 2) Raw goals for a given month
 export async function getRawGoals(userId: string, month: number) {
   const year = new Date().getFullYear();
@@ -683,4 +684,30 @@ function analyzeFinancialSentiment({
     score,
     summary
   };
+}
+
+export async function getGlobalInsights() {
+  try {
+    // Fetch aggregated user data from the database
+    const { rows } = await pool.query(`
+      SELECT
+        AVG(income) AS avg_income,
+        AVG(expenses) AS avg_expenses,
+        AVG(investments) AS avg_investments
+      FROM (
+        SELECT
+          user_id,
+          SUM(CASE WHEN transaction_type IN ('income','deposit','transfer') THEN transaction_amount END) AS income,
+          SUM(CASE WHEN transaction_type IN ('expense','withdrawal','fee') THEN transaction_amount END) AS expenses,
+          SUM(CASE WHEN LOWER(category_name) = 'investment' THEN transaction_amount END) AS investments
+        FROM transactions
+        GROUP BY user_id
+      ) t
+    `);
+
+    return rows[0];
+  } catch (error) {
+    logger.error('Error fetching global insights:', error);
+    throw error;
+  }
 }

@@ -20,9 +20,6 @@ from app.insights.services.trend_analysis import (
 )
 from app.insights.services.insights_engine import (
     generate_wrapped_insights,
-    extract_features,
-    load_cluster_model,
-    get_user_cluster
 )
 
 app = FastAPI(title="AI Service")
@@ -55,7 +52,7 @@ class FeedbackTrainReq(BaseModel):
     feedback: List[FeedbackItem]
 
 
-class Transaction1(BaseModel):
+class Transaction1(BaseModel): # this is for trends insights
     date: str
     description: str
     amount: float
@@ -163,7 +160,7 @@ def wrapped_insights(user_id: int, month: int, user_data: UserData):
         print(f"Error generating insights for user {user_id} in month {month}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
     
-@app.get("/insights/trends")
+@app.post("/insights/trends")
 def get_trends(user_data: UserData):
     """
     Returns a dictionary of trends for the user.

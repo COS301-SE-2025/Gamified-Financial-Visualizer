@@ -69,14 +69,14 @@ router.get('/transactions/:userId', async (req, res) => {
          `SELECT COUNT(DISTINCT user_id) AS user_count FROM accounts`
       );
 
-      if (numberOfUsers.rows.length === 0 || numberOfUsers.rows[0].user_count === 0) {
+      if (numberOfUsers.rows.length === 0 || numberOfUsers.rows[ 0 ].user_count === 0) {
          res.status(404).json({ error: 'No users found in the system' });
          return;
       }
       const monthlyAverages = globalAvg.rows.map(row => ({
          month: row.month,
-         avgIncome: parseFloat(row.avg_income) / numberOfUsers.rows[0].user_count || 0,
-         avgExpense: parseFloat(row.avg_expense) / numberOfUsers.rows[0].user_count || 0
+         avgIncome: parseFloat(row.avg_income) / numberOfUsers.rows[ 0 ].user_count || 0,
+         avgExpense: parseFloat(row.avg_expense) / numberOfUsers.rows[ 0 ].user_count || 0
       }));
 
 
@@ -95,6 +95,77 @@ router.get('/transactions/:userId', async (req, res) => {
    }
 });
 
+router.get('/transactions/heatmap/:userId', async (req, res) => {
+   const { userId } = req.params;
+   const year = new Date().getFullYear(); // Get current year
+   if (!year) {
+      res.status(400).json({ error: 'Missing required fields' });
+      return;
+   }
+
+   // Format the response
+   interface HeatmapRow {
+      day: string;
+      transactions: number;
+      total_spent: number;
+   }
+
+   interface HeatmapData {
+      date: string;
+      transactions: number;
+      amount: number;
+   }
+
+   try {
+      // check cache first
+      const cacheKey = `heatmap_${userId}_${year}`;
+      const cachedData = await redisClient.get(cacheKey);
+      // Fetch transactions from the database split between income and expenses per month
+
+      let transactionsRows;
+
+      if (!cachedData) {
+          const result = await pool.query(
+            `SELECT 
+               DATE(transaction_date) AS day,
+               COUNT(*) AS transactions,
+               SUM(transaction_amount) AS total_spent
+            FROM transactions
+            JOIN accounts ON transactions.account_id = accounts.account_id
+            WHERE accounts.user_id = $1
+              AND transaction_date >= CURRENT_DATE - INTERVAL '1 year'
+            GROUP BY day
+            ORDER BY day;`,
+            [ userId ]
+          );
+         transactionsRows = result.rows;
+      } else {
+         transactionsRows = JSON.parse(cachedData);
+      }
+
+      if (transactionsRows.length === 0) {
+         res.status(404).json({ error: 'No transactions found for this user in the current year' });
+         return;
+      }
+
+      // Cache it
+      await redisClient.set(`heatmap_${userId}_${year}`, JSON.stringify(transactionsRows), {
+         EX: 21600
+      });
+
+      // Format response
+      const heatmapData = transactionsRows.map((row: HeatmapRow) => ({
+         date: row.day,
+         transactions: row.transactions,
+         amount: row.total_spent ? parseFloat(row.total_spent.toFixed(2)) : 0
+      }));
+
+      res.status(200).json( heatmapData );
+   } catch (error) {
+      logger.error('Error fetching transactions:', error);
+      res.status(500).json({ error: 'Internal server error' });
+   }
+});
 
 // get per category insights
 // Get user's spending vs average per category
@@ -373,55 +444,55 @@ router.get('/wealth/:userId', async (req, res) => {
 
 // get radar insights
 router.get('/radar/:userId', async (req, res) => {
-  const { userId } = req.params;
-  const year = new Date().getFullYear();
+   const { userId } = req.params;
+   const year = new Date().getFullYear();
 
-  // Basic guard
-  const uid = Number(userId);
-  if (!Number.isFinite(uid)) {
-    res.status(400).json({ error: 'Invalid userId' });
+   // Basic guard
+   const uid = Number(userId);
+   if (!Number.isFinite(uid)) {
+      res.status(400).json({ error: 'Invalid userId' });
       return;
-  }
+   }
 
-  try {
-    // Call your service (returns { radar, radarAverage })
-    const radarDataResp = await insightsService.radarChartInsights(uid);
-    if (!radarDataResp || !radarDataResp.radar || !radarDataResp.radarAverage) {
-       res.status(404).json({ error: 'No radar data found for this user' });
+   try {
+      // Call your service (returns { radar, radarAverage })
+      const radarDataResp = await insightsService.radarChartInsights(uid);
+      if (!radarDataResp || !radarDataResp.radar || !radarDataResp.radarAverage) {
+         res.status(404).json({ error: 'No radar data found for this user' });
          return;
-    }
-
-    type RadarPoint = { axis: string; value: number | string };
-
-    const userSeries: RadarPoint[] = radarDataResp.radar;
-    const avgSeries: RadarPoint[]  = radarDataResp.radarAverage;
-
-    // Build a quick lookup for averages
-    const avgMap = new Map<string, number>(
-      avgSeries.map(p => [p.axis, Number(p.value) || 0])
-    );
-
-    // Merge to a single array so frontend can render 2 polygons easily
-    const combined = userSeries.map(p => ({
-      axis: p.axis,
-      user: Number(p.value) || 0,
-      average: avgMap.get(p.axis) ?? 0
-    }));
-
-    // Return both combined + raw in case you want raw series elsewhere
-    res.status(200).json({
-      userId: uid,
-      year,
-      radar: combined,             // [{ axis, user, average }]
-      raw: {
-        user: userSeries,          // [{ axis, value }]
-        average: avgSeries         // [{ axis, value }]
       }
-    });
-  } catch (error) {
-    logger.error('Error fetching radar insights:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
+
+      type RadarPoint = { axis: string; value: number | string };
+
+      const userSeries: RadarPoint[] = radarDataResp.radar;
+      const avgSeries: RadarPoint[] = radarDataResp.radarAverage;
+
+      // Build a quick lookup for averages
+      const avgMap = new Map<string, number>(
+         avgSeries.map(p => [ p.axis, Number(p.value) || 0 ])
+      );
+
+      // Merge to a single array so frontend can render 2 polygons easily
+      const combined = userSeries.map(p => ({
+         axis: p.axis,
+         user: Number(p.value) || 0,
+         average: avgMap.get(p.axis) ?? 0
+      }));
+
+      // Return both combined + raw in case you want raw series elsewhere
+      res.status(200).json({
+         userId: uid,
+         year,
+         radar: combined,             // [{ axis, user, average }]
+         raw: {
+            user: userSeries,          // [{ axis, value }]
+            average: avgSeries         // [{ axis, value }]
+         }
+      });
+   } catch (error) {
+      logger.error('Error fetching radar insights:', error);
+      res.status(500).json({ error: 'Internal server error' });
+   }
 });
 
 const INSIGHTS_BASE = "http://localhost:6000/insights";
@@ -459,6 +530,7 @@ router.get("/sentiment/user/:userId/:month", async (req, res) => {
          goals: transformedGoals,
          budgets: transformedBudgets
       };
+
 
       // send JSON to Python endpoint
       const { data } = await axios.post(
@@ -526,10 +598,70 @@ router.get("/sentiment/user/:userId", async (req, res) => {
 
 router.get('/trends/:userId', async (req, res) => {
    const { userId } = req.params;
-
    try {
+      // generate trends data for the user from January to current month
+      // Fetch user's transactions, goals, and budgets from the database
+      // Note: This is a simplified example, you might want to adjust the queries based on your actual database schema
+      if (!userId) {
+         res.status(400).json({ error: 'Missing required fields' });
+         return;
+      }
+
+      // Get current month (1-indexed)
+      const currentMonth = new Date().getMonth() + 1;
+
+      // Initialize arrays to collect results
+      const allTransactions = [];
+      const allGoals = [];
+
+      // Loop through months 1 to currentMonth
+      for (let month = 1; month <= currentMonth; month++) {
+         const [ txRes, goalsRes ] = await Promise.all([
+            insightsService.getRawTransactions(userId, month),
+            insightsService.getRawGoals(userId, month)
+         ]);
+
+         allTransactions.push(...txRes);
+         allGoals.push(...goalsRes);
+      }
+
+      // Budgets are not month-specific, so fetch once
+      const budgetsRes = await insightsService.getRawBudgets(userId);
+
+      // Final result
+      const result = {
+         transactions: allTransactions,
+         goals: allGoals,
+         budgets: budgetsRes
+      };
+
+      const transformedTransactions = allTransactions.map(t => ({
+         ...t,
+         date: new Date(t.date).toISOString().replace('Z', '+00:00')
+      }));
+
+      const transformedGoals = allGoals.map(g => ({
+         id: g.goal_id,
+         title: g.goal_name,
+         status: g.goal_status,
+         target_amount: parseFloat(g.target_amount),
+         progress: parseFloat(g.current_amount)
+      }));
+
+      const transformedBudgets = budgetsRes.map(b => ({
+         category: b.category,
+         amount: parseFloat(b.current_amount)
+      }));
+      const userData = {
+         transactions: transformedTransactions,
+         goals: transformedGoals,
+         budgets: transformedBudgets
+      };
+
       // Fetch trends data from the database
-      const trends = await axios.post(`http://localhost:6000/insights/trends/`);
+      const trends = await axios.post(`http://localhost:6000/insights/trends/`,
+         userData
+      );
 
       if (!trends.data) {
          res.status(404).json({ error: 'No trends data found for this user' });

@@ -1,5 +1,6 @@
 import pickle
 import numpy as np
+import pandas as pd
 from app.insights.services.feature_extractors import extract_features
 from app.insights.services.insight_rules import (
     get_sentiment,
@@ -53,7 +54,6 @@ def load_cluster_model():
     return kmeans, scaler
 
 def get_user_cluster(features):
-   # 1. Define your mapping
    CLUSTER_LABELS = {
       0: "The Spender",
       1: "The Saver",
@@ -61,16 +61,27 @@ def get_user_cluster(features):
       3: "The Avoidant"
    }
 
-   vector = np.array([
+   feature_names = [
+      "savings_rate",
+      "burn_rate",
+      "goal_completion_ratio",
+      "impulse_score",
+      "budget_efficiency",
+      "volatility_score"
+   ]
+
+   vector = [
       features["savings_rate"],
       features["burn_rate"],
       features["goal_completion_ratio"],
       features["impulse_score"],
       features["budget_efficiency"]["average"],
       features.get("volatility_score", 0.0)
-   ]).reshape(1, -1)
+   ]
+
+   vector_df = pd.DataFrame([vector], columns=feature_names)
 
    kmeans, scaler = load_cluster_model()
-   cluster_id = kmeans.predict(scaler.transform(vector))[0]
+   cluster_id = kmeans.predict(scaler.transform(vector_df))[0]
    cluster_label = CLUSTER_LABELS.get(cluster_id, f"Cluster {cluster_id}")
    return cluster_id, cluster_label
