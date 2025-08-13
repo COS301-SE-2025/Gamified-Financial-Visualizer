@@ -1,6 +1,160 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { FaTrash, FaEdit, FaPlus, FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import React, { useState, useEffect, useRef, useLayoutEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
+import { FaTrash, FaEdit, FaPlus, FaChevronDown } from 'react-icons/fa';
 import AddTransactionModal from '../modals/AddTransactionModal';
+
+const CategoryDropdown = ({ 
+  value, 
+  onChange, 
+  options, 
+  placeholder = 'Filter by categories',
+  disabled = false,
+  loading = false
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const dropdownRef = useRef(null);
+  const buttonRef = useRef(null);
+  const [menuStyle, setMenuStyle] = useState({});
+
+  // Close when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Position the menu properly
+  useLayoutEffect(() => {
+    if (!isOpen || !buttonRef.current) return;
+
+    const calculatePosition = () => {
+      const buttonRect = buttonRef.current.getBoundingClientRect();
+      const maxHeight = Math.min(320, window.innerHeight - buttonRect.bottom - 16);
+      
+      setMenuStyle({
+        position: 'fixed',
+        top: buttonRect.bottom + 4,
+        left: buttonRect.left,
+        width: buttonRect.width,
+        maxHeight: `${maxHeight}px`,
+        zIndex: 1000,
+      });
+    };
+
+    calculatePosition();
+    window.addEventListener('resize', calculatePosition);
+    window.addEventListener('scroll', calculatePosition, true);
+
+    return () => {
+      window.removeEventListener('resize', calculatePosition);
+      window.removeEventListener('scroll', calculatePosition, true);
+    };
+  }, [isOpen]);
+
+  // Keyboard navigation
+  const handleKeyDown = (e) => {
+    if (!isOpen) {
+      if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(e.key)) {
+        e.preventDefault();
+        setIsOpen(true);
+      }
+      return;
+    }
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setHighlightedIndex(prev => Math.min(prev + 1, options.length - 1));
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setHighlightedIndex(prev => Math.max(prev - 1, 0));
+        break;
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        if (options[highlightedIndex]) {
+          onChange(options[highlightedIndex].value);
+          setIsOpen(false);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setIsOpen(false);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleOptionClick = (value) => {
+    onChange(value);
+    setIsOpen(false);
+  };
+
+  const selectedOption = options.find(opt => opt.value === value);
+
+  return (
+    <div ref={dropdownRef} className="relative">
+      <button
+        ref={buttonRef}
+        type="button"
+        className={`flex items-center justify-between w-full px-4 py-1 rounded-full text-sm border dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+        onClick={() => !disabled && !loading && setIsOpen(!isOpen)}
+        onKeyDown={handleKeyDown}
+        disabled={disabled || loading}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+      >
+        <span className="truncate">
+          {loading ? 'Loading categories...' : (selectedOption?.label || placeholder)}
+        </span>
+        {!disabled && !loading && (
+          <FaChevronDown className={`ml-2 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        )}
+      </button>
+
+      {isOpen && createPortal(
+        <div
+          className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-lg overflow-y-auto"
+          style={menuStyle}
+          role="listbox"
+          onWheel={(e) => e.stopPropagation()}
+        >
+          <div style={{ overscrollBehavior: 'contain' }}>
+            {options.length === 0 ? (
+              <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                No categories available
+              </div>
+            ) : (
+              options.map((option, index) => (
+                <div
+                  key={option.value}
+                  className={`px-4 py-2 text-sm cursor-pointer ${highlightedIndex === index ? 'bg-gray-100 dark:bg-gray-700' : ''} ${value === option.value ? 'font-medium text-[#1b5e20] dark:text-green-300' : 'text-gray-800 dark:text-gray-200'}`}
+                  onClick={() => handleOptionClick(option.value)}
+                  onMouseEnter={() => setHighlightedIndex(index)}
+                  role="option"
+                  aria-selected={value === option.value}
+                >
+                  {option.label}
+                </div>
+              ))
+            )}
+          </div>
+        </div>,
+        document.body
+      )}
+    </div>
+  );
+};
 
 const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, onEdit, onDelete, onRefresh }) => {
   const isAccountView = Boolean(account);
@@ -15,6 +169,11 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [editTransactionId, setEditTransactionId] = useState(null);
   const [editValues, setEditValues] = useState({});
+  const [deleteConfirmation, setDeleteConfirmation] = useState({
+    show: false,
+    index: null,
+    transaction: null
+  });
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -69,11 +228,10 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
     if (sortBy === 'Name') filtered.sort((a, b) => a.name.localeCompare(b.name));
     else if (sortBy === 'AmountAsc') filtered.sort((a, b) => parseFloat(a.amount.replace(/[^\d.-]/g, '')) - parseFloat(b.amount.replace(/[^\d.-]/g, '')));
     else if (sortBy === 'AmountDsc') filtered.sort((a, b) => parseFloat(b.amount.replace(/[^\d.-]/g, '')) - parseFloat(a.amount.replace(/[^\d.-]/g, '')));
-
     else if (sortBy === 'Date') filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
     return filtered;
   }, [transactions, sortBy, categoryFilter, dateFilter, typeFilter]);
-
+  
   const handleAddTransaction = async (newTransaction) => {
     try {
       setError('');
@@ -96,18 +254,37 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
     }
   };
 
-  const handleDeleteTransaction = async (index) => {
-    const transaction = transactions[index];
+  const showDeleteConfirmation = (index) => {
+    setDeleteConfirmation({
+      show: true,
+      index,
+      transaction: transactions[index]
+    });
+  };
+
+  const hideDeleteConfirmation = () => {
+    setDeleteConfirmation({
+      show: false,
+      index: null,
+      transaction: null
+    });
+  };
+
+  const handleDeleteTransaction = async () => {
+    const { index, transaction } = deleteConfirmation;
+    
     if (!transaction.transaction_id) {
       setError('Cannot delete transaction: missing transaction ID');
+      hideDeleteConfirmation();
       return;
     }
 
-  
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`http://localhost:5000/api/transactions/${transaction.transaction_id}`, { method: 'DELETE' });
+      const response = await fetch(`http://localhost:5000/api/transactions/${transaction.transaction_id}`, { 
+        method: 'DELETE' 
+      });
       if (!response.ok) throw new Error((await response.json()).message || 'Failed to delete transaction');
       onDelete(index);
       if (onRefresh) await onRefresh(account?.account_id);
@@ -116,35 +293,101 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
       console.error('Error deleting transaction:', err);
     } finally {
       setLoading(false);
+      hideDeleteConfirmation();
     }
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-md px-6 py-6">
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-md px-6 py-6">
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmation.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={hideDeleteConfirmation}
+          />
+          <div 
+            className="relative z-10 w-[92%] max-w-md rounded-2xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-600">
+                <FaTrash />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Delete transaction?
+              </h3>
+            </div>
+
+            <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">
+              You're about to delete a transaction of{' '}
+              <span className="font-semibold">
+                {deleteConfirmation.transaction.amount}
+              </span>{' '}
+              for <span className="font-semibold">{deleteConfirmation.transaction.name}</span>.
+              This action cannot be undone.
+            </p>
+
+            <div className="mt-6 flex flex-wrap gap-3 justify-end">
+              <button
+                onClick={hideDeleteConfirmation}
+                className="px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteTransaction}
+                disabled={loading}
+                className={`px-4 py-2 rounded-full text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-red-400
+                  ${loading ? 'bg-red-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'}`}
+              >
+                {loading ? 'Deleting...' : 'Yes, delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-[#336699]">{heading}</h2>
         {(
           <div className="flex gap-2 items-center">
-            <select className="border px-4 py-1 rounded-full text-sm" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+            <select 
+              className="border dark:border-gray-600 px-4 py-1 rounded-full text-sm dark:bg-gray-700 dark:text-gray-300" 
+              value={sortBy} 
+              onChange={(e) => setSortBy(e.target.value)}
+            >
               <option value="">Sort by</option>
               <option value="Name">Name</option>
               <option value="AmountAsc">Amount Asc</option>
               <option value="AmountDsc">Amount Dsc</option>
               <option value="Date">Date</option>
             </select>
-            <select className="border px-4 py-1 rounded-full text-sm" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} disabled={categoriesLoading}>
-              <option value="">{categoriesLoading ? 'Loading categories...' : 'Filter by categories'}</option>
-              {categories.map(category => (
-                <option key={category.category_id} value={category.category_name}>{toTitleCase(category.category_name)}</option>
-              ))}
-            </select>
-            <select className="border px-4 py-1 rounded-full text-sm" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
+
+            <CategoryDropdown
+              value={categoryFilter}
+              onChange={setCategoryFilter}
+              options={categories.map(cat => ({
+                value: cat.category_name,
+                label: toTitleCase(cat.category_name)
+              }))}
+              placeholder="Filter by categories"
+              disabled={categoriesLoading}
+              loading={categoriesLoading}
+            />
+            
+            <select 
+              className="border dark:border-gray-600 px-4 py-1 rounded-full text-sm dark:bg-gray-700 dark:text-gray-300" 
+              value={dateFilter} 
+              onChange={(e) => setDateFilter(e.target.value)}
+            >
               <option value="">Filter by date</option>
               <option value="7 Days">Last 7 Days</option>
               <option value="10 Days">Last 10 Days</option>
               <option value="Last Month">Last Month</option>
             </select>
-            <select className="border px-4 py-1 rounded-full text-sm" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+            <select className="border px-4 py-1 rounded-full text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
               <option value="">Filter by type</option>
               <option value="income">Income</option>
               <option value="expense">Expense</option>
@@ -157,7 +400,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
               <button
                 onClick={() => setShowAddModal(true)}
                 disabled={!account || loading}
-                className="flex items-center gap-2 px-4 py-1 bg-[#D8F5C5] text-[#76B947] text-sm font-medium rounded-full hover:bg-[#c8ecb4] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-1 bg-[#D8F5C5] dark:bg-[#AAD977] dark:text-white text-[#76B947] text-sm font-medium rounded-full hover:bg-[#c8ecb4] transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <FaPlus /> Add
               </button>
@@ -167,15 +410,15 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded p-3 mb-4 text-red-700 text-sm">
+        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded p-3 mb-4 text-red-700 dark:text-red-300 text-sm">
           {error}
-          <button onClick={() => setError('')} className="ml-2 text-red-500 hover:text-red-700">×</button>
+          <button onClick={() => setError('')} className="ml-2 text-red-500 dark:text-red-300 hover:text-red-700 dark:hover:text-red-400">×</button>
         </div>
       )}
 
       <div className="overflow-x-auto">
-        <table className="min-w-full text-sm text-left text-gray-700">
-          <thead className="border-b">
+        <table className="min-w-full text-sm text-left text-gray-700 dark:text-gray-300">
+          <thead className="border-b dark:border-gray-700">
             <tr>
               <th className="px-4 py-2">Name</th>
               <th className="px-4 py-2">Date</th>
@@ -187,15 +430,13 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
           <tbody>
             {filteredSortedTransactions.length === 0 ? (
               <tr>
-                <td colSpan="5" className="px-4 py-8 text-center text-gray-500">
+                <td colSpan="5" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                   {isAccountView ? (account ? 'No transactions found for this account' : 'Select an account to view transactions') : 'No transactions available'}
                 </td>
               </tr>
             ) : (
               filteredSortedTransactions.map((txn, idx) => {
                 const isEditing = editTransactionId === txn.transaction_id;
-                // Determine color and sign based on transaction type
-                // Determine color and sign based on transaction type
                 const isExpense = ['expense', 'withdrawal', 'fee'].includes(txn.transaction_type);
                 const isIncome = ['income', 'deposit'].includes(txn.transaction_type);
                 const isTransfer = txn.transaction_type === 'Transfer';
@@ -209,11 +450,6 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
                   : isIncome ? '+'
                     : isTransfer ? '→'
                       : '';
-
-                // In your JSX:
-                <td className={`px-4 py-2 font-semibold ${amountColor}`}>
-                  {amountSign} {txn.amount.replace(/[+-]/g, '')}
-                </td>
 
                 return (
                   <tr key={txn.transaction_id || idx} className="border-b hover:bg-gray-50">
@@ -301,7 +537,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
                           ><FaEdit /></button>
                           <button
                             className="text-red-500 hover:text-red-600 text-sm"
-                            onClick={() => handleDeleteTransaction(idx)}
+                            onClick={() => showDeleteConfirmation(idx)}
                           ><FaTrash /></button>
                         </>
                       )}
@@ -316,8 +552,8 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
 
       {loading && (
         <div className="flex justify-center items-center py-4">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#336699]"></div>
-          <span className="ml-2 text-gray-600">Processing...</span>
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#336699] dark:border-blue-400"></div>
+          <span className="ml-2 text-gray-600 dark:text-gray-400">Processing...</span>
         </div>
       )}
 

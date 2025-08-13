@@ -26,18 +26,18 @@ const LeaderboardPanel = () => {
   }, []);
 
   return (
-    <div className="bg-white p-5 rounded-2xl shadow space-y-2">
-      <h3 className="text-lg font-bold text-gray-700 flex items-center gap-2 border-b pb-3">
+    <div className="bg-white p-5 rounded-2xl shadow space-y-2 dark:bg-gray-800">
+      <h3 className="text-lg font-bold text-gray-700 flex items-center gap-2 border-b pb-3 dark:text-gray-200 dark:border-gray-700">
         <FaTrophy className="text-[#FBBF24]" /> Leaderboard
       </h3>
 
       {leaderboard.map((user, i) => (
         <div
           key={user.username}
-          className="flex items-start py-3 border-b last:border-b-0 gap-4"
+          className="flex items-start py-3 border-b last:border-b-0 gap-4 dark:border-gray-700"
         >
           {/* Rank */}
-          <span className="text-sm font-bold text-gray-600 w-6 text-right">#{user.rank}</span>
+          <span className="text-sm font-bold text-gray-600 w-6 text-right dark:text-gray-400">#{user.rank}</span>
 
           {/* Avatar */}
           <img
@@ -48,13 +48,13 @@ const LeaderboardPanel = () => {
 
           {/* Info */}
           <div className="flex flex-col">
-            <span className="text-sm font-semibold text-gray-800 leading-tight">{user.username}</span>
-            <span className="text-xs text-gray-500 leading-tight mb-1">{user.tier_status}</span>
+            <span className="text-sm font-semibold text-gray-800 leading-tight dark:text-gray-200">{user.username}</span>
+            <span className="text-xs text-gray-500 leading-tight mb-1 dark:text-gray-400">{user.tier_status}</span>
             <div className="flex items-center gap-2 mt-1">
               {getMedalIcon(i) && (
                 <img src={getMedalIcon(i)} alt="medal" className="w-5 h-5 object-contain" />
               )}
-              <span className="text-sm font-semibold text-gray-800 whitespace-nowrap">
+              <span className="text-sm font-semibold text-gray-800 whitespace-nowrap dark:text-gray-200">
                 {user.total_points} XP
               </span>
             </div>

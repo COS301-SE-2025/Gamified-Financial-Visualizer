@@ -1,4 +1,5 @@
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import AccountsLayout from './AccountsLayout';
 import {
   FaEdit, FaTrash, FaUtensils, FaBus, FaBolt, FaFilm, FaHeartbeat,
@@ -7,12 +8,10 @@ import {
   FaGasPump, FaBuilding, FaUniversity, FaMoneyBillWave,
   FaPiggyBank, FaChartLine, FaChild, FaPaw, FaTools, FaWallet,
   FaCoins, FaExchangeAlt, FaPlus, FaTimes, FaCheck,
-  FaSearch
+  FaSearch, FaChevronDown
 } from 'react-icons/fa';
-
 import toast, { Toaster } from 'react-hot-toast';
 
-// Enhanced category icons with colors
 const categoryIcons = {
   groceries: { icon: <FaUtensils />, color: 'bg-orange-100 text-orange-500' },
   transport: { icon: <FaBus />, color: 'bg-blue-100 text-blue-500' },
@@ -63,8 +62,161 @@ const categoryIcons = {
   default: { icon: <FaMoneyBillWave />, color: 'bg-gray-100 text-gray-500' }
 };
 
+const CategoryDropdown = ({ 
+  value, 
+  onChange, 
+  options, 
+  placeholder = 'Filter by categories',
+  disabled = false,
+  loading = false
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const dropdownRef = useRef(null);
+  const buttonRef = useRef(null);
+  const [menuStyle, setMenuStyle] = useState({});
+
+  // Close when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Position the menu properly
+  useLayoutEffect(() => {
+    if (!isOpen || !buttonRef.current) return;
+
+    const calculatePosition = () => {
+      const buttonRect = buttonRef.current.getBoundingClientRect();
+      const maxHeight = Math.min(320, window.innerHeight - buttonRect.bottom - 16);
+      
+      setMenuStyle({
+        position: 'fixed',
+        top: buttonRect.bottom + 4,
+        left: buttonRect.left,
+        width: buttonRect.width,
+        maxHeight: `${maxHeight}px`,
+        zIndex: 1000,
+      });
+    };
+
+    calculatePosition();
+    window.addEventListener('resize', calculatePosition);
+    window.addEventListener('scroll', calculatePosition, true);
+
+    return () => {
+      window.removeEventListener('resize', calculatePosition);
+      window.removeEventListener('scroll', calculatePosition, true);
+    };
+  }, [isOpen]);
+
+  // Keyboard navigation
+  const handleKeyDown = (e) => {
+    if (!isOpen) {
+      if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(e.key)) {
+        e.preventDefault();
+        setIsOpen(true);
+      }
+      return;
+    }
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setHighlightedIndex(prev => Math.min(prev + 1, options.length - 1));
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setHighlightedIndex(prev => Math.max(prev - 1, 0));
+        break;
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        if (options[highlightedIndex]) {
+          onChange(options[highlightedIndex].value);
+          setIsOpen(false);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setIsOpen(false);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleOptionClick = (value) => {
+    onChange(value);
+    setIsOpen(false);
+  };
+
+  const selectedOption = options.find(opt => opt.value === value);
+
+  return (
+    <div ref={dropdownRef} className="relative">
+      <button
+        ref={buttonRef}
+        type="button"
+        className={`flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-300 ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+        onClick={() => !disabled && !loading && setIsOpen(!isOpen)}
+        onKeyDown={handleKeyDown}
+        disabled={disabled || loading}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+      >
+        <span className="truncate">
+          {loading ? 'Loading categories...' : (selectedOption?.label || placeholder)}
+        </span>
+        {!disabled && !loading && (
+          <FaChevronDown className={`ml-2 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        )}
+      </button>
+
+      {isOpen && createPortal(
+        <div
+          className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-lg overflow-y-auto"
+          style={menuStyle}
+          role="listbox"
+          onWheel={(e) => e.stopPropagation()}
+        >
+          <div style={{ overscrollBehavior: 'contain' }}>
+            {options.length === 0 ? (
+              <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                No categories available
+              </div>
+            ) : (
+              options.map((option, index) => (
+                <div
+                  key={option.value}
+                  className={`px-4 py-2 text-sm cursor-pointer ${highlightedIndex === index ? 'bg-gray-100 dark:bg-gray-700' : ''} ${value === option.value ? 'font-medium text-[#1b5e20] dark:text-green-300' : 'text-gray-800 dark:text-gray-200'}`}
+                  onClick={() => handleOptionClick(option.value)}
+                  onMouseEnter={() => setHighlightedIndex(index)}
+                  role="option"
+                  aria-selected={value === option.value}
+                >
+                  {option.label}
+                </div>
+              ))
+            )}
+          </div>
+        </div>,
+        document.body
+      )}
+    </div>
+  );
+};
+
 const BudgetForm = ({
-  initialData = { budget_name: '', category_id: '', target_amount: '' }, // Changed default target_amount to empty string
+  initialData = { budget_name: '', category_id: '', target_amount: '' },
   onSave,
   onCancel,
   categories = [],
@@ -83,13 +235,20 @@ const BudgetForm = ({
     }));
   };
 
+  const handleCategoryChange = (value) => {
+    setFormData(prev => ({
+      ...prev,
+      category_id: value === '' ? '' : Number(value)
+    }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave(formData);
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm p-6 mb-4 border border-gray-100">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 mb-4 border border-gray-100 dark:border-gray-700">
       <form onSubmit={handleSubmit}>
         <div className="flex items-start gap-4">
           <div className={`w-12 h-12 ${iconData.color} rounded-xl flex items-center justify-center text-xl`}>
@@ -99,13 +258,13 @@ const BudgetForm = ({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {isEdit ? (
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Budget Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Budget Name</label>
                   <input
                     type="text"
                     name="budget_name"
                     value={formData.budget_name}
                     onChange={handleChange}
-                    className="w-full p-3 border rounded-lg"
+                    className="w-full p-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#467D35] focus:border-[#467D35] dark:bg-gray-700 dark:text-gray-200"
                     required
                     placeholder="Enter budget name"
                   />
@@ -113,30 +272,25 @@ const BudgetForm = ({
               ) : (
                 <>
                   <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                    <select
-                      name="category_id"
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+                    <CategoryDropdown
                       value={formData.category_id}
-                      onChange={handleChange}
-                      className="w-full p-3 border rounded-lg"
-                      required
-                    >
-                      <option value="">Select Category</option>
-                      {categories.map(cat => (
-                        <option key={cat.category_id} value={cat.category_id}>
-                          {cat.category_name}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={handleCategoryChange}
+                      options={categories.map(cat => ({
+                        value: cat.category_id,
+                        label: cat.category_name
+                      }))}
+                      placeholder="Select Category"
+                    />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Target Amount</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target Amount</label>
                     <input
                       type="number"
                       name="target_amount"
                       value={formData.target_amount}
                       onChange={handleChange}
-                      className="w-full p-3 border rounded-lg"
+                      className="w-full p-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#467D35] focus:border-[#467D35] dark:bg-gray-700 dark:text-gray-200"
                       required
                       min="0"
                       step="0.01"
@@ -150,7 +304,7 @@ const BudgetForm = ({
               <button
                 type="button"
                 onClick={onCancel}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition"
               >
                 Cancel
               </button>
@@ -176,7 +330,6 @@ const BudgetCard = ({
   onEdit,
   onDelete
 }) => {
-  // Convert values to numbers and provide defaults if undefined
   const targetAmount = Number(total_target) || 0;
   const usedAmount = Number(used) || 0;
   const remainingAmount = targetAmount - usedAmount;
@@ -186,29 +339,27 @@ const BudgetCard = ({
   const iconData = categoryIcons[categoryName] || categoryIcons.default;
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm p-6 mb-4 border border-gray-100 hover:shadow-md transition w-full">
-      <Toaster position="top-center" />
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 mb-4 border border-gray-100 dark:border-gray-700 hover:shadow-md transition w-full">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4 w-full">
           <div className={`w-12 h-12 ${iconData.color} rounded-xl flex items-center justify-center text-xl`}>
             {iconData.icon}
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-800">{budget_name}</h3>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{budget_name}</h3>
             <div className="flex flex-wrap items-center gap-4 mt-1">
-              <span className="text-sm text-gray-600">Target: <span className="font-medium">R{targetAmount.toFixed(2)}</span></span>
-              <span className="text-sm text-gray-600">Used: <span className="font-medium">R{usedAmount.toFixed(2)}</span></span>
-              <span className="text-sm text-gray-600">Remaining: <span className="font-medium">R{remainingAmount.toFixed(2)}</span></span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Target: <span className="font-medium dark:text-gray-300">R{targetAmount.toFixed(2)}</span></span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Used: <span className="font-medium dark:text-gray-300">R{usedAmount.toFixed(2)}</span></span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Remaining: <span className="font-medium dark:text-gray-300">R{remainingAmount.toFixed(2)}</span></span>
             </div>
 
             <div className="mt-3 w-full">
-              <div className="w-full h-2.5 rounded-full bg-gray-100 overflow-hidden">
+              <div className="w-full h-2.5 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-500 ease-out"
                   style={{
                     width: `${percentageUsed}%`,
                     background: 'linear-gradient(90deg, #5FBFFF 0%, #91BE59 100%)'
-                    // bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53] 
                   }}
                 ></div>
               </div>
@@ -217,13 +368,6 @@ const BudgetCard = ({
         </div>
 
         <div className="flex gap-2">
-          {/* Removing this feature for the time being */}
-          {/* <button
-            onClick={onEdit}
-            className="flex items-center gap-1 bg-sky-100 text-sky-500 px-4 py-1 rounded-full hover:bg-sky-200"
-          >
-            <FaEdit /> Edit
-          </button> */}
           <button
             onClick={onDelete}
             className="flex items-center gap-1 bg-red-100 text-red-400 px-4 py-1 rounded-full hover:bg-red-200"
@@ -244,11 +388,14 @@ const BudgetPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [deleteConfirmation, setDeleteConfirmation] = useState({
+    show: false,
+    budgetId: null,
+    budgetName: ''
+  });
 
   const user = JSON.parse(localStorage.getItem('user'));
-
   const userId = user?.id;
-
 
   const fetchBudgets = async () => {
     try {
@@ -257,10 +404,11 @@ const BudgetPage = () => {
       const result = await response.json();
 
       if (result.status === 'success') {
-        // Sort budgets by creation date (newest first)
-        const sortedBudgets = result.data.sort((a, b) =>
-          new Date(b.created_at || 0) - new Date(a.created_at || 0)
-        );
+        const sortedBudgets = result.data.sort((a, b) => {
+          const dateA = a?.created_at ? new Date(a.created_at) : new Date(0);
+          const dateB = b?.created_at ? new Date(b.created_at) : new Date(0);
+          return dateB - dateA; // Newest first
+        });
         setBudgets(sortedBudgets);
       } else {
         setError(result.message || 'Failed to fetch budgets');
@@ -273,10 +421,11 @@ const BudgetPage = () => {
     }
   };
 
-  // Filter budgets based on search term
-  const filteredBudgets = budgets.filter(budget =>
-    budget.budget_name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredBudgets = budgets.filter(budget => {
+    if (!budget) return false;
+    const name = budget.budget_name || '';
+    return name.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   const fetchCategories = async () => {
     try {
@@ -308,63 +457,50 @@ const BudgetPage = () => {
     fetchCategories();
   }, []);
 
-
-  function handleDeleteWithConfirm(budget_id) {
-    toast.custom((t) => (
-      <div
-        className={`max-w-sm w-full bg-white rounded-2xl shadow-lg border border-gray-200 px-5 py-4 text-sm transition-all ${t.visible ? 'animate-enter' : 'animate-leave'
-          }`}
-      >
-        <p className="text-gray-800 mb-3">
-          Are you sure you want to delete this budget?
-        </p>
-        <div className="flex justify-end gap-2">
-          <button
-            className="px-4 py-1.5 bg-red-500 text-white rounded-full text-sm font-medium hover:bg-red-600 transition"
-            onClick={() => {
-              handleDelete(budget_id);
-              toast.success('Budget deleted');
-              toast.dismiss(t.id);
-            }}
-          >
-            Delete
-          </button>
-          <button
-            className="px-4 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200 transition"
-            onClick={() => toast.dismiss(t.id)}
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    ), {
-      duration: 10000,
+  const handleDeleteClick = (budget_id, budget_name) => {
+    setDeleteConfirmation({
+      show: true,
+      budgetId: budget_id,
+      budgetName: budget_name
     });
-  }
-  const handleDelete = async (id) => {
-    // Show a confirmation toast instead of window.confirm
-    // We'll use a simple state to handle confirmation
+  };
 
+  const cancelDelete = () => {
+    setDeleteConfirmation({
+      show: false,
+      budgetId: null,
+      budgetName: ''
+    });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirmation.budgetId) return;
+    
     try {
-      const response = await fetch(`http://localhost:5000/api/budget/${id}`, {
+      const response = await fetch(`http://localhost:5000/api/budget/${deleteConfirmation.budgetId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ user_id: userId }),  // Pass user_id if needed
-        // Remove the body since your backend likely doesn't need it for DELETE
       });
 
       const result = await response.json();
 
       if (result.status === 'success') {
-        setBudgets(budgets.filter(budget => budget.budget_id !== id));
+        setBudgets(prevBudgets => 
+          prevBudgets.filter(budget => budget.budget_id !== deleteConfirmation.budgetId)
+        );
+        toast.success('Budget deleted successfully');
       } else {
         setError(result.message || 'Failed to delete budget');
+        toast.error(result.message || 'Failed to delete budget');
       }
     } catch (err) {
       setError('Failed to delete budget');
+      toast.error('Failed to delete budget');
       console.error('Error deleting budget:', err);
+    } finally {
+      cancelDelete();
     }
   };
 
@@ -385,12 +521,15 @@ const BudgetPage = () => {
         const result = await response.json();
 
         if (result.status === 'success') {
-          setBudgets(budgets.map(budget =>
-            budget.budget_id === editingId
-              ? { ...budget, budget_name: formData.budget_name }
-              : budget
-          ));
+          setBudgets(prevBudgets => 
+            prevBudgets.map(budget =>
+              budget.budget_id === editingId
+                ? { ...budget, budget_name: formData.budget_name }
+                : budget
+            )
+          );
           setEditingId(null);
+          toast.success('Budget updated successfully');
         } else {
           setError(result.message || 'Failed to update budget');
         }
@@ -415,8 +554,9 @@ const BudgetPage = () => {
         const result = await response.json();
 
         if (result.status === 'success') {
-          await fetchBudgets();
+          setBudgets(prevBudgets => [result.data, ...prevBudgets]);
           setIsCreating(false);
+          toast.success('Budget created successfully');
         } else {
           setError(result.message || 'Failed to create budget');
         }
@@ -432,12 +572,56 @@ const BudgetPage = () => {
     setIsCreating(false);
   };
 
-
   return (
     <AccountsLayout>
       <div className="p-6 w-full">
+        <Toaster position="top-center" />
+        
+        {deleteConfirmation.show && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div 
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={cancelDelete}
+            />
+            <div 
+              className="relative z-10 w-[92%] max-w-md rounded-2xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-600">
+                  <FaTrash />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  Delete budget?
+                </h3>
+              </div>
+
+              <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">
+                You're about to delete the budget for{' '}
+                <span className="font-semibold">{deleteConfirmation.budgetName}</span>.
+                This action cannot be undone.
+              </p>
+
+              <div className="mt-6 flex flex-wrap gap-3 justify-end">
+                <button
+                  onClick={cancelDelete}
+                  className="px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="px-4 py-2 rounded-full text-sm font-semibold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 transition"
+                >
+                  Delete Budget
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">Budget Management</h2>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Budget Management</h2>
           <button
             onClick={handleCreate}
             className="flex items-center gap-2 px-5 py-2.5 bg-[#AAD977] text-white text-sm font-medium rounded-lg hover:bg-[#6d9140] transition shadow-sm"
@@ -447,7 +631,7 @@ const BudgetPage = () => {
         </div>
 
         {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 text-red-500 p-4 mb-6 rounded">
+          <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 text-red-500 dark:text-red-300 p-4 mb-6 rounded">
             <div className="flex items-center">
               <FaTimes className="mr-2" />
               <span>{error}</span>
@@ -455,9 +639,8 @@ const BudgetPage = () => {
           </div>
         )}
 
-        {/* Search Bar */}
         <div className="mb-6">
-          <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm">
+          <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm dark:bg-gray-800">
             <FaSearch className="text-[#76B947] mr-2" />
             <input
               type="text"
@@ -497,18 +680,18 @@ const BudgetPage = () => {
                 total_target={budget.total_target}
                 used={budget.used}
                 onEdit={() => handleEdit(budget.budget_id)}
-                onDelete={() => handleDeleteWithConfirm(budget.budget_id)}
+                onDelete={() => handleDeleteClick(budget.budget_id, budget.budget_name)}
               />
             )
           ))}
-
+          
           {budgets.length === 0 && !isCreating && (
             <div className="text-center py-12">
-              <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <FaWallet className="text-gray-400 text-3xl" />
+              <div className="mx-auto w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
+                <FaWallet className="text-gray-400 dark:text-gray-500 text-3xl" />
               </div>
-              <h3 className="text-lg font-medium text-gray-700 mb-1">No budgets yet</h3>
-              <p className="text-gray-500 mb-4">Create your first budget to start tracking your expenses</p>
+              <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-1">No budgets yet</h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-4">Create your first budget to start tracking your expenses</p>
               <button
                 onClick={handleCreate}
                 className="px-5 py-2.5 bg-[#AAD977] text-white rounded-lg hover:bg-[#6d9140] transition"

@@ -18,7 +18,6 @@ const HelpMain = () => {
       ];
   });
 
-
   const toggleTask = (index) => {
     setTasks(prev => {
       const updated = prev.map((task, i) =>
@@ -28,7 +27,6 @@ const HelpMain = () => {
       return updated;
     });
   };
-
 
   // Mock user data
   const userStats = {
@@ -53,40 +51,35 @@ const HelpMain = () => {
   };
 
   const xpProgress = (userStats.xp / userStats.nextLevelXp) * 100;
-
-  // Calculate completed count
   const completedCount = tasks.filter(t => t.done).length;
 
-  // Claim reward function
   const claimReward = () => {
     if (completedCount === 3) {
       console.log('Reward Claimed! +15 XP');
-      // Reset all tasks
       setTasks(tasks.map(t => ({ ...t, done: false })));
-
     } else {
       console.log(`${3 - completedCount} more tasks to complete!`);
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+    <div className="max-w-6xl mx-auto px-4 py-8 space-y-6 dark:bg-gray-900">
       {/* Top Row - XP Overview Card */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="bg-[#ffffff] p-6 rounded-3xl shadow-md border-l-8 border-t-2 border-r-2 border-b-2 border-[#72C1F5] relative overflow-hidden"
+        className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-md dark:shadow-gray-700/50 border-l-8 border-t-2 border-r-2 border-b-2 border-[#FFD18C] relative overflow-hidden"
       >
-        <div className="absolute top-0 right-0 w-32 h-32 bg-[#c3fafe] rounded-full filter blur-3xl opacity-40 -mr-10 -mt-10"></div>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-[#fef9c3] dark:bg-yellow-900 rounded-full filter blur-3xl opacity-40 dark:opacity-20 -mr-10 -mt-10"></div>
 
         <div className="relative z-10 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-sky-300 mb-1">Knowledge Quest</h1>
-            <p className="text-[#4b5563] mb-4">Level {userStats.level} Scholar</p>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">Level {userStats.level} Scholar</p>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-full bg-[#f3f4f6] rounded-full h-3">
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                 <motion.div
                   className="bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53] h-3 rounded-full"
                   // bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53] 
@@ -95,23 +88,23 @@ const HelpMain = () => {
                   transition={{ duration: 1, delay: 0.3 }}
                 />
               </div>
-              <span className="text-sm font-medium text-[#374151]">{userStats.xp}/{userStats.nextLevelXp} XP</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{userStats.xp}/{userStats.nextLevelXp} XP</span>
             </div>
 
             <div className="flex gap-3">
-              <div className="bg-[#fff7ed] border border-[#fed7aa] rounded-lg px-3 py-2 flex items-center gap-2">
+              <div className="bg-[#fff7ed] dark:bg-gray-700 border border-[#fed7aa] dark:border-gray-600 rounded-lg px-3 py-2 flex items-center gap-2">
                 <FaFire className="text-[#fb923c]" />
-                <span className="text-[#9a3412] text-sm">{userStats.streakDays} day streak</span>
+                <span className="text-[#9a3412] dark:text-orange-300 text-sm">{userStats.streakDays} day streak</span>
               </div>
-              <div className="bg-[#fffbeb] border border-[#fde68a] rounded-lg px-3 py-2 flex items-center gap-2">
+              <div className="bg-[#fffbeb] dark:bg-gray-700 border border-[#fde68a] dark:border-gray-600 rounded-lg px-3 py-2 flex items-center gap-2">
                 <FaTrophy className="text-[#fbbf24]" />
-                <span className="text-[#92400e] text-sm">{userStats.completedTutorials} tutorials</span>
+                <span className="text-[#92400e] dark:text-yellow-300 text-sm">{userStats.completedTutorials} tutorials</span>
               </div>
             </div>
           </div>
 
           <div className="relative">
-            <div className="w-24 h-24 bg-[#ffffff] border-4 border-[#FFD18C] rounded-full shadow-lg flex flex-col items-center justify-center">
+            <div className="w-24 h-24 bg-white dark:bg-gray-800 border-4 border-[#FFD18C] rounded-full shadow-lg flex flex-col items-center justify-center">
               <p className="text-2xl font-bold text-[#FFBF1A]">{userStats.xp}</p>
               <p className="text-xs text-[#6b7280]">XP</p>
             </div>
@@ -140,7 +133,7 @@ const HelpMain = () => {
             onHoverStart={() => setIsHovered('faq')}
             onHoverEnd={() => setIsHovered(null)}
             onClick={() => handleButtonClick('/support/faqs')}
-            className="bg-white p-6 rounded-2xl shadow-sm border-l-8 border-[#CBEEA5] hover:border-[#88BC46] transition-all relative overflow-hidden group w-full"
+            className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border-l-8 border-[#B1E1FF] hover:border-[#518fc5] transition-all relative overflow-hidden group w-full"
           >
             <AnimatePresence>
               {isHovered === 'faq' && (
@@ -174,7 +167,7 @@ const HelpMain = () => {
             onHoverStart={() => setIsHovered('tutorials')}
             onHoverEnd={() => setIsHovered(null)}
             onClick={() => handleButtonClick('/support/tutorials')}
-            className="bg-[#ffffff] p-6 rounded-2xl shadow-sm border-l-8 border-[#f4ba72] hover:border-[#eca248] transition-all relative overflow-hidden group w-full"
+            className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border-l-8 border-[#f472b6] hover:border-[#ec4899] transition-all relative overflow-hidden group w-full"
           >
             <AnimatePresence>
               {isHovered === 'tutorials' && (
@@ -206,7 +199,7 @@ const HelpMain = () => {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="bg-[#ffffff] p-6 rounded-3xl shadow-md border-t-8 border-[#88BC46] h-full"
+          className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-md border-t-8 border-[#88BC46] h-full"
         >
           <h2 className="text-xl font-bold text-[#1f2937] mb-4 flex items-center gap-2">
             <FaTrophy className="text-[#88BC46]" /> Your Achievements
@@ -235,13 +228,12 @@ const HelpMain = () => {
         </motion.div>
       </div>
 
-
       {/* Bottom Row - Daily Challenge */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.3 }}
-        className="bg-white p-6 rounded-3xl shadow-md border-t-8 border-[#72C1F5] relative overflow-hidden"
+        className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-md border-t-8 border-[#fb923c] relative overflow-hidden"
       >
         <div className="absolute top-0 right-0 w-24 h-24 bg-[#ffedd5] rounded-full filter blur-3xl opacity-40 -mr-10 -mt-10"></div>
         <div className="relative z-10">
@@ -258,7 +250,6 @@ const HelpMain = () => {
                   toggleTask(i);
                   if (!tasks[i].done && tasks[i].path) navigate(tasks[i].path);
                 }}
-
               >
                 <span className="text-sm font-medium">{item.task}</span>
                 {item.done ? (
@@ -291,7 +282,6 @@ const HelpMain = () => {
           </button>
         </div>
       </motion.div>
-
     </div>
   );
 };

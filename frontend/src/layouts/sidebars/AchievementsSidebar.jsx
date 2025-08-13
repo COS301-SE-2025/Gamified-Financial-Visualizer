@@ -1,4 +1,4 @@
-import React, { useEffect, useState }  from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   FaUsers,
   FaBolt,
@@ -18,7 +18,7 @@ const performance = {
 };
 
 const AccountsPerformanceHeader = () => {
-   const [userStats, setUserStats] = useState(null);
+  const [userStats, setUserStats] = useState(null);
   const [numComplete, setNumComplete] = useState(null);
   const [totalAchievements, setTotalAchievements] = useState(null);
   const [levelProgress, setLevelProgress] = useState(null);
@@ -28,13 +28,11 @@ const AccountsPerformanceHeader = () => {
     if (!user?.id) return;
 
     // Fetch user stats
-
     fetch(`http://localhost:5000/api/achievements/performance/${user.id}`)
       .then(res => res.json())
       .then(data => setUserStats(data.data))
       .catch(err => console.error('User stats error:', err));
 
-       
     fetch(`http://localhost:5000/api/achievements/user/${user.id}`)
       .then(res => res.json())
       .then(data => {
@@ -44,13 +42,12 @@ const AccountsPerformanceHeader = () => {
         setNumComplete(complete.length);
       });
 
-           // Fetch level progress
+    // Fetch level progress
     fetch(`http://localhost:5000/api/auth/profile/level-progress/${user.id}`)
       .then(res => res.json())
       .then(res => setLevelProgress(res.data))
       .catch(err => console.error('Failed to load level progress:', err));
-  } , []);
-
+  }, []);
 
   return (
     <div className="flex flex-wrap justify-between gap-6 items-start w-full mb-6">
@@ -68,13 +65,13 @@ const AccountsPerformanceHeader = () => {
       {/* Right Section (Performance Card + Stat Grid) */}
       <div className="flex flex-col gap-4 flex-1">
         {/* Center Performance Card */}
-        <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-4 flex flex-col sm:flex-row items-center justify-between gap-6">
           {/* Avatar + Info */}
           <div className="flex items-center gap-6">
             <img src={userStats?.avatar_url} className="w-16 h-16 rounded-full object-cover" alt="Avatar" />
             <div>
-              <p className="text-2xl font-bold text-gray-800">{userStats?.creditScore}</p>
-              <p className="text-sm text-gray-500">{userStats?.performanceLabel}</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">{userStats?.creditScore}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{userStats?.performanceLabel}</p>
               <p className="text-sm text-[#F97156] font-medium">Lv {levelProgress?.level_number ?? '—'}: {levelProgress?.tier_status ?? '—'}</p>
             </div>
           </div>
@@ -82,7 +79,7 @@ const AccountsPerformanceHeader = () => {
           {/* Progress Bar */}
           <div className="w-full">
             <p className="text-sm font-medium text-[#7FBCE9] mb-1">Achievements Performance</p>
-            <div className="relative h-4 w-full rounded-full bg-[#f5f5f5] overflow-hidden">
+            <div className="relative h-4 w-full rounded-full bg-[#f5f5f5] dark:bg-gray-700 overflow-hidden">
               <div
                 className="h-full rounded-full"
                 style={{
@@ -91,7 +88,7 @@ const AccountsPerformanceHeader = () => {
                 }}
               />
               <div
-                className="absolute top-1/2 w-5 h-5 bg-[#B3E5FC] rounded-full border-2 border-white shadow-md"
+                className="absolute top-1/2 w-5 h-5 bg-[#B3E5FC] rounded-full border-2 border-white dark:border-gray-800 shadow-md"
                 style={{
                   left: `calc(${userStats?.performance/500 *100}% - 10px)`,
                   transform: 'translateY(-50%)'
@@ -141,7 +138,7 @@ const AccountsPerformanceHeader = () => {
               color: '#FF8A8A'
             }
           ].map(({ label, value, icon, color }, index) => (
-            <div key={index} className="relative bg-white rounded-xl shadow-sm overflow-hidden">
+            <div key={index} className="relative bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
               <div className="flex items-center justify-between px-4 py-3">
                 {/* Icon circle with soft background */}
                 <div className="w-10 h-10 flex items-center justify-center rounded-full" style={{ backgroundColor: `${color}20` }}>
@@ -150,8 +147,8 @@ const AccountsPerformanceHeader = () => {
 
                 {/* Stat content */}
                 <div className="text-right">
-                  <div className="text-lg font-bold text-gray-900">{value}</div>
-                  <div className="text-sm text-gray-500">{label}</div>
+                  <div className="text-lg font-bold text-gray-900 dark:text-gray-200">{value}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-300">{label}</div>
                 </div>
               </div>
 
@@ -160,7 +157,6 @@ const AccountsPerformanceHeader = () => {
             </div>
           ))}
         </div>
-
       </div>
     </div>
   );

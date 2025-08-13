@@ -1,4 +1,3 @@
-
 import React, { useState , useEffect} from 'react';
 import AccountsLayout from './AccountsLayout';
 import { 
@@ -33,8 +32,7 @@ const ImportPage = () => {
   const [showReview, setShowReview] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
 
-
-  const banks =  [
+  const banks = [
     { id: 'bank1', name: 'Nedbank' },
     { id: 'bank2', name: 'Standard Bank' },
     { id: 'bank3', name: 'FNB' },
@@ -62,14 +60,14 @@ const ImportPage = () => {
     const droppedFiles = Array.from(e.dataTransfer.files).filter(file =>
       file.type === 'application/pdf'
     );
-    setFiles([...files, ...droppedFiles]);
+    setFiles(droppedFiles.slice(0, 1)); // Only keep the first file
   };
 
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files).filter(file =>
       file.type === 'application/pdf'
     );
-    setFiles([...files, ...selectedFiles]);
+    setFiles(selectedFiles.slice(0, 1)); // Only keep the first file
   };
 
   const removeFile = (index) => {
@@ -89,7 +87,7 @@ const ImportPage = () => {
   // Import process
   const handleImport = async () => {
     if (files.length === 0 && !url) {
-      setImportError('Please upload files or enter a URL');
+      setImportError('Please upload a file or enter a URL');
       return;
     }
     if (!selectedAccount) {
@@ -110,7 +108,7 @@ const ImportPage = () => {
       let res, body;
       if (files.length) {
         const form = new FormData();
-        form.append('statement', files[0]);              // note: single-file
+        form.append('statement', files[0]);
         form.append('accountId', selectedAccount);
         form.append('password', password);
         form.append('bankName', selectedBank.toLowerCase());    
@@ -123,7 +121,6 @@ const ImportPage = () => {
          }
         );
       } else {
-        // if you support URL-based upload server-side:
         res = await fetch(
           `http://localhost:5000/api/classifier/upload-statement-url`,
           {
@@ -148,20 +145,19 @@ const contentType = res.headers.get('content-type');
       body = await res.json();
       if (!res.ok) throw new Error(body.error || 'Upload failed');
 
-      // Map your DB rows into UI-friendly shape
       const txns = body.preview.map((tx) => {
         const match = categories.find(c => c.category_name === tx.predicted_category.toLowerCase());
         const id = match ? match.category_id : null;
 
         return {
-          id: `${tx.accountId}-${tx.date}-${tx.description}-${Math.random().toString(36).substr(2, 9)}`, // unique ID
+          id: `${tx.accountId}-${tx.date}-${tx.description}-${Math.random().toString(36).substr(2, 9)}`,
           accountId: tx.accountId,
           date: tx.date,
           description: tx.description,
           amount: tx.amount,
           direction: tx.direction,
           transaction_type: tx.transaction_type,
-          category: tx.category_id,         // numeric ID
+          category: tx.category_id,
           originalCategory: id,
           originalType: tx.transaction_type,
         };
@@ -199,8 +195,6 @@ const contentType = res.headers.get('content-type');
     setIsImporting(true);
     setImportError(null);
 
-
-    // build the minimal feedback array
     const payload = {
       feedbacks: transactions
         .filter(tx => tx.category !== tx.originalCategory)
@@ -229,7 +223,7 @@ const contentType = res.headers.get('content-type');
               category_id: tx.category,
               transaction_type: tx.transaction_type
             })),
-            recurringFlags: transactions.map(_ => false)  // or your real flags
+            recurringFlags: transactions.map(_ => false)
           })
         }
       );
@@ -240,9 +234,7 @@ const contentType = res.headers.get('content-type');
       setImportSuccess(true);
       setShowReview(false);
                 
-      //  send corrections to /feedback
       if (payload.feedbacks.length) {
-        console.log('Feedback payload:', payload.feedbacks);
         fetch(
           `http://localhost:5000/api/classifier/feedback`,
           {
@@ -278,10 +270,10 @@ const contentType = res.headers.get('content-type');
   if (!accounts) {
     return (
       <AccountsLayout>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">Loading accounts...</h1>
-            <p className="text-gray-600">Please wait while we fetch your accounts.</p>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">Loading accounts...</h1>
+            <p className="text-gray-600 dark:text-gray-400">Please wait while we fetch your accounts.</p>
           </div>
         </div>
       </AccountsLayout>
@@ -290,9 +282,9 @@ const contentType = res.headers.get('content-type');
 
   return (
     <AccountsLayout>
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
         <div className="w-full px-4 max-w-4xl mx-auto">
-          <div className="border-2 border-gray-200 rounded-2xl bg-white shadow-sm overflow-hidden">
+          <div className="border-2 border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
             <div className="px-6 py-8 sm:px-8 sm:py-10">
               {/* Step Indicator */}
               <div className="flex justify-center mb-8">
@@ -311,11 +303,11 @@ const contentType = res.headers.get('content-type');
                 <>
                   {/* Upload Section */}
                   <div className="text-center mb-8">
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
+                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-2">
                       Import Bank Statements
                     </h1>
-                    <p className="text-gray-600">
-                      Upload PDF statements to automatically extract and categorize transactions with <span className="font-bold text-[#83AB55]">AI</span>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Upload a PDF statement to automatically extract and categorize transactions with <span className="font-bold text-[#83AB55]">AI</span>
                     </p>
                   </div>
 
@@ -341,15 +333,15 @@ const contentType = res.headers.get('content-type');
                   )}
 
                   {/* Configuration */}
-                  <div className="bg-gray-50 p-5 rounded-xl mb-6">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-4">Import Settings</h2>
+                  <div className="bg-gray-50 p-5 rounded-xl mb-6 dark:bg-gray-700">
+                    <h2 className="text-lg font-semibold text-gray-800 mb-4 dark:text-gray-200">Import Settings</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
                           Destination Account <span className="text-red-500">*</span>
                         </label>
                         <select
-                          className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-sky-400 focus:border-transparent"
+                          className="w-full border border-gray-300 dark:bg-gray-800 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-sky-400 focus:border-transparent"
                           value={selectedAccount}
                           onChange={(e) => setSelectedAccount(e.target.value)}
                           required
@@ -362,11 +354,11 @@ const contentType = res.headers.get('content-type');
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Bank <span className="text-red-500">*</span>
                         </label>
                         <select
-                          className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-sky-400 focus:border-transparent"
+                          className="w-full border border-gray-300 dark:bg-gray-800 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-sky-400 focus:border-transparent  dark:text-white"
                           value={selectedBank}
                           onChange={(e) => setSelectedBank(e.target.value)}
                           required
@@ -379,13 +371,13 @@ const contentType = res.headers.get('content-type');
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           PDF Password (if required)
                         </label>
                         <div className="relative">
                           <input
                             type="password"
-                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-sky-400 focus:border-transparent"
+                            className="w-full border border-gray-300 dark:bg-gray-800 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-sky-400 focus:border-transparent  dark:text-white"
                             placeholder="Enter password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -398,7 +390,7 @@ const contentType = res.headers.get('content-type');
 
                   {/* File Upload */}
                   <div className="mb-8">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-3">Upload Statements</h2>
+                    <h2 className="text-lg font-semibold text-gray-800 mb-3">Upload Statement</h2>
                     
                     <div
                       className={`border-2 border-dashed rounded-xl p-8 mb-4 text-center transition-all ${isDragging ? 'border-sky-400 bg-blue-50' : 'border-gray-300 hover:border-sky-300'}`}
@@ -412,7 +404,7 @@ const contentType = res.headers.get('content-type');
                           <FaUpload size={24} />
                         </div>
                         <h3 className="text-lg font-medium text-gray-700">
-                          {files.length > 0 ? 'Add more files' : 'Drag PDF statements here'}
+                          {files.length > 0 ? 'Replace file' : 'Drag PDF statement here'}
                         </h3>
                         <p className="text-gray-500 text-sm">or</p>
                         <label className="cursor-pointer bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition flex items-center">
@@ -421,37 +413,36 @@ const contentType = res.headers.get('content-type');
                             type="file"
                             className="hidden"
                             accept=".pdf"
-                            multiple
                             onChange={handleFileChange}
                           />
-                          Select Files
+                          Select File
                         </label>
                         <p className="text-xs text-gray-500 mt-2">
-                          PDF files only (max 10MB each)
+                          PDF file only (max 10MB)
                         </p>
                       </div>
                     </div>
 
                     {files.length > 0 && (
                       <div className="bg-gray-50 p-4 rounded-lg">
-                        <h3 className="text-md font-medium text-gray-700 mb-3 flex items-center">
+                        <h3 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center">
                           <FaFileAlt className="mr-2 text-gray-500" />
-                          Files to Import ({files.length})
+                          File to Import
                         </h3>
                         <div className="space-y-2">
                           {files.map((file, index) => (
-                            <div key={index} className="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200">
+                            <div key={index} className="flex items-center justify-between bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200">
                               <div className="flex items-center space-x-3">
                                 <FaFilePdf className="text-red-500" />
                                 <div>
-                                  <p className="text-sm font-medium text-gray-800">{file.name}</p>
-                                  <p className="text-xs text-gray-500">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                                  <p className="text-sm font-medium text-gray-800 dark:text-white">{file.name}</p>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
                                 </div>
                               </div>
                               <button
                                 onClick={() => removeFile(index)}
                                 className="text-gray-400 hover:text-red-500 p-1"
-                                aria-label="Remove file"
+                                aria-label="Remove file dark:hover:text-red-400"
                               >
                                 <FaTrash />
                               </button>
@@ -464,8 +455,8 @@ const contentType = res.headers.get('content-type');
 
                   {/* URL Import */}
                   <div className="mb-8">
-                    <h2 className="text-md font-medium text-gray-700 mb-3 flex items-center">
-                      <FaLink className="mr-2 text-gray-500" />
+                    <h2 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center">
+                      <FaLink className="mr-2 text-gray-500 dark:text-gray-400" />
                       Or import from URL
                     </h2>
                     <div className="flex space-x-2">
@@ -473,7 +464,7 @@ const contentType = res.headers.get('content-type');
                         <input
                           type="text"
                           placeholder="https://yourbank.com/statement.pdf"
-                          className="w-full border border-gray-300 rounded-lg px-4 py-2 pl-10 focus:ring-2 focus:ring-sky-400 focus:border-transparent"
+                          className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 pl-10 focus:ring-2 focus:ring-sky-400 focus:border-transparent dark:bg-gray-700 dark:text-white"
                           value={url}
                           onChange={(e) => setUrl(e.target.value)}
                         />
@@ -508,7 +499,7 @@ const contentType = res.headers.get('content-type');
                     <div className="flex justify-between">
                       <button
                         onClick={handleDiscard}
-                        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center"
+                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center"
                         disabled={isImporting}
                       >
                         <FaTimes className="mr-2" />
@@ -516,8 +507,12 @@ const contentType = res.headers.get('content-type');
                       </button>
                       <button
                         onClick={handleImport}
-                        className={`px-6 py-2 rounded-lg text-white transition flex items-center ${(files.length > 0 || url) && selectedAccount && selectedBank ? 'bg-sky-500 hover:bg-sky-600' : 'bg-gray-400 cursor-not-allowed'}`}
-                        disabled={!(files.length > 0 || url) || !selectedAccount || !selectedBank || isImporting}
+                        className={`px-6 py-2 rounded-lg text-white transition flex items-center ${
+                        (files.length > 0 || url) && selectedAccount && selectedBank 
+                          ? 'bg-sky-500 hover:bg-sky-600' 
+                          : 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
+                      }`}
+                        disabled={!(files.length === 1 || url) || !selectedAccount || !selectedBank || isImporting}
                       >
                         {isImporting ? (
                           <>
@@ -538,59 +533,57 @@ const contentType = res.headers.get('content-type');
                 <>
                   {/* Review Section */}
                   <div className="mb-8">
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
+                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-2">
                       Review Transactions
                     </h1>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 dark:text-gray-400">
                       Verify and categorize the extracted transactions
                     </p>
                   </div>
 
-                  <div className="bg-gray-50 p-4 rounded-xl mb-6">
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200 bg-white rounded-lg overflow-hidden">
-                        <thead className="bg-gray-100">
-                          <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200">
-                          {transactions.map((transaction) => (
-                            <tr key={transaction.id} className="hover:bg-gray-50">
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {transaction.date}
-                              </td>
-                              <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                                <input
-                                  type="text"
-                                  value={transaction.description}
-                                  onChange={(e) => handleDescriptionChange(transaction.id, e.target.value)}
-                                  className="border-b border-gray-300 focus:border-sky-400 focus:outline-none w-full"
-                                />
-                              </td>
-                              <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${transaction.amount < 0 ? 'text-red-500' : 'text-lime-600'}`}>
-                                {transaction.amount < 0 ? `-$${Math.abs(transaction.amount).toFixed(2)}` : `$${transaction.amount.toFixed(2)}`}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                              <select
+                <div className="overflow-x-auto mb-6">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Category</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                      {transactions.map((transaction) => (
+                        <tr key={transaction.id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            {transaction.date}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                            {transaction.description}
+                          </td>
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                            transaction.amount < 0 
+                              ? 'text-red-600 dark:text-red-400' 
+                              : 'text-green-600 dark:text-green-400'
+                          }`}>
+                            {transaction.amount < 0 ? `-$${Math.abs(transaction.amount).toFixed(2)}` : `$${transaction.amount.toFixed(2)}`}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            <select
                               value={transaction.category}
                               onChange={(e) => handleCategoryChange(transaction.id, Number(e.target.value))}
-                              className="border border-gray-300 rounded px-2 py-1"
+                              className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-700 dark:text-white"
                             >
                               {categories.map(category => (
                                 <option key={category.category_id} value={category.category_id}>{category.category_name}</option>
                               ))}
                             </select>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                             <select
                               value={transaction.transaction_type}
                               onChange={(e) => handleTypeChange(transaction.id, e.target.value)}
-                              className="border border-gray-300 rounded px-2 py-1"
+                              className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-700 dark:text-white"
                             >
                               {transactionTypes.map(type => (
                                 <option key={type} value={type}>{type}</option>
@@ -602,7 +595,7 @@ const contentType = res.headers.get('content-type');
                         </tbody>
                       </table>
                     </div>
-                  </div>
+                  
 
                   <div className="border-t pt-6">
                     <div className="flex justify-between items-center">

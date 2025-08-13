@@ -7,7 +7,14 @@ import 'react-toastify/dist/ReactToastify.css';
 const Settings = () => {
   const user = JSON.parse(localStorage.getItem('user'));
   const userId = user?.id;
-  const [theme, setTheme] = useState(true);
+  
+  // Initialize theme from localStorage or system preference
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) return savedTheme === 'dark';
+    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+  });
+  
   const [notifications, setNotifications] = useState(true);
   const [outAppNotifications, setOutAppNotifications] = useState(true);
   const [verified, setVerified] = useState(false);
@@ -16,7 +23,6 @@ const Settings = () => {
   const [selectedAvatar, setSelectedAvatar] = useState(0);
   const [avatarList, setAvatarList] = useState([]);
   const [showConfirm, setShowConfirm] = useState(false);
-
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -26,7 +32,15 @@ const Settings = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const navigate = useNavigate();
- 
+
+  // Apply theme on component mount and when theme changes
+  useEffect(() => {
+    const html = document.documentElement;
+    html.classList.remove('light', 'dark');
+    html.classList.add(theme ? 'dark' : 'light');
+    localStorage.setItem('theme', theme ? 'dark' : 'light');
+  }, [theme]);
+
   const passwordCriteria = {
     length: /^.{8,}$/,
     lowercase: /[a-z]/,
@@ -40,6 +54,7 @@ const Settings = () => {
     pattern: /^[a-z0-9._]+$/.test(username),
   };
 
+  // validate the password
   const validatePassword = (pwd) => ({
     length: passwordCriteria.length.test(pwd),
     lowercase: passwordCriteria.lowercase.test(pwd),
@@ -51,13 +66,20 @@ const Settings = () => {
   const passwordStatus = validatePassword(newPassword);
   const passwordsMatch = newPassword === confirmPassword;
 
+  // fetch settings 
   const fetchSettings = async () => {
     try {
       const res = await fetch(`http://localhost:5000/api/auth/${userId}/settings`);
       const data = await res.json();
       if (res.ok) {
         setUsername(data.username);
-        setTheme(data.preferences?.theme === 'dark');
+        
+        // Only update theme from backend if localStorage doesn't have a preference
+        const localStorageTheme = localStorage.getItem('theme');
+        if (!localStorageTheme) {
+          setTheme(data.preferences?.theme === 'dark');
+        }
+        
         setNotifications(data.preferences?.in_app_notifications_enabled ?? true);
         setOutAppNotifications(data.outOfAppEnabled ?? false);
         setSelectedAvatar(data.preferences?.avatar_id || 1);
@@ -68,6 +90,7 @@ const Settings = () => {
     }
   };
 
+  // fetch avatars form database
   const fetchAvatars = async () => {
     try {
       const res = await fetch('http://localhost:5000/api/auth/avatars');
@@ -83,6 +106,7 @@ const Settings = () => {
     fetchAvatars();
   }, [userId]);
 
+  // username change hanlder 
   const handleUsernameChange = async () => {
     if (!usernameCriteria.length || !usernameCriteria.pattern) return;
 
@@ -114,10 +138,12 @@ const Settings = () => {
     }
   };
 
+  // avatar change handler
   const handleAvatarChange = (avatarId) => {
     setSelectedAvatar(avatarId);
   };
 
+  // save preferences handleer
   const handleSavePreferences = async () => {
     try {
       const res = await fetch(`http://localhost:5000/api/auth/${userId}/settings`, {
@@ -133,7 +159,6 @@ const Settings = () => {
       });
 
       if (res.ok) {
-        await fetchSettings();
         window.dispatchEvent(new Event('userUpdated'));
         toast.success('Preferences saved successfully');
       } else {
@@ -145,6 +170,7 @@ const Settings = () => {
     }
   };
 
+  // password change handler
   const handlePasswordChange = async () => {
     if (!Object.values(passwordStatus).every(Boolean)) return;
     if (!passwordsMatch) return;
@@ -176,14 +202,25 @@ const Settings = () => {
     }
   };
 
+  // theme toggle
+  const toggleTheme = () => {
+    setTheme(prevTheme => !prevTheme);
+  };
+
   const renderCheck = (isValid) =>
     isValid ? <FaCheckCircle className="text-green-500 inline" /> : <FaTimesCircle className="text-red-500 inline" />;
 
   return (
-    <div className="max-w-6xl mx-auto px-2 pb-2 space-y-6 overflow-y-auto">
+    <div className="max-w-6xl mx-auto px-2 pb-2 space-y-6 overflow-y-auto dark:bg-gray-900">
+      {/* Save Preferences */}
+      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-4 flex justify-end space-x-3">
+        <button className="bg-gray-200 dark:bg-gray-700 dark:text-white px-4 py-2 rounded-md">Cancel</button>
+        <button onClick={handleSavePreferences} className="bg-[#AAD977] text-white px-4 py-2 rounded-md">Save</button>
+      </div>
+      
       {/* Username Section */}
-      <div className="bg-white shadow rounded-xl p-6">
-        <h3 className="font-semibold text-[#88BC46] text-lg mb-4">Change Username</h3>
+      <div className="bg-white shadow dark:bg-gray-800 rounded-xl p-6">
+        <h3 className="font-semibold text-[#88BC46] dark:text-[#AAD977] text-lg mb-4">Change Username</h3>
         {isEditingUsername ? (
           <div className="w-full">
             <div className="flex items-center gap-2">
@@ -218,7 +255,7 @@ const Settings = () => {
           </div>
         ) : (
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-700">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Current username: <span className="font-bold">{username || 'Not set'}</span>
             </p>
             <button onClick={() => setIsEditingUsername(true)} className="bg-[#AAD977] text-white px-4 py-2 rounded-md text-sm">
@@ -229,38 +266,45 @@ const Settings = () => {
       </div>
 
       {/* Preferences */}
-      <div className="bg-white shadow rounded-xl p-6">
-        <h3 className="font-semibold text-[#88BC46] text-lg mb-4">Preferences</h3>
-        {[{ label: 'Dark Mode', state: theme, setter: setTheme },
-          { label: 'Enable In-App Notifications', state: notifications, setter: setNotifications },
-          { label: 'Enable Out-of-App Notifications', state: outAppNotifications, setter: setOutAppNotifications },
-          { label: 'Two Factor Verification', state: verified, setter: setVerified }].map(({ label, state, setter }, i) => (
-            <div key={i} className="flex items-center justify-between mb-4">
-              <p className="text-sm font-medium text-gray-700">{label}</p>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" checked={state} onChange={() => setter(!state)} className="sr-only peer" />
-                <div className="w-11 h-6 bg-gray-200 peer-checked:bg-[#88BC46] rounded-full transition-all duration-300"></div>
-                <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-md transform peer-checked:translate-x-5 transition-transform duration-300"></div>
-              </label>
-            </div>
+      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-6">
+        <h3 className="font-semibold text-[#88BC46] dark:text-[#AAD977] text-lg mb-4">Preferences</h3>
+        {[
+          { label: 'Dark Mode', state: theme, action: toggleTheme },
+          { label: 'Enable In-App Notifications', state: notifications, action: () => setNotifications(!notifications) },
+          { label: 'Enable Out-of-App Notifications', state: outAppNotifications, action: () => setOutAppNotifications(!outAppNotifications) },
+          { label: 'Two Factor Verification', state: verified, action: () => setVerified(!verified) }
+        ].map(({ label, state, action }, i) => (
+          <div key={i} className="flex items-center justify-between mb-4">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</p>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                checked={state} 
+                onChange={action} 
+                className="sr-only peer" 
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-checked:bg-[#88BC46] rounded-full transition-all duration-300"></div>
+              <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-md transform peer-checked:translate-x-5 transition-transform duration-300"></div>
+            </label>
+          </div>
         ))}
       </div>
 
       {/* Password Section */}
-      <div className="bg-white shadow rounded-xl p-6">
-        <h3 className="font-semibold mb-4 text-[#88BC46]">Change Password</h3>
+      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-6">
+        <h3 className="font-semibold mb-4 text-[#88BC46] dark:text-[#AAD977]">Change Password</h3>
         <div className="grid gap-4 mb-3">
-          <div className="relative">
+          <div className="relative ">
             <input 
               type={showCurrentPassword ? "text" : "password"} 
               placeholder="Current Password" 
               value={currentPassword} 
               onChange={(e) => setCurrentPassword(e.target.value)} 
-              className="input w-full" 
+              className="input w-full dark:text-gray-300" 
             />
             <button 
               onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-300"
             >
               {showCurrentPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
@@ -271,11 +315,11 @@ const Settings = () => {
               placeholder="New Password" 
               value={newPassword} 
               onChange={(e) => setNewPassword(e.target.value)} 
-              className="input w-full" 
+              className="input w-full dark:text-gray-300" 
             />
             <button 
               onClick={() => setShowNewPassword(!showNewPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-300"
             >
               {showNewPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
@@ -286,11 +330,11 @@ const Settings = () => {
               placeholder="Confirm New Password" 
               value={confirmPassword} 
               onChange={(e) => setConfirmPassword(e.target.value)} 
-              className="input w-full" 
+              className="input w-full dark:text-gray-300" 
             />
             <button 
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-300"
             >
               {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
@@ -326,8 +370,8 @@ const Settings = () => {
       </div>
 
       {/* Avatar */}
-      <div className="bg-white shadow rounded-xl p-6">
-        <h3 className="font-semibold mb-4 text-[#88BC46]">Change Avatar</h3>
+      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-6">
+        <h3 className="font-semibold mb-4 text-[#88BC46] dark:text-[#AAD977]">Change Avatar</h3>
         <div className="flex flex-wrap gap-3">
           {avatarList.map((avatar) => (
             <button key={avatar.avatar_id} onClick={() => handleAvatarChange(avatar.avatar_id)}
@@ -342,17 +386,17 @@ const Settings = () => {
       </div>
 
       {/* Danger Zone */}
-      <div className="bg-white shadow rounded-xl p-6 border border-red-100">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-6 border border-red-100 dark:border-red-900">
         <h3 className="font-semibold text-red-500 mb-4">Danger Zone</h3>
-        <p className="text-sm text-gray-600 mb-4">Deleting your account is permanent and cannot be undone.</p>
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Deleting your account is permanent and cannot be undone.</p>
         <button onClick={() => setShowConfirm(true)} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md">
           Delete My Account
         </button>
       </div>
 
-      {/* Save Preferences */}
-      <div className="bg-white shadow rounded-xl p-4 flex justify-start space-x-3">
-        <button className="bg-gray-200 px-4 py-2 rounded-md">Cancel</button>
+      {/* Save Preferences 2*/}
+      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-4 flex justify-start space-x-3">
+        <button className="bg-gray-200 dark:bg-gray-700 dark:text-white px-4 py-2 rounded-md">Cancel</button>
         <button onClick={handleSavePreferences} className="bg-[#AAD977] text-white px-4 py-2 rounded-md">Save</button>
       </div>
 
