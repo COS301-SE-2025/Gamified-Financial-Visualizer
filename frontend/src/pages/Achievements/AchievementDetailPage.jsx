@@ -119,11 +119,11 @@ const BadgeTaskCard = ({ task, colorInfo, image, isCompleted }) => {
 };
 
 
+
 const AchievementDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [achievementInfo, setAchievementInfo] = useState(null);
 
@@ -137,7 +137,6 @@ const AchievementDetailPage = () => {
 
     const loadData = async () => {
       try {
-        setIsLoading(true);
         const [tasksRes, achievementRes] = await Promise.all([
           fetch(`http://localhost:5000/api/achievements/task/${id}/${user.id}`),
           fetch(`http://localhost:5000/api/achievements/${id}`)
@@ -155,64 +154,13 @@ const AchievementDetailPage = () => {
         console.error(error);
         setError(error.message);
         toast.error('Could not load achievement data');
-      } finally {
-        setIsLoading(false);
       }
     };
 
     loadData();
   }, [id]);
 
-  if (isLoading) {
-    return (
-      <AchievementsLayout>
-        <div className="max-w-4xl mx-auto p-6">
-          <div className="flex flex-col items-center justify-center py-10">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500 mb-4"></div>
-            <p className="text-gray-600">Loading achievement details...</p>
-          </div>
-        </div>
-      </AchievementsLayout>
-    );
-  }
-
-  if (error) {
-    return (
-      <AchievementsLayout>
-        <div className="max-w-4xl mx-auto p-6">
-          <div className="bg-red-50 dark:bg-gray-800 border-l-4 border-red-400 p-4 rounded-r-lg">
-            <div className="flex items-start">
-              <div className="flex-shrink-0 pt-0.5">
-                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-700">Error loading achievement</h3>
-                <div className="mt-2 text-sm text-red-600">
-                  <p>{error}</p>
-                </div>
-                <div className="mt-4">
-                  <button
-                    onClick={() => window.location.reload()}
-                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                  >
-                    Try Again
-                  </button>
-                  <button
-                    onClick={() => navigate(-1)}
-                    className="ml-3 inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500"
-                  >
-                    Go Back
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </AchievementsLayout>
-    );
-  }
+  // Remove the entire isLoading conditional rendering block
 
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter(task => task.progress >= task.total).length;
