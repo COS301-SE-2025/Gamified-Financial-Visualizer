@@ -1,3 +1,4 @@
+
 import express, { Application, NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -26,7 +27,7 @@ const app: Application = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
-  origin: ['https://capable-creponne-f64001.netlify.app'],
+  origin: ['http://localhost:3000'],
   credentials: true,
   methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type','Authorization']
@@ -37,7 +38,7 @@ app.use(express.json());
 const httpServer = http.createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: 'https://capable-creponne-f64001.netlify.app',
+    origin: 'http://localhost:3000',
     methods: ['GET','POST'],
     credentials: true
   }
@@ -140,11 +141,6 @@ registerInsightsModule(app);
 registerCommunityModule(app);
 registerAchievementModule(app);
 registerNotificationsModule(app);
-
-// Basic route to check if the server is running, i will remove this later
-app.get('/', (_req, res) => {
-  res.send('🚀 Gamified Finance API is running!');
-});
 
 // Health check
 app.get('/health', async (_req, res) => {
