@@ -1,7 +1,7 @@
-import * as THREE from 'three';
-import { useState, useEffect, useRef } from 'react'
-import { ACESFilmicToneMapping, ColorManagement } from 'three'
+// CityViewer.jsx
+import { useState, useEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
+import * as THREE from 'three'
 import { OrbitControls, Environment, useGLTF, Html } from '@react-three/drei'
 import { Suspense } from 'react'
 import { FaBuilding, FaBank, FaCoffee, FaShoppingCart, FaHospital, FaHotel, FaPoliceBox, FaHome, FaBandAid } from 'react-icons/fa';
@@ -19,80 +19,77 @@ const INTERACTIVE_BUILDINGS = [
 
 // Tooltip information and icons 
 const BUILDING_INFO = {
-  apartment: {
-    icon: <FaBuilding size={20} className="text-blue-500" />,
-    description: 'Residential apartment complex with multiple units'
+  apartment: { 
+    icon: <FaBuilding size={20} className="text-blue-500" />, 
+    description: 'Residential apartment complex with multiple units' 
   },
-  apartment2: {
-    icon: <FaBuilding size={20} className="text-blue-500" />,
-    description: 'Modern apartment building with amenities'
+  apartment2: { 
+    icon: <FaBuilding size={20} className="text-blue-500" />, 
+    description: 'Modern apartment building with amenities' 
   },
-  bank: {
-    icon: <FaBandAid size={20} className="text-green-600" />,
-    description: 'Financial institution for deposits and loans'
+  bank: { 
+    icon: <FaBandAid size={20} className="text-green-600" />, 
+    description: 'Financial institution for deposits and loans' 
   },
-  coffeeshop: {
-    icon: <FaCoffee size={20} className="text-brown-500" />,
-    description: 'Local café serving coffee and light meals'
+  coffeeshop: { 
+    icon: <FaCoffee size={20} className="text-brown-500" />, 
+    description: 'Local café serving coffee and light meals' 
   },
-  grocerystore: {
-    icon: <FaShoppingCart size={20} className="text-green-500" />,
-    description: 'Supermarket with fresh produce and groceries'
+  grocerystore: { 
+    icon: <FaShoppingCart size={20} className="text-green-500" />, 
+    description: 'Supermarket with fresh produce and groceries' 
   },
-  hospital: {
-    icon: <FaHospital size={20} className="text-red-500" />,
-    description: 'Medical facility for emergency and routine care'
+  hospital: { 
+    icon: <FaHospital size={20} className="text-red-500" />, 
+    description: 'Medical facility for emergency and routine care' 
   },
-  hotel: {
-    icon: <FaHotel size={20} className="text-yellow-500" />,
-    description: 'Lodging for travelers and tourists'
+  hotel: { 
+    icon: <FaHotel size={20} className="text-yellow-500" />, 
+    description: 'Lodging for travelers and tourists' 
   },
-  office: {
-    icon: <HiOfficeBuilding size={20} className="text-gray-600" />,
-    description: 'Corporate office space for businesses'
+  office: { 
+    icon: <HiOfficeBuilding size={20} className="text-gray-600" />, 
+    description: 'Corporate office space for businesses' 
   },
-  office2: {
-    icon: <HiOfficeBuilding size={20} className="text-gray-600" />,
-    description: 'Professional workspace with meeting rooms'
+  office2: { 
+    icon: <HiOfficeBuilding size={20} className="text-gray-600" />, 
+    description: 'Professional workspace with meeting rooms' 
   },
-  policestation: {
-    icon: <GiPoliceBadge size={20} className="text-blue-600" />,
-    description: 'Law enforcement headquarters for public safety'
+  policestation: { 
+    icon: <GiPoliceBadge size={20} className="text-blue-600" />, 
+    description: 'Law enforcement headquarters for public safety' 
   },
-  normalhouse: {
-    icon: <FaHome size={20} className="text-orange-500" />,
-    description: 'Single-family residential home'
+  normalhouse: { 
+    icon: <FaHome size={20} className="text-orange-500" />, 
+    description: 'Single-family residential home' 
   }
 }
 
-export function CityModel({ setExternalCamera }) {
+export function CityModel() {
   const { scene } = useGLTF('/Classic_Day_City.glb')
-  const [activeBuilding, setActiveBuilding] = useState(null)
-  const [interactiveObjects, setInteractiveObjects] = useState([])
+  const [targets, setTargets] = useState([])
 
-  const normalize = (str) => str.toLowerCase().replace(/\s|_/g, '')
-  const formatName = (name) =>
-    name.replace(/[_\.]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-
-  const getBuildingInfo = (name) => {
-    const normalized = normalize(name)
-    return BUILDING_INFO[normalized] || {
-      icon: <FaBuilding size={20} />,
-      description: 'Building information'
-    }
-  }
+  // stylized look
+  useEffect(() => {
+    scene.traverse((o) => {
+      if (o.isMesh) {
+        const mats = Array.isArray(o.material) ? o.material : [o.material]
+        mats.forEach((m) => {
+          if (!m) return
+          m.metalness = 0
+          m.roughness = 0.45
+          m.envMapIntensity = 0
+          m.flatShading = true
+          m.needsUpdate = true
+        })
+      }
+    })
+  }, [scene])
 
   useEffect(() => {
-    scene.scale.set(1, 1, 1)
+    // Scale & position the scene
+    scene.scale.set(0.5, 0.5, 0.5)
     scene.position.set(0, 0, 0)
-    scene.rotation.set(0, 0, 0)
-
-    // Send camera to parent for replacement (optional)
-    const camera = scene.getObjectByProperty('type', 'PerspectiveCamera')
-    if (camera && setExternalCamera) {
-      camera.lookAt(0, 0, 0); 
-      setExternalCamera(camera)
-    }
 
     const found = []
     scene.traverse((obj) => {
@@ -104,35 +101,13 @@ export function CityModel({ setExternalCamera }) {
       }
     })
     setInteractiveObjects(found)
-  }, [scene, setExternalCamera])
-
-  useEffect(() => {
-    scene.traverse((obj) => {
-      if (obj.isMesh) {
-        const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
-        mats.forEach((mat) => {
-          mat.metalness = 0
-          mat.roughness = 0.5
-          mat.envMapIntensity = 0
-          mat.needsUpdate = true
-          mat.flatShading = true
-        });
-      }
-    });
-  }, [scene]);
-  useEffect(() => {
-  scene.traverse((obj) => {
-    if (obj.isLight) {
-      obj.intensity *= 1.2 // Boost if needed
-      obj.castShadow = true
-    }
-  })
-}, [scene])
-
+  }, [scene])
 
   return (
     <group>
       <primitive object={scene} />
+
+      {/* Interactive overlays */}
       {interactiveObjects.map((obj, idx) => (
         <group
           key={idx}
@@ -149,8 +124,8 @@ export function CityModel({ setExternalCamera }) {
           }}
         >
           {activeBuilding?.uuid === obj.uuid && (
-            <Html
-              center
+            <Html 
+              center 
               position={[obj.position.x, obj.position.y + 5, obj.position.z]}
               distanceFactor={10}
             >
@@ -175,48 +150,51 @@ export function CityModel({ setExternalCamera }) {
   )
 }
 
+// Styling for the actual city
 export default function CityViewer() {
-  const [externalCamera, setExternalCamera] = useState(null)
-  const cameraRef = useRef()
-
   return (
     <div className="w-full h-screen bg-[#f9f9f9]">
       <Canvas
+        // shadows enables shadows 
         shadows
-        camera={externalCamera || { position: [-40, 40, 100], fov: 45 }}
-        gl={{
-          toneMapping: ACESFilmicToneMapping,
-          toneMappingExposure: 1.0,
-        }}
-        onCreated={({ camera, gl }) => {
-          ColorManagement.enabled = true
-          if (externalCamera) {
-            cameraRef.current = externalCamera
-          }
-        }}
-      >
-        <ambientLight intensity={0.5} />
+        camera={{ position: [-40, 40, 100], fov: 45 }}
+        onClick={(e) => e.stopPropagation()}>
+        <ambientLight intensity={0.4} />
         <directionalLight
-          position={[50, 100, 50]}
-          intensity={1.5}
+          // Tone mapping and color intensity
+          color="#fffbe6"
           castShadow
+          position={[50, 80, 100]}
+          intensity={1.2}
           shadow-mapSize-width={2048}
           shadow-mapSize-height={2048}
+          shadow-camera-far={200}
+          shadow-camera-left={-50}
+          shadow-camera-right={50}
+          shadow-camera-top={50}
+          shadow-camera-bottom={-50}
         />
         <Suspense fallback={null}>
-          <CityModel setExternalCamera={setExternalCamera} />
-          <Environment preset="night" background={true} />
+          <CityModel />
+          {/* Preset options: 
+          apartment, city, dawn, forest, lobby, night, sunset, warehouse*/}
+          <Environment preset="apartment" background={false} />
         </Suspense>
+
         <OrbitControls
         camera={externalCamera} 
           enableDamping
-          enablePan={true}
-          minPolarAngle={Math.PI / 6}
-          maxPolarAngle={Math.PI / 1.5}
-          minAzimuthAngle={-Math.PI / 4}
-          maxAzimuthAngle={Math.PI / 4}
-          minDistance={10}
-          maxDistance={100}
+          enablePan={false}
+          // rotaiton from left and right on z-axis 
+          minPolarAngle={Math.PI / 2.5}
+          maxPolarAngle={Math.PI / 3}
+          minAzimuthAngle={-Math.PI / 0}
+          maxAzimuthAngle={Math.PI / 0}
+          // scrolling distance
+          // scrolling in
+          minDistance={8}
+          // scrolling out
+          maxDistance={8}
           target={[0, 0, 0]}
         />
       </Canvas>

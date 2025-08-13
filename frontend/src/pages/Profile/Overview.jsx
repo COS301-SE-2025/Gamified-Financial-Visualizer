@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaCrown, FaChartLine, FaEye, FaTrophy, FaStar, FaHeart, FaRegComment, FaPlay } from 'react-icons/fa';
+import { FaCrown, FaChartLine, FaEye, FaTrophy, FaStar, FaHeart, FaRegComment, FaPlay, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
 // Profile banner
@@ -13,7 +13,6 @@ import comm3 from '../../assets/Images/banners/pixelStudents.jpeg';
 import comm4 from '../../assets/Images/banners/pixelWindow.gif';
 
 import avatar4 from '../../assets/Images/avatars/Totoro.png';
-
 
 // Format amount cleanly (e.g., 7500 or 7500.14)
 const formatAmount = (amount) => {
@@ -83,6 +82,21 @@ const Overview = () => {
     { id: 6, image: comm2 },
     { id: 7, image: comm1 },
   ];
+
+  // pagation for the user posts 
+  const POSTS_PER_PAGE = 5; // 2 rows on large screens (6 x 2)
+
+  const [postPage, setPostPage] = useState(1);
+
+  const totalPostPages = Math.max(1, Math.ceil(userPosts.length / POSTS_PER_PAGE));
+  const start = (postPage - 1) * POSTS_PER_PAGE;
+  const currentPosts = userPosts.slice(start, start + POSTS_PER_PAGE);
+
+  useEffect(() => {
+    // Clamp page if posts length changes
+    if (postPage > totalPostPages) setPostPage(totalPostPages);
+  }, [totalPostPages, postPage]);
+
 
   return (
     <div className="max-w-6xl mx-auto px-2 pb-2 space-y-4">
@@ -173,7 +187,6 @@ const Overview = () => {
           </div>
         </div>
       </div>
-
 
       {/* Middle Row - Two Columns */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -311,7 +324,6 @@ const Overview = () => {
             View All Goals
           </button>
         </motion.div>
-
       </div>
 
       {/* Bottom Row - Active Communities */}
@@ -384,14 +396,12 @@ const Overview = () => {
       {/* Bottom Grid – User Posts */}
       <div className="bg-white p-6 rounded-3xl shadow-md dark:bg-gray-800">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-gray-800  dark:text-gray-200">My Posts</h2>
-          <button className="text-sm font-medium text-blue-500 hover:text-blue-600 transition-colors">
-            View All
-          </button>
+          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">My Posts</h2>
+          {/* Removed the code for the view all button */}
         </div>
 
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
-          {userPosts.map((post) => (
+          {currentPosts.map((post) => (
             <div
               key={post.id}
               className="relative group overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
@@ -404,14 +414,18 @@ const Overview = () => {
               {/* Post engagement overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-2">
                 <div className="flex items-center space-x-2 text-white">
-                  <span className="flex items-center text-xs font-medium">
-                    <FaHeart className="w-3 h-3 mr-1" />
-                    {post.likes}
-                  </span>
-                  <span className="flex items-center text-xs font-medium">
-                    <FaRegComment className="w-3 h-3 mr-1" />
-                    {post.comments}
-                  </span>
+                  {typeof post.likes !== 'undefined' && (
+                    <span className="flex items-center text-xs font-medium">
+                      <FaHeart className="w-3 h-3 mr-1" />
+                      {post.likes}
+                    </span>
+                  )}
+                  {typeof post.comments !== 'undefined' && (
+                    <span className="flex items-center text-xs font-medium">
+                      <FaRegComment className="w-3 h-3 mr-1" />
+                      {post.comments}
+                    </span>
+                  )}
                 </div>
               </div>
               {/* Video indicator for video posts */}
@@ -423,6 +437,33 @@ const Overview = () => {
             </div>
           ))}
         </div>
+
+        {/* Pagination controls */}
+        {userPosts.length > POSTS_PER_PAGE && (
+          <div className="flex items-center justify-between mt-4">
+            <button
+              onClick={() => setPostPage(p => Math.max(1, p - 1))}
+              disabled={postPage === 1}
+              className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border dark:border-gray-600
+          ${postPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+            >
+              <FaChevronLeft /> Prev
+            </button>
+
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              Page {postPage} of {totalPostPages}
+            </span>
+
+            <button
+              onClick={() => setPostPage(p => Math.min(totalPostPages, p + 1))}
+              disabled={postPage === totalPostPages}
+              className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border dark:border-gray-600
+          ${postPage === totalPostPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+            >
+              Next <FaChevronRight />
+            </button>
+          </div>
+        )}
       </div>
 
     </div>

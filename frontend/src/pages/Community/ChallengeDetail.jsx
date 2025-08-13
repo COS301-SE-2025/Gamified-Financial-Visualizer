@@ -143,14 +143,14 @@ const ChallengeDetail = () => {
                 </div>
 
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-6">
-                    {!joined && (
+                    {/* {!joined && (
                         <button
                             onClick={handleJoin}
                             className="flex items-center gap-2 bg-[#72C1F5] text-white px-4 py-2 rounded-full font-medium hover:bg-[#4CA9DB] transition"
                         >
                             <FaPlus /> Join Challenge
                         </button>
-                    )}
+                    )} */}
 
                     <p className="text-sm text-[#374151] max-w-xl">
                         To make progress towards this challenge, you can link transactions in the <span className="font-semibold">Transactions</span> page.

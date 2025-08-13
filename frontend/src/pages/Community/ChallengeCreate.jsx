@@ -1,14 +1,150 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
-
+import { createPortal } from 'react-dom';
 import CommunityLayout from '../../pages/Community/CommunityLayout';
-import CommunityHeader from '../../layouts/headers/CommunityHeader';
 import {
   FaFire, FaTag, FaClock, FaMedal, FaArrowLeft, FaCoins, FaListUl, FaUserPlus,
-  FaUsers
+  FaUsers,
+  FaChevronDown
 } from 'react-icons/fa';
 
+const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Select...' }) => {
+  const [open, setOpen] = useState(false);
+  const [highlight, setHighlight] = useState(0);
+  const wrapRef = useRef(null);
+  const btnRef = useRef(null);
+  const [menuStyle, setMenuStyle] = useState({}); // fixed positioning for portal
+
+  const selectedIndex = Math.max(0, options.findIndex(o => String(o.value) === String(value)));
+  const selected = options[selectedIndex] || null;
+
+  // Close on click outside
+  useEffect(() => {
+    const onClickAway = (e) => {
+      if (!wrapRef.current?.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', onClickAway);
+    return () => document.removeEventListener('mousedown', onClickAway);
+  }, []);
+
+  // Position the menu in a portal without changing page height
+  useLayoutEffect(() => {
+    if (!open || !btnRef.current) return;
+    const calc = () => {
+      const rect = btnRef.current.getBoundingClientRect();
+      const maxH = Math.min(320, Math.floor(window.innerHeight * 0.4)); // ~10 items
+      let top = rect.bottom + 6;
+      let left = Math.min(rect.left, window.innerWidth - rect.width - 8);
+
+      // If not enough space below, place above
+      if (top + maxH > window.innerHeight - 8) {
+        top = Math.max(8, rect.top - 6 - maxH);
+      }
+      setMenuStyle({
+        position: 'fixed',
+        top,
+        left,
+        width: rect.width,
+        maxHeight: maxH,
+        zIndex: 9999,
+      });
+    };
+    calc();
+    window.addEventListener('scroll', calc, true);
+    window.addEventListener('resize', calc);
+    return () => {
+      window.removeEventListener('scroll', calc, true);
+      window.removeEventListener('resize', calc);
+    };
+  }, [open]);
+
+  // Reset highlight when opening
+  useEffect(() => {
+    if (open) setHighlight(selectedIndex >= 0 ? selectedIndex : 0);
+  }, [open, selectedIndex]);
+
+  const commit = (idx) => {
+    const opt = options[idx];
+    if (!opt) return;
+    onChange(opt.value);
+    setOpen(false);
+  };
+
+  const onKey = (e) => {
+    if (!open && (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault(); setOpen(true); return;
+    }
+    if (!open) return;
+
+    if (e.key === 'ArrowDown') { e.preventDefault(); setHighlight(h => Math.min(options.length - 1, h + 1)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setHighlight(h => Math.max(0, h - 1)); }
+    else if (e.key === 'Enter') { e.preventDefault(); commit(highlight); }
+    else if (e.key === 'Escape') { e.preventDefault(); setOpen(false); }
+  };
+
+  return (
+    <div className="relative" ref={wrapRef}>
+      <button
+        type="button"
+        ref={btnRef}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen(o => !o)}
+        onKeyDown={onKey}
+        className="w-full rounded-xl px-4 py-2 border dark:border-gray-600 shadow dark:shadow-none
+                   bg-white dark:bg-gray-700 text-left text-gray-900 dark:text-white flex items-center justify-between"
+      >
+        <span className={`${selected ? '' : 'text-gray-400 dark:text-gray-400'}`}>
+          {selected ? selected.label : placeholder}
+        </span>
+        <FaChevronDown className="ml-3 text-gray-400 dark:text-gray-500" />
+      </button>
+
+      {/* Portal menu (fixed) so it never changes page height / adds a second scrollbar */}
+      {open && createPortal(
+        <ul
+          role="listbox"
+          tabIndex={-1}
+          style={menuStyle}
+          onKeyDown={onKey}
+          onWheel={(e) => e.stopPropagation()} // stop scroll chaining
+          className="rounded-xl border border-gray-200 dark:border-gray-600
+                     bg-white dark:bg-gray-700 shadow-lg overflow-y-auto"
+        >
+          <style>{`.dropdown-overscroll { overscroll-behavior: contain; }`}</style>
+          <div className="dropdown-overscroll">
+            {options.length === 0 && (
+              <li className="px-3 h-8 flex items-center text-sm text-gray-500 dark:text-gray-300">
+                No categories
+              </li>
+            )}
+            {options.map((opt, idx) => (
+              <li
+                key={opt.value}
+                role="option"
+                aria-selected={String(opt.value) === String(value)}
+                onMouseEnter={() => setHighlight(idx)}
+                onClick={() => commit(idx)}
+                className={`px-3 h-8 flex items-center text-sm cursor-pointer
+                            ${idx === highlight ? 'bg-gray-100 dark:bg-gray-600' : ''}
+                            ${String(opt.value) === String(value)
+                    ? 'font-medium text-[#1b5e20]'
+                    : 'text-gray-800 dark:text-gray-100'}`}
+              >
+                {opt.label}
+              </li>
+            ))}
+          </div>
+        </ul>,
+        document.body
+      )}
+
+      {/* Hidden input keeps native form compatibility */}
+      <input type="hidden" name={name} value={value ?? ''} />
+    </div>
+  );
+};
 
 const ChallengeCreate = () => {
   const navigate = useNavigate();
@@ -48,6 +184,7 @@ const ChallengeCreate = () => {
     fetchCategories();
   }, []);
 
+  // fetch communities 
   const fetchCommunities = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user?.id) return;
@@ -61,6 +198,7 @@ const ChallengeCreate = () => {
     }
   };
 
+  // fetch friends 
   const fetchFriends = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user?.id) return;
@@ -86,6 +224,7 @@ const ChallengeCreate = () => {
     { id: 'students_banner', apiId: 4, src: require('../../assets/Images/banners/pixelStudents.jpeg'), label: 'Pixel Students' },
   ];
 
+  // chnage handler
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
     if (type === 'file') {
@@ -95,6 +234,7 @@ const ChallengeCreate = () => {
     }
   };
 
+  // handle invites
   const handleInvite = (friend) => {
     if (!invitedFriends.includes(friend.name)) {
       setInvitedFriends([...invitedFriends, friend.name]);
@@ -102,11 +242,13 @@ const ChallengeCreate = () => {
     }
   };
 
+  // handle the submits
   const handleSubmit = (e) => {
     e.preventDefault();
     setShowConfirmation(true);
   };
 
+  // confirm the creation 
   const confirmCreate = async () => {
     setIsCreating(true);
     setShowConfirmation(false);
@@ -231,7 +373,7 @@ const ChallengeCreate = () => {
       }
 
       setTimeout(() => {
-        navigate('/community');
+        navigate('/community/challenges');
       }, 2000);
 
     } catch (error) {
@@ -242,6 +384,7 @@ const ChallengeCreate = () => {
     }
   };
 
+  // create cancels functions
   const cancelCreate = () => {
     setShowConfirmation(false);
   };
@@ -330,20 +473,43 @@ const ChallengeCreate = () => {
                 {imageOptions.map((img) => (
                   <label
                     key={img.id}
-                    className={`cursor-pointer border rounded-xl overflow-hidden transition ${formData.imageId === img.id ? 'ring-2 ring-[#B1E1FF]' : 'border-gray-300 dark:border-gray-600'}`}
+                    role="radio"
+                    tabIndex={0}
+                    aria-checked={formData.imageId === img.apiId}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setFormData({ ...formData, imageId: img.apiId });
+                      }
+                    }}
+                    className={`relative cursor-pointer group border rounded-xl overflow-hidden transition focus:outline-none
+        ${formData.imageId === img.apiId
+                        ? 'ring-2 ring-[#B1E1FF] border-[#B1E1FF]'
+                        : 'border-gray-300 dark:border-gray-600'}`}
+                    onClick={() => setFormData({ ...formData, imageId: img.apiId })}
                   >
                     <input
                       type="radio"
                       name="imageId"
-                      value={img.id}
-                      onChange={(e) => {
-                        const selected = imageOptions.find(i => i.id === e.target.value);
-                        setFormData({ ...formData, imageId: selected?.apiId || null });
-                      }}
-                      className="hidden"
+                      value={img.apiId}
+                      checked={formData.imageId === img.apiId}
+                      onChange={() => setFormData({ ...formData, imageId: img.apiId })}
+                      className="sr-only"
                     />
                     <img src={img.src} alt={img.label} className="w-full h-24 object-cover" />
-                    <div className="p-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300">{img.label}</div>
+                    <div className="p-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {img.label}
+                    </div>
+
+                    {/* subtle overlay + tick when selected */}
+                    {formData.imageId === img.apiId && (
+                      <>
+                        <div className="absolute inset-0 ring-inset ring-2 ring-[#B1E1FF] pointer-events-none" />
+                        <span className="absolute top-2 right-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#B1E1FF] text-white text-xs">
+                          ✓
+                        </span>
+                      </>
+                    )}
                   </label>
                 ))}
               </div>
@@ -356,78 +522,74 @@ const ChallengeCreate = () => {
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
                   <FaListUl /> Challenge Type
                 </label>
-                <select
+                <CategoryDropdown
                   name="type"
                   value={formData.type}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2"
-                >
-                  <option value="">Select Type</option>
-                  <option value="savings">Savings</option>
-                  <option value="debt">Debt</option>
-                  <option value="investment">Investment</option>
-                  <option value="spending limit">Spending Limit</option>
-                  <option value="donation">Donation</option>
-                </select>
+                  onChange={(val) => setFormData({ ...formData, type: val })}
+                  options={[
+                    { value: 'savings', label: 'Savings' },
+                    { value: 'debt', label: 'Debt' },
+                    { value: 'investment', label: 'Investment' },
+                    { value: 'spending limit', label: 'Spending Limit' },
+                    { value: 'donation', label: 'Donation' },
+                  ]}
+                  placeholder="Select Type"
+                />
               </div>
+
               {/* Category dropdown */}
               <div>
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
-                  <FaTag /> Category
-                </label>
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2"
-                >
-                  <option value="">Select a category</option>
-                  {categories.map((cat) => (
-                    <option key={cat.category_id} value={cat.category_id}>
-                      {cat.category_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Goal Category
+              </label>
+
+              {/* Custom dropdown */}
+              <CategoryDropdown
+                name="category"
+                value={formData.category}
+                onChange={(val) => handleChange({ target: { name: 'category', value: val } })}
+                options={(categories || []).map(c => ({ value: c.category_id, label: c.category_name }))}
+                placeholder="Select a category"
+              />
+            </div>
+
               {/* Community dropdown */}
               <div>
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
                   <FaUsers /> Community
                 </label>
-                <select
-                  type="text"
+                <CategoryDropdown
                   name="community"
                   value={formData.community}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2"
-                >
-                  <option value="">Select Type</option>
-                  {communities.map((cat) => (
-                    <option key={cat.community_id} value={cat.community_id}>
-                      {cat.community_name}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setFormData({ ...formData, community: val })}
+                  options={(communities || []).map(c => ({
+                    value: String(c.community_id),
+                    label: c.community_name
+                  }))}
+                  placeholder="Select a community"
+                />
               </div>
 
+              {/* Measurement type */}
               <div>
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
                   <FaListUl /> Measurement Type
                 </label>
-                <select
+                <CategoryDropdown
                   name="measurementType"
                   value={formData.measurementType}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2"
-                >
-                  <option value="">Select Type</option>
-                  <option value="goals_completed">Goals Completed</option>
-                  <option value="transactions_logged">Transactions Logged</option>
-                  <option value="amount_invested">Amount Invested</option>
-                  <option value="amount_donated">Amount Donated</option>
-                  <option value="spending_within_limit">Spending within limit</option>
-                </select>
+                  onChange={(val) => setFormData({ ...formData, measurementType: val })}
+                  options={[
+                    { value: 'goals_completed', label: 'Goals Completed' },
+                    { value: 'transactions_logged', label: 'Transactions Logged' },
+                    { value: 'amount_invested', label: 'Amount Invested' },
+                    { value: 'amount_donated', label: 'Amount Donated' },
+                    { value: 'spending_within_limit', label: 'Spending within limit' },
+                  ]}
+                  placeholder="Select Type"
+                />
               </div>
+
             </div>
 
             {/* Target & XP */}
