@@ -157,7 +157,7 @@ router.get('/transactions/heatmap/:userId', async (req, res) => {
       const heatmapData = transactionsRows.map((row: HeatmapRow) => ({
          date: row.day,
          transactions: row.transactions,
-         amount: row.total_spent ? parseFloat(row.total_spent.toFixed(2)) : 0
+         amount: row.total_spent
       }));
 
       res.status(200).json( heatmapData );
@@ -616,10 +616,14 @@ router.get('/trends/:userId', async (req, res) => {
 
       // Loop through months 1 to currentMonth
       for (let month = 1; month <= currentMonth; month++) {
-         const [ txRes, goalsRes ] = await Promise.all([
+          const [ txResAll, goalsRes ] = await Promise.all([
             insightsService.getRawTransactions(userId, month),
             insightsService.getRawGoals(userId, month)
-         ]);
+          ]);
+          // Filter txResAll to only include expense-type transactions
+          const txRes = txResAll.filter(t => 
+            ['expense', 'withdrawal', 'fee', 'transfer'].includes(t.transaction_type)
+          );
 
          allTransactions.push(...txRes);
          allGoals.push(...goalsRes);

@@ -346,10 +346,50 @@ const InsightsPage = () => {
     }
   }, [selectedAccount]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const [showAvg, setShowAvg] = React.useState(true);
+  const [viewPercent, setViewPercent] = React.useState(false); // if you already had percent view
+
+  // If user enables "Compare to Global Avg", force absolute view for clarity
+  React.useEffect(() => {
+    if (showAvg && viewPercent) setViewPercent(false);
+  }, [showAvg, viewPercent]);
+
   // Build chart rows + colors
-  const filteredData = useMemo(() => (
-    buildCategorySeries(categoryApi?.spendingData || [], selectedAccount, selectedCategories)
-  ), [categoryApi, selectedAccount, selectedCategories]);
+  const filteredData = React.useMemo(() => {
+    const months = categoryApi?.spendingData ?? [];
+    return months.map((m) => {
+      const row = { month: m.month, averages: {}, avgSelectedTotal: 0 };
+
+      let userSelectedTotal = 0;
+      selectedCategories.forEach((cat) => {
+        // User values (by account or all)
+        const userVal =
+          selectedAccount === "all"
+            ? Number(m.totals?.[cat] ?? 0)
+            : Number(m.accounts?.[selectedAccount]?.[cat] ?? 0);
+
+        // Global average for this category in this month
+        const avgVal = Number(m.averages?.[cat] ?? 0);
+
+        row[cat] = userVal;
+        row.averages[cat] = avgVal;
+
+        userSelectedTotal += userVal;
+        row.avgSelectedTotal += avgVal;
+      });
+
+      // Optional: percent view (only when NOT showing global avg line)
+      if (viewPercent && !showAvg) {
+        const denom = userSelectedTotal || 1;
+        selectedCategories.forEach((cat) => {
+          row[cat] = row[cat] / denom; // normalize bars to 0..1
+        });
+      }
+
+      return row;
+    });
+  }, [categoryApi, selectedAccount, selectedCategories, viewPercent, showAvg]);
+
 
   const CATEGORY_COLORS = useMemo(() => makeCategoryColors(selectedCategories), [selectedCategories]);
   const accounts = useMemo(() => getAccounts(apiData), [apiData]);
@@ -529,36 +569,6 @@ const InsightsPage = () => {
   const currencyTick = (v) => `R${Number(v).toLocaleString()}`;
   const tooltipFormatter = (value, name) => [ZAR(value), name];
 
-  const getSentiment = (features) => {
-    if (features.savings_rate < 0.05 && features.impulse_score > 0.6) return "Anxious";
-    if (features.goal_completion_ratio > 0.75) return "Confident";
-    if (features.burn_rate > 300) return "Unstable";
-    return "Stable";
-  };
-
-  // Mock financial data
-  const financialFeatures = {
-    savings_rate: 0.07,
-    impulse_score: 0.4,
-    goal_completion_ratio: 0.6,
-    burn_rate: 250
-  };
-
-  const currentSentiment = getSentiment(financialFeatures);
-
-  // Map sentiment to gauge value (0-1)
-  const sentimentToValue = {
-    "Anxious": 0.125,  // 12.5% (middle of 0-25% range)
-    "Unstable": 0.375, // 37.5% (middle of 25-50% range)
-    "Stable": 0.625,   // 62.5% (middle of 50-75% range)
-    "Confident": 0.875 // 87.5% (middle of 75-100% range)
-  };
-
-  const chartStyle = {
-    width: '100%',
-    maxWidth: '400px',
-    margin: '0 auto'
-  };
 
   const [mode, setMode] = useState("count"); // 'count' | 'amount'
 
@@ -633,8 +643,6 @@ const InsightsPage = () => {
   };
   const hideTip = () => setTip(t => ({ ...t, show: false }));
 
-  // Paint each rect + add tooltip + click
-  // Paint each rect + native SVG tooltip + click
   const transformDayElement = (element, value) => {
     if (!value) {
       return React.cloneElement(
@@ -1012,8 +1020,8 @@ const InsightsPage = () => {
             <div className="flex flex-wrap justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-gray-800">Monthly Spending by Category</h2>
 
-              <div className="flex flex-wrap gap-4 mt-4 sm:mt-0">
-                {/* Account Selector (dynamic) */}
+              <div className="flex flex-wrap gap-3 items-center">
+                {/* Account select (as you had) */}
                 <div>
                   <label htmlFor="account-select" className="block text-sm font-medium text-gray-700 mb-1">
                     Account
@@ -1025,101 +1033,127 @@ const InsightsPage = () => {
                     className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   >
                     <option value="all">All Accounts</option>
-                    {accounts.map(a => <option key={a} value={a}>{a}</option>)}
+                    {accounts.map((a) => (
+                      <option key={a} value={a}>{a}</option>
+                    ))}
                   </select>
                 </div>
 
-                {/* Category Multi-select (collapsible) */}
-                <div className="w-full">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Categories
-                    </label>
+                {/* Percent view toggle (disabled when avg on) */}
+                <div className="opacity-100">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Scale</label>
+                  <div className="inline-flex rounded-md overflow-hidden border border-gray-300">
                     <button
                       type="button"
-                      onClick={() => setCatOpen(v => !v)}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      aria-expanded={catOpen}
-                      aria-controls="category-panel"
+                      disabled={!showAvg}
+                      onClick={() => setViewPercent(false)}
+                      className={`px-3 py-1.5 text-sm ${!viewPercent ? "bg-indigo-100 text-indigo-700" : "bg-white text-gray-700"} ${showAvg ? "opacity-50 cursor-not-allowed" : ""}`}
+                      title={showAvg ? "Disable Global Avg to use % view" : ""}
                     >
-                      {catOpen ? "Hide" : "Show"} ({selectedCategories.length} selected)
-                      <svg
-                        className={`h-4 w-4 transition-transform ${catOpen ? "rotate-180" : ""}`}
-                        viewBox="0 0 20 20" fill="currentColor"
-                      >
-                        <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" />
-                      </svg>
+                      Amount
+                    </button>
+                    <button
+                      type="button"
+                      disabled={!showAvg}
+                      onClick={() => setViewPercent(true)}
+                      className={`px-3 py-1.5 text-sm border-l border-gray-300 ${viewPercent ? "bg-indigo-100 text-indigo-700" : "bg-white text-gray-700"} ${showAvg ? "opacity-50 cursor-not-allowed" : ""}`}
+                      title={showAvg ? "Disable Global Avg to use % view" : ""}
+                    >
+                      %
                     </button>
                   </div>
+                </div>
+              </div>
+            </div>
 
-                  {/* Collapsible panel */}
-                  <div
-                    id="category-panel"
-                    className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out
-                ${catOpen ? "max-h-[480px] opacity-100 mt-3" : "max-h-0 opacity-0"}`}
+            {/* Category Multi-select (collapsible) */}
+            <div className="w-full">
+              <div className="flex items-center justify-between">
+                <label className="block text-sm font-medium text-gray-700">
+                  Categories
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setCatOpen(v => !v)}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  aria-expanded={catOpen}
+                  aria-controls="category-panel"
+                >
+                  {catOpen ? "Hide" : "Show"} ({selectedCategories.length} selected)
+                  <svg
+                    className={`h-4 w-4 transition-transform ${catOpen ? "rotate-180" : ""}`}
+                    viewBox="0 0 20 20" fill="currentColor"
                   >
-                    {/* Controls */}
-                    <div className="flex flex-wrap items-center gap-2 mb-3">
-                      <button
-                        type="button"
-                        onClick={selectAll}
-                        className="px-2.5 py-1.5 text-xs rounded-md bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
-                      >
-                        Select all (filtered)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={clearAll}
-                        className="px-2.5 py-1.5 text-xs rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      >
-                        Clear
-                      </button>
-                    </div>
+                    <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" />
+                  </svg>
+                </button>
+              </div>
 
-                    {/* Chips */}
-                    <div className="flex flex-wrap gap-2 max-w-[640px]">
-                      {filteredCategories.map((category) => {
-                        const active = selectedCategories.includes(category);
-                        return (
-                          <button
-                            key={category}
-                            type="button"
-                            onClick={() => toggleCat(category)}
-                            className={`px-3 py-1 text-sm rounded-lg flex items-center
-                        ${active ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 text-gray-700"}`}
-                            title={category}
-                          >
-                            <span
-                              className="w-2 h-2 rounded-full mr-2"
-                              style={{ backgroundColor: CATEGORY_COLORS[category] || "#ddd" }}
-                            />
-                            {category.charAt(0).toUpperCase() + category.slice(1)}
-                          </button>
-                        );
-                      })}
-                      {filteredCategories.length === 0 && (
-                        <span className="text-sm text-gray-500">No categories match your search.</span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Optional: compact summary row when collapsed */}
-                  {!catOpen && selectedCategories.length > 0 && (
-                    <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-600">
-                      <span className="opacity-70">Selected:</span>
-                      {selectedCategories.slice(0, 6).map(c => (
-                        <span key={c} className="px-2 py-0.5 rounded-full bg-gray-100">
-                          {c}
-                        </span>
-                      ))}
-                      {selectedCategories.length > 6 && (
-                        <span className="opacity-70">+{selectedCategories.length - 6} more</span>
-                      )}
-                    </div>
-                  )}
+              {/* Collapsible panel */}
+              <div
+                id="category-panel"
+                className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out
+                ${catOpen ? "max-h-[480px] opacity-100 mt-3" : "max-h-0 opacity-0"}`}
+              >
+                {/* Controls */}
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                  <button
+                    type="button"
+                    onClick={selectAll}
+                    className="px-2.5 py-1.5 text-xs rounded-md bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
+                  >
+                    Select all (filtered)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearAll}
+                    className="px-2.5 py-1.5 text-xs rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  >
+                    Clear
+                  </button>
                 </div>
 
+                {/* Chips */}
+                <div className="flex flex-wrap gap-2 max-w-[640px]">
+                  {filteredCategories.map((category) => {
+                    const active = selectedCategories.includes(category);
+                    return (
+                      <button
+                        key={category}
+                        type="button"
+                        onClick={() => toggleCat(category)}
+                        className={`px-3 py-1 text-sm rounded-lg flex items-center
+                        ${active ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 text-gray-700"}`}
+                        title={category}
+                      >
+                        <span
+                          className="w-2 h-2 rounded-full mr-2"
+                          style={{ backgroundColor: CATEGORY_COLORS[category] || "#ddd" }}
+                        />
+                        {category.charAt(0).toUpperCase() + category.slice(1)}
+                      </button>
+                    );
+                  })}
+                  {filteredCategories.length === 0 && (
+                    <span className="text-sm text-gray-500">No categories match your search.</span>
+                  )}
+                </div>
               </div>
+
+              {/* Optional: compact summary row when collapsed */}
+              {!catOpen && selectedCategories.length > 0 && (
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-600">
+                  <span className="opacity-70">Selected:</span>
+                  {selectedCategories.slice(0, 6).map(c => (
+                    <span key={c} className="px-2 py-0.5 rounded-full bg-gray-100">
+                      {c}
+                    </span>
+                  ))}
+                  {selectedCategories.length > 6 && (
+                    <span className="opacity-70">+{selectedCategories.length - 6} more</span>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Chart */}
@@ -1128,30 +1162,89 @@ const InsightsPage = () => {
                 <BarChart
                   data={filteredData}
                   margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                // stackOffset="expand" // if you want percentage view, uncomment & change tooltip below
+                  {...(viewPercent && !showAvg ? { stackOffset: "expand" } : {})}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="month" />
                   <YAxis
-                    tickFormatter={(v) => `R${Number(v).toLocaleString()}`}
+                    tickFormatter={(v) =>
+                      viewPercent && !showAvg
+                        ? `${Math.round(Number(v) * 100)}%`
+                        : ZAR(v)
+                    }
                   />
                   <Tooltip
-                    formatter={(value, name) => [`R${Number(value).toLocaleString()}`, name]}
+                    content={({ active, payload, label }) => {
+                      if (!active || !payload || !payload.length) return null;
+                      const row = filteredData.find((d) => d.month === label);
+                      if (!row) return null;
+
+                      const isPct = viewPercent && !showAvg;
+
+                      return (
+                        <div className="rounded-xl border border-gray-200 bg-white/90 backdrop-blur px-3 py-2 shadow">
+                          <div className="text-xs text-gray-500 mb-1">{label}</div>
+
+                          {payload
+                            // only show your category bars (ignore any Line or other series)
+                            .filter((p) => selectedCategories.includes(p.dataKey))
+                            .map((p) => {
+                              const cat = p.dataKey;
+                              const userVal = Number(p.value ?? 0);
+                              const avgVal = Number(row.averages?.[cat] ?? 0);
+
+                              // if percent view, convert avg to % of avgSelectedTotal
+                              const avgPct =
+                                row.avgSelectedTotal > 0 ? (avgVal / row.avgSelectedTotal) * 100 : 0;
+
+                              const userDisplay = isPct
+                                ? `${Math.round(userVal * 100)}%`
+                                : ZAR(userVal);
+                              const avgDisplay = isPct
+                                ? `${Math.round(avgPct)}%`
+                                : ZAR(avgVal);
+
+                              return (
+                                <div key={cat} className="flex items-center gap-2 text-sm">
+                                  <span
+                                    className="inline-block h-2 w-2 rounded-full"
+                                    style={{ background: p.color }}
+                                  />
+                                  <span className="text-gray-600">
+                                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                                  </span>
+
+                                  <span className="ml-auto font-medium text-gray-800">
+                                    {userDisplay}
+                                  </span>
+
+                                  {/* Global average next to user amount */}
+                                  <span className="ml-2 text-xs text-gray-500">
+                                    Avg: {avgDisplay}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                        </div>
+                      );
+                    }}
                     contentStyle={{
-                      backgroundColor: '#ffffff',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '0.5rem',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                      backgroundColor: "#ffffff",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "0.5rem",
+                      boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
                     }}
                   />
+
                   <Legend />
 
-                  {selectedCategories.map(category => (
+                  {/* User stacked bars (selected categories) */}
+                  {selectedCategories.map((category) => (
                     <Bar
                       key={category}
                       dataKey={category}
                       name={category.charAt(0).toUpperCase() + category.slice(1)}
-                      stackId="a"
+                      stackId="user"
                       fill={CATEGORY_COLORS[category]}
                       radius={[4, 4, 0, 0]}
                       isAnimationActive={false}
@@ -1160,6 +1253,13 @@ const InsightsPage = () => {
                 </BarChart>
               </ResponsiveContainer>
             </div>
+
+            {/* Legend hint */}
+            {showAvg && (
+              <div className="mt-3 text-xs text-gray-500">
+                The dashed line shows the global average total for your selected categories each month.
+              </div>
+            )}
           </div>
 
           {/* Income vs Expense Bar Chart */}

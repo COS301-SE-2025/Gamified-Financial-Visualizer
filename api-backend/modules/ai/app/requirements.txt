@@ -20,7 +20,7 @@ pandas==2.1.0
 
 # Utilities
 python-dotenv==1.0.0
-
+pytest ==8.4.0
 # machine learning utilities
 scikit-learn==1.4.0
 scipy==1.11.4
