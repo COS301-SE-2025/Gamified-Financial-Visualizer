@@ -104,11 +104,12 @@ def category_shift(transactions: List[Dict[str, Any]]) -> Dict[str, Any]:
    )
    # take top category per month
    top_per_month = (
-      last_two.apply(lambda g: g.loc[g["amount"].idxmax(), "category"])
-               .reset_index(name="top_category")
-               .sort_values("period")
+      last_two[["category", "amount"]]  # exclude grouping columns manually
+         .apply(lambda g: g.loc[g["amount"].idxmax(), "category"])
+         .reset_index(name="top_category")
+         .sort_values("period")
    )
-
+   
    if len(top_per_month) < 2:
       return {"previous": "", "current": "", "changed": False}
 
