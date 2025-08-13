@@ -1,3 +1,4 @@
+
 import express, { Application, NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -16,6 +17,7 @@ import { registerTransactionModule } from './modules/transactions';
 import { registerGoalModule } from './modules/goals';
 import { registerLearningModule } from './modules/learning';
 import { registerClassifierModule } from './modules/ai';
+import { registerInsightsModule } from './modules/ai';
 import { registerCommunityModule } from './modules/community';
 import { registerAchievementModule } from './modules/achievements';
 import { registerNotificationsModule } from './modules/notifications';
@@ -135,6 +137,7 @@ registerTransactionModule(app);
 registerGoalModule(app);
 registerLearningModule(app);
 registerClassifierModule(app);
+registerInsightsModule(app);
 registerCommunityModule(app);
 registerAchievementModule(app);
 registerNotificationsModule(app);
