@@ -12,7 +12,7 @@ import comm2 from '../../assets/Images/banners/pixelGirlAlly.gif';
 import comm3 from '../../assets/Images/banners/pixelStudents.jpeg';
 import comm4 from '../../assets/Images/banners/pixelWindow.gif';
 
-import avatar4 from '../../assets/Images/avatars/totoroAvatar.jpeg';
+import avatar4 from '../../assets/Images/avatars/Totoro.png';
 
 
 // Format amount cleanly (e.g., 7500 or 7500.14)
@@ -106,8 +106,8 @@ const Overview = () => {
 
 
           {/* Username and Join date card */}
-          <div className="bg-white shadow-md px-4 py-2 rounded-full flex items-center gap-3">
-            <p className="text-lg font-medium text-gray-800">{profileData?.username || '...'}</p>
+          <div className="bg-white shadow-md px-4 py-2 rounded-full flex items-center gap-3 dark:bg-gray-800">
+            <p className="text-lg font-medium text-gray-800 dark:text-gray-300">{profileData?.username || '...'}</p>
             <p className="text-sm italic text-[#5FBFFF]">
               Joined: <span className="font-medium">
                 {profileData && new Date(profileData.created_at).toLocaleDateString('en-GB', {
@@ -125,7 +125,7 @@ const Overview = () => {
       <div className="h-4" />
 
       {/* Level Progress Card */}
-      <div className="bg-white p-6 rounded-3xl shadow flex flex-col gap-4">
+      <div className="bg-white p-6 rounded-3xl shadow flex flex-col gap-4 dark:bg-gray-800">
         {/* Header Row */}
         <div className="flex items-center justify-between">
           {/* Current Level Circle */}
@@ -134,10 +134,10 @@ const Overview = () => {
               {levelProgress?.level_number ?? '—'}
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-800">
+              <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
                 Lv {levelProgress?.tier_status ?? '—'}
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 {levelProgress
                   ? `${levelProgress.points_to_next_tier} points to next tier`
                   : 'Loading...'}
@@ -146,14 +146,14 @@ const Overview = () => {
           </div>
 
           {/* Target Level Circle */}
-          <div className="w-10 h-10 rounded-full bg-[#f8e5b5] text-yellow-500 font-bold flex items-center justify-center shadow-sm">
+          <div className="w-10 h-10 rounded-full bg-[#f8e5b5] dark:bg-[#FFD18C] dark:text-[#CF6108] text-yellow-500 font-bold flex items-center justify-center shadow-sm ">
             {levelProgress?.next_level ?? '—'}
           </div>
         </div>
 
         {/* Progress Bar */}
-        <div className="relative mt-2">
-          <div className="w-full h-6 bg-[#f8e5b5] rounded-full overflow-hidden">
+        <div className="relative mt-2 ">
+          <div className="w-full h-6 bg-[#f8e5b5] rounded-full overflow-hidden dark:bg-[#FFD18C] dark:text-[#CF6108]">
             <div
               className="h-full bg-gradient-to-r from-[#FFD18C] to-[#FFCE51] rounded-full"
               style={{
@@ -178,68 +178,68 @@ const Overview = () => {
       {/* Middle Row - Two Columns */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left Column - Stats Tiles */}
-        <div className="space-y-5">
+        <div className="space-y-5 ">
           <motion.div
             whileHover={{ y: -5 }}
-            className="bg-[#ffffff] p-6 rounded-2xl shadow-sm hover:border-[#4d7c0f] transition-all relative overflow-hidden group"
+            className="bg-[#ffffff] p-6 rounded-2xl shadow-sm hover:border-[#4d7c0f] transition-all relative overflow-hidden group dark:bg-gray-800"
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-[#88BC46] group-hover:text-[#88BC46] transition-colors">
+              <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-[#88BC46] group-hover:text-[#88BC46] transition-colors dark:bg-gray-800">
                 <FaChartLine className="w-10 h-10 text-2xl" />
               </div>
               <div className="text-left">
-                <p className="text-lg font-semibold text-[#1f2937]">Performance Stats</p>
-                <p className="text-sm text-[#4b5563]">Your gamified metrics</p>
+                <p className="text-lg font-semibold text-[#1f2937] dark:text-gray-200">Performance Stats</p>
+                <p className="text-sm text-[#4b5563] dark:text-gray-400">Your gamified metrics</p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4 mt-4">
-              <div className="bg-gray-50 rounded-xl p-3 text-center hover:bg-gray-100 transition-colors">
+              <div className="bg-gray-50 rounded-xl p-3 text-center hover:bg-gray-100 transition-colors  dark:bg-gray-700 ">
                 <div className="text-2xl font-bold text-[#88BC46]">
                   {performanceStats ? `${performanceStats.accuracy}%` : '—'}
                 </div>
-                <div className="text-xs text-gray-500 mt-1">Accuracy</div>
+                <div className="text-xs text-gray-500 mt-1 dark:text-gray-400">Accuracy</div>
               </div>
-              <div className="bg-gray-50 rounded-xl p-3 text-center hover:bg-gray-100 transition-colors">
+              <div className="bg-gray-50 rounded-xl p-3 text-center hover:bg-gray-100 transition-colors  dark:bg-gray-700">
                 <div className="text-2xl font-bold text-[#72C1F5]">
                   {performanceStats ? `#${performanceStats.leaderboard_rank}` : '—'}
                 </div>
-                <div className="text-xs text-gray-500 mt-1">Leaderboard</div>
+                <div className="text-xs text-gray-500 mt-1 dark:text-gray-400">Leaderboard</div>
               </div>
-              <div className="bg-gray-50 rounded-xl p-3 text-center hover:bg-gray-100 transition-colors">
+              <div className="bg-gray-50 rounded-xl p-3 text-center hover:bg-gray-100 transition-colors  dark:bg-gray-700">
                 <div className="text-2xl font-bold text-[#FF4080]">
                   {performanceStats ? performanceStats.challenges_joined : '—'}
                 </div>
-                <div className="text-xs text-gray-500 mt-1">Challenges</div>
+                <div className="text-xs text-gray-500 mt-1 dark:text-gray-400">Challenges</div>
               </div>
-              <div className="bg-gray-50 rounded-xl p-3 text-center hover:bg-gray-100 transition-colors">
+              <div className="bg-gray-50 rounded-xl p-3 text-center hover:bg-gray-100 transition-colors  dark:bg-gray-700">
                 <div className="text-2xl font-bold text-yellow-500">
                   {performanceStats
                     ? `${performanceStats.goals_completed}/${performanceStats.goals_total}`
                     : '—'}
                 </div>
-                <div className="text-xs text-gray-500 mt-1">Goals</div>
+                <div className="text-xs text-gray-500 mt-1 dark:text-gray-400">Goals</div>
               </div>
             </div>
           </motion.div>
 
           <motion.div
             whileHover={{ y: -5 }}
-            className="bg-white p-6 rounded-2xl shadow-sm border border-[#fce7f3] transition-all hover:shadow-md"
+            className="bg-white p-6 rounded-2xl shadow-sm  transition-all hover:shadow-md dark:bg-gray-800"
           >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-20 h-20 bg-white rounded-xl flex items-center justify-center text-[#F3B14E] shadow-inner">
+            <div className="flex items-center gap-3 mb-6 ">
+              <div className="w-20 h-20 bg-white rounded-xl flex items-center justify-center text-[#F3B14E] shadow-inner dark:bg-gray-800">
                 <div className="w-10 h-10 flex items-center justify-center text-[#F3B14E]">
                   <FaTrophy className="w-16 h-16 text-xl" />
                 </div>
               </div>
               <div>
-                <p className="text-lg font-bold text-gray-900">Recent Achievements</p>
-                <p className="text-sm text-gray-500">Earned rewards</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-gray-200">Recent Achievements</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Earned rewards</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-4 ">
               {recentAchievements.length === 0 ? (
                 <p className="text-sm text-gray-500 italic text-center">No achievements yet.</p>
               ) : (
@@ -247,9 +247,9 @@ const Overview = () => {
                   <motion.div
                     key={i}
                     whileHover={{ scale: 1.05 }}
-                    className="rounded-xl p-4 text-center border-2 bg-white border-[#AAD977] shadow-sm"
+                    className="rounded-xl p-4 text-center border-2 bg-white border-[#AAD977] shadow-sm dark:bg-gray-800"
                   >
-                    <div className="h-20 w-20 rounded-full mx-auto">
+                    <div className="h-20 w-20 rounded-full mx-auto dark:bg-gray-800">
                       <img
                         src={`/assets/Images/${a.icon_image_path}`}
                         alt={a.achievement_title}
@@ -257,7 +257,7 @@ const Overview = () => {
                       />
                     </div>
                     <p className="text-sm font-semibold text-gray-800 mt-2">{a.achievement_title}</p>
-                    <p className="text-xs text-yellow-600 font-medium mt-2 bg-yellow-100/50 px-2 py-1 rounded-full inline-block">
+                    <p className="text-xs text-yellow-600 dark:bg-[#FFD18C] dark:text-[#CF6108] font-medium mt-2 bg-yellow-100/50 px-2 py-1 rounded-full inline-block">
                       +{a.xp_reward} XP
                     </p>
                   </motion.div>
@@ -272,19 +272,19 @@ const Overview = () => {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="bg-[#ffffff] p-6 rounded-3xl shadow-md h-full"
+          className="bg-[#ffffff] p-6 rounded-3xl shadow-md h-full dark:bg-gray-800"
         >
-          <h2 className="text-xl font-bold text-[#1f2937] mb-4 flex items-center gap-2">
+          <h2 className="text-xl font-bold text-[#1f2937] mb-4 flex items-center gap-2 dark:text-gray-200">
             <FaStar className="text-[#83AB55]" /> Current Goals
           </h2>
 
-          <div className="space-y-4">
-            {goals.length > 0 ? (
+          <div className="space-y-4 dark:bg-gray-800">
+            {goals?.length > 0 ? (
               goals.map((goal, i) => (
-                <div key={i} className="bg-[#F0F8EA] p-4 rounded-xl border border-[#B4CB98]">
+                <div key={i} className="bg-[#F0F8EA] p-4 rounded-xl border border-[#B4CB98] ">
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="font-medium text-gray-800">{goal.goal_name}</h3>
-                    <span className="text-xs bg-[#E6F4D8] text-[#4D7C0F] px-2 py-1 rounded-full border border-[#AAD977]">
+                    <span className="text-xs bg-[#E6F4D8] text-[#4D7C0F] px-2 py-1 rounded-full border border-[#AAD977] dark:bg-gray-800">
                       +{goal.xp_reward} XP
                     </span>
                   </div>
@@ -319,27 +319,27 @@ const Overview = () => {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.4 }}
-        className="bg-white p-6 rounded-3xl shadow-md"
+        className="bg-white p-6 rounded-3xl shadow-md dark:bg-gray-800"
       >
-        <h2 className="text-xl font-bold text-[#1f2937] mb-6 flex items-center gap-2">
+        <h2 className="text-xl font-bold text-[#1f2937] mb-6 flex items-center gap-2 dark:text-gray-200">
           <FaCrown className="text-[#fb923c]" /> Active Communities
         </h2>
 
         <div className="space-y-4">
-          {communityData.map((community, i) => (
+          {communityData?.map((community, i) => (
             <div
               key={i}
-              className="flex justify-between items-center bg-white shadow-md rounded-2xl px-4 py-4"
+              className="flex justify-between items-center bg-white shadow-md rounded-2xl px-4 py-4 dark:bg-gray-700"
             >
               {/* Left side */}
               <div className="flex items-center gap-4">
                 <img
                   src={`/assets/Images/${community.banner}`}
                   alt={community.community_name}
-                  className="w-16 h-16 rounded-full object-cover shadow"
+                  className="w-16 h-16 rounded-full object-cover shadow "
                 />
                 <div>
-                  <p className="text-lg font-medium text-gray-800">{community.community_name}</p>
+                  <p className="text-lg font-medium text-gray-800 dark:text-gray-400">{community.community_name}</p>
                   <div className="flex gap-2 mt-1">
                     <span className="bg-[#E0F2FE] text-[#72C1F5] text-xs font-medium px-3 py-1 rounded-full">
                       {community.member_count} Members
@@ -347,7 +347,7 @@ const Overview = () => {
                     <span className="bg-[#E0F2FE] text-[#72C1F5] text-xs font-medium px-3 py-1 rounded-full">
                       {community.challenge_count} Challenges
                     </span>
-                    <span className="bg-[#FEF9C3] text-yellow-500 text-xs font-medium px-3 py-1 rounded-full">
+                    <span className="bg-[#FEF9C3] dark:bg-[#FFD18C] dark:text-[#CF6108] text-yellow-500 text-xs font-medium px-3 py-1 rounded-full ">
                       {Math.round(community.xp_total)} XP
                     </span>
                   </div>
@@ -358,7 +358,7 @@ const Overview = () => {
               <div className="flex items-center gap-4">
                 {/* Avatars with fallback */}
                 <div className="flex -space-x-2">
-                  {(community.preview_avatars || []).map((path, index) => (
+                  {(community?.preview_avatars || []).map((path, index) => (
                     <img
                       key={index}
                       src={`/assets/Images/${path}`}
@@ -382,9 +382,9 @@ const Overview = () => {
       </motion.div>
 
       {/* Bottom Grid – User Posts */}
-      <div className="bg-white p-6 rounded-3xl shadow-md">
+      <div className="bg-white p-6 rounded-3xl shadow-md dark:bg-gray-800">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-gray-800">My Posts</h2>
+          <h2 className="text-xl font-bold text-gray-800  dark:text-gray-200">My Posts</h2>
           <button className="text-sm font-medium text-blue-500 hover:text-blue-600 transition-colors">
             View All
           </button>

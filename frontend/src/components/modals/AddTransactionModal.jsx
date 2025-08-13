@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaSave, FaTimes } from 'react-icons/fa';
 
-
 const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
   const [form, setForm] = useState({
     type: '',
@@ -22,7 +21,6 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
   const [goals, setGoals] = useState([]);
   const [challenges, setChallenges] = useState([]);
 
-  // Fetch categories from API
   useEffect(() => {
     if (isOpen) {
       fetchCategories();
@@ -54,10 +52,8 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
       setCategories(data.data || []);
     } catch (err) {
       console.error('Error fetching categories:', err);
- 
     }
   };
-
 
   const fetchGoals = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -91,7 +87,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    setError(''); // Clear error when user types
+    setError('');
   };
 
   const handleSubmit = async () => {
@@ -99,14 +95,12 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
     setError('');
 
     try {
-      // Validation: allow only one category method
       if (form.categories && form.newCategories) {
         setError("Please select a category OR type a new one — not both.");
         setLoading(false);
         return;
       }
 
-      // Validate required fields
       if (!form.name || !form.amount || !form.type) {
         setError("Please fill in all required fields (name, amount, type).");
         setLoading(false);
@@ -119,7 +113,6 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
         return;
       }
 
-      // Prepare transaction data for API
       const transactionData = {
         account_id: activeAccount.account_id,
         transaction_name: form.name,
@@ -127,20 +120,18 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
         transaction_type: form.type,
         transaction_date: form.date || new Date().toISOString().split('T')[0],
         category_id: form.categories ? parseInt(form.categories) : null,
-        custom_category_id: null, // You'll need to handle custom categories separately
+        custom_category_id: null,
         budget_id: form.budget ? parseInt(form.budget) : null,
         is_recurring: form.recurring ? true : false,
         linked_goal_id: form.goals ? parseInt(form.goals) : null,
         linked_challenge_id: form.challenges ? parseInt(form.challenges) : null,
-        points_awarded: 0 // Default value
+        points_awarded: 0
       };
 
-      // If user entered a new category, we need to handle it
       if (form.newCategories && !form.categories) {
         transactionData.transaction_name = `${form.name} (${form.newCategories})`;
       }
 
-      // Make API call
       const response = await fetch('http://localhost:5000/api/transactions', {
         method: 'POST',
         headers: {
@@ -156,7 +147,6 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
 
       const result = await response.json();
 
-      // Create the transaction object in the format your UI expects
       const newTransaction = {
         name: form.name,
         type: form.type,
@@ -173,10 +163,8 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
         transaction_id: result.data.transaction_id,
       };
 
-      // Call the parent's onAdd function
       onAdd(newTransaction);
 
-      // Reset form and close modal
       setForm({
         type: '',
         name: '',
@@ -203,11 +191,20 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-xl shadow-xl w-[500px] relative">
-        <h3 className="text-lg font-bold mb-4 text-center">Add New Transaction</h3>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-xl w-[500px] relative">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+        >
+          <FaTimes size={18} />
+        </button>
+
+        <h3 className="text-lg font-bold mb-4 text-center text-gray-800 dark:text-gray-200">
+          Add New Transaction
+        </h3>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded p-3 mb-4 text-red-700 text-sm">
+          <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded p-3 mb-4 text-red-700 dark:text-red-300 text-sm">
             {error}
           </div>
         )}
@@ -215,8 +212,13 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
         <div className="grid grid-cols-2 gap-4 text-sm">
           {/* Transaction Type */}
           <div className="flex flex-col">
-            <label className="text-gray-600 mb-1">Transaction type </label>
-            <select name="type" value={form.type} onChange={handleChange} className="border p-2 rounded">
+            <label className="text-gray-600 dark:text-gray-300 mb-1">Transaction type</label>
+            <select 
+              name="type" 
+              value={form.type} 
+              onChange={handleChange} 
+              className="border dark:border-gray-700 p-2 rounded dark:bg-gray-700 dark:text-gray-200"
+            >
               <option value="">Select type</option>
               <option value="expense">Expense</option>
               <option value="income">Income</option>
@@ -229,8 +231,13 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
 
           {/* Recurring */}
           <div className="flex flex-col">
-            <label className="text-gray-600 mb-1">Recurring</label>
-            <select name="recurring" value={form.recurring} onChange={handleChange} className="border p-2 rounded">
+            <label className="text-gray-600 dark:text-gray-300 mb-1">Recurring</label>
+            <select 
+              name="recurring" 
+              value={form.recurring} 
+              onChange={handleChange} 
+              className="border dark:border-gray-700 p-2 rounded dark:bg-gray-700 dark:text-gray-200"
+            >
               <option value="">None</option>
               <option value="daily">Daily</option>
               <option value="weekly">Weekly</option>
@@ -241,19 +248,19 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
 
           {/* Transaction Name */}
           <div className="flex flex-col">
-            <label className="text-gray-600 mb-1">Transaction name </label>
+            <label className="text-gray-600 dark:text-gray-300 mb-1">Transaction name</label>
             <input
               name="name"
               value={form.name}
               onChange={handleChange}
-              className="border p-2 rounded"
+              className="border dark:border-gray-700 p-2 rounded dark:bg-gray-700 dark:text-gray-200"
               placeholder="Enter transaction name"
             />
           </div>
 
           {/* Amount */}
           <div className="flex flex-col">
-            <label className="text-gray-600 mb-1">Amount </label>
+            <label className="text-gray-600 dark:text-gray-300 mb-1">Amount</label>
             <input
               name="amount"
               type="number"
@@ -261,31 +268,31 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
               step="0.01"
               value={form.amount}
               onChange={handleChange}
-              className="border p-2 rounded"
+              className="border dark:border-gray-700 p-2 rounded dark:bg-gray-700 dark:text-gray-200"
               placeholder="0.00"
             />
           </div>
 
           {/* Date */}
           <div className="flex flex-col">
-            <label className="text-gray-600 mb-1">Date</label>
+            <label className="text-gray-600 dark:text-gray-300 mb-1">Date</label>
             <input
               name="date"
               type="date"
               value={form.date}
               onChange={handleChange}
-              className="border p-2 rounded"
+              className="border dark:border-gray-700 p-2 rounded dark:bg-gray-700 dark:text-gray-200"
             />
           </div>
 
           {/* Budget */}
           <div className="flex flex-col">
-            <label className="text-gray-600 mb-1">Budget</label>
+            <label className="text-gray-600 dark:text-gray-300 mb-1">Budget</label>
             <select
               name="budget"
               value={form.budget}
               onChange={handleChange}
-              className="border p-2 rounded"
+              className="border dark:border-gray-700 p-2 rounded dark:bg-gray-700 dark:text-gray-200"
             >
               <option value="">Select budget</option>
               {budgets.map(b => (
@@ -298,8 +305,13 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
 
           {/* Categories (dropdown) */}
           <div className="flex flex-col">
-            <label className="text-gray-600 mb-1">Categories</label>
-            <select name="categories" value={form.categories} onChange={handleChange} className="border p-2 rounded">
+            <label className="text-gray-600 dark:text-gray-300 mb-1">Categories</label>
+            <select 
+              name="categories" 
+              value={form.categories} 
+              onChange={handleChange} 
+              className="border dark:border-gray-700 p-2 rounded dark:bg-gray-700 dark:text-gray-200"
+            >
               <option value="">Select category</option>
               {categories.map(category => (
                 <option key={category.category_id} value={category.category_id}>
@@ -311,20 +323,25 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
 
           {/* New Category (alternative input) */}
           <div className="flex flex-col">
-            <label className="text-gray-600 mb-1">New Category</label>
+            <label className="text-gray-600 dark:text-gray-300 mb-1">New Category</label>
             <input
               name="newCategories"
               value={form.newCategories}
               onChange={handleChange}
-              className="border p-2 rounded"
+              className="border dark:border-gray-700 p-2 rounded dark:bg-gray-700 dark:text-gray-200"
               placeholder="Enter new category"
             />
           </div>
 
           {/* Goals Dropdown */}
           <div className="flex flex-col">
-            <label className="text-gray-600 mb-1">Goals</label>
-            <select name="goals" value={form.goals} onChange={handleChange} className="border p-2 rounded">
+            <label className="text-gray-600 dark:text-gray-300 mb-1">Goals</label>
+            <select 
+              name="goals" 
+              value={form.goals} 
+              onChange={handleChange} 
+              className="border dark:border-gray-700 p-2 rounded dark:bg-gray-700 dark:text-gray-200"
+            >
               <option value="">Select goal</option>
               {goals.map(g => (
                 <option key={g.goal_id} value={g.goal_id}>
@@ -336,8 +353,13 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
 
           {/* Challenges Dropdown */}
           <div className="flex flex-col">
-            <label className="text-gray-600 mb-1">Challenges</label>
-            <select name="challenges" value={form.challenges} onChange={handleChange} className="border p-2 rounded">
+            <label className="text-gray-600 dark:text-gray-300 mb-1">Challenges</label>
+            <select 
+              name="challenges" 
+              value={form.challenges} 
+              onChange={handleChange} 
+              className="border dark:border-gray-700 p-2 rounded dark:bg-gray-700 dark:text-gray-200"
+            >
               <option value="">Select challenge</option>
               {challenges.map(c => (
                 <option key={c.id} value={c.id}>
@@ -353,14 +375,14 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
           <button
             onClick={onClose}
             disabled={loading}
-            className="flex items-center gap-2 bg-red-100 text-red-500 px-4 py-2 rounded-full disabled:opacity-50"
+            className="flex items-center gap-2 bg-red-100 dark:bg-red-800 text-red-500 dark:text-red-200 px-4 py-2 rounded-full disabled:opacity-50 hover:bg-red-300 dark:hover:bg-red-700 transition"
           >
             <FaTimes /> Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="flex items-center gap-2 bg-lime-100 text-lime-600 px-4 py-2 rounded-full disabled:opacity-50"
+            className="flex items-center gap-2 bg-lime-100 dark:bg-green-700 text-lime-600 dark:text-green-100 px-4 py-2 rounded-full disabled:opacity-50 hover:bg-green-300 dark:hover:bg-green-600 transition"
           >
             <FaSave /> {loading ? 'Saving...' : 'Save'}
           </button>

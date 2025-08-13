@@ -9,7 +9,7 @@ import {
   FaCommentDots,
   FaHandshake
 } from 'react-icons/fa';
-import avatar from '../../assets/Images/avatars/sharkAvatar.jpeg';
+import avatar from '../../assets/Images/avatars/BlueSky.png';
 
 const AccountsPerformanceHeader = () => {
   const [stats, setStats] = useState(null);
@@ -35,7 +35,7 @@ const AccountsPerformanceHeader = () => {
   const metrics = [
     { value: stats?.communities, label: 'Communities', icon: <FaUsers />, color: '#FF8A8A' },
     { value: stats?.challenges, label: 'Challenges', icon: <FaFire />, color: '#7FDD53' },
-    { value: '#' + (stats?.leaderboard ?? '-'), label: 'Leaderboard', icon: <FaMedal />, color: '#5FBFFF' },// review backend logic for leaderboard
+    { value: '#' + (stats?.leaderboard ?? '-'), label: 'Leaderboard', icon: <FaMedal />, color: '#5FBFFF' },
     { value: stats?.gamesPlayed, label: 'Games Played', icon: <FaGamepad />, color: '#FFC541' },
     { value: stats?.friends, label: 'Friends', icon: <FaHandshake />, color: '#F68D2B' },
     { value: stats?.socialPosts, label: 'Social Post', icon: <FaCommentDots />, color: '#FF7F9E' },
@@ -49,7 +49,7 @@ const AccountsPerformanceHeader = () => {
           <FaUsers className="text-6xl" />
           <h1 className="text-5xl font-light">Community</h1>
         </div>
-        <p className="text-lg text-gray-400 mt-1 max-w-xs mx-auto lg:mx-0">
+        <p className="text-lg text-gray-400 mt-1 max-w-xs mx-auto lg:mx-0 dark:text-gray-300">
           Connect with peers, join communities, and take part in exciting financial challenges.
         </p>
       </div>
@@ -57,17 +57,21 @@ const AccountsPerformanceHeader = () => {
       {/* Right Section (Performance Card + Stat Grid) */}
       <div className="flex flex-col gap-4 flex-1">
         {/* Center Performance Card */}
-        <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col sm:flex-row items-center justify-between gap-6 dark:bg-gray-800">
           {/* Avatar + Info */}
           <div className="flex items-center gap-6">
-            <img  src={
+            <img 
+              src={
                 performance?.avatar_image_path
                   ? `/assets/Images/${performance?.avatar_image_path}`
                   : avatar
-              } className="w-16 h-16 rounded-full object-cover" alt="Avatar" />
+              } 
+              className="w-16 h-16 rounded-full object-cover" 
+              alt="Avatar" 
+            />
             <div>
-              <p className="text-2xl font-bold text-gray-800"> {performance?.performance_score}</p>
-              <p className="text-sm text-gray-500">{performance?.performance_label}</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">{performance?.performance_score}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{performance?.performance_label}</p>
               <p className="text-sm text-[#F97156] font-medium">Lv {performance?.level_number}: {performance?.tier_level}</p>
             </div>
           </div>
@@ -75,7 +79,7 @@ const AccountsPerformanceHeader = () => {
           {/* Progress Bar */}
           <div className="w-full">
             <p className="text-sm font-medium text-[#7FBCE9] mb-1">Community Performance</p>
-            <div className="relative h-4 w-full rounded-full bg-[#f5f5f5] overflow-hidden">
+            <div className="relative h-4 w-full rounded-full bg-[#f5f5f5] dark:bg-gray-700 overflow-hidden">
               <div
                 className="h-full rounded-full"
                 style={{
@@ -97,17 +101,17 @@ const AccountsPerformanceHeader = () => {
         {/* Stat Blocks*/}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 w-full">
           {metrics.map(({ label, value, icon, color }, index) => (
-            <div key={index} className="relative bg-white rounded-xl shadow-sm overflow-hidden">
+            <div key={index} className="relative bg-white rounded-xl shadow-sm overflow-hidden dark:bg-gray-800">
               <div className="flex items-center justify-between px-4 py-3">
                 {/* Icon circle with soft background */}
-                <div className="w-10 h-10 flex items-center justify-center rounded-full" style={{ backgroundColor: `${color}20` }}>
+                <div className="w-10 h-10 flex items-center justify-center rounded-full dark:text-gray-400" style={{ backgroundColor: `${color}20` }}>
                   <span className="text-xl" style={{ color }}>{icon}</span>
                 </div>
 
                 {/* Stat content */}
                 <div className="text-right">
-                  <div className="text-lg font-bold text-gray-900">{value}</div>
-                  <div className="text-sm text-gray-500">{label}</div>
+                  <div className="text-lg font-bold text-gray-900 dark:text-gray-200">{value}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-300">{label}</div>
                 </div>
               </div>
 
@@ -116,7 +120,6 @@ const AccountsPerformanceHeader = () => {
             </div>
           ))}
         </div>
-
       </div>
     </div>
   );
