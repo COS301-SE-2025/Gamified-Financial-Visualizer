@@ -1192,3 +1192,100 @@ export async function getCategoriesWithCustom(userId: number) {
   }
 }
 
+
+// Post Feature Services
+
+export async function createSocialPost({
+  userId,
+  postType,
+  goalId = null,
+  achievementId = null,
+  caption = '',
+  imagePath = null,
+}: {
+  userId: number;
+  postType: 'goal' | 'achievement';
+  goalId?: number | null;
+  achievementId?: number | null;
+  caption?: string;
+  imagePath?: string | null;
+}) {
+  // Fetch a random banner image if none is provided
+  if (!imagePath) {
+    const { rows: bannerRows } = await pool.query(
+      `SELECT banner_image_path FROM banner_images
+       ORDER BY RANDOM() LIMIT 1`
+    );
+    imagePath = bannerRows[0]?.banner_image_path ?? 'banners/default.jpg';
+  }
+
+  const { rows } = await pool.query(
+    `INSERT INTO social_posts (user_id, post_type, goal_id, achievement_id, caption, image_path)
+     VALUES ($1, $2, $3, $4, $5, $6)
+     RETURNING *`,
+    [userId, postType, goalId, achievementId, caption, imagePath]
+  );
+
+  return rows[0];
+}
+
+export async function getFriendFeed(userId: number) {
+  const { rows } = await pool.query(
+    `
+    SELECT sp.*, u.username, u.avatar_id
+    FROM social_posts sp
+    JOIN users u ON u.user_id = sp.user_id
+    WHERE sp.user_id IN (
+      SELECT friend_id FROM friendships WHERE user_id = $1 AND relationship_status = 'accepted'
+      UNION
+      SELECT user_id FROM friendships WHERE friend_id = $1 AND relationship_status = 'accepted'
+    )
+    ORDER BY sp.created_at DESC
+    LIMIT 50
+    `,
+    [userId]
+  );
+  return rows;
+}
+
+
+export async function likePost(userId: number, postId: number) {
+  await pool.query(
+    `INSERT INTO post_likes (user_id, post_id) 
+     VALUES ($1, $2) 
+     ON CONFLICT DO NOTHING`,
+    [userId, postId]
+  );
+}
+
+export async function addPostComment(userId: number, postId: number, comment: string) {
+  const { rows } = await pool.query(
+    `INSERT INTO post_comments (user_id, post_id, comment)
+     VALUES ($1, $2, $3)
+     RETURNING *`,
+    [userId, postId, comment]
+  );
+  return rows[0];
+}
+
+
+export async function getPostComments(postId: number) {
+  const { rows } = await pool.query(
+    `SELECT pc.*, u.username, u.avatar_id
+     FROM post_comments pc
+     JOIN users u ON pc.user_id = u.user_id
+     WHERE pc.post_id = $1
+     ORDER BY pc.created_at ASC`,
+    [postId]
+  );
+  return rows;
+}
+
+export async function deletePost(userId: number, postId: number) {
+  await pool.query(
+    `DELETE FROM social_posts 
+     WHERE post_id = $1 AND user_id = $2`,
+    [postId, userId]
+  );
+}
+

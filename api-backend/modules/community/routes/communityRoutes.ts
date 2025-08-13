@@ -9,6 +9,87 @@ import { error } from 'console';
 
 const router = Router();
 
+// Post Feature Routes
+
+// POST /api/social/posts
+router.post('/social/posts', async (req, res) => {
+  try {
+    const { userId, postType, goalId, achievementId, caption } = req.body;
+    const post = await communityService.createSocialPost({ userId, postType, goalId, achievementId, caption });
+    res.status(201).json(post);
+  } catch (error) {
+    console.error('Error creating social post:', error);
+    res.status(500).json({ message: 'Failed to create post' });
+  }
+});
+
+// GET /api/social/feed/:userId
+router.get('/social/feed/:userId', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.userId);
+    const posts = await communityService.getFriendFeed(userId);
+    res.json(posts);
+  } catch (error) {
+    console.error('Error fetching feed:', error);
+    res.status(500).json({ message: 'Failed to fetch feed' });
+  }
+});
+
+// POST /api/social/posts/:postId/like
+router.post('/social/posts/:postId/like', async (req, res) => {
+  try {
+    const userId = req.body.userId;
+    const postId = parseInt(req.params.postId);
+    await communityService.likePost(userId, postId);
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error liking post:', error);
+    res.status(500).json({ message: 'Failed to like post' });
+  }
+});
+
+// POST /api/social/posts/:postId/comment
+router.post('/social/posts/:postId/comment', async (req, res) => {
+  try {
+    const userId = req.body.userId;
+    const postId = parseInt(req.params.postId);
+    const { comment } = req.body;
+    const newComment = await communityService.addPostComment(userId, postId, comment);
+    res.status(201).json(newComment);
+  } catch (error) {
+    console.error('Error commenting on post:', error);
+    res.status(500).json({ message: 'Failed to comment' });
+  }
+});
+
+// GET /api/social/posts/:postId/comments
+router.get('/social/posts/:postId/comments', async (req, res) => {
+  try {
+    const postId = parseInt(req.params.postId);
+    const comments = await communityService.getPostComments(postId);
+    res.json(comments);
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    res.status(500).json({ message: 'Failed to fetch comments' });
+  }
+});
+
+// DELETE /api/social/posts/:postId
+router.delete('/social/posts/:postId', async (req, res) => {
+  try {
+    const userId = req.body.userId; // Ensure this comes from auth or frontend
+    const postId = parseInt(req.params.postId);
+
+    await communityService.deletePost(userId, postId);
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    res.status(500).json({ message: 'Failed to delete post' });
+  }
+});
+
+
+
 /**
  * @route GET /api/community/stats/:userId
  * @desc Returns statistics related to community interactions (e.g. communities joined, challenges, games played, leaderboard rank, friends)

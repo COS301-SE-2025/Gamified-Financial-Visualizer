@@ -11,6 +11,9 @@ export function registerCommunityModule(app: Application) {
   // Mount community-related API routes
   app.use('/api/community', communityRoutes);
 
+  // Mount posts-related API routes
+  app.use('/api/social', communityRoutes);
+
   // Optional: module-specific health probe
   app.get('/health/community', async (_req, res) => {
     try {
