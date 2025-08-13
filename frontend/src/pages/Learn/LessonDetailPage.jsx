@@ -165,15 +165,7 @@ const ModuleLessonsPage = () => {
     );
   };
 
-  if (isLoading) {
-    return (
-      <LearnLayout>
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#5FBFFF] dark:border-[#7FDD53]"></div>
-        </div>
-      </LearnLayout>
-    );
-  }
+  
 
   if (error) {
     return (
@@ -466,7 +458,7 @@ const ModuleLessonsPage = () => {
                           Retake Quiz
                         </button>
                         <button
-                          onClick={() => setExpandedId(null)}
+                          onClick={() => navigate('/learn')}  // Changed from setExpandedId(null)
                           className="px-6 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                         >
                           Continue Learning
