@@ -1,23 +1,41 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import PacmanLoader from '../../components/loaders/PacmanLoader';
 import LearnSidebar from '../../layouts/sidebars/LearnSidebar';
-import LearnHeader from '../../layouts/headers/LearnHeader';
 
 const LearnLayout = ({ children }) => {
-  return (
-    <div className="flex min-h-screen bg-[#f9fafb]">
-      {/* Sidebar with consistent padding */}
-      <div className="pt-6 pl-6">
-        <LearnSidebar />
-      </div>
+  const [isLoading, setIsLoading] = useState(true);
 
-      {/* Main Content */}
-      <main className="flex-1 p-6">
-        <div className="space-y-6">
-          <LearnHeader />
-          {children}
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 300);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="relative min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Loader */}
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
+          <PacmanLoader />
         </div>
-      </main>
+      )}
+
+      <div className={`${isLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'} transition-opacity duration-500`}>
+        {/* Top Learn Header */}
+        <div className="px-4 sm:px-6 pt-4">
+          <LearnSidebar />
+        </div>
+
+        {/* Page Content */}
+        <div className="flex">
+          <div className="flex-1 flex flex-col h-full pr-6">
+            <div className="px-6 pb-6">
+              {children}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
+
 export default LearnLayout;
