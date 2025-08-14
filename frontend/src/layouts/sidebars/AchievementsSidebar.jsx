@@ -36,8 +36,8 @@ const AccountsPerformanceHeader = () => {
     fetch(`http://localhost:5000/api/achievements/user/${user.id}`)
       .then(res => res.json())
       .then(data => {
-        const complete = data.data.filter(a => a.achievement_status === 'complete');
-        const total = data.data.length;
+        const complete = data?.data.filter(a => a.achievement_status === 'complete');
+        const total = data?.data.length;
         setTotalAchievements(total);
         setNumComplete(complete.length);
       });
