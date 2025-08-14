@@ -3,11 +3,11 @@ import { FaSearch, FaFilter } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import LearnLayout from '../../pages/Learn/LearnLayout';
 import CourseCard from '../../components/cards/CoursesCard';
-import banner1 from '../../assets/Images/banners/pixelAllyway.jpeg';
-import banner2 from '../../assets/Images/banners/pixelApartment.gif';
-import banner3 from '../../assets/Images/banners/pixelBalcony.gif';
-import banner4 from '../../assets/Images/banners/pixelCafe.gif';
-import banner5 from '../../assets/Images/banners/pixelCornerStore.gif';
+import banner1 from '../../assets/Images/learn_banners/Budget.png' ;
+import banner2 from '../../assets/Images/learn_banners/Investment.png';
+import banner3 from '../../assets/Images/learn_banners/credit.png';
+import banner4 from '../../assets/Images/learn_banners/Investment.png';
+import banner5 from '../../assets/Images/learn_banners/Fomo.png';
 import banner6 from '../../assets/Images/banners/pixelGirl.gif';
 
 const bannerImages = {
