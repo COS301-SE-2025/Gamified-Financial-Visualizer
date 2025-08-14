@@ -1,4 +1,5 @@
 // goal.service.ts
+// Handles operations for personal and community goals
 import dotenv from 'dotenv';
 dotenv.config();
 import { logger } from '../../../config/logger';
@@ -70,8 +71,6 @@ export async function createGoal(goal: Goal): Promise<number> {
     ]);
     const newId = res.rows[ 0 ].goal_id;
     logger.info(`[GoalService] Created goal ID=${newId}`);
-     // 🟢 Invalidate or update user goals cache after creation
-
     return newId;
   } catch (error) {
     logger.error(`[GoalService] Error creating goal:`, error);
@@ -99,11 +98,18 @@ export async function getGoal(goal_id: number): Promise<Goal | null> {
 export async function getUserGoals(user_id: number): Promise<Goal[]> {
   const sql = `SELECT * FROM goals WHERE user_id = $1 ORDER BY created_at DESC;`;
   try {
-
+    // check cache
+    const cacheKey = `user_goals:${user_id}`;
+    const cachedGoals = await redisClient.get(cacheKey);
+    if (cachedGoals) {
+      return JSON.parse(cachedGoals) as Goal[];
+    }
 
     const res = await pool.query(sql, [ user_id ]);
     // cache the result
-
+    await redisClient.set(cacheKey, JSON.stringify(res.rows), {
+      EX: 60 * 60 // cache for 1 hour
+    });
 
     if (res.rows.length === 0) {
       logger.info(`[GoalService] No goals found for user ${user_id}`);
@@ -125,51 +131,32 @@ export async function getGoalsSummary(user_id: number) {
     END
     WHERE user_id = $1;
   `;
-
   try {
-    await pool.query(updateStatusSql, [user_id]);
+    await pool.query(updateStatusSql, [ user_id ]);
   } catch (error) {
     logger.error(`[GoalService] Error updating goal statuses for user ${user_id}:`, error);
     throw error;
   }
 
   const sql = `
-    WITH dormant_goals AS (
-      SELECT g.goal_id
-      FROM goals g
-      LEFT JOIN goal_progress gp
-        ON g.goal_id = gp.goal_id
-        AND DATE_TRUNC('month', gp.progress_date) = DATE_TRUNC('month', CURRENT_DATE) -- Only consider progress for the current month
-      WHERE g.user_id = $1
-        AND g.goal_status NOT IN ('completed', 'cancelled')
-      GROUP BY g.goal_id
-      HAVING COUNT(gp.progress_id) = 0
-    )
     SELECT
       COUNT(*) AS total_goals,
       COUNT(*) FILTER (WHERE goal_status = 'completed') AS completed_goals,
       COUNT(*) FILTER (WHERE goal_status = 'in-progress') AS in_progress_goals,
       COUNT(*) FILTER (WHERE goal_status = 'paused') AS paused_goals,
       COUNT(*) FILTER (WHERE goal_status = 'cancelled') AS cancelled_goals,
-      COUNT(*) FILTER (WHERE goal_status = 'failed') AS failed_goals,
-      COUNT(*) FILTER (WHERE start_date > CURRENT_DATE) AS upcoming_goals,
-      (SELECT COUNT(*) FROM dormant_goals) AS dormant_goals
+      COUNT(*) FILTER (WHERE goal_status = 'failed') AS failed_goals
     FROM goals
     WHERE user_id = $1;
   `;
-
   try {
-    const res = await pool.query(sql, [user_id]);
+    const res = await pool.query(sql, [ user_id ]);
     if (!res.rows || res.rows.length === 0) {
       return {
         total_goals: 0,
         completed_goals: 0,
         in_progress_goals: 0,
-        paused_goals: 0,
-        cancelled_goals: 0,
-        failed_goals: 0,
-        upcoming_goals: 0,
-        dormant_goals: 0
+        overdue_goals: 0
       };
     }
     return res.rows[0];
@@ -244,19 +231,16 @@ export async function deleteGoal(goal_id: number): Promise<void> {
   }
 }
 
-export async function getTotalGoalValue(user_id: number): Promise<{ total_goal_value: number; total_goal_value_target: number }> {
+export async function getTotalGoalValue(user_id: number): Promise<number> {
   const query = `
-    SELECT COALESCE(SUM(current_amount), 0) AS total_goal_value, COALESCE(SUM(target_amount), 0) AS total_goal_value_target
+    SELECT COALESCE(SUM(current_amount), 0) AS total_goal_value
     FROM goals
     WHERE user_id = $1;
   `;
 
   try {
     const result = await pool.query(query, [ user_id ]);
-    return {
-      total_goal_value: result.rows[0].total_goal_value || 0,
-      total_goal_value_target: result.rows[0].total_goal_value_target || 0
-    }
+    return Number(result.rows[ 0 ].total_goal_value);
   } catch (error) {
     console.error('[GoalService] Failed to get total goal value:', error);
     throw error;
@@ -291,45 +275,44 @@ export async function addGoalProgress(
   }
 }
 
-export async function getWeeklyGoalCompletions(userId: number): Promise<{day: string; count: number}[]> {
+export async function getWeeklyGoalCompletions(userId: number) {
   const sql = `
-    WITH week_days AS (
-      SELECT generate_series(
-        CURRENT_DATE - EXTRACT(DOW FROM CURRENT_DATE)::int,
-        CURRENT_DATE - EXTRACT(DOW FROM CURRENT_DATE)::int + 6,
-        '1 day'
-      )::date AS day
-    ),
-    tx_counts AS (
-      SELECT
-        DATE(t.transaction_date) AS day,
-        COUNT(*)                AS count
-      FROM transactions t
-      INNER JOIN goals g
-        ON t.linked_goal_id = g.goal_id
-      WHERE g.user_id = $1
-        AND t.linked_goal_id IS NOT NULL
-        AND DATE(t.transaction_date)
-            BETWEEN CURRENT_DATE - EXTRACT(DOW FROM CURRENT_DATE)::int
-                AND CURRENT_DATE - EXTRACT(DOW FROM CURRENT_DATE)::int + 6
-      GROUP BY DATE(t.transaction_date)
-    )
     SELECT
-      TO_CHAR(w.day, 'Dy')     AS day_label,
-      COALESCE(tc.count, 0)    AS count
-    FROM week_days w
-    LEFT JOIN tx_counts tc
-      ON w.day = tc.day
-    ORDER BY w.day;
+      TO_CHAR(DATE(t.transaction_date), 'Dy') AS day,
+      COUNT(*) AS count
+    FROM transactions t
+    INNER JOIN goals g ON t.linked_goal_id = g.goal_id
+    WHERE g.user_id = $1
+      AND t.linked_goal_id IS NOT NULL
+      AND t.transaction_date >= CURRENT_DATE - INTERVAL '6 days'
+    GROUP BY DATE(t.transaction_date)
+    ORDER BY MIN(DATE(t.transaction_date));
   `;
+  try {
+    // Check cache first
+    const cacheKey = `weekly_goal_completions:${userId}`;
+    const cachedData = await redisClient.get(cacheKey);
+    if (cachedData) {
+      return JSON.parse(cachedData);
+    }
 
-  const { rows } = await pool.query(sql, [userId]);
-  return rows.map(r => ({
-    day: r.day,
-    count:     Number(r.count),
-  }));
+    const result = await pool.query(sql, [ userId ]);
+    // Cache the result for 1 hour
+    await redisClient.set(cacheKey, JSON.stringify(result.rows), {
+      EX: 60 * 60 // 1 hour
+    });
+
+    if (result.rows.length === 0) {
+      logger.info(`[GoalService] No weekly completions found for user ${userId}`);
+      return [];
+    }
+
+    return result.rows; // e.g., [{ day: 'Mon', count: 2 }, ...]
+  } catch (err) {
+    console.error('[GoalService] Error fetching goal progress frequency', err);
+    throw err;
+  }
 }
-
 
 export async function calculateGoalPerformance(userId: number) {
   const result = await pool.query(`
@@ -427,7 +410,7 @@ export async function getAllGoals(): Promise<Goal[]> { // delete
     const res = await pool.query(sql);
     // Cache the result for 1 hour
     await redisClient.set(cacheKey, JSON.stringify(res.rows), {
-      EX: 60 * 10 // cache for 1 hour
+      EX: 60 * 60 // cache for 1 hour
     });
     return res.rows;
   } catch (error) {
@@ -458,7 +441,7 @@ export async function getUserGoalStats(user_id: number) {
   const result = await pool.query(sql, [ user_id ]);
   // cache the result for 1 hour
   await redisClient.set(cacheKey, JSON.stringify(result.rows[0]), {
-    EX: 60 * 10 // cache for 1 hour
+    EX: 60 * 60 // cache for 1 hour
   });
   return result.rows[ 0 ];
 }
@@ -488,7 +471,7 @@ export async function getUpcomingGoals(user_id: number) {
     const result = await pool.query(query, [ user_id ]);
     // Cache the result for 1 hour
     await redisClient.set(cacheKey, JSON.stringify(result.rows), {
-      EX: 60 * 10 // cache for 1 hour
+      EX: 60 * 60 // cache for 1 hour
     });
     return result.rows;
   } catch (err) {

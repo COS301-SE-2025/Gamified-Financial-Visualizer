@@ -1,38 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import PacmanLoader from '../../components/loaders/PacmanLoader';
-import AchievementsSidebar from '../../layouts/sidebars/AchievementsSidebar'; // rename if needed
+import React,{useState}from 'react';
+import AchievementsSidebar from '../../layouts/sidebars/AchievementsSidebar';
+import AchievementsHeader from '../../layouts/headers/AchievementsHeader';
 
-const AchievementsLayout = ({ children }) => {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => setIsLoading(false), 500);
-    return () => clearTimeout(timer);
-  }, []);
+const AccountsLayout = ({ children }) => {
+  const [tab, setTab] = useState('achievements'); // or 'main', etc.
 
   return (
-    <div className="relative min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Loader */}
-      {/* {isLoading && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-white">
-          <PacmanLoader />
-        </div>
-      )} */}
-
-      {/* Main Layout */}
-      <div className={`${isLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'} transition-opacity duration-500`}>
-        {/* Achievements Header */}
-        <div className="px-6 pt-6">
-          <AchievementsSidebar />
+    <div className="h-screen bg-gray-50">
+      <div className="flex h-full overflow-hidden">
+        {/* Sidebar */}
+        <div className="w-1/4 pl-6 pt-6 pb-6">
+          <AchievementsSidebar  />
         </div>
 
-        {/* Page Content */}
-        <div className="flex">
-          <div className="flex-1 flex flex-col h-full pr-6">
-            <div className="px-6 pb-6">
-              {children}
-            </div>
+        {/* Main content */}
+        <div className="flex-1 flex flex-col h-full pr-6">
+            
+          {/* Header */}
+          <div className="p-6">
+           <AchievementsHeader tab={tab} setTab={setTab} />
+          </div>
+
+          {/* Scrollable content area */}
+          <div className="flex-1 px-6 pb-6 overflow-y-auto min-h-0">
+            {children}
           </div>
         </div>
       </div>
@@ -40,4 +31,4 @@ const AchievementsLayout = ({ children }) => {
   );
 };
 
-export default AchievementsLayout;
+export default AccountsLayout;

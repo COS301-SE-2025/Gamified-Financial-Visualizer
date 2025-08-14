@@ -1,274 +1,115 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import React from 'react';
 import {
-  FaTimes, FaUserPlus, FaCheckCircle, FaTrophy, FaBell, FaChartBar,
-  FaCalendarAlt, FaExclamationTriangle, FaCoins, FaMedal, FaFire, FaHeart, FaGem
+  FaTimes,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaBell
 } from 'react-icons/fa';
 
-const notificationStyles = {
-  friend_request: {
-    useAvatar: true,
-    iconColor: 'text-blue-500 dark:text-blue-400',
-    textColor: 'text-gray-800 dark:text-gray-100',
-    borderColor: 'border-blue-100 dark:border-blue-900',
-    bgColor: 'bg-blue-50 dark:bg-gray-800',
-    className: 'rounded-2xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 border-l-4 border-blue-500 dark:border-blue-400',
-    gamification: (p) => (
-      <div className="flex items-center mt-2 space-x-3">
-        <div className="flex items-center px-3 py-1 rounded-full bg-white dark:bg-gray-700 shadow text-xs font-semibold text-gray-700 dark:text-gray-200 border border-blue-100 dark:border-gray-600">
-          <FaMedal className="text-yellow-500 dark:text-yellow-400 mr-1.5" />
-          Lvl {p.tierStatus}
-        </div>
-        <div className="flex items-center px-3 py-1 rounded-full bg-white dark:bg-gray-700 shadow text-xs font-semibold text-gray-700 dark:text-gray-200 border border-blue-100 dark:border-gray-600">
-          <FaFire className="text-orange-500 dark:text-orange-400 mr-1.5" />
-          {p.totalPoints} XP
-        </div>
-      </div>
-    )
-  },
+import image1 from '../../assets/Images/avatars/butterflyAvatar.jpeg';
+import image2 from '../../assets/Images/avatars/lilyAvatar.jpeg';
+import image3 from '../../assets/Images/avatars/beachAvatar.jpeg';
+import image4 from '../../assets/Images/avatars/sandAvatar.jpeg';
+import image5 from '../../assets/Images/avatars/shoreAvatar.jpeg';
 
-  friend_request_accepted: {
-    useAvatar: true,
-    iconColor: 'text-pink-500 dark:text-pink-400',
-    textColor: 'text-gray-800 dark:text-gray-100',
-    borderColor: 'border-pink-100 dark:border-pink-900',
-    bgColor: 'bg-pink-50 dark:bg-gray-800',
-    className: 'rounded-2xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 border-l-4 border-pink-500 dark:border-pink-400',
-    gamification: () => (
-      <div className="inline-flex items-center mt-2 px-3 py-1 rounded-full bg-white dark:bg-gray-700 shadow text-xs font-semibold text-gray-700 dark:text-gray-200 border border-blue-100 dark:border-gray-600">
-        <FaCoins className="text-yellow-500 dark:text-yellow-400 mr-1.5 animate-pulse" />
-        +10 Social Points
-      </div>
-    )
+const mockNotifications = [
+  {
+    id: 1,
+    type: 'achievement',
+    message: "You completed your 'Laptop Fund' goal!",
+    img: image1,
+    completed: true,
   },
-
-  achievement: {
-    icon: <FaTrophy />,
-    iconColor: 'text-yellow-500 dark:text-yellow-400',
-    textColor: 'text-gray-800 dark:text-gray-100',
-    borderColor: 'border-yellow-100 dark:border-yellow-900',
-    bgColor: 'bg-yellow-50 dark:bg-gray-800',
-    className: 'rounded-2xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 border-l-4 border-yellow-500 dark:border-yellow-400',
-    gamification: (p) => (
-      <div className="flex justify-between items-center mt-2">
-        <div className="flex items-center px-3 py-1 rounded-full bg-white dark:bg-gray-700 shadow text-xs font-semibold text-gray-700 dark:text-gray-200 border border-blue-100 dark:border-gray-600">
-          <FaGem className="text-yellow-500 dark:text-yellow-400 mr-1.5" />
-          +{p.reward} Coins
-        </div>
-        <span className="px-3 py-1 rounded-full bg-yellow-50 dark:bg-gray-700 text-orange-500 dark:text-orange-400 text-xs font-bold shadow border border-yellow-200 dark:border-gray-600">
-          {p.badge?.toUpperCase()} BADGE
-        </span>
-      </div>
-    )
+  {
+    id: 2,
+    type: 'goal',
+    message: "Your 'Vacation' goal is 50% complete!",
+    img: image2,
+    completed: false,
   },
-
-  insight: {
-    icon: <FaChartBar />,
-    iconColor: 'text-green-500 dark:text-green-400',
-    textColor: 'text-gray-800 dark:text-gray-100',
-    borderColor: 'border-blue-100 dark:border-blue-900',
-    bgColor: 'bg-blue-50 dark:bg-gray-800',
-    className: 'rounded-2xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 border-l-4 border-green-500 dark:border-green-400',
-    gamification: (p) => (
-      <div className="inline-flex items-center mt-2 px-3 py-1 rounded-full bg-white dark:bg-gray-700 shadow text-xs font-semibold text-gray-700 dark:text-gray-200 border border-blue-100 dark:border-gray-600">
-        <FaFire className="text-orange-500 dark:text-orange-400 mr-1.5" />
-        {p.streak}-day {p.category} streak
-      </div>
-    )
+  {
+    id: 3,
+    type: 'friend_request',
+    name: 'Lily Rose',
+    img: image3,
   },
-
-  budget_due: {
-    icon: <FaCalendarAlt />,
-    iconColor: 'text-orange-500 dark:text-orange-400',
-    textColor: 'text-gray-800 dark:text-gray-100',
-    borderColor: 'border-yellow-100 dark:border-yellow-900',
-    bgColor: 'bg-yellow-50 dark:bg-gray-800',
-    className: 'rounded-2xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 border-l-4 border-orange-500 dark:border-orange-400'
+  {
+    id: 4,
+    type: 'friend_request',
+    name: 'Sandy Shores',
+    img: image4,
   },
-
-  budget_over: {
-    icon: <FaExclamationTriangle />,
-    iconColor: 'text-red-500 dark:text-red-400',
-    textColor: 'text-gray-800 dark:text-gray-100',
-    borderColor: 'border-red-100 dark:border-red-900',
-    bgColor: 'bg-red-50 dark:bg-gray-800',
-    className: 'rounded-2xl shadow-md animate-pulse hover:shadow-lg transition-all duration-200 border-l-4 border-red-500 dark:border-red-400'
+  {
+    id: 5,
+    type: 'achievement',
+    message: "You earned 100XP for completing a lesson!",
+    img: image5,
+    completed: true,
   },
-
-  default: {
-    icon: <FaBell />,
-    iconColor: 'text-gray-500 dark:text-gray-400',
-    textColor: 'text-gray-800 dark:text-gray-100',
-    borderColor: 'border-gray-100 dark:border-gray-700',
-    bgColor: 'bg-gray-50 dark:bg-gray-800',
-    className: 'rounded-2xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 border-l-4 border-gray-500 dark:border-gray-400'
-  }
-};
+];
 
 const NotificationsPanel = ({ onClose }) => {
-  const [notes, setNotes] = useState([]);
-  const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-
-  useEffect(() => {
-    if (!user?.id) return;
-    (async () => {
-      try {
-        const res = await fetch(`http://localhost:5000/api/notifications/${user.id}`);
-        const json = await res.json();
-        if (json.status === 'success') {
-          const sorted = json.data.sort((a, b) => a.priority - b.priority || b.timestamp - a.timestamp);
-          setNotes(sorted);
-        } else toast.error('Failed to load notifications');
-      } catch (err) {
-        toast.error('Error fetching notifications');
-      }
-    })();
-  }, [user.id]);
-
-  const respondRequest = async (action, friendId) => {
-    try {
-      const res = await fetch(`http://localhost:5000/api/community/friends/update`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.id, friend_id: friendId, action })
-      });
-      if (!res.ok) throw new Error('Server error');
-      toast.success(action === 'accepted' ? 'Friend added!' : 'Request declined');
-      setNotes(prev => prev.filter(n => !(n.type === 'friend_request' && n.payload.from === friendId)));
-    } catch (e) {
-      toast.error(e.message || 'Could not respond');
-    }
-  };
-
-  const dismiss = async (timestamp) => {
-    try {
-      const res = await fetch(`http://localhost:5000/api/notifications/${user.id}/${timestamp}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error();
-      setNotes(ns => ns.filter(n => n.timestamp !== timestamp));
-    } catch {
-      toast.error('Could not dismiss notification');
-    }
-  };
-
-  const handleViewMore = (goalId) => navigate(`/goals/details/${goalId}`);
-  const handleViewUser = (username) => navigate(`/community/member/${username}`);
-
-  const renderNotification = (note) => {
-    const style = notificationStyles[note.type] || notificationStyles.default;
-    const payload = note.payload;
-    const avatarSrc = payload?.avatar ? `/assets/Images/${payload.avatar}` : '/default-avatar.png';
-
-    return (
-      <div key={note.timestamp} className={`${style.bgColor} border ${style.borderColor} rounded-lg p-4 shadow-sm dark:shadow-md dark:shadow-gray-800`}>
-        <div className="flex items-start">
-          {style.useAvatar ? (
-            <img
-              src={avatarSrc}
-              alt="user avatar"
-              className="w-12 h-12 rounded-full object-cover border mr-3 border-gray-200 dark:border-gray-600"
-            />
-          ) : (
-            <div className="mr-3 mt-0.5">
-              {React.cloneElement(style.icon, { className: `${style.iconColor} text-xl` })}
-            </div>
-          )}
-
-          <div className="flex-1">
-            {note.type === 'friend_request' && (
-              <>
-                <p className={`font-medium ${style.textColor}`}>
-                  <span className="font-semibold">{payload.username}</span> wants to connect
-                </p>
-                {style.gamification?.(payload)}
-                <div className="flex gap-2 mt-3">
-                  <button
-                    onClick={() => respondRequest('accepted', payload.from)}
-                    className="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white text-xs px-3 py-1 rounded-full shadow-sm transition-colors"
-                  >
-                    Accept
-                  </button>
-                  <button
-                    onClick={() => respondRequest('declined', payload.from)}
-                    className="border border-gray-200 hover:border-gray-300 dark:border-gray-600 dark:hover:border-gray-500 text-gray-700 dark:text-gray-200 text-xs px-3 py-1 rounded-full shadow-sm transition-colors"
-                  >
-                    Decline
-                  </button>
-                </div>
-              </>
-            )}
-
-            {note.type === 'achievement' && (
-              <>
-                <p className={`font-medium ${style.textColor}`}>
-                  Achievement unlocked: <span className="font-semibold">{payload.title}</span>
-                </p>
-                {style.gamification?.(payload)}
-                <button
-                  onClick={() => handleViewMore(payload.goalId)}
-                  className="mt-2 border border-yellow-500 bg-yellow-50 hover:bg-yellow-500 hover:text-white text-yellow-500 dark:text-yellow-400 dark:bg-gray-700 dark:hover:bg-yellow-600 text-xs px-3 py-1 rounded-full shadow-sm transition-colors duration-200"
-                >
-                  View Goal
-                </button>
-              </>
-            )}
-
-            {note.type === 'insight' && (
-              <>
-                <p className={`font-medium ${style.textColor}`}>
-                  {payload.message}
-                </p>
-                {style.gamification?.(payload)}
-              </>
-            )}
-
-            {note.type === 'budget_due' && (
-              <p className={`font-medium ${style.textColor}`}>
-                Budget due: {payload.category} - R{payload.amount} due {payload.dueDate}
-              </p>
-            )}
-
-            {note.type === 'budget_over' && (
-              <>
-                <p className={`font-medium ${style.textColor}`}>
-                  Budget exceeded in {payload.category}
-                </p>
-                <p className="text-xs text-red-500 dark:text-red-400 mt-1">Spent: R{payload.spent} / Limit: R{payload.limit}</p>
-              </>
-            )}
-          </div>
-          <button 
-            onClick={() => dismiss(note.timestamp)} 
-            className="ml-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
-          >
-            <FaTimes className="text-sm" />
-          </button>
-        </div>
-      </div>
-    );
-  };
-
   return (
-    <div className="fixed top-0 right-0 w-full sm:w-[400px] h-full bg-white dark:bg-gray-900 shadow-2xl z-50 rounded-l-3xl border-l border-gray-200 dark:border-gray-700 overflow-y-auto">
-      <div className="flex justify-between items-center px-6 py-4 border-b bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
-        <h2 className="text-orange-500 dark:text-orange-400 font-semibold text-xl flex items-center gap-2">
-          <FaBell className="text-orange-500 dark:text-orange-400" /> Notifications
+    <div className="fixed top-0 right-0 w-[380px] h-full bg-white shadow-2xl z-50 rounded-l-3xl border-l border-gray-200 overflow-y-auto transition-all">
+      {/* Header */}
+      <div className="flex justify-between items-center px-6 py-4 border-b">
+        <h2 className="text-[#E5794B] font-semibold text-xl flex items-center gap-2">
+          <FaBell className="text-[#E5794B]" /> Notifications
         </h2>
-        <FaTimes 
-          onClick={onClose} 
-          className="text-orange-500 dark:text-orange-400 text-xl cursor-pointer hover:text-orange-600 dark:hover:text-orange-300" 
+        <FaTimes
+          className="text-[#E5794B] text-xl cursor-pointer"
+          onClick={onClose}
         />
       </div>
+
+      {/* Body */}
       <div className="p-4 space-y-4">
-        {notes.length === 0 ? (
-          <div className="text-center text-gray-400 dark:text-gray-500 mt-24">
-            <FaBell className="text-3xl mx-auto mb-2" />
-            <p>No notifications</p>
+        {mockNotifications.map((note) => (
+          <div
+            key={note.id}
+            className="flex items-center justify-between p-3 rounded-xl shadow-sm border bg-white"
+          >
+            <img
+              src={note.img}
+              alt="avatar"
+              className="w-12 h-12 rounded-full object-cover border"
+            />
+
+            <div className="flex-1 mx-3">
+              {note.type === 'friend_request' ? (
+                <>
+                  <p className="text-sm text-gray-700 font-semibold">{note.name}</p>
+                  <p className="text-xs text-gray-500">sent you a friend request</p>
+                  <div className="flex gap-2 mt-2">
+                    <button className="bg-[#83AB55] text-white text-xs px-3 py-1 rounded-full hover:bg-green-600 transition">
+                      Accept
+                    </button>
+                    <button className="bg-[#FB7272] text-white text-xs px-3 py-1 rounded-full hover:bg-red-600 transition">
+                      Reject
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-gray-700">{note.message}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    {note.completed ? (
+                      <FaCheckCircle className="text-[#83AB55] text-sm" />
+                    ) : (
+                      <FaTimesCircle className="text-[#FB7272] text-sm" />
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {note.type !== 'friend_request' && (
+              <button className="bg-[#83AB55] text-white text-xs px-3 py-1 rounded-full">
+                View
+              </button>
+            )}
           </div>
-        ) : (
-          notes.map(renderNotification)
-        )}
+        ))}
       </div>
     </div>
   );

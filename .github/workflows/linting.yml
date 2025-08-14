@@ -31,9 +31,9 @@ jobs:
         working-directory: ${{ matrix.folder }}
         run: |
           if [ -f package-lock.json ]; then
-            npm ci --legacy-peer-deps
+            npm ci
           else
-            npm install --legacy-peer-deps
+            npm install
           fi
 
       - name: Run ESLint

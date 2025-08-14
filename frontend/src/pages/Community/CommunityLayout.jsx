@@ -1,38 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import PacmanLoader from '../../components/loaders/PacmanLoader';
-import CommunitySidebar from '../../layouts/sidebars/CommunitySidebar';
+// src/layouts/CommunityLayout.jsx
+import React from 'react';
 import LeaderboardPanel from '../../components/community/LeaderboardPanel';
+import CommunitySidebar from '../../layouts/sidebars/CommunitySidebar';
+import CommunityHeader from '../../layouts/headers/CommunityHeader';
 
 const CommunityLayout = ({ children }) => {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 300);
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
-    <div className="relative min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Loader */}
-      {isLoading && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-white">
-          <PacmanLoader />
-        </div>
-      )}
+    <div className="flex bg-[#F7F9FB] h-screen overflow-hidden">
+      
+      {/* Left Sidebar */}
+      <div className="w-1/4 pl-6 pt-6 pb-6">
+        <CommunitySidebar />
+      </div>
 
-      <div className={`${isLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'} transition-opacity duration-500`}>
-        {/* Header */}
-        <div className="px-6 pt-6">
-          <CommunitySidebar />
-        </div>
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto p-6">{children}</div>
 
-        {/* Content + Leaderboard */}
-        <div className="flex flex-col lg:flex-row px-6 pb-6 gap-6">
-          {/* Main Content */}
-          <div className="flex-1">
-            {children}
-          </div>
-        </div>
+      {/* Right Sidebar (Leaderboard) */}
+      <div className="w-[260px] p-4 pr-6">
+        <LeaderboardPanel />
       </div>
     </div>
   );

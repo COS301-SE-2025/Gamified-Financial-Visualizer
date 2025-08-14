@@ -111,7 +111,19 @@ describe('transaction.service (pure unit tests)', () => {
       expect(res.updated_balance).toBe(900);
     });
 
-
+    it('should throw if insufficient funds', async () => {
+      mockQuery
+        .mockResolvedValueOnce({}) // BEGIN
+        .mockResolvedValueOnce({ rows: [{ account_balance: 10, user_id: 1 }] }); // balance check
+      
+      await expect(service.createTransaction({
+        account_id: 1,
+        transaction_amount: 100,
+        transaction_type: 'expense',
+        transaction_name: 'Fail',
+        transaction_date: '2023-01-01',
+      })).rejects.toThrow('Insufficient funds');
+    });
   });
 
   describe('getTransactionByAccount', () => {

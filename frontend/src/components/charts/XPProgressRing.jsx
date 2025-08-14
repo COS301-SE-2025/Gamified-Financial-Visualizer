@@ -1,4 +1,5 @@
 import React from 'react';
+import avatar from '../../assets/Images/avatars/totoroAvatar.jpeg';
 
 const XPProgressRing = ({ xp = 350 }) => {
   return (

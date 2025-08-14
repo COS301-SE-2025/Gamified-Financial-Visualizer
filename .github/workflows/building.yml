@@ -23,7 +23,7 @@ jobs:
           node-version: 20
 
       - name: Install root + workspace dependencies
-        run: npm install --legacy-peer-deps
+        run: npm install
 
       - name: Build frontend workspace
         run: CI=false npm run build --workspace=frontend
