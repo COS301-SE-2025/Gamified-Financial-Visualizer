@@ -40,6 +40,7 @@ const ChallengeDetail = () => {
         // For now, redirect to transactions page without challenge ID
         navigate(`/transactions`);
     }
+    
     const handleEdit = () => navigate(`/community/challenges/${challengeData.challenge_id}/edit`); // Challenge editing needs to be revisited
 
     if (!challengeData) {
