@@ -37,8 +37,7 @@ const GoalsDetailPage = () => {
     }
   }, [goalId]);
 
-  if (loading) return <div className="flex justify-center mt-6 dark:text-gray-300">Loading...</div>;
-  if (error) return <div className="flex justify-center mt-6 text-red-500 dark:text-red-400">Error: {error}</div>;
+  
   if (!goal) return <div className="flex justify-center mt-6 dark:text-gray-300">Goal not found</div>;
 
   // Calculate progress percentage

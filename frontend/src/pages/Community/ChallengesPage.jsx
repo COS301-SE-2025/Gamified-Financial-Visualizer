@@ -108,7 +108,7 @@ const ChallengesPage = () => {
     return (
       <div
         key={challenge.id}
-        className="bg-white pt-12 px-5 pb-5 rounded-3xl shadow-md border relative top-4"
+        className="bg-white pt-12 px-5 pb-5 rounded-3xl shadow-md  relative top-4 dark:bg-gray-800"
         style={{ borderColor: '#E5E7EB' }}
       >
         <img
@@ -119,7 +119,7 @@ const ChallengesPage = () => {
 
         <div className="flex justify-between items-start">
           <div>
-            <h4 className="text-lg font-semibold text-[#111827] leading-normal mb-1 break-words">
+            <h4 className="text-lg font-semibold text-[#111827] leading-normal mb-1 break-words dark:text-gray-200">
               <FaCoins className="inline mr-1 text-[#FBBF24]" />
               {challenge.title}
             </h4>
@@ -169,7 +169,7 @@ const ChallengesPage = () => {
         </div>
 
         <div className="flex justify-between items-center mt-4">
-          <span className="text-xs text-gray-500 flex items-center gap-1">
+          <span className="text-xs text-gray-500 flex items-center gap-1 dark:text-gray-300">
             <FaUsers /> {challenge.participants} participants • {challenge.difficulty}
           </span>
           {challenge.status === 'active' && (
