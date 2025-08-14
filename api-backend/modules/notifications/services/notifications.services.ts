@@ -1,3 +1,4 @@
+
 // services/notification.service.ts
 import { redisClient } from '../../../config/redis';
 import pool from '../../../config/db';
@@ -63,7 +64,7 @@ export async function getPendingFriendRequests(userId: number): Promise<Notifica
     JOIN user_preferences up ON up.user_id = u.user_id
     JOIN user_points pts ON pts.user_id = u.user_id
     JOIN avatar_images ai ON ai.avatar_id = up.avatar_id
-    WHERE f.friend_id = $1
+    WHERE f.user_id = $1
       AND f.relationship_status = 'pending'
     LIMIT 50
   `;
@@ -222,9 +223,13 @@ export async function getFinancialInsightsDigest(userId: number): Promise<Notifi
       AND transaction_amount > 0
   `, [ userId ]);
 
-   const spent = spending.rows[ 0 ]?.total || 0;
-   const earned = income.rows[ 0 ]?.total || 0;
+   const spent = spending.rows[ 0 ]?.total;
+   const earned = income.rows[ 0 ]?.total;
 
+   if (spent === null || earned === null) {
+      // don't send notification
+      return [];
+   }
    return [ {
       type: 'insight',
       payload: {
