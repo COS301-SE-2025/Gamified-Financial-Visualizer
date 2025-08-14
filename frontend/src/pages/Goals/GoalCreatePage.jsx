@@ -1,12 +1,152 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { FaChevronDown } from 'react-icons/fa';
+import { createPortal } from 'react-dom';
 import goal1 from '../../assets/Images/banners/pixelApartment.gif';
 import goal2 from '../../assets/Images/banners/pixelHouse.gif';
 import goal3 from '../../assets/Images/banners/pixelOffice1.gif';
 import GoalsViewLayout from './GoalsViewLayout';
 
+const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Select...' }) => {
+  const [open, setOpen] = useState(false);
+  const [highlight, setHighlight] = useState(0);
+  const wrapRef = useRef(null);
+  const btnRef = useRef(null);
+  const [menuStyle, setMenuStyle] = useState({}); // fixed positioning for portal
+
+  const selectedIndex = Math.max(0, options.findIndex(o => String(o.value) === String(value)));
+  const selected = options[selectedIndex] || null;
+
+  // Close on click outside
+  useEffect(() => {
+    const onClickAway = (e) => {
+      if (!wrapRef.current?.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', onClickAway);
+    return () => document.removeEventListener('mousedown', onClickAway);
+  }, []);
+
+  // Position the menu in a portal without changing page height
+  useLayoutEffect(() => {
+    if (!open || !btnRef.current) return;
+    const calc = () => {
+      const rect = btnRef.current.getBoundingClientRect();
+      const maxH = Math.min(320, Math.floor(window.innerHeight * 0.4)); // ~10 items
+      let top = rect.bottom + 6;
+      let left = Math.min(rect.left, window.innerWidth - rect.width - 8);
+
+      // If not enough space below, place above
+      if (top + maxH > window.innerHeight - 8) {
+        top = Math.max(8, rect.top - 6 - maxH);
+      }
+      setMenuStyle({
+        position: 'fixed',
+        top,
+        left,
+        width: rect.width,
+        maxHeight: maxH,
+        zIndex: 9999,
+      });
+    };
+    calc();
+    window.addEventListener('scroll', calc, true);
+    window.addEventListener('resize', calc);
+    return () => {
+      window.removeEventListener('scroll', calc, true);
+      window.removeEventListener('resize', calc);
+    };
+  }, [open]);
+
+  // Reset highlight when opening
+  useEffect(() => {
+    if (open) setHighlight(selectedIndex >= 0 ? selectedIndex : 0);
+  }, [open, selectedIndex]);
+
+  const commit = (idx) => {
+    const opt = options[idx];
+    if (!opt) return;
+    onChange(opt.value);
+    setOpen(false);
+  };
+
+  const onKey = (e) => {
+    if (!open && (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault(); setOpen(true); return;
+    }
+    if (!open) return;
+
+    if (e.key === 'ArrowDown') { e.preventDefault(); setHighlight(h => Math.min(options.length - 1, h + 1)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setHighlight(h => Math.max(0, h - 1)); }
+    else if (e.key === 'Enter') { e.preventDefault(); commit(highlight); }
+    else if (e.key === 'Escape') { e.preventDefault(); setOpen(false); }
+  };
+
+  return (
+    <div className="relative" ref={wrapRef}>
+      <button
+        type="button"
+        ref={btnRef}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen(o => !o)}
+        onKeyDown={onKey}
+        className="w-full rounded-xl px-4 py-2 border dark:border-gray-600 shadow dark:shadow-none
+                   bg-white dark:bg-gray-700 text-left text-gray-900 dark:text-white flex items-center justify-between"
+      >
+        <span className={`${selected ? '' : 'text-gray-400 dark:text-gray-400'}`}>
+          {selected ? selected.label : placeholder}
+        </span>
+        <FaChevronDown className="ml-3 text-gray-400 dark:text-gray-500" />
+      </button>
+
+      {/* Portal menu (fixed) so it never changes page height / adds a second scrollbar */}
+      {open && createPortal(
+        <ul
+          role="listbox"
+          tabIndex={-1}
+          style={menuStyle}
+          onKeyDown={onKey}
+          onWheel={(e) => e.stopPropagation()} // stop scroll chaining
+          className="rounded-xl border border-gray-200 dark:border-gray-600
+                     bg-white dark:bg-gray-700 shadow-lg overflow-y-auto"
+        >
+          <style>{`.dropdown-overscroll { overscroll-behavior: contain; }`}</style>
+          <div className="dropdown-overscroll">
+            {options.length === 0 && (
+              <li className="px-3 h-8 flex items-center text-sm text-gray-500 dark:text-gray-300">
+                No categories
+              </li>
+            )}
+            {options.map((opt, idx) => (
+              <li
+                key={opt.value}
+                role="option"
+                aria-selected={String(opt.value) === String(value)}
+                onMouseEnter={() => setHighlight(idx)}
+                onClick={() => commit(idx)}
+                className={`px-3 h-8 flex items-center text-sm cursor-pointer
+                            ${idx === highlight ? 'bg-gray-100 dark:bg-gray-600' : ''}
+                            ${String(opt.value) === String(value)
+                    ? 'font-medium text-[#1b5e20]'
+                    : 'text-gray-800 dark:text-gray-100'}`}
+              >
+                {opt.label}
+              </li>
+            ))}
+          </div>
+        </ul>,
+        document.body
+      )}
+
+      {/* Hidden input keeps native form compatibility */}
+      <input type="hidden" name={name} value={value ?? ''} />
+    </div>
+  );
+};
+
 const GoalCreatePage = () => {
   const [showConfirm, setShowConfirm] = useState(false);
+
+  //form set states 
   const [form, setForm] = useState({
     name: '',
     amount: '',
@@ -20,6 +160,15 @@ const GoalCreatePage = () => {
   const user = JSON.parse(localStorage.getItem('user'));
   const [categories, setCategories] = useState([]);
 
+  // taody string helper handler
+  const toLocalISO = (d) => {
+    const x = new Date(d);
+    x.setMinutes(x.getMinutes() - x.getTimezoneOffset());
+    return x.toISOString().split('T')[0];
+  };
+  const today = toLocalISO(new Date());
+
+  // fetch categories
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -34,20 +183,25 @@ const GoalCreatePage = () => {
     fetchCategories();
   }, []);
 
+  // guard submit button
+  const datesValid = form.startDate && form.endDate && form.endDate >= form.startDate;
   const handleSubmit = async (e) => {
     e?.preventDefault();
+    if (!datesValid) return;
 
+    // banner mapping
     const bannerIdMap = {
       [goal1]: 1,
       [goal2]: 2,
       [goal3]: 3
     };
 
+    // paayload information mapping
     const goalPayload = {
       user_id: user?.id,
       goal_name: form.name,
       target_amount: parseFloat(form.amount),
-      goal_type: form.type, 
+      goal_type: form.type,
       start_date: form.startDate,
       target_date: form.endDate,
       banner_id: bannerIdMap[form.image],
@@ -73,12 +227,23 @@ const GoalCreatePage = () => {
     }
   };
 
+  // chaneg handler
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    // keep endDate >= startDate
+    if (name === 'startDate') {
+      setForm(prev => {
+        const nextEnd = prev.endDate && prev.endDate < value ? value : prev.endDate;
+        return { ...prev, startDate: value, endDate: nextEnd };
+      });
+      return;
+    }
+    if (name === 'endDate') {
+      setForm(prev => ({ ...prev, endDate: value }));
+      return;
+    }
+    setForm(prev => ({ ...prev, [name]: value }));
   };
 
   const handleImageSelect = (img) => {
@@ -129,7 +294,7 @@ const GoalCreatePage = () => {
                 name="startDate"
                 value={form.startDate}
                 onChange={handleChange}
-                min={new Date().toISOString().split('T')[0]}
+                min={today}
                 className="rounded-xl px-4 py-2 border dark:border-gray-600 shadow dark:shadow-none w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
@@ -140,29 +305,31 @@ const GoalCreatePage = () => {
                 name="endDate"
                 value={form.endDate}
                 onChange={handleChange}
-                min={new Date().toISOString().split('T')[0]}
+                min={form.startDate || today}
                 className="rounded-xl px-4 py-2 border dark:border-gray-600 shadow dark:shadow-none w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
+            {/* The goal category dropdown */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Goal Type</label>
-              <div className="relative">
-                <select
-                  name="type"
-                  value={form.type}
-                  onChange={handleChange}
-                  className="rounded-xl px-4 py-2 border dark:border-gray-600 shadow dark:shadow-none w-full appearance-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                >
-                  <option value="">Select goal type</option>
-                  <option value="savings">Savings</option>
-                  <option value="debt">Debt</option>
-                  <option value="investment">Investment</option>
-                  <option value="spending limit">Spending limit</option>
-                  <option value="donation">Donation</option>
-                </select>
-                <FaChevronDown className="absolute right-4 top-3 text-gray-400 dark:text-gray-500 pointer-events-none" />
-              </div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Goal Type
+              </label>
+
+              <CategoryDropdown
+                name="type"
+                value={form.type}
+                onChange={(val) => handleChange({ target: { name: 'type', value: val } })}
+                options={[
+                  { value: 'savings', label: 'Savings' },
+                  { value: 'debt', label: 'Debt' },
+                  { value: 'investment', label: 'Investment' },
+                  { value: 'spending limit', label: 'Spending limit' },
+                  { value: 'donation', label: 'Donation' },
+                ]}
+                placeholder="Select goal type"
+              />
             </div>
+
           </div>
         </div>
 
@@ -171,24 +338,20 @@ const GoalCreatePage = () => {
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Category</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Goal Category</label>
-              <div className="relative">
-                <select
-                  name="category"
-                  value={form.category}
-                  onChange={handleChange}
-                  className="rounded-xl px-4 py-2 border dark:border-gray-600 shadow dark:shadow-none w-full appearance-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                >
-                  <option value="">Select a category</option>
-                  {categories.map((cat) => (
-                    <option key={cat.category_id} value={cat.category_id}>
-                      {cat.category_name}
-                    </option>
-                  ))} 
-                </select>
-                <FaChevronDown className="absolute right-4 top-3 text-gray-400 dark:text-gray-500 pointer-events-none" />
-              </div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Goal Category
+              </label>
+
+              {/* Custom dropdown */}
+              <CategoryDropdown
+                name="category"
+                value={form.category}
+                onChange={(val) => handleChange({ target: { name: 'category', value: val } })}
+                options={(categories || []).map(c => ({ value: c.category_id, label: c.category_name }))}
+                placeholder="Select a category"
+              />
             </div>
+
             <div className="flex items-end">
               <span className="text-sm font-medium text-green-500 dark:text-green-400">
                 XP Reward: 20 XP
@@ -208,11 +371,10 @@ const GoalCreatePage = () => {
                   src={img}
                   alt={`Goal option ${i}`}
                   onClick={() => handleImageSelect(img)}
-                  className={`w-36 h-20 rounded-xl cursor-pointer object-cover border-2 ${
-                    form.image === img 
-                      ? 'border-green-400 dark:border-green-500' 
-                      : 'border-transparent'
-                  }`}
+                  className={`w-36 h-20 rounded-xl cursor-pointer object-cover border-2 ${form.image === img
+                    ? 'border-green-400 dark:border-green-500'
+                    : 'border-transparent'
+                    }`}
                 />
                 <span className="text-xs mt-1 text-gray-500 dark:text-gray-400">
                   {i === 0 ? 'Apartment' : i === 1 ? 'House' : 'Office'}
@@ -226,11 +388,20 @@ const GoalCreatePage = () => {
         <div className="pt-4 text-right">
           <button
             type="button"
-            onClick={() => setShowConfirm(true)}
-            className="px-8 py-3 bg-gradient-to-r from-[#B4CB98] to-[#AAD977] dark:from-[#7FDD53] dark:to-[#86EFAC] text-white rounded-full shadow-lg hover:from-[#AAD977] hover:to-[#B4CB98] dark:hover:from-[#86EFAC] dark:hover:to-[#7FDD53] transition-all font-medium"
+            onClick={() => datesValid ? setShowConfirm(true) : null}
+            disabled={!datesValid}
+            className={`px-8 py-3 rounded-full font-medium transition-all
+              ${datesValid
+                ? 'bg-gradient-to-r from-[#B4CB98] to-[#AAD977] text-white hover:from-[#AAD977] hover:to-[#B4CB98]'
+                : 'bg-gray-300 text-gray-600 cursor-not-allowed'}`}
           >
             Create Goal
           </button>
+
+          {form.startDate && form.endDate && form.endDate < form.startDate && (
+            <p className="mt-2 text-sm text-red-500">End date can’t be before start date.</p>
+          )}
+
         </div>
       </form>
 

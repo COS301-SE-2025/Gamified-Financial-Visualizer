@@ -54,6 +54,7 @@ const Settings = () => {
     pattern: /^[a-z0-9._]+$/.test(username),
   };
 
+  // validate the password
   const validatePassword = (pwd) => ({
     length: passwordCriteria.length.test(pwd),
     lowercase: passwordCriteria.lowercase.test(pwd),
@@ -65,6 +66,7 @@ const Settings = () => {
   const passwordStatus = validatePassword(newPassword);
   const passwordsMatch = newPassword === confirmPassword;
 
+  // fetch settings 
   const fetchSettings = async () => {
     try {
       const res = await fetch(`http://localhost:5000/api/auth/${userId}/settings`);
@@ -88,6 +90,7 @@ const Settings = () => {
     }
   };
 
+  // fetch avatars form database
   const fetchAvatars = async () => {
     try {
       const res = await fetch('http://localhost:5000/api/auth/avatars');
@@ -103,6 +106,7 @@ const Settings = () => {
     fetchAvatars();
   }, [userId]);
 
+  // username change hanlder 
   const handleUsernameChange = async () => {
     if (!usernameCriteria.length || !usernameCriteria.pattern) return;
 
@@ -134,10 +138,12 @@ const Settings = () => {
     }
   };
 
+  // avatar change handler
   const handleAvatarChange = (avatarId) => {
     setSelectedAvatar(avatarId);
   };
 
+  // save preferences handleer
   const handleSavePreferences = async () => {
     try {
       const res = await fetch(`http://localhost:5000/api/auth/${userId}/settings`, {
@@ -164,6 +170,7 @@ const Settings = () => {
     }
   };
 
+  // password change handler
   const handlePasswordChange = async () => {
     if (!Object.values(passwordStatus).every(Boolean)) return;
     if (!passwordsMatch) return;
@@ -195,6 +202,7 @@ const Settings = () => {
     }
   };
 
+  // theme toggle
   const toggleTheme = () => {
     setTheme(prevTheme => !prevTheme);
   };
@@ -204,6 +212,12 @@ const Settings = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-2 pb-2 space-y-6 overflow-y-auto dark:bg-gray-900">
+      {/* Save Preferences */}
+      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-4 flex justify-end space-x-3">
+        <button className="bg-gray-200 dark:bg-gray-700 dark:text-white px-4 py-2 rounded-md">Cancel</button>
+        <button onClick={handleSavePreferences} className="bg-[#AAD977] text-white px-4 py-2 rounded-md">Save</button>
+      </div>
+      
       {/* Username Section */}
       <div className="bg-white shadow dark:bg-gray-800 rounded-xl p-6">
         <h3 className="font-semibold text-[#88BC46] dark:text-[#AAD977] text-lg mb-4">Change Username</h3>
@@ -380,7 +394,7 @@ const Settings = () => {
         </button>
       </div>
 
-      {/* Save Preferences */}
+      {/* Save Preferences 2*/}
       <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-4 flex justify-start space-x-3">
         <button className="bg-gray-200 dark:bg-gray-700 dark:text-white px-4 py-2 rounded-md">Cancel</button>
         <button onClick={handleSavePreferences} className="bg-[#AAD977] text-white px-4 py-2 rounded-md">Save</button>

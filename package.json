@@ -1,5 +1,8 @@
 {
   "dependencies": {
+    "@babel/runtime": "^7.28.2",
+    "@react-three/drei": "^10.6.1",
+    "@react-three/fiber": "^9.3.0",
     "@types/axios": "^0.9.36",
     "@types/winston": "^2.4.4",
     "@web3icons/react": "^4.0.19",
@@ -29,6 +32,7 @@
     "redis": "^5.6.0",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
+    "three": "^0.179.1",
     "tsconfig-paths": "^4.2.0",
     "winston": "^3.17.0"
   },
