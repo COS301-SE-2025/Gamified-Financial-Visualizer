@@ -1,4 +1,3 @@
-
 import React, { useState , useEffect} from 'react';
 import AccountsLayout from './AccountsLayout';
 import { 
@@ -61,14 +60,14 @@ const ImportPage = () => {
     const droppedFiles = Array.from(e.dataTransfer.files).filter(file =>
       file.type === 'application/pdf'
     );
-    setFiles([...files, ...droppedFiles]);
+    setFiles(droppedFiles.slice(0, 1)); // Only keep the first file
   };
 
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files).filter(file =>
       file.type === 'application/pdf'
     );
-    setFiles([...files, ...selectedFiles]);
+    setFiles(selectedFiles.slice(0, 1)); // Only keep the first file
   };
 
   const removeFile = (index) => {
@@ -88,7 +87,7 @@ const ImportPage = () => {
   // Import process
   const handleImport = async () => {
     if (files.length === 0 && !url) {
-      setImportError('Please upload files or enter a URL');
+      setImportError('Please upload a file or enter a URL');
       return;
     }
     if (!selectedAccount) {
@@ -308,7 +307,7 @@ const contentType = res.headers.get('content-type');
                       Import Bank Statements
                     </h1>
                     <p className="text-gray-600 dark:text-gray-400">
-                      Upload PDF statements to automatically extract and categorize transactions with <span className="font-bold text-[#83AB55]">AI</span>
+                      Upload a PDF statement to automatically extract and categorize transactions with <span className="font-bold text-[#83AB55]">AI</span>
                     </p>
                   </div>
 
@@ -391,7 +390,7 @@ const contentType = res.headers.get('content-type');
 
                   {/* File Upload */}
                   <div className="mb-8">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-3">Upload Statements</h2>
+                    <h2 className="text-lg font-semibold text-gray-800 mb-3">Upload Statement</h2>
                     
                     <div
                       className={`border-2 border-dashed rounded-xl p-8 mb-4 text-center transition-all ${isDragging ? 'border-sky-400 bg-blue-50' : 'border-gray-300 hover:border-sky-300'}`}
@@ -405,7 +404,7 @@ const contentType = res.headers.get('content-type');
                           <FaUpload size={24} />
                         </div>
                         <h3 className="text-lg font-medium text-gray-700">
-                          {files.length > 0 ? 'Add more files' : 'Drag PDF statements here'}
+                          {files.length > 0 ? 'Replace file' : 'Drag PDF statement here'}
                         </h3>
                         <p className="text-gray-500 text-sm">or</p>
                         <label className="cursor-pointer bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition flex items-center">
@@ -414,13 +413,12 @@ const contentType = res.headers.get('content-type');
                             type="file"
                             className="hidden"
                             accept=".pdf"
-                            multiple
                             onChange={handleFileChange}
                           />
-                          Select Files
+                          Select File
                         </label>
                         <p className="text-xs text-gray-500 mt-2">
-                          PDF files only (max 10MB each)
+                          PDF file only (max 10MB)
                         </p>
                       </div>
                     </div>
@@ -429,7 +427,7 @@ const contentType = res.headers.get('content-type');
                       <div className="bg-gray-50 p-4 rounded-lg">
                         <h3 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center">
                           <FaFileAlt className="mr-2 text-gray-500" />
-                          Files to Import ({files.length})
+                          File to Import
                         </h3>
                         <div className="space-y-2">
                           {files.map((file, index) => (
@@ -514,7 +512,7 @@ const contentType = res.headers.get('content-type');
                           ? 'bg-sky-500 hover:bg-sky-600' 
                           : 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
                       }`}
-                        disabled={!(files.length > 0 || url) || !selectedAccount || !selectedBank || isImporting}
+                        disabled={!(files.length === 1 || url) || !selectedAccount || !selectedBank || isImporting}
                       >
                         {isImporting ? (
                           <>

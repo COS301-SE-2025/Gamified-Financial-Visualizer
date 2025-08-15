@@ -24,7 +24,8 @@
 //   await redisSubscriber.connect();
 // })();
 
-
+import dotenv from 'dotenv';
+dotenv.config();
 
 import { RedisOptions } from 'bullmq';
 import { createClient, RedisClientType } from 'redis';

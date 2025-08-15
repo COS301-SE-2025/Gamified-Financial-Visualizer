@@ -3,6 +3,7 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from typing import List
 import uvicorn
+from datetime import datetime
 
 # import your service-layer functions
 from fastapi import FastAPI, HTTPException
@@ -14,6 +15,12 @@ from typing import Optional
 from app.classifier.services.predict_classifier import classify_batch
 from app.classifier.services.train_classifier import main as train_model
 from app.classifier.services.feedback_trainer import main as train_feedback
+from app.insights.services.trend_analysis import (
+   run_trend_analysis
+)
+from app.insights.services.insights_engine import (
+    generate_wrapped_insights,
+)
 
 app = FastAPI(title="AI Service")
 
@@ -43,6 +50,33 @@ class FeedbackItem(BaseModel):
 
 class FeedbackTrainReq(BaseModel):
     feedback: List[FeedbackItem]
+
+
+class Transaction1(BaseModel): # this is for trends insights
+    date: str
+    description: str
+    amount: float
+    transaction_type: str
+    category: str
+
+class Goal(BaseModel):
+    id: int
+    title: str
+    status: str
+    target_amount: float
+    progress: float
+
+class Budget(BaseModel):
+    category: str
+    amount: float
+
+
+
+class UserData(BaseModel):
+    transactions: List[Transaction1]
+    goals: List[Goal]
+    budgets: List[Budget]
+
 
 # ---- Endpoints ----
 @app.post("/classifier/predict", response_model=PredictRes)
@@ -82,6 +116,64 @@ def retrain_with_feedback(req: FeedbackTrainReq, background_tasks: BackgroundTas
 
 
 # --- insights ---
+@app.get("/insights/userId")
+def get_insights(req: int):
+    """
+    Get AI score for userID
+    """
+    return {"insights": []}
+
+
+@app.get("/insights/{user_id}/{month}")
+def get_monthly_insights(user_id: int, month: int, user_data: UserData):
+    """
+    Returns a Spotify-Wrapped style summary for `user_id` and `month`.
+    """
+    try:
+        # 2. Pass into the Python insights engine
+        result = generate_wrapped_insights(user_data)
+
+        # 3. Return a combined payload
+        return {
+            "user_id": user_id,
+            "month": month,
+            **result
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/insights/{user_id}")
+def get_current_month_insights(user_id: int):
+    """
+    Shortcut: fetch insights for the current month.
+    """
+    current_month = datetime.now().month
+    return get_monthly_insights(user_id, current_month)
+
+@app.post("/insights/user/{user_id}/{month}")
+def wrapped_insights(user_id: int, month: int, user_data: UserData):
+    try:
+        result = generate_wrapped_insights(user_data.dict())
+        return result
+    except Exception as e:
+        print(f"Error generating insights for user {user_id} in month {month}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/insights/trends")
+def get_trends(user_data: UserData):
+    """
+    Returns a dictionary of trends for the user.
+    """
+    try:
+        # Extract features from user data
+        result = run_trend_analysis(user_data.dict())
+        return result
+    except Exception as e:
+        print(f"Error generating trends for user: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # --- serve ---
 if __name__ == "__main__":
     uvicorn.run("server:app", host="0.0.0.0", port=6000, log_level="info")
