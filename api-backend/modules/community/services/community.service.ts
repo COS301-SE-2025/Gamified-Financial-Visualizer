@@ -2,6 +2,8 @@
 // Handles database operations for communities, members, and challenges.
 import pool from "../../../config/db";
 import { logger } from "../../../config/logger";
+import { redisClient } from '../../../config/redis';
+
 
 export interface CommunityRecord {
   owner_id: number;
@@ -238,11 +240,9 @@ export async function getRecommendedCommunities(user_id: number) {
 
       -- Total XP from challenge_progress for that community
       COALESCE((
-        SELECT SUM(cp.progress_amount)
+        SELECT SUM(GREATEST(10, FLOOR(ch.target_amount / 100))) -- adjust accordingly for points
         FROM challenges ch
-        JOIN challenge_progress cp ON ch.challenge_id = cp.challenge_id
         WHERE ch.community_id = c.community_id
-          AND cp.participation_status = 'joined'
       ), 0) AS xp_total,
 
       -- Total accepted members
@@ -252,13 +252,10 @@ export async function getRecommendedCommunities(user_id: number) {
           AND cm.membership_status = 'accepted'
       ) AS member_count,
 
-      -- Total goals linked to accepted members
+      -- Total challenges in the community
       (
-        SELECT COUNT(*) FROM goals g
-        WHERE g.user_id IN (
-          SELECT cm.user_id FROM community_members cm
-          WHERE cm.community_id = c.community_id AND cm.membership_status = 'accepted'
-        )
+        SELECT COUNT(*) FROM challenges ch
+        WHERE ch.community_id = c.community_id
       ) AS challenge_count,
 
       -- Preview avatars of up to 5 accepted members
@@ -418,11 +415,29 @@ export async function getCommunityChallenges(community_id: number) {
     WHERE cp.community_id = $1
   `;
   try {
-    const result = await pool.query(query, [ community_id ]);
+      const result = await pool.query(query, [ community_id ]);
     logger.info(`[CommunityService] Retrieved challenges for community ID ${community_id}`);
     return result.rows;
   } catch (err) {
     logger.error(`[CommunityService] Failed to fetch challenges for community ID ${community_id}:`, err);
+    throw err;
+  }
+}
+
+export async function updateChallengeState() {
+  const query = `
+    UPDATE challenges
+    SET challenge_status = CASE
+      WHEN end_date < NOW() AND current_amount < target_amount THEN 'expired'
+      WHEN end_date < NOW() AND current_amount >= target_amount THEN 'completed'
+      WHEN start_date > NOW() THEN 'upcoming'
+      ELSE 'active'
+    END
+  `;
+  try {
+    await pool.query(query);
+  } catch (err) {
+    logger.error(`[CommunityService] Failed to update challenge states:`, err);
     throw err;
   }
 }
@@ -453,7 +468,9 @@ export async function getChallengesByUserCategorized(user_id: number): Promise<{
   active: ChallengeItem[];
   upcoming: ChallengeItem[];
   completed: ChallengeItem[];
+  expired: ChallengeItem[];
 }> {
+  // Ensure challenge states are up-to-date
   const query = `
     SELECT
       ch.challenge_status,
@@ -491,6 +508,7 @@ export async function getChallengesByUserCategorized(user_id: number): Promise<{
     active: [] as ChallengeItem[],
     upcoming: [] as ChallengeItem[],
     completed: [] as ChallengeItem[],
+    expired: [] as ChallengeItem[],
   };
 
   const now = new Date();
@@ -530,6 +548,8 @@ export async function getChallengesByUserCategorized(user_id: number): Promise<{
         ...base,
         completedOn: end.toISOString().split('T')[ 0 ],
       });
+    } else if (row.challenge_status === 'expired') {
+      categorized.expired.push(base);
     } else if (hasStarted || hasProgress) {
       categorized.active.push(base);
     } else {
@@ -545,7 +565,7 @@ export async function getChallengesByUserCategorized(user_id: number): Promise<{
 
 export async function getChallenge(challenge_id: number) {
   const query = `
-SELECT 
+  SELECT 
       ch.*,
       c.community_name,
       b.banner_image_path,
