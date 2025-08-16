@@ -67,7 +67,7 @@ function ThemePanel({ open, setOpen, theme, setTheme, mode, setMode }) {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed top-24 right-4 z-[10000] px-3 py-2 rounded-xl bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-gray-100 shadow border border-black/10 backdrop-blur"
+          className="fixed top-24 right-4 z-[10] px-3 py-2 rounded-xl bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-gray-100 shadow border border-black/10 backdrop-blur"
           aria-label="Open lighting panel"
         >
           <span className="inline-flex items-center gap-2"><FiSliders/> Lighting & Theme</span>
@@ -112,7 +112,7 @@ function ThemePanel({ open, setOpen, theme, setTheme, mode, setMode }) {
                 key={key}
                 onClick={() => setTheme(key)}
                 className={`px-3 py-2 rounded-xl border text-sm text-left shadow-sm ${
-                  theme===key ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200'
+                  theme===key ? 'bg-lime-600 text-white border-lime-600' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200'
                 }`}
               >
                 {CITY_SCENES[key].name}
