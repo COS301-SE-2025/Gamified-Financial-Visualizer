@@ -6,8 +6,8 @@ import CourseCard from '../../components/cards/CoursesCard';
 import banner1 from '../../assets/Images/learn_banners/Budget.png' ;
 import banner2 from '../../assets/Images/learn_banners/Investment.png';
 import banner3 from '../../assets/Images/learn_banners/credit.png';
-import banner4 from '../../assets/Images/learn_banners/Investment.png';
-import banner5 from '../../assets/Images/learn_banners/Fomo.png';
+import banner4 from '../../assets/Images/learn_banners/Fomo.png';
+import banner5 from '../../assets/Images/learn_banners/retrenchment.png';
 import banner6 from '../../assets/Images/banners/pixelGirl.gif';
 
 const bannerImages = {
