@@ -6,46 +6,41 @@ import goal2 from '../../assets/Images/banners/pixelHouse.gif';
 import goal3 from '../../assets/Images/banners/pixelOffice1.gif';
 import GoalsViewLayout from './GoalsViewLayout';
 
+
 const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Select...' }) => {
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(0);
   const wrapRef = useRef(null);
   const btnRef = useRef(null);
-  const [menuStyle, setMenuStyle] = useState({}); // fixed positioning for portal
+  const menuRef = useRef(null);                 // NEW: track the portaled menu
+  const [menuStyle, setMenuStyle] = useState({});
 
-  const selectedIndex = Math.max(0, options.findIndex(o => String(o.value) === String(value)));
-  const selected = options[selectedIndex] || null;
+  // ✅ Do NOT default to index 0 when nothing is selected
+  const selectedIndex = options.findIndex(o => String(o.value) === String(value));
+  const selected = selectedIndex >= 0 ? options[selectedIndex] : null;
 
-  // Close on click outside
+  // Close on click outside, but treat clicks inside the portaled menu as "inside"
   useEffect(() => {
-    const onClickAway = (e) => {
-      if (!wrapRef.current?.contains(e.target)) setOpen(false);
+    const onPointerDown = (e) => {
+      const inButton = wrapRef.current?.contains(e.target);
+      const inMenu = menuRef.current?.contains(e.target);
+      if (inButton || inMenu) return;
+      setOpen(false);
     };
-    document.addEventListener('mousedown', onClickAway);
-    return () => document.removeEventListener('mousedown', onClickAway);
+    document.addEventListener('pointerdown', onPointerDown, true);
+    return () => document.removeEventListener('pointerdown', onPointerDown, true);
   }, []);
 
-  // Position the menu in a portal without changing page height
+  // Position menu (fixed) in a portal
   useLayoutEffect(() => {
     if (!open || !btnRef.current) return;
     const calc = () => {
       const rect = btnRef.current.getBoundingClientRect();
-      const maxH = Math.min(320, Math.floor(window.innerHeight * 0.4)); // ~10 items
+      const maxH = Math.min(320, Math.floor(window.innerHeight * 0.4));
       let top = rect.bottom + 6;
       let left = Math.min(rect.left, window.innerWidth - rect.width - 8);
-
-      // If not enough space below, place above
-      if (top + maxH > window.innerHeight - 8) {
-        top = Math.max(8, rect.top - 6 - maxH);
-      }
-      setMenuStyle({
-        position: 'fixed',
-        top,
-        left,
-        width: rect.width,
-        maxHeight: maxH,
-        zIndex: 9999,
-      });
+      if (top + maxH > window.innerHeight - 8) top = Math.max(8, rect.top - 6 - maxH);
+      setMenuStyle({ position: 'fixed', top, left, width: rect.width, maxHeight: maxH, zIndex: 9999 });
     };
     calc();
     window.addEventListener('scroll', calc, true);
@@ -58,7 +53,7 @@ const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Selec
 
   // Reset highlight when opening
   useEffect(() => {
-    if (open) setHighlight(selectedIndex >= 0 ? selectedIndex : 0);
+    setHighlight(selectedIndex >= 0 ? selectedIndex : 0);
   }, [open, selectedIndex]);
 
   const commit = (idx) => {
@@ -69,11 +64,8 @@ const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Selec
   };
 
   const onKey = (e) => {
-    if (!open && (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ')) {
-      e.preventDefault(); setOpen(true); return;
-    }
+    if (!open && (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setOpen(true); return; }
     if (!open) return;
-
     if (e.key === 'ArrowDown') { e.preventDefault(); setHighlight(h => Math.min(options.length - 1, h + 1)); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); setHighlight(h => Math.max(0, h - 1)); }
     else if (e.key === 'Enter') { e.preventDefault(); commit(highlight); }
@@ -98,23 +90,21 @@ const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Selec
         <FaChevronDown className="ml-3 text-gray-400 dark:text-gray-500" />
       </button>
 
-      {/* Portal menu (fixed) so it never changes page height / adds a second scrollbar */}
       {open && createPortal(
         <ul
+          ref={menuRef}                 // NEW: ref so outside-click can treat this as "inside"
           role="listbox"
           tabIndex={-1}
           style={menuStyle}
           onKeyDown={onKey}
-          onWheel={(e) => e.stopPropagation()} // stop scroll chaining
+          onWheel={(e) => e.stopPropagation()}
           className="rounded-xl border border-gray-200 dark:border-gray-600
                      bg-white dark:bg-gray-700 shadow-lg overflow-y-auto"
         >
           <style>{`.dropdown-overscroll { overscroll-behavior: contain; }`}</style>
           <div className="dropdown-overscroll">
             {options.length === 0 && (
-              <li className="px-3 h-8 flex items-center text-sm text-gray-500 dark:text-gray-300">
-                No categories
-              </li>
+              <li className="px-3 h-8 flex items-center text-sm text-gray-500 dark:text-gray-300">No categories</li>
             )}
             {options.map((opt, idx) => (
               <li
@@ -125,9 +115,7 @@ const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Selec
                 onClick={() => commit(idx)}
                 className={`px-3 h-8 flex items-center text-sm cursor-pointer
                             ${idx === highlight ? 'bg-gray-100 dark:bg-gray-600' : ''}
-                            ${String(opt.value) === String(value)
-                    ? 'font-medium text-[#1b5e20]'
-                    : 'text-gray-800 dark:text-gray-100'}`}
+                            ${String(opt.value) === String(value) ? 'font-medium text-[#1b5e20]' : 'text-gray-800 dark:text-gray-100'}`}
               >
                 {opt.label}
               </li>
@@ -137,7 +125,6 @@ const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Selec
         document.body
       )}
 
-      {/* Hidden input keeps native form compatibility */}
       <input type="hidden" name={name} value={value ?? ''} />
     </div>
   );
