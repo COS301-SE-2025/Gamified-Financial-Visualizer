@@ -3,6 +3,9 @@ import express, { Application, NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import 'dotenv/config'; // ensures env is loaded before all imports
+dotenv.config();
+
 import { logger } from './config/logger';
 import pool from './config/db';
 import { redisClient } from './config/redis';
@@ -17,11 +20,11 @@ import { registerTransactionModule } from './modules/transactions';
 import { registerGoalModule } from './modules/goals';
 import { registerLearningModule } from './modules/learning';
 import { registerClassifierModule } from './modules/ai';
+import { registerInsightsModule } from './modules/ai';
 import { registerCommunityModule } from './modules/community';
 import { registerAchievementModule } from './modules/achievements';
 import { registerNotificationsModule } from './modules/notifications';
 
-dotenv.config();
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
 
@@ -106,7 +109,7 @@ async function bootstrap() {
     io.to(sockId).emit('notification', note);
     logger.info(`Sent notification to user ${userId} via socket ${sockId}`);
   });
-  logger.info('Redis subscriber listening on notifications:*');
+logger.info('Redis ping:', await redisClient.ping());
 
   // Dispatch incoming Redis messages to the right socket
   sub.on('pmessage', (_pattern, channel, message) => {
@@ -136,6 +139,7 @@ registerTransactionModule(app);
 registerGoalModule(app);
 registerLearningModule(app);
 registerClassifierModule(app);
+registerInsightsModule(app);
 registerCommunityModule(app);
 registerAchievementModule(app);
 registerNotificationsModule(app);

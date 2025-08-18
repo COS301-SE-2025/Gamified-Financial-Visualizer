@@ -1,36 +1,125 @@
+
 // services/notification.service.ts
 import { redisClient } from '../../../config/redis';
 import pool from '../../../config/db';
 
 export type Notification = {
-   type: string;          // e.g. "friend_request", "achievement", …
-   payload: any;          // whatever meta you need
-   timestamp: number;     // ms since epoch
+  type: string;
+  payload: any;
+  timestamp: number;
+  message?: string;
+  expiresAt?: number;
+  key?: string; // <- stable identity for dismissing
 };
+
+const INBOX_TTL_SECONDS = 3600;
+const VIEWED_SET_TTL_SECONDS = 30 * 24 * 3600;
+const HIDE_VIEWED_AFTER_MS = 3 * 24 * 3600 * 1000;
+
+function dismissedKey(userId: number) {
+  return `notif:dismissed:${userId}`;
+}
+
+function makeKey(note: Notification): string {
+  // Build a stable key per type using identifying fields
+  try {
+    const p = note.payload || {};
+    switch (note.type) {
+      case 'friend_request':       return `fr:${p.from}`;
+      case 'friend_request_accepted':
+                                   return `fr_ok:${p.from || p.userId || 'unknown'}`;
+      case 'achievement':          return `goal_completed:${p.goalId}:${note.timestamp}`;
+      case 'goal_reminder':        return `goal_due:${p.goalId}:${new Date(p.dueDate).toISOString().slice(0,10)}`;
+      case 'challenge_invite':     return `challenge_joined:${p.challengeId}:${note.timestamp}`;
+      case 'budget_over': {
+        // Use budget_id + period_end date if present, else today's date to avoid respam
+        const day = p.periodEnd ? new Date(p.periodEnd).toISOString().slice(0,10)
+                                : new Date().toISOString().slice(0,10);
+        return `budget_over:${p.budgetId}:${day}`;
+      }
+      case 'budget_due': {
+        const day = p.dueDate ? new Date(p.dueDate).toISOString().slice(0,10)
+                              : new Date(note.timestamp).toISOString().slice(0,10);
+        return `budget_due:${p.budgetId}:${day}`;
+      }
+      case 'insight':              return `insight:${new Date(note.timestamp).toISOString().slice(0,10)}`;
+      default:                     return `${note.type}:${note.timestamp}`;
+    }
+  } catch {
+    return `${note.type}:${note.timestamp}`;
+  }
+}
+
+export async function markDismissed(userId: number, key: string) {
+  await redisClient.sAdd(dismissedKey(userId), key);
+  // Keep dismiss marks for a while (30 days)
+  await redisClient.expire(dismissedKey(userId), VIEWED_SET_TTL_SECONDS);
+}
+
+export async function filterOutDismissed(userId: number, items: Notification[]) {
+  if (!items.length) return items;
+  const keys = items.map(n => n.key || makeKey(n));
+  // Use SMISMEMBER if available; fallback to SISMEMBER loop
+  let flags: boolean[] = [];
+  try {
+    // @ts-ignore
+    const res = await (redisClient as any).sMIsMember(dismissedKey(userId), keys);
+    flags = res.map(Boolean);
+  } catch {
+    const checks = await Promise.all(keys.map(k => redisClient.sIsMember(dismissedKey(userId), k)));
+    flags = checks.map(Boolean);
+  }
+  return items.filter((_, i) => !flags[i]);
+}
+
+export async function filterOutExpiredViewed(userId: number, items: Notification[]) {
+  if (items.length === 0) return items;
+  const key = `notif:viewed:${userId}`;
+  const tsStrings = items.map(n => String(n.timestamp));
+  let flags: boolean[] = [];
+  try {
+    // @ts-ignore
+    flags = (await (redisClient as any).sMIsMember(key, tsStrings)).map(Boolean);
+  } catch {
+    const checks = await Promise.all(tsStrings.map(t => redisClient.sIsMember(key, t)));
+    flags = checks.map(n => Boolean(n));
+  }
+  const now = Date.now();
+  return items.filter((note, i) => !(flags[i] && (now - note.timestamp) > HIDE_VIEWED_AFTER_MS));
+}
+
 
 /**
  * Push a new notification onto user’s list *and* publish
  */
-export async function notifyUser(
-   userId: number,
-   type: string,
-   payload: any
-) {
-   const note: Notification = { type, payload, timestamp: Date.now() };
-   const channel = `notifications:${userId}`;
-   const inboxKey = `notif:inbox:${userId}`;
-   const msg = JSON.stringify(note);
-
-   const TTL_SECONDS = 1 * 3600;
-
-   // atomic: push to list, trim, then publish
-   await redisClient.multi()
-      .lPush(inboxKey, msg)
-      .lTrim(inboxKey, 0, 99)
-      .expire(inboxKey, TTL_SECONDS)
-      .publish(channel, msg)
-      .exec();
+export async function notifyUser(userId: number, type: string, payload: any) {
+  const base: Notification = { type, payload, timestamp: Date.now() };
+  base.key = makeKey(base);
+  const channel = `notifications:${userId}`;
+  const inboxKey = `notif:inbox:${userId}`;
+  const msg = JSON.stringify(base);
+  await redisClient.multi()
+    .lPush(inboxKey, msg)
+    .lTrim(inboxKey, 0, 99)
+    .expire(inboxKey, INBOX_TTL_SECONDS)
+    .publish(channel, msg)
+    .exec();
 }
+
+function viewedKey(userId: number) {
+  return `notif:viewed:${userId}`;
+}
+
+export async function markNotificationsViewed(userId: number, timestamps: number[]) {
+  if (!timestamps.length) return;
+  const key = viewedKey(userId);
+  const args = timestamps.map(String);
+  await redisClient.multi()
+    .sAdd(key, args)
+    .expire(key, VIEWED_SET_TTL_SECONDS)
+    .exec();
+}
+
 
 /**
  * Get the last N notifications for a user
@@ -96,6 +185,7 @@ export async function getPendingFriendRequests(userId: number): Promise<Notifica
          tierStatus: r.tier_status,
       } as FriendRequestPayload,
       timestamp: new Date(r.created_at).getTime(),
+        key: `fr:${r.requester_id}`
    }));
 }
 
@@ -119,19 +209,28 @@ export async function getGoalMilestones(userId: number): Promise<Notification[]>
       pool.query(remindSql, [ userId ]),
    ]);
 
-   const completed = compRes.rows.map(r => ({
-      type: 'achievement',
-      payload: { goalId: r.goal_id, title: r.goal_name },
-      timestamp: new Date(r.updated_at).getTime(),
-      message: `You completed your ${r.goal_name} goal!`,
-   }));
+const completed = compRes.rows.map(r => ({
+  type: 'achievement',
+  payload: {
+    goalId: r.goal_id,
+    title: r.goal_name,
+    banner: r.banner_image_path,
+  },
+  timestamp: new Date(r.updated_at).getTime(),
+  message: `You completed your "${r.goal_name}" goal!`,
+}));
 
-   const reminders = remRes.rows.map(r => ({
-      type: 'goal_reminder',
-      payload: { goalId: r.goal_id, title: r.goal_name },
-      timestamp: new Date(r.target_date).getTime(),
-      message: `"${r.goal_title}" is due on ${r.target_date.toISOString().slice(0, 10)}`,
-   }));
+const reminders = remRes.rows.map(r => ({
+  type: 'goal_reminder',
+  payload: {
+    goalId: r.goal_id,
+    title: r.goal_name,
+    dueDate: new Date(r.target_date).toISOString(),
+  },
+  timestamp: new Date(r.target_date).getTime(),
+  message: `"${r.goal_name}" is due on ${new Date(r.target_date).toISOString().slice(0,10)}`,
+}));
+
 
    return [ ...completed, ...reminders ];
 }
@@ -154,6 +253,7 @@ export async function getChallengeInvites(userId: number): Promise<Notification[
       payload: { challengeId: r.challenge_id, title: r.challenge_title },
       timestamp: new Date(r.join_date).getTime(),
       message: `You joined "${r.challenge_title}"`,
+      key: `ci:${r.challenge_id}`
    }));
 }
 
@@ -183,19 +283,32 @@ export async function getBudgetAlerts(userId: number): Promise<Notification[]> {
       pool.query(sqlDue, [ userId ]),
    ]);
 
-   const tooMuch = over.rows.map(r => ({
-      type: 'budget_over',
-      payload: { budgetId: r.budget_id, name: r.budget_name, spent: r.spent, limit: r.limit },
-      timestamp: Date.now(),
-      message: `"${r.name}" budget exceeded (${r.spent}/${r.limit})`,
-   }));
+const tooMuch = over.rows.map(r => ({
+  type: 'budget_over',
+  payload: {
+    budgetId: r.budget_id,
+    category: r.budget_name,           // keep "category" for frontend text
+    spent: Number(r.current_amount),
+    limit: Number(r.target_amount),
+  },
+  timestamp: Date.now(),
+  message: `"${r.budget_name}" budget exceeded (${r.current_amount}/${r.target_amount})`,
+  key: `bu:${r.budget_id}`
+}));
 
-   const upcoming = due.rows.map(r => ({
-      type: 'budget_due',
-      payload: { budgetId: r.budget_id, name: r.budget_name },
-      timestamp: new Date(r.period_end).getTime(),
-      message: `"${r.name}" resets on ${r.period_end.toISOString().slice(0, 10)}`,
-   }));
+const upcoming = due.rows.map(r => ({
+  type: 'budget_due',
+  payload: {
+    budgetId: r.budget_id,
+    category: r.budget_name,
+    amount: Number(r.current_amount),
+    dueDate: new Date(r.period_end).toISOString(), // frontend formats it
+  },
+  timestamp: new Date(r.period_end).getTime(),
+  message: `"${r.budget_name}" resets on ${new Date(r.period_end).toISOString().slice(0,10)}`,
+  key: `bu_due:${r.budget_id}:${new Date(r.period_end).toISOString().slice(0,10)}`
+}));
+
 
    return [ ...tooMuch, ...upcoming ];
 }
@@ -222,16 +335,21 @@ export async function getFinancialInsightsDigest(userId: number): Promise<Notifi
       AND transaction_amount > 0
   `, [ userId ]);
 
-   const spent = spending.rows[ 0 ]?.total || 0;
-   const earned = income.rows[ 0 ]?.total || 0;
+   const spent = spending.rows[ 0 ]?.total;
+   const earned = income.rows[ 0 ]?.total;
 
+   if (spent === null || earned === null) {
+      // don't send notification
+      return [];
+   }
    return [ {
       type: 'insight',
       payload: {
          message: `Last week: you earned ${earned}, spent ${spent}`,
          spent, earned
       },
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      key: `insight:${userId}`
    } ];
 }
 

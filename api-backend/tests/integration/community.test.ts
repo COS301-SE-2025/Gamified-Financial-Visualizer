@@ -421,7 +421,7 @@ describe('Community API Integration', () => {
       });
 
       // test fails on GitHub Actions 
-      /*
+      
       it('should handle invited users', async () => {
          const mockCommunity = {
             community_id: 1,
@@ -451,7 +451,7 @@ describe('Community API Integration', () => {
             'accepted'
          );
       });
-*/
+
       it('should 500 on service error', async () => {
          (communityService.createCommunity as jest.Mock).mockRejectedValue(new Error('DB error'));
 
@@ -1210,8 +1210,8 @@ describe('Community API Integration', () => {
          });
 
          expect(communityService.respondToFriendRequests).toHaveBeenCalledWith(
-            updateData.user_id,
             updateData.friend_id,
+            updateData.user_id,
             updateData.action
          );
       });

@@ -1,6 +1,157 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { FaTrash, FaEdit, FaPlus, FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import React, { useState, useEffect, useRef, useLayoutEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
+import { FaTrash, FaEdit, FaPlus, FaChevronDown } from 'react-icons/fa';
 import AddTransactionModal from '../modals/AddTransactionModal';
+
+const CustomDropdown = ({ 
+  value, 
+  onChange, 
+  options, 
+  placeholder = 'Select',
+  disabled = false,
+  loading = false
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const dropdownRef = useRef(null);
+  const buttonRef = useRef(null);
+  const [menuStyle, setMenuStyle] = useState({});
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!isOpen || !buttonRef.current) return;
+
+    const calculatePosition = () => {
+      const buttonRect = buttonRef.current.getBoundingClientRect();
+      const maxHeight = Math.min(320, window.innerHeight - buttonRect.bottom - 16);
+      
+      setMenuStyle({
+        position: 'fixed',
+        top: buttonRect.bottom + 4,
+        left: buttonRect.left,
+        width: buttonRect.width,
+        maxHeight: `${maxHeight}px`,
+        zIndex: 1000,
+      });
+    };
+
+    calculatePosition();
+    window.addEventListener('resize', calculatePosition);
+    window.addEventListener('scroll', calculatePosition, true);
+
+    return () => {
+      window.removeEventListener('resize', calculatePosition);
+      window.removeEventListener('scroll', calculatePosition, true);
+    };
+  }, [isOpen]);
+
+  const handleKeyDown = (e) => {
+    if (!isOpen) {
+      if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(e.key)) {
+        e.preventDefault();
+        setIsOpen(true);
+      }
+      return;
+    }
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setHighlightedIndex(prev => Math.min(prev + 1, options.length - 1));
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setHighlightedIndex(prev => Math.max(prev - 1, 0));
+        break;
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        if (options[highlightedIndex]) {
+          onChange(options[highlightedIndex].value);
+          setIsOpen(false);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setIsOpen(false);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleOptionClick = (value) => {
+    onChange(value);
+    setIsOpen(false);
+  };
+
+  const selectedOption = options.find(opt => opt.value === value);
+
+  return (
+    <div ref={dropdownRef} className="relative">
+      <button
+        ref={buttonRef}
+        type="button"
+        className={`flex items-center justify-between w-full px-4 py-1 rounded-full text-sm border dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+        onClick={() => !disabled && !loading && setIsOpen(!isOpen)}
+        onKeyDown={handleKeyDown}
+        disabled={disabled || loading}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+      >
+        <span className="truncate">
+          {loading ? 'Loading...' : (selectedOption?.label || placeholder)}
+        </span>
+        {!disabled && !loading && (
+          <FaChevronDown className={`ml-2 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        )}
+      </button>
+
+      {isOpen && createPortal(
+        <div
+          className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-lg overflow-y-auto"
+          style={menuStyle}
+          role="listbox"
+          onWheel={(e) => e.stopPropagation()}
+        >
+          <div style={{ overscrollBehavior: 'contain' }}>
+            {options.length === 0 ? (
+              <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                No options available
+              </div>
+            ) : (
+              options.map((option, index) => (
+                <div
+                  key={option.value}
+                  className={`px-4 py-2 text-sm cursor-pointer ${highlightedIndex === index ? 'bg-gray-100 dark:bg-gray-700' : ''} ${value === option.value ? 'font-medium text-[#1b5e20] dark:text-green-300' : 'text-gray-800 dark:text-gray-200'}`}
+                  onClick={() => handleOptionClick(option.value)}
+                  onMouseEnter={() => setHighlightedIndex(index)}
+                  role="option"
+                  aria-selected={value === option.value}
+                >
+                  {option.label}
+                </div>
+              ))
+            )}
+          </div>
+        </div>,
+        document.body
+      )}
+    </div>
+  );
+};
 
 const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, onEdit, onDelete, onRefresh }) => {
   const isAccountView = Boolean(account);
@@ -15,7 +166,6 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [editTransactionId, setEditTransactionId] = useState(null);
   const [editValues, setEditValues] = useState({});
-  // New state for delete confirmation
   const [deleteConfirmation, setDeleteConfirmation] = useState({
     show: false,
     index: null,
@@ -32,7 +182,6 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
         if (data.status === 'success') setCategories(data.data);
       } catch (err) {
         console.error('Error fetching categories:', err);
-        // Fallback categories if API fails
         setCategories([
           { category_id: 1, category_name: 'Food' },
           { category_id: 2, category_name: 'Transport' },
@@ -146,7 +295,6 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
 
   return (
     <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-md px-6 py-6">
-      {/* Delete Confirmation Modal */}
       {deleteConfirmation.show && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div 
@@ -196,56 +344,65 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
         </div>
       )}
 
-      {/* Rest of the component remains the same */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-[#336699]">{heading}</h2>
         {(
           <div className="flex gap-2 items-center">
-            <select 
-              className="border dark:border-gray-600 px-4 py-1 rounded-full text-sm dark:bg-gray-700 dark:text-gray-300" 
-              value={sortBy} 
-              onChange={(e) => setSortBy(e.target.value)}
-            >
-              <option value="">Sort by</option>
-              <option value="Name">Name</option>
-              <option value="AmountAsc">Amount Asc</option>
-              <option value="AmountDsc">Amount Dsc</option>
-              <option value="Date">Date</option>
-            </select>
+            <CustomDropdown
+              value={sortBy}
+              onChange={setSortBy}
+              options={[
+                { value: '', label: 'Sort by' },
+                { value: 'Name', label: 'Name' },
+                { value: 'AmountAsc', label: 'Amount Asc' },
+                { value: 'AmountDsc', label: 'Amount Dsc' },
+                { value: 'Date', label: 'Date' }
+              ]}
+              placeholder="Sort by"
+            />
 
-            <select 
-              className="border dark:border-gray-600 px-4 py-1 rounded-full text-sm dark:bg-gray-700 dark:text-gray-300" 
-              value={categoryFilter} 
-              onChange={(e) => setCategoryFilter(e.target.value)}
+            <CustomDropdown
+              value={categoryFilter}
+              onChange={setCategoryFilter}
+              options={[
+                { value: '', label: 'Filter by categories' },
+                ...categories.map(cat => ({
+                  value: cat.category_name,
+                  label: toTitleCase(cat.category_name)
+                }))
+              ]}
+              placeholder="Filter by categories"
               disabled={categoriesLoading}
-            >
-              <option value="">
-                {categoriesLoading ? 'Loading categories...' : 'Filter by categories'}
-              </option>
-              {categories.map(category => (
-                <option key={category.category_id} value={category.category_name}>{toTitleCase(category.category_name)}</option>
-              ))}
-            </select>
+              loading={categoriesLoading}
+            />
             
-            <select 
-              className="border dark:border-gray-600 px-4 py-1 rounded-full text-sm dark:bg-gray-700 dark:text-gray-300" 
-              value={dateFilter} 
-              onChange={(e) => setDateFilter(e.target.value)}
-            >
-              <option value="">Filter by date</option>
-              <option value="7 Days">Last 7 Days</option>
-              <option value="10 Days">Last 10 Days</option>
-              <option value="Last Month">Last Month</option>
-            </select>
-            <select className="border px-4 py-1 rounded-full text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
-              <option value="">Filter by type</option>
-              <option value="income">Income</option>
-              <option value="expense">Expense</option>
-              <option value="deposit">Deposit</option>
-              <option value="withdrawal">Withdrawal</option>
-              <option value="fee">Fee</option>
-              <option value="transfer">Transfer</option>
-            </select>
+            <CustomDropdown
+              value={dateFilter}
+              onChange={setDateFilter}
+              options={[
+                { value: '', label: 'Filter by date' },
+                { value: '7 Days', label: 'Last 7 Days' },
+                { value: '10 Days', label: 'Last 10 Days' },
+                { value: 'Last Month', label: 'Last Month' }
+              ]}
+              placeholder="Filter by date"
+            />
+            
+            <CustomDropdown
+              value={typeFilter}
+              onChange={setTypeFilter}
+              options={[
+                { value: '', label: 'Filter by type' },
+                { value: 'income', label: 'Income' },
+                { value: 'expense', label: 'Expense' },
+                { value: 'deposit', label: 'Deposit' },
+                { value: 'withdrawal', label: 'Withdrawal' },
+                { value: 'fee', label: 'Fee' },
+                { value: 'transfer', label: 'Transfer' }
+              ]}
+              placeholder="Filter by type"
+            />
+
             {isAccountView && (
               <button
                 onClick={() => setShowAddModal(true)}
