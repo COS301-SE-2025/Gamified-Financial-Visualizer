@@ -14,18 +14,23 @@ const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Selec
   const [highlight, setHighlight] = useState(0);
   const wrapRef = useRef(null);
   const btnRef = useRef(null);
+  const menuRef = useRef(null); // track the portaled menu so clicks inside don't close it
   const [menuStyle, setMenuStyle] = useState({}); // fixed positioning for portal
 
-  const selectedIndex = Math.max(0, options.findIndex(o => String(o.value) === String(value)));
-  const selected = options[selectedIndex] || null;
+  // ✅ Only select if the value actually matches; otherwise no selection
+  const selectedIndex = options.findIndex(o => String(o.value) === String(value));
+  const selected = selectedIndex >= 0 ? options[selectedIndex] : null;
 
-  // Close on click outside
+  // Close on click outside — but treat clicks inside the portaled menu as "inside"
   useEffect(() => {
-    const onClickAway = (e) => {
-      if (!wrapRef.current?.contains(e.target)) setOpen(false);
+    const onPointerDown = (e) => {
+      const inButton = wrapRef.current?.contains(e.target);
+      const inMenu = menuRef.current?.contains(e.target);
+      if (inButton || inMenu) return;
+      setOpen(false);
     };
-    document.addEventListener('mousedown', onClickAway);
-    return () => document.removeEventListener('mousedown', onClickAway);
+    document.addEventListener('pointerdown', onPointerDown, true);
+    return () => document.removeEventListener('pointerdown', onPointerDown, true);
   }, []);
 
   // Position the menu in a portal without changing page height
@@ -104,6 +109,7 @@ const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Selec
       {/* Portal menu (fixed) so it never changes page height / adds a second scrollbar */}
       {open && createPortal(
         <ul
+          ref={menuRef}
           role="listbox"
           tabIndex={-1}
           style={menuStyle}
@@ -116,7 +122,7 @@ const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Selec
           <div className="dropdown-overscroll">
             {options.length === 0 && (
               <li className="px-3 h-8 flex items-center text-sm text-gray-500 dark:text-gray-300">
-                No categories
+                No options
               </li>
             )}
             {options.map((opt, idx) => (
@@ -161,6 +167,8 @@ const ChallengeCreate = () => {
     participants: 1,
     image: null,
     imageId: '',
+    measurementType: '',
+    xpReward: ''
   });
   const [searchFriend, setSearchFriend] = useState('');
   const [invitedFriends, setInvitedFriends] = useState([]);
@@ -286,7 +294,7 @@ const ChallengeCreate = () => {
       setIsCreating(false);
       return;
     }
-    if (formData.category && !categories.some(cat => cat.category_id === formData.category)) {
+    if (formData.category && !categories.some(cat => String(cat.category_id) === String(formData.category))) {
       toast.error('Invalid category selected');
       setIsCreating(false);
       return;
@@ -403,7 +411,7 @@ const ChallengeCreate = () => {
             <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl max-w-md w-full">
               <h3 className="text-xl font-bold mb-4 dark:text-gray-200">Confirm Challenge Creation</h3>
               <p className="mb-6 dark:text-gray-300">
-                Are you sure you want to create a challenge "{formData.name}"?
+                Are you sure you want to create a challenge "{formData.title}"?
                 {invitedFriends.length > 0 && (
                   <span className="block mt-2">
                     This will invite {invitedFriends.length} member{invitedFriends.length !== 1 ? 's' : ''}.
@@ -539,19 +547,19 @@ const ChallengeCreate = () => {
 
               {/* Category dropdown */}
               <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Goal Category
-              </label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Goal Category
+                </label>
 
-              {/* Custom dropdown */}
-              <CategoryDropdown
-                name="category"
-                value={formData.category}
-                onChange={(val) => handleChange({ target: { name: 'category', value: val } })}
-                options={(categories || []).map(c => ({ value: c.category_id, label: c.category_name }))}
-                placeholder="Select a category"
-              />
-            </div>
+                {/* Custom dropdown */}
+                <CategoryDropdown
+                  name="category"
+                  value={formData.category}
+                  onChange={(val) => handleChange({ target: { name: 'category', value: val } })}
+                  options={(categories || []).map(c => ({ value: c.category_id, label: c.category_name }))}
+                  placeholder="Select a category"
+                />
+              </div>
 
               {/* Community dropdown */}
               <div>
@@ -589,7 +597,6 @@ const ChallengeCreate = () => {
                   placeholder="Select Type"
                 />
               </div>
-
             </div>
 
             {/* Target & XP */}
