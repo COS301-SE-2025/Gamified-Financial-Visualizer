@@ -114,7 +114,6 @@ async function getVisitsLast7d(userId: number, catIds: number[]): Promise<number
   }, 0);
 }
 
-// ---------- Budgets (safe fallback: your table has no "amount") ----------
 async function getBudgetForName(userId: number, budgetName: string): Promise<number> {
   // Your budgets table has no amount in the provided schema.
   // Log a warning once and return 0 to keep the API stable.
