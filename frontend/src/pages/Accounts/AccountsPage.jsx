@@ -338,21 +338,41 @@ const currentTransactions = filteredTransactions.slice(
     }
   };
 
-  const handleEditTransaction = async (index, updatedTransaction) => {
-    if (activeAccount?.account_id) {
-      await fetchTransactionsForAccount(activeAccount.account_id);
-    } else {
-      await fetchAllUserTransactions();
-    }
-  };
+  // In your parent component
+const handleEditTransaction = async (id, updates) => {
+  try {
+    const response = await fetch(`http://localhost:5000/api/transactions/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+    
+    if (!response.ok) throw new Error('Failed to update transaction');
+    
+    const data = await response.json();
+    return data.transaction; // Return the updated transaction
+    
+    // Alternatively, if you're managing state in the parent:
+    // setTransactions(prev => prev.map(t => t.id === id ? {...t, ...updates} : t));
+  } catch (error) {
+    throw error;
+  }
+};
 
-  const handleDeleteTransaction = async (index) => {
-    if (activeAccount?.account_id) {
-      await fetchTransactionsForAccount(activeAccount.account_id);
-    } else {
-      await fetchAllUserTransactions();
-    }
-  };
+const handleDeleteTransaction = async (id) => {
+  try {
+    const response = await fetch(`http://localhost:5000/api/transactions/${id}`, {
+      method: 'DELETE'
+    });
+    
+    if (!response.ok) throw new Error('Failed to delete transaction');
+    
+    // Update local state if needed
+    setTransactions(prev => prev.filter(t => t.id !== id));
+  } catch (error) {
+    throw error;
+  }
+};
 
   const transactionHeading = activeAccount
     ? `${activeAccount.account_name || activeAccount.accountName} Transactions`

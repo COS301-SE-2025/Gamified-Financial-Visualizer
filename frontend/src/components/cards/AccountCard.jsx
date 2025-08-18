@@ -30,8 +30,8 @@ const AccountCard = ({
   available,
   balance,
   currency,
-  bg,                  // if provided, will be used (e.g., persisted from backend)
-  overlay,             // if provided, will be used (e.g., persisted from backend)
+  bg,                 
+  overlay,             
   isActive = false,
   onDelete = () => {},
   onClick = () => {},
@@ -57,18 +57,17 @@ const AccountCard = ({
   };
   const symbol = currencySymbols[currency] || '';
 
-  // Stable color selection logic
+  
   const { chosenBg, chosenOverlay, storageKey } = useMemo(() => {
-    // 1) If explicit bg/overlay props exist, use them
+    
     if (bg && overlay) {
       return { chosenBg: bg, chosenOverlay: overlay, storageKey: null };
     }
 
-    // Build a stable key (prefer accountId; fallback to accountName + bank)
     const keyBase = accountId != null ? String(accountId) : `${accountName || ''}::${bank || ''}`;
     const key = `account-color:${keyBase}`;
 
-    // 2) Try localStorage
+    
     try {
       const saved = localStorage.getItem(key);
       if (saved) {
@@ -78,7 +77,7 @@ const AccountCard = ({
         }
       }
     } catch {
-      // ignore JSON/Storage errors gracefully
+      
     }
 
     // 3) Deterministic pick via hashing and persist
@@ -88,7 +87,7 @@ const AccountCard = ({
     try {
       localStorage.setItem(key, JSON.stringify(combo));
     } catch {
-      // storage may be unavailable, ignore
+     
     }
 
     return { chosenBg: combo.bg, chosenOverlay: combo.overlay, storageKey: key };
@@ -109,7 +108,7 @@ const AccountCard = ({
     setIsDeleting(true);
     try {
       await onDelete();
-      // optional cleanup: remove saved color so a future recreated account can re-pick
+      
       if (storageKey) {
         try { localStorage.removeItem(storageKey); } catch {}
       }
