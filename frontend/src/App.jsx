@@ -18,6 +18,9 @@ import ContactPage from './pages/Landing/contact';
 // The Dashboard-home Routes
 import Dashboard from './pages/Dashboard/DashboardPage';
 
+// The AR Routes
+import ARView from './pages/ARView';
+
 // The Profile Page Routes
 import Overview from './pages/Profile/Overview';
 import Settings from './pages/Profile/Settings';
@@ -103,6 +106,9 @@ function App() {
           {/* Routes for the home page */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/transactions" element={<TransactionPage />} />
+
+          {/* Routes for the AR */}
+          <Route path="/ar" element={<ARView />} />
 
           {/* Routes for the learn page */}
           <Route path="/learn" element={<LearningPage />} />
