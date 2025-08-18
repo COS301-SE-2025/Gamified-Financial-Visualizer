@@ -255,7 +255,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="bg-white shadow px-6 py-2 flex items-center justify-between relative z-50 dark:bg-gray-800">
+      <nav className="bg-white shadow px-6 py-2 flex items-center justify-between relative z-50 dark:bg-gray-800 z-[9999]">
         {/* Logo */}
         <div className="flex items-center gap-2">
           <img src={logo} alt="Logo" className="w-16 h-16" />
@@ -263,7 +263,7 @@ const Navbar = () => {
         </div>
 
         {/* Main Navigation */}
-        <div className="hidden lg:flex gap-6 items-center">
+        <div className="hidden lg:flex gap-6 items-center z-10000">
           {menuItems.map((menu) => (
             <div key={menu.label} className="relative">
               {menu.items.length === 1 ? (
@@ -336,7 +336,7 @@ const Navbar = () => {
         </div>
 
         {/* Right Side Icons */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 z-10000">
           {/* Notifications */}
           <div className="relative">
             <button
@@ -353,7 +353,7 @@ const Navbar = () => {
           </div>
 
           {/* User Profile */}
-          <div className="relative">
+          <div className="relative z-[9999]">
             <button
               onClick={toggleProfile}
               className="flex items-center gap-2 cursor-pointer"
@@ -423,7 +423,7 @@ const Navbar = () => {
         {/* Click outside to close dropdowns */}
         {(activeMenu !== null || profileOpen || showNotifications) && (
           <div
-            className="fixed inset-0 z-40 bg-black bg-opacity-10"
+            className="fixed inset-0 z-40 bg-black bg-opacity-10 z-10000"
             onClick={closeAll}
           />
         )}
@@ -431,7 +431,7 @@ const Navbar = () => {
 
       {/* Notifications Panel */}
       {showNotifications && (
-        <div className="fixed right-4 top-16 z-50">
+        <div className="fixed right-4 top-16 z-[9999]">
           <NotificationsPanel onClose={() => setShowNotifications(false)} />
         </div>
       )}

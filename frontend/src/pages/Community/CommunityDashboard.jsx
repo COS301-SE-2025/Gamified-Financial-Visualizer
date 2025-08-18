@@ -25,29 +25,29 @@ import {
 // Avatars & banners (fallbacks)
 import avatar1 from '../../assets/Images/avatars/Totoro.png';
 import avatar2 from '../../assets/Images/avatars/BlueSky.png';
-import banner1 from '../../assets/Images/banners/pixelStore.gif';
-import banner2 from '../../assets/Images/banners/pixelApartment.gif';
-import banner3 from '../../assets/Images/banners/pixelCornerStore.gif';
-import banner4 from '../../assets/Images/banners/pixelGirl.gif';
+import banner1 from '../../assets/Images/achievements banners/1.png';
+import banner2 from '../../assets/Images/achievements banners/17.png';
+import banner3 from '../../assets/Images/achievements banners/25.png';
+import banner4 from '../../assets/Images/achievements banners/14.png';
 
 const initialPosts = [
   {
     id: 1,
     user: { name: 'satoshi_nak', level: 'Silver', avatar: avatar1 },
     banner: banner1,
-    content: 'Just unlocked the Big Saver badge and earned 500 XP! 💰',
+    content: 'Just unlocked the Avid Scholar achievment!! 💰',
     communities: ['Cash Cows', 'Goal Setters'],
     likes: 42,
     comments: [
       { id: 11, user: 'finance_wiz', text: 'Congrats! That badge is tough to get!' },
-      { id: 12, user: 'money_master', text: 'Welcome to the Big Savers club!' }
+      { id: 12, user: 'money_master', text: 'Welcome to the Cash Cows club!' }
     ]
   },
   {
     id: 2,
     user: { name: 'snow', level: 'Platinum', avatar: avatar2 },
     banner: banner2,
-    content: 'Won my first goal challenge today 🎯 #CashCows',
+    content: 'Won another achievement today 🎯 #CashCows',
     communities: ['Cash Cows'],
     likes: 31,
     comments: [{ id: 21, user: 'budget_boss', text: 'Great job! Keep it up!' }]

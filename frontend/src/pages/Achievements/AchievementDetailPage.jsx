@@ -19,7 +19,7 @@ import badge11 from '../../assets/Images/badges/balance-scale.png';
 import badge12 from '../../assets/Images/badges/brainstorming.png';
 import badge13 from '../../assets/Images/badges/customer.png';
 import badge14 from '../../assets/Images/badges/discussion.png';
-import badge15 from '../../assets/Images/badges/expense.png';
+import badge15 from '../../assets/Images/badges/profit (2).png';
 import badge16 from '../../assets/Images/badges/idea.png';
 import badge17 from '../../assets/Images/badges/income.png';
 import badge18 from '../../assets/Images/badges/lighthouse.png';

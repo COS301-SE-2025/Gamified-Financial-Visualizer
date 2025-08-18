@@ -446,11 +446,11 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
                 const isEditing = editTransactionId === txn.transaction_id;
                 const isExpense = ['expense', 'withdrawal', 'fee'].includes(txn.transaction_type);
                 const isIncome = ['income', 'deposit'].includes(txn.transaction_type);
-                const isTransfer = txn.transaction_type === 'Transfer';
+                const isTransfer = ['transfer'].includes(txn.transaction_type);
 
                 const amountColor = isExpense ? 'text-red-500'
                   : isIncome ? 'text-lime-600'
-                    : isTransfer ? 'text-blue-500'
+                    : isTransfer ? 'text-sky-500'
                       : '';
 
                 const amountSign = isExpense ? '-'
@@ -503,7 +503,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
                         />
                       ) : (
                         <>
-                          {amountSign} {isTransfer ? '' : txn.amount.replace(/[+-]/g, '')}
+                          {amountSign} {txn.amount.replace(/[+-]/g, '')}
                         </>
                       )}
                     </td>
