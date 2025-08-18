@@ -353,7 +353,7 @@ const Navbar = () => {
           </div>
 
           {/* User Profile */}
-          <div className="relative">
+          <div className="relative z-[9999]">
             <button
               onClick={toggleProfile}
               className="flex items-center gap-2 cursor-pointer"
@@ -431,7 +431,7 @@ const Navbar = () => {
 
       {/* Notifications Panel */}
       {showNotifications && (
-        <div className="fixed right-4 top-16 z-100000">
+        <div className="fixed right-4 top-16 z-[9999]">
           <NotificationsPanel onClose={() => setShowNotifications(false)} />
         </div>
       )}

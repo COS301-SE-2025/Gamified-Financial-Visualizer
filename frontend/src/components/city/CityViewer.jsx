@@ -84,7 +84,7 @@ function ThemePanel({ open, setOpen, theme, setTheme, mode, setMode }) {
       )}
 
       {open && (
-        <div className="fixed top-24 right-4 z-[10000] w-[320px] rounded-2xl bg-white/95 dark:bg-gray-800/95 text-gray-800 dark:text-gray-100 shadow-xl border border-black/10 backdrop-blur">
+        <div className="fixed top-24 right-4 z-[700] w-[320px] rounded-2xl bg-white/95 dark:bg-gray-800/95 text-gray-800 dark:text-gray-100 shadow-xl border border-black/10 backdrop-blur">
           <div className="flex items-center justify-between px-3 py-2">
             <div className="font-semibold">Scene Style</div>
             <button onClick={() => setOpen(false)} className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/10" aria-label="Close">
