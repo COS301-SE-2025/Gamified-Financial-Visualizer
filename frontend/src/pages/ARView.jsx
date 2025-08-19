@@ -2,10 +2,14 @@
 import { useMemo, useRef, useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 
+/**
+ * Make sure model-viewer is loaded once in index.html:
+ * <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+ */
+
 function QR({ url }) {
-  // Only encode once, not double
-  const safeUrl = encodeURIComponent(url);
-  const src = `https://chart.googleapis.com/chart?cht=qr&chs=220x220&chl=${safeUrl}`;
+  const safe = encodeURIComponent(url);
+  const src = `https://chart.googleapis.com/chart?cht=qr&chs=220x220&chl=${safe}`;
   return (
     <img
       src={src}
@@ -17,23 +21,27 @@ function QR({ url }) {
   );
 }
 
-
 export default function ARView() {
   const [params] = useSearchParams();
-const glbSrc = "/models/Classic_Day_City.glb";
-  const mvRef = useRef(null);
+  // Accept the model path from ?src=…, fall back to Classic Day
+  const glbSrc = decodeURIComponent(params.get('src') || '/models/Classic_Day_City.glb');
 
+  const mvRef = useRef(null);
   const [isIOS, setIsIOS] = useState(false);
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  const arModes = useMemo(() => 'webxr scene-viewer', []); // GLB-only → no quick-look
+
+  // GLB-only AR modes (Scene Viewer + WebXR)
+  const arModes = useMemo(() => 'webxr scene-viewer', []);
 
   useEffect(() => {
     setIsIOS(/iPad|iPhone|iPod/i.test(navigator.userAgent));
     const mv = mvRef.current;
     if (!mv) return;
+
+    // Keep exposure stable when AR session starts/ends
     const onAR = (e) => {
-      if (e.detail.status === 'session-started') mv.exposure = 1.0;
-      if (e.detail.status === 'not-presenting') mv.exposure = 0.9;
+      if (e.detail.status === 'session-started') mv.exposure = 1.2;
+      if (e.detail.status === 'not-presenting') mv.exposure = 1.2;
     };
     mv.addEventListener('ar-status', onAR);
     return () => mv.removeEventListener('ar-status', onAR);
@@ -44,55 +52,83 @@ const glbSrc = "/models/Classic_Day_City.glb";
     const model = mv?.model;
     if (!model) return;
 
-    // MATERIAL NORMALIZATION
+    // ---- MATERIAL TUNING (matches CityViewer CityModel) ----
     try {
       model.materials?.forEach((mat) => {
         const pbr = mat?.pbrMetallicRoughness;
+        // zero metalness + moderate roughness for low-poly look
         pbr?.setMetallicFactor?.(0);
         pbr?.setRoughnessFactor?.(0.5);
+
+        // prevent pure-white blowout (common in stylized assets)
         if (pbr?.baseColorFactor) {
           const [r, g, b, a = 1] = pbr.baseColorFactor;
           const avg = (r + g + b) / 3;
-          if (avg > 0.96) pbr.baseColorFactor = [0.94, 0.94, 0.94, a];
+          if (avg > 0.965) pbr.baseColorFactor = [0.94, 0.94, 0.94, a];
         }
       });
+
+      // Soften clouds specifically (like the CityViewer cloud pass)
       model.meshes?.forEach((mesh) => {
         if (mesh?.name?.toLowerCase?.().includes('cloud')) {
           mesh.material?.pbrMetallicRoughness?.setRoughnessFactor?.(0.9);
         }
       });
-    } catch {}
+    } catch {
+      // Non-fatal: some platforms lock parts of the scene graph
+    }
 
-    // LIGHTING: clamp embedded lights, then apply two-sun look
-    const clampScale = 0.35; // 0.30–0.45 to taste
-    ['DirectionalLight', 'PointLight', 'SpotLight'].forEach((t) => {
-      const nodes = model.getNodesByType?.(t) || [];
-      nodes.forEach((l) => {
-        const base = typeof l.intensity === 'number' ? l.intensity : 1;
-        l.intensity = Math.min(base * clampScale, 2.0);
+    // ---- SIMPLIFIED LIGHTING APPROACH ----
+    // model-viewer doesn't support custom light creation well, so we'll use a different approach
+    
+    // 1) Use the GLB lights but modify them heavily
+    try {
+      const allLights = [];
+      ['DirectionalLight', 'PointLight', 'SpotLight'].forEach((t) => {
+        const nodes = model.getNodesByType?.(t) || [];
+        allLights.push(...nodes);
       });
-    });
-    const suns = model.getNodesByType?.('DirectionalLight') || [];
-    if (suns[0]) {
-      suns[0].color = '#FFD4B8'; // warm key
-      suns[0].intensity = 1.25;
-      suns[0].setTransformation?.({ position: { x: 90, y: 140, z: 70 } });
+      
+      // Style the first few lights to approximate our setup
+      if (allLights[0]) {
+        allLights[0].color = '#FFD4B8'; // warm key sun
+        allLights[0].intensity = 3.5; // higher intensity
+        allLights[0].visible = true;
+        allLights[0].castShadow = true;
+      }
+      if (allLights[1]) {
+        allLights[1].color = '#BFD8FF'; // cool fill
+        allLights[1].intensity = 1.8; // moderate fill
+        allLights[1].visible = true;
+        allLights[1].castShadow = false;
+      }
+      // Disable other lights
+      for (let i = 2; i < allLights.length; i++) {
+        allLights[i].intensity = 0;
+        allLights[i].visible = false;
+      }
+    } catch (e) {
+      console.warn('Light modification failed:', e);
     }
-    if (suns[1]) {
-      suns[1].color = '#BFD8FF'; // cool fill
-      suns[1].intensity = 0.5;
-      suns[1].setTransformation?.({ position: { x: -70, y: 50, z: -40 } });
-    }
-    if (!suns.length) {
-      mv.exposure = 1.0;
-      mv.shadowIntensity = 0.4;
-    }
+
+    // ---- AGGRESSIVE RENDERER TUNING ----
+    mv.toneMapping = 'aces';
+    mv.exposure = 2.0; // Much higher exposure to combat flatness
+    mv.shadowIntensity = 0.7; // Stronger shadows for definition
+    mv.shadowSoftness = 0.8; // Slightly harder shadows
+    
+    // Keep environment very low but not zero (for some ambient)
+    mv.environmentIntensity = 0.15;
   };
 
-const currentUrl = `${window.location.origin}/ar?src=/models/Classic_Day_City.glb`;
+  const currentUrl = `${window.location.origin}/ar?src=${encodeURIComponent(glbSrc)}`;
   const copyLink = async () => {
-    try { await navigator.clipboard.writeText(currentUrl); alert('AR link copied!'); }
-    catch { prompt('Copy this AR link:', currentUrl); }
+    try {
+      await navigator.clipboard.writeText(currentUrl);
+      alert('AR link copied!');
+    } catch {
+      prompt('Copy this AR link:', currentUrl);
+    }
   };
 
   return (
@@ -110,38 +146,44 @@ const currentUrl = `${window.location.origin}/ar?src=/models/Classic_Day_City.gl
 
         {isIOS && (
           <div className="mb-3 text-sm px-3 py-2 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 dark:bg-yellow-900/20 dark:text-yellow-200 dark:border-yellow-900/40">
-            iOS Safari cannot launch AR from GLB. You can still preview the model below. (Add a USDZ later to enable AR on iOS.)
+            iOS Safari can't launch AR from GLB; you'll get a 3D preview here. (Add a USDZ for full iOS AR.)
           </div>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-6">
+          {/* Viewer panel */}
           <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0E171F] shadow">
             <model-viewer
+              key={glbSrc}
               ref={mvRef}
               onLoad={handleLoad}
               src={glbSrc}
-
-              /* AR + controls (GLB-only) */
+              /* AR + controls */
               ar
-              ar-modes={arModes}        // Android: Scene Viewer; Desktop: WebXR if supported
+              ar-modes={arModes}
               ar-scale="fixed"
               camera-controls
               touch-action="pan-y"
-              reveal={isMobile ? 'auto' : 'interaction'}
-
-              /* Renderer look to match CityViewer */
+              /* Avoid blank desktop preview */
+              reveal="auto"
+              loading="eager"
+              interaction-prompt={isMobile ? 'auto' : 'none'}
+              /* --- Enhanced Renderer look (more aggressive to combat flatness) --- */
               tone-mapping="aces"
-              exposure="0.9"
-              environment-intensity="0"
+              exposure="2.0"
+              environment-intensity="0.15"
               ignore-gltf-lights="false"
-              shadow-intensity="0.5"
-              shadow-softness="1"
-
-              /* Framing */
+              shadow-intensity="0.7"
+              shadow-softness="0.8"
+              /* Framing - matches CityViewer camera angle better */
               camera-orbit="25deg 55deg 120%"
               field-of-view="45deg"
-
-              style={{ width: '100%', height: '70vh', background: '#f2f5f8' }}
+              /* Background with more contrast */
+              style={{ 
+                width: '100%', 
+                height: '70vh', 
+                background: 'linear-gradient(135deg, #fff9e6 0%, #f2f5f8 50%, #e8f4f8 100%)' 
+              }}
             >
               <button
                 slot="ar-button"
@@ -152,11 +194,12 @@ const currentUrl = `${window.location.origin}/ar?src=/models/Classic_Day_City.gl
             </model-viewer>
           </div>
 
+          {/* QR / Link panel */}
           <aside className="lg:pt-1">
             <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0E171F] shadow p-4">
               <div className="text-sm font-semibold mb-2">Open on your phone</div>
               <p className="text-xs text-gray-600 dark:text-white/70 mb-3">
-                Android launches AR via Scene Viewer. iOS shows a 3D preview (GLB-only).
+                Android opens AR in Scene Viewer. iOS shows a 3D preview (GLB-only).
               </p>
               <div className="flex flex-col items-center gap-3">
                 <QR url={currentUrl} />
