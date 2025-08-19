@@ -458,6 +458,9 @@ const BudgetPage = () => {
       const response = await fetch(`http://localhost:5000/api/budget/${deleteConfirmation.budgetId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({
+            user_id: userId
+          }),
       });
       const result = await response.json();
       if (result.status === 'success') {
