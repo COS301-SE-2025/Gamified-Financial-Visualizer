@@ -35,6 +35,23 @@ const CommunityList = () => {
     }
   };
 
+  const isOwner = (community) => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    return user?.id === community.owner_id;
+  };
+
+  const leaveCommunity = async (communityId) => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    const userId = user?.id;
+
+    const res = await fetch(
+      `http://localhost:5000/api/community/${communityId}/members/${userId}`,
+      { method: 'DELETE' }
+    );
+   
+  };
+
+
   useEffect(() => {
     fetchUserCommunities();
     fetchRecommendations();
@@ -178,12 +195,21 @@ const CommunityList = () => {
                         <FaEye className="inline-block mr-1" /> View
                       </button>
                     </Link>
+                   {isOwner(community) ? (
                     <button
                       onClick={() => handleDelete(community.community_name, community.community_id)}
                       className="bg-[#FE9B90] text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-[#ED5E52] transition whitespace-nowrap"
                     >
                       Delete
                     </button>
+                  ) : (
+                    <button
+                      onClick={() => leaveCommunity(community.community_id)}
+                      className="bg-[#FE9B90] text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-[#ED5E52] transition whitespace-nowrap"
+                    >
+                      Leave
+                    </button>
+                  )}
                   </div>
                 </div>
               </div>

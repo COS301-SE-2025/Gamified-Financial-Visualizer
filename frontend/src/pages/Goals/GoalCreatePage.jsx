@@ -1,9 +1,13 @@
+// GoalCreatePage.jsx
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { FaChevronDown } from 'react-icons/fa';
 import { createPortal } from 'react-dom';
 import goal1 from '../../assets/Images/banners/pixelApartment.gif';
 import goal2 from '../../assets/Images/banners/pixelHouse.gif';
 import goal3 from '../../assets/Images/banners/pixelOffice1.gif';
+import goal4 from '../../assets/Images/banners/pixelStore.gif';
+import goal5 from '../../assets/Images/banners/pixelGirlAlly.gif';
+import goal6 from '../../assets/Images/banners/pixelStudents.jpeg';
 import GoalsViewLayout from './GoalsViewLayout';
 
 const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Select...' }) => {
@@ -11,42 +15,66 @@ const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Selec
   const [highlight, setHighlight] = useState(0);
   const wrapRef = useRef(null);
   const btnRef = useRef(null);
-  const [menuStyle, setMenuStyle] = useState({}); // fixed positioning for portal
+  const menuRef = useRef(null);
+  const [menuStyle, setMenuStyle] = useState({});
 
-  const selectedIndex = Math.max(0, options.findIndex(o => String(o.value) === String(value)));
-  const selected = options[selectedIndex] || null;
+  // Only select if there’s an actual match
+  const selectedIndex = options.findIndex(o => String(o.value) === String(value));
+  const selected = selectedIndex >= 0 ? options[selectedIndex] : null;
 
-  // Close on click outside
+  // Close on outside click (treat portaled menu as "inside")
   useEffect(() => {
-    const onClickAway = (e) => {
-      if (!wrapRef.current?.contains(e.target)) setOpen(false);
+    const onPointerDown = (e) => {
+      if (wrapRef.current?.contains(e.target)) return;
+      if (menuRef.current?.contains(e.target)) return;
+      setOpen(false);
     };
-    document.addEventListener('mousedown', onClickAway);
-    return () => document.removeEventListener('mousedown', onClickAway);
+    document.addEventListener('pointerdown', onPointerDown, true);
+    return () => document.removeEventListener('pointerdown', onPointerDown, true);
   }, []);
 
-  // Position the menu in a portal without changing page height
+  // ✅ Smart placement: below with offset; flip up if space is tight; clamp horizontally
   useLayoutEffect(() => {
     if (!open || !btnRef.current) return;
+
     const calc = () => {
       const rect = btnRef.current.getBoundingClientRect();
-      const maxH = Math.min(320, Math.floor(window.innerHeight * 0.4)); // ~10 items
-      let top = rect.bottom + 6;
-      let left = Math.min(rect.left, window.innerWidth - rect.width - 8);
+      const viewportPadding = 8;
+      const offset = 8;
+      const minH = 160;
+      const maxHCap = 360;
 
-      // If not enough space below, place above
-      if (top + maxH > window.innerHeight - 8) {
-        top = Math.max(8, rect.top - 6 - maxH);
+      const spaceBelow = window.innerHeight - rect.bottom - viewportPadding;
+      const spaceAbove = rect.top - viewportPadding;
+      const placeBelow = spaceBelow >= Math.min(240, spaceAbove) || spaceBelow >= spaceAbove;
+
+      const maxHeight = Math.max(
+        minH,
+        Math.min(maxHCap, (placeBelow ? spaceBelow : spaceAbove) - offset)
+      );
+
+      const width = rect.width; // keep same width as the field
+
+      let left = rect.left;
+      left = Math.max(viewportPadding, Math.min(left, window.innerWidth - viewportPadding - width));
+
+      let top;
+      if (placeBelow) {
+        top = Math.min(rect.bottom + offset, window.innerHeight - viewportPadding - maxHeight);
+      } else {
+        top = Math.max(viewportPadding, rect.top - offset - maxHeight);
       }
+
       setMenuStyle({
         position: 'fixed',
         top,
         left,
-        width: rect.width,
-        maxHeight: maxH,
+        width,
+        maxHeight,
         zIndex: 9999,
       });
     };
+
     calc();
     window.addEventListener('scroll', calc, true);
     window.addEventListener('resize', calc);
@@ -56,9 +84,16 @@ const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Selec
     };
   }, [open]);
 
-  // Reset highlight when opening
+  // Reset highlight and ensure selected item is visible when opening
   useEffect(() => {
-    if (open) setHighlight(selectedIndex >= 0 ? selectedIndex : 0);
+    const idx = selectedIndex >= 0 ? selectedIndex : 0;
+    setHighlight(idx);
+    if (open) {
+      requestAnimationFrame(() => {
+        const el = menuRef.current?.querySelector(`[data-idx="${idx}"]`);
+        el?.scrollIntoView({ block: 'nearest' });
+      });
+    }
   }, [open, selectedIndex]);
 
   const commit = (idx) => {
@@ -98,36 +133,33 @@ const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Selec
         <FaChevronDown className="ml-3 text-gray-400 dark:text-gray-500" />
       </button>
 
-      {/* Portal menu (fixed) so it never changes page height / adds a second scrollbar */}
       {open && createPortal(
         <ul
+          ref={menuRef}
           role="listbox"
           tabIndex={-1}
           style={menuStyle}
           onKeyDown={onKey}
-          onWheel={(e) => e.stopPropagation()} // stop scroll chaining
+          onWheel={(e) => e.stopPropagation()}
           className="rounded-xl border border-gray-200 dark:border-gray-600
                      bg-white dark:bg-gray-700 shadow-lg overflow-y-auto"
         >
           <style>{`.dropdown-overscroll { overscroll-behavior: contain; }`}</style>
           <div className="dropdown-overscroll">
             {options.length === 0 && (
-              <li className="px-3 h-8 flex items-center text-sm text-gray-500 dark:text-gray-300">
-                No categories
-              </li>
+              <li className="px-3 h-8 flex items-center text-sm text-gray-500 dark:text-gray-300">No options</li>
             )}
             {options.map((opt, idx) => (
               <li
                 key={opt.value}
+                data-idx={idx}
                 role="option"
                 aria-selected={String(opt.value) === String(value)}
                 onMouseEnter={() => setHighlight(idx)}
                 onClick={() => commit(idx)}
                 className={`px-3 h-8 flex items-center text-sm cursor-pointer
                             ${idx === highlight ? 'bg-gray-100 dark:bg-gray-600' : ''}
-                            ${String(opt.value) === String(value)
-                    ? 'font-medium text-[#1b5e20]'
-                    : 'text-gray-800 dark:text-gray-100'}`}
+                            ${String(opt.value) === String(value) ? 'font-medium text-[#1b5e20]' : 'text-gray-800 dark:text-gray-100'}`}
               >
                 {opt.label}
               </li>
@@ -137,16 +169,25 @@ const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Selec
         document.body
       )}
 
-      {/* Hidden input keeps native form compatibility */}
       <input type="hidden" name={name} value={value ?? ''} />
     </div>
   );
 };
 
+// all the banner options, with backend ids
+const bannerOptions = [
+  { apiId: 1, label: 'Apartment', src: goal1 },
+  { apiId: 2, label: 'House', src: goal2 },
+  { apiId: 3, label: 'Office', src: goal3 },
+  { apiId: 4, label: 'Store', src: goal4 },
+  { apiId: 5, label: 'Ally', src: goal5 },
+  { apiId: 6, label: 'Students', src: goal6 },
+];
+
+
 const GoalCreatePage = () => {
   const [showConfirm, setShowConfirm] = useState(false);
 
-  //form set states 
   const [form, setForm] = useState({
     name: '',
     amount: '',
@@ -154,13 +195,12 @@ const GoalCreatePage = () => {
     endDate: '',
     type: '',
     category: '',
-    image: goal1,
+    image: bannerOptions[0].apiId,
   });
 
   const user = JSON.parse(localStorage.getItem('user'));
   const [categories, setCategories] = useState([]);
 
-  // taody string helper handler
   const toLocalISO = (d) => {
     const x = new Date(d);
     x.setMinutes(x.getMinutes() - x.getTimezoneOffset());
@@ -179,24 +219,22 @@ const GoalCreatePage = () => {
         console.error('Error fetching categories:', err);
       }
     };
-
     fetchCategories();
   }, []);
 
   // guard submit button
   const datesValid = form.startDate && form.endDate && form.endDate >= form.startDate;
+
   const handleSubmit = async (e) => {
     e?.preventDefault();
     if (!datesValid) return;
 
-    // banner mapping
     const bannerIdMap = {
       [goal1]: 1,
       [goal2]: 2,
       [goal3]: 3
     };
 
-    // paayload information mapping
     const goalPayload = {
       user_id: user?.id,
       goal_name: form.name,
@@ -227,11 +265,9 @@ const GoalCreatePage = () => {
     }
   };
 
-  // chaneg handler
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // keep endDate >= startDate
     if (name === 'startDate') {
       setForm(prev => {
         const nextEnd = prev.endDate && prev.endDate < value ? value : prev.endDate;
@@ -253,7 +289,7 @@ const GoalCreatePage = () => {
   return (
     <GoalsViewLayout>
       <form onSubmit={handleSubmit} className="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-2xl shadow dark:shadow-lg space-y-6 border border-gray-100 dark:border-gray-700">
-        {/* Basic Information Section */}
+        {/* Basic Information */}
         <div className="space-y-2">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Create a Goal</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -283,7 +319,7 @@ const GoalCreatePage = () => {
           </div>
         </div>
 
-        {/* Timeframe Section */}
+        {/* Timeframe */}
         <div className="space-y-2">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Timeframe</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -309,12 +345,10 @@ const GoalCreatePage = () => {
                 className="rounded-xl px-4 py-2 border dark:border-gray-600 shadow dark:shadow-none w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
-            {/* The goal category dropdown */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Goal Type
-              </label>
 
+            {/* Goal Type dropdown */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Goal Type</label>
               <CategoryDropdown
                 name="type"
                 value={form.type}
@@ -329,20 +363,15 @@ const GoalCreatePage = () => {
                 placeholder="Select goal type"
               />
             </div>
-
           </div>
         </div>
 
-        {/* Category Section */}
+        {/* Category */}
         <div className="space-y-2">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Category</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Goal Category
-              </label>
-
-              {/* Custom dropdown */}
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Goal Category</label>
               <CategoryDropdown
                 name="category"
                 value={form.category}
@@ -353,42 +382,51 @@ const GoalCreatePage = () => {
             </div>
 
             <div className="flex items-end">
-              <span className="text-sm font-medium text-green-500 dark:text-green-400">
-                XP Reward: 20 XP
-              </span>
+              <span className="text-sm font-medium text-green-500 dark:text-green-400">XP Reward: 20 XP</span>
             </div>
           </div>
         </div>
 
-        {/* Visual Representation Section */}
+        {/* Visual Representation */}
         <div className="space-y-2">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Visual Representation</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Choose an image to represent your goal</p>
-          <div className="flex gap-4">
-            {[goal1, goal2, goal3].map((img, i) => (
-              <div key={i} className="flex flex-col items-center">
-                <img
-                  src={img}
-                  alt={`Goal option ${i}`}
-                  onClick={() => handleImageSelect(img)}
-                  className={`w-36 h-20 rounded-xl cursor-pointer object-cover border-2 ${form.image === img
-                    ? 'border-green-400 dark:border-green-500'
-                    : 'border-transparent'
-                    }`}
-                />
-                <span className="text-xs mt-1 text-gray-500 dark:text-gray-400">
-                  {i === 0 ? 'Apartment' : i === 1 ? 'House' : 'Office'}
-                </span>
-              </div>
-            ))}
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+            Choose an image to represent your goal
+          </p>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-4">
+            {bannerOptions.map((opt) => {
+              const selected = form.imageId === opt.apiId;
+              return (
+                <button
+                  key={opt.apiId}
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, imageId: opt.apiId }))}
+                  className={`relative rounded-xl overflow-hidden border-2 transition focus:outline-none
+            ${selected ? 'border-green-400 dark:border-green-500' : 'border-transparent hover:border-gray-300 dark:hover:border-gray-600'}`}
+                  aria-pressed={selected}
+                >
+                  <img src={opt.src} alt={opt.label} className="w-full h-24 object-cover" />
+                  <div className="p-2 text-center text-xs font-medium text-gray-700 dark:text-gray-300">
+                    {opt.label}
+                  </div>
+                  {selected && (
+                    <span className="absolute top-2 right-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-500 text-white text-xs">
+                      ✓
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Submit Button */}
+
+        {/* Submit */}
         <div className="pt-4 text-right">
           <button
             type="button"
-            onClick={() => datesValid ? setShowConfirm(true) : null}
+            onClick={() => (datesValid ? setShowConfirm(true) : null)}
             disabled={!datesValid}
             className={`px-8 py-3 rounded-full font-medium transition-all
               ${datesValid
@@ -401,7 +439,6 @@ const GoalCreatePage = () => {
           {form.startDate && form.endDate && form.endDate < form.startDate && (
             <p className="mt-2 text-sm text-red-500">End date can’t be before start date.</p>
           )}
-
         </div>
       </form>
 

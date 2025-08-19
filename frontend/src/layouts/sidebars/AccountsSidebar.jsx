@@ -160,6 +160,7 @@ const AccountsPerformanceHeader = () => {
       try {
         setError(null);
 
+
         // Fetch category summary
         const summaryResponse = await fetch(`http://localhost:5000/api/transactions/user/${userId}/summary`);
         
@@ -194,8 +195,9 @@ const AccountsPerformanceHeader = () => {
         setError(err.message || 'Failed to load data');
       }
     };
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-    fetch(`http://localhost:5000/api/auth/profile/performance-summary/${userId}`)
+    fetch(`http://localhost:5000/api/auth/profile/performance-summary/${user.id}`)
       .then(res => res.json())
       .then(data => setPerformanceSummary(data.data))
       .catch(err => console.error('Performance summary error:', err));

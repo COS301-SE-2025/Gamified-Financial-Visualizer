@@ -641,7 +641,7 @@ router.patch('/friends/update', async (req: Request, res: Response) => {
   }
 
   try {
-    const request = await communityService.respondToFriendRequests(user_id, friend_id, action);
+    const request = await communityService.respondToFriendRequests( Number(friend_id), Number(user_id), action);
     res.status(200).json({ status: 'success', message: 'Friendship status updated successfully.', data: request });
 
     // get username

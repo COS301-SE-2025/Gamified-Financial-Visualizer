@@ -3,11 +3,11 @@ import { createPortal } from 'react-dom';
 import { FaTrash, FaEdit, FaPlus, FaChevronDown } from 'react-icons/fa';
 import AddTransactionModal from '../modals/AddTransactionModal';
 
-const CategoryDropdown = ({ 
+const CustomDropdown = ({ 
   value, 
   onChange, 
   options, 
-  placeholder = 'Filter by categories',
+  placeholder = 'Select',
   disabled = false,
   loading = false
 }) => {
@@ -17,7 +17,6 @@ const CategoryDropdown = ({
   const buttonRef = useRef(null);
   const [menuStyle, setMenuStyle] = useState({});
 
-  // Close when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -31,7 +30,6 @@ const CategoryDropdown = ({
     };
   }, []);
 
-  // Position the menu properly
   useLayoutEffect(() => {
     if (!isOpen || !buttonRef.current) return;
 
@@ -59,7 +57,6 @@ const CategoryDropdown = ({
     };
   }, [isOpen]);
 
-  // Keyboard navigation
   const handleKeyDown = (e) => {
     if (!isOpen) {
       if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(e.key)) {
@@ -115,7 +112,7 @@ const CategoryDropdown = ({
         aria-expanded={isOpen}
       >
         <span className="truncate">
-          {loading ? 'Loading categories...' : (selectedOption?.label || placeholder)}
+          {loading ? 'Loading...' : (selectedOption?.label || placeholder)}
         </span>
         {!disabled && !loading && (
           <FaChevronDown className={`ml-2 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -132,7 +129,7 @@ const CategoryDropdown = ({
           <div style={{ overscrollBehavior: 'contain' }}>
             {options.length === 0 ? (
               <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
-                No categories available
+                No options available
               </div>
             ) : (
               options.map((option, index) => (
@@ -185,7 +182,6 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
         if (data.status === 'success') setCategories(data.data);
       } catch (err) {
         console.error('Error fetching categories:', err);
-        // Fallback categories if API fails
         setCategories([
           { category_id: 1, category_name: 'Food' },
           { category_id: 2, category_name: 'Transport' },
@@ -299,7 +295,6 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
 
   return (
     <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-md px-6 py-6">
-      {/* Delete Confirmation Modal */}
       {deleteConfirmation.show && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div 
@@ -353,49 +348,61 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
         <h2 className="text-xl font-semibold text-[#336699]">{heading}</h2>
         {(
           <div className="flex gap-2 items-center">
-            <select 
-              className="border dark:border-gray-600 px-4 py-1 rounded-full text-sm dark:bg-gray-700 dark:text-gray-300" 
-              value={sortBy} 
-              onChange={(e) => setSortBy(e.target.value)}
-            >
-              <option value="">Sort by</option>
-              <option value="Name">Name</option>
-              <option value="AmountAsc">Amount Asc</option>
-              <option value="AmountDsc">Amount Dsc</option>
-              <option value="Date">Date</option>
-            </select>
+            <CustomDropdown
+              value={sortBy}
+              onChange={setSortBy}
+              options={[
+                { value: '', label: 'Sort by' },
+                { value: 'Name', label: 'Name' },
+                { value: 'AmountAsc', label: 'Amount Asc' },
+                { value: 'AmountDsc', label: 'Amount Dsc' },
+                { value: 'Date', label: 'Date' }
+              ]}
+              placeholder="Sort by"
+            />
 
-            <CategoryDropdown
+            <CustomDropdown
               value={categoryFilter}
               onChange={setCategoryFilter}
-              options={categories.map(cat => ({
-                value: cat.category_name,
-                label: toTitleCase(cat.category_name)
-              }))}
+              options={[
+                { value: '', label: 'Filter by categories' },
+                ...categories.map(cat => ({
+                  value: cat.category_name,
+                  label: toTitleCase(cat.category_name)
+                }))
+              ]}
               placeholder="Filter by categories"
               disabled={categoriesLoading}
               loading={categoriesLoading}
             />
             
-            <select 
-              className="border dark:border-gray-600 px-4 py-1 rounded-full text-sm dark:bg-gray-700 dark:text-gray-300" 
-              value={dateFilter} 
-              onChange={(e) => setDateFilter(e.target.value)}
-            >
-              <option value="">Filter by date</option>
-              <option value="7 Days">Last 7 Days</option>
-              <option value="10 Days">Last 10 Days</option>
-              <option value="Last Month">Last Month</option>
-            </select>
-            <select className="border px-4 py-1 rounded-full text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
-              <option value="">Filter by type</option>
-              <option value="income">Income</option>
-              <option value="expense">Expense</option>
-              <option value="deposit">Deposit</option>
-              <option value="withdrawal">Withdrawal</option>
-              <option value="fee">Fee</option>
-              <option value="transfer">Transfer</option>
-            </select>
+            <CustomDropdown
+              value={dateFilter}
+              onChange={setDateFilter}
+              options={[
+                { value: '', label: 'Filter by date' },
+                { value: '7 Days', label: 'Last 7 Days' },
+                { value: '10 Days', label: 'Last 10 Days' },
+                { value: 'Last Month', label: 'Last Month' }
+              ]}
+              placeholder="Filter by date"
+            />
+            
+            <CustomDropdown
+              value={typeFilter}
+              onChange={setTypeFilter}
+              options={[
+                { value: '', label: 'Filter by type' },
+                { value: 'income', label: 'Income' },
+                { value: 'expense', label: 'Expense' },
+                { value: 'deposit', label: 'Deposit' },
+                { value: 'withdrawal', label: 'Withdrawal' },
+                { value: 'fee', label: 'Fee' },
+                { value: 'transfer', label: 'Transfer' }
+              ]}
+              placeholder="Filter by type"
+            />
+
             {isAccountView && (
               <button
                 onClick={() => setShowAddModal(true)}
@@ -439,11 +446,11 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
                 const isEditing = editTransactionId === txn.transaction_id;
                 const isExpense = ['expense', 'withdrawal', 'fee'].includes(txn.transaction_type);
                 const isIncome = ['income', 'deposit'].includes(txn.transaction_type);
-                const isTransfer = txn.transaction_type === 'Transfer';
+                const isTransfer = ['transfer'].includes(txn.transaction_type);
 
                 const amountColor = isExpense ? 'text-red-500'
                   : isIncome ? 'text-lime-600'
-                    : isTransfer ? 'text-blue-500'
+                    : isTransfer ? 'text-sky-500'
                       : '';
 
                 const amountSign = isExpense ? '-'
@@ -496,7 +503,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
                         />
                       ) : (
                         <>
-                          {amountSign} {isTransfer ? '' : txn.amount.replace(/[+-]/g, '')}
+                          {amountSign} {txn.amount.replace(/[+-]/g, '')}
                         </>
                       )}
                     </td>
