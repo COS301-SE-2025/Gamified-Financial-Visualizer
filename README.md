@@ -88,7 +88,7 @@ This table provides quick access to the key documents and planning resources for
 
 | Resource Name | Description | Link |
 |---------------|-------------|------|
-| **Sys Requirements Specification (SRS)** | Outlines the functional and non-functional requirements of the system. | [View SRS](https://drive.google.com/drive/folders/1SNT8_zECcaguP18D0xsKKZDJcYN9H5AT?usp=sharing) |
+| **System Requirements Specification (SRS)** | Outlines the functional and non-functional requirements of the system. | [View SRS](https://drive.google.com/drive/folders/1SNT8_zECcaguP18D0xsKKZDJcYN9H5AT?usp=sharing) |
 | **Architectural Requirements Specification (ARS)** | Describes system architecture, service design, and technology stack. | [View ARS](https://drive.google.com/drive/folders/1TEZrZn1mY-EfNBvy9Xi22u1kedBqHHuu?usp=sharing) |
 | **User Stories** | User-focused feature breakdown using Agile methodology. | [View User Stories](https://drive.google.com/drive/folders/1M-RTc8-XCj7hHo-bbrS_e_EQcpABaUmq?usp=sharing) |
 | **Use Cases** | Details of system interactions between users and core features. | [View Use Cases](https://drive.google.com/drive/folders/1lj8108uMSNYwX4NIk1CRfGE-tQDHA7yB?usp=sharing) |
