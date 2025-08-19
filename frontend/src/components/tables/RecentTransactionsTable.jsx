@@ -71,6 +71,15 @@ const parseAmount = (val) => {
   return Number.isFinite(num) ? sign * num : 0;
 };
 
+// Format amount for display (with R and sign)
+const formatAmount = (amount, type) => {
+  const num = typeof amount === 'number' ? amount : parseAmount(amount);
+  const absAmount = Math.abs(num);
+  const sign = type === 'expense' || type === 'withdrawal' || type === 'fee' ? '-' : 
+               type === 'income' || type === 'deposit' ? '+' : '→';
+  return `${sign} R${absAmount.toFixed(2)}`;
+};
+
 // Normalize to a consistent shape for rendering/filtering
 const normalizeTxn = (t) => {
   const categoryRaw = (t.category ?? t.category_name ?? '').toString().trim();
@@ -699,7 +708,7 @@ const RecentTransactionsTable = ({
                         />
                       ) : (
                         <>
-                          {amountSign} {txn.amount.replace(/[+-]/g, '')}
+                          {amountSign} R{Math.abs(txn._amount).toFixed(2)}
                         </>
                       )}
                     </td>
