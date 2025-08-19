@@ -189,7 +189,7 @@ const currentTransactions = filteredTransactions.slice(
         original_amount: txn.transaction_amount,
         category_id: txn.category_id,
         custom_category_id: txn.custom_category_id,
-        amountColor: (txn.transaction_type === 'income' || txn.transaction_type === 'transfer' || txn.transaction_type === 'deposit') ? 'bg-green-400' : (txn.transaction_type === 'expense' || txn.transaction_type === 'withdrawal' || txn.transaction_type === 'fee') ? 'bg-red-400' : 'bg-gray-400',
+        amountColor: (txn.transaction_type === 'income' || txn.transaction_type === 'transfer' || txn.transaction_type === 'deposit') ? 'bg-green-400': (txn.transaction_type === 'transfer' ) ? 'bg-sky-400' : (txn.transaction_type === 'expense' || txn.transaction_type === 'withdrawal' || txn.transaction_type === 'fee') ? 'bg-red-400' : 'bg-gray-400',
       }));
 
       setTransactions(mapped);

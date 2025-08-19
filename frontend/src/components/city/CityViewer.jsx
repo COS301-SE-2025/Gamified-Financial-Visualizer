@@ -1,5 +1,5 @@
 // CityViewer.jsx — THEMED GLB SWAP (6 scenes) + beacons + rich modal + collapsible panel
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, use, useMemo } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { OrbitControls, Html, useGLTF, useProgress } from '@react-three/drei'
@@ -13,17 +13,27 @@ import {
 } from 'react-icons/fa'
 import { FiSliders, FiX, FiSun, FiMoon, FiChevronDown, FiMove } from 'react-icons/fi'
 
+import bank from '../../assets/Building Images/Classic Day/bank.png';
+import hospital from '../../assets/Building Images/Classic Day/hospital.png';
+import foodMarket from '../../assets/Building Images/Classic Day/food-market.png';
+import policeStation from '../../assets/Building Images/Classic Day/police-station.png';
+import homeResidence from '../../assets/Building Images/Classic Day/residence.png';
+import hotel from '../../assets/Building Images/Classic Day/hotel.png';
+import library from '../../assets/Building Images/Classic Day/library.png';
+import civicOffices from '../../assets/Building Images/Classic Day/civic-offices.png';
+import cafe from '../../assets/Building Images/Classic Day/cafe.png';
+
 /* ===========================
    YOUR THEMED CITY SCENES (swap GLBs)
    Put files in /public/models/ and adjust paths if needed.
 =========================== */
 const CITY_SCENES = {
-  classic_day:   { name: 'Classic Day',    single: '/models/Classic_Day_City.glb' },
-  foggy_morning: { name: 'Foggy Morning',  single: '/models/Foggy_Morning_City.glb' },
-  golden_hour:   { name: 'Golden Hour',    single: '/models/Golden_Hour_City.glb' },
-  neon_night:    { name: 'Neon Night',     single: '/models/Neon_Night_City.glb' },
-  rainy_evening: { name: 'Rainy Evening',  single: '/models/Rainy_Evening_City.glb' },
-  sunset_pink:   { name: 'Sunset Pink',    single: '/models/Sunset_Pink_City.glb' },
+  classic_day: { name: 'Classic Day', single: '/models/Classic_Day_City.glb' },
+  foggy_morning: { name: 'Foggy Morning', single: '/models/Foggy_Morning_City.glb' },
+  golden_hour: { name: 'Golden Hour', single: '/models/Golden_Hour_City.glb' },
+  neon_night: { name: 'Neon Night', single: '/models/Neon_Night_City.glb' },
+  rainy_evening: { name: 'Rainy Evening', single: '/models/Rainy_Evening_City.glb' },
+  sunset_pink: { name: 'Sunset Pink', single: '/models/Sunset_Pink_City.glb' },
 }
 
 // Helper: pick a path from a theme + mode
@@ -37,19 +47,18 @@ const getModelPath = (themeKey, mode) => {
 // Preload all GLBs so switching is instant
 Object.values(CITY_SCENES).forEach((t) => {
   if (t.single) useGLTF.preload(t.single)
-  if (t.day)    useGLTF.preload(t.day)
-  if (t.night)  useGLTF.preload(t.night)
+  if (t.day) useGLTF.preload(t.day)
+  if (t.night) useGLTF.preload(t.night)
 })
 
 /* ===========================
    Small loader while a GLB streams
 =========================== */
 function Loader() {
-  const { progress } = useProgress()
   return (
     <Html center>
       <div className="px-3 py-2 rounded-lg bg-white/90 border text-sm text-gray-700 shadow">
-        Loading city… {Math.round(progress)}%
+        Loading city…
       </div>
     </Html>
   )
@@ -70,12 +79,12 @@ function ThemePanel({ open, setOpen, theme, setTheme, mode, setMode }) {
           className="fixed top-24 right-4 z-[10] px-3 py-2 rounded-xl bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-gray-100 shadow border border-black/10 backdrop-blur"
           aria-label="Open lighting panel"
         >
-          <span className="inline-flex items-center gap-2"><FiSliders/> Lighting & Theme</span>
+          <span className="inline-flex items-center gap-2"><FiSliders /> Lighting & Theme</span>
         </button>
       )}
 
       {open && (
-        <div className="fixed top-24 right-4 z-[10000] w-[320px] rounded-2xl bg-white/95 dark:bg-gray-800/95 text-gray-800 dark:text-gray-100 shadow-xl border border-black/10 backdrop-blur">
+        <div className="fixed top-24 right-4 z-[700] w-[320px] rounded-2xl bg-white/95 dark:bg-gray-800/95 text-gray-800 dark:text-gray-100 shadow-xl border border-black/10 backdrop-blur">
           <div className="flex items-center justify-between px-3 py-2">
             <div className="font-semibold">Scene Style</div>
             <button onClick={() => setOpen(false)} className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/10" aria-label="Close">
@@ -87,18 +96,16 @@ function ThemePanel({ open, setOpen, theme, setTheme, mode, setMode }) {
           <div className="px-3 pb-2 flex items-center gap-2">
             <button
               onClick={() => setMode('day')}
-              className={`flex-1 flex items-center justify-center gap-2 px-2 py-1 rounded-lg border ${
-                mode==='day' ? 'bg-sky-600 text-white border-sky-600' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600'
-              }`}
+              className={`flex-1 flex items-center justify-center gap-2 px-2 py-1 rounded-lg border ${mode === 'day' ? 'bg-sky-600 text-white border-sky-600' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600'
+                }`}
               aria-disabled={!themeHasBoth && CITY_SCENES[theme]?.single}
             >
               <FiSun /> Day
             </button>
             <button
               onClick={() => setMode('night')}
-              className={`flex-1 flex items-center justify-center gap-2 px-2 py-1 rounded-lg border ${
-                mode==='night' ? 'bg-slate-700 text-white border-slate-700' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600'
-              }`}
+              className={`flex-1 flex items-center justify-center gap-2 px-2 py-1 rounded-lg border ${mode === 'night' ? 'bg-slate-700 text-white border-slate-700' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600'
+                }`}
               aria-disabled={!themeHasBoth && CITY_SCENES[theme]?.single}
             >
               <FiMoon /> Night
@@ -111,9 +118,8 @@ function ThemePanel({ open, setOpen, theme, setTheme, mode, setMode }) {
               <button
                 key={key}
                 onClick={() => setTheme(key)}
-                className={`px-3 py-2 rounded-xl border text-sm text-left shadow-sm ${
-                  theme===key ? 'bg-lime-600 text-white border-lime-600' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200'
-                }`}
+                className={`px-3 py-2 rounded-xl border text-sm text-left shadow-sm ${theme === key ? 'bg-lime-600 text-white border-lime-600' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200'
+                  }`}
               >
                 {CITY_SCENES[key].name}
               </button>
@@ -186,9 +192,10 @@ const FRIENDLY_LABELS = {
   BARRA_CAFE_AL_PASO: 'Café',
 }
 
-/* ========= Rich building bindings (modal content) ========= */
+/* ========= Rich building bindings (modal content) -- overriden by the API later ========= */
 const BUILDING_BINDINGS = {
   Building_E001: {
+    image: foodMarket,   // <— add
     icon: <GiHouse className="text-amber-500" />,
     label: 'Food Market',
     description: 'Groceries & takeout against your food budget.',
@@ -205,7 +212,8 @@ const BUILDING_BINDINGS = {
     cta: { label: 'Manage Groceries', link: '/budgets?c=groceries' },
   },
   Building_C001: {
-    icon: <GiBank className="text-emerald-500" />,
+    image: bank,   // <— add
+    icon: <GiBank className="text-lime-500" />,
     label: 'Bank',
     description: 'Live income vs expense with net position and trends.',
     rating: 5,
@@ -214,13 +222,14 @@ const BUILDING_BINDINGS = {
     headline: { label: 'Net', value: 'R3 350', icon: <FaCoins /> },
     effects: [
       { icon: <FaChartLine />, value: '+R12 800', label: 'Income', tone: 'pos' },
-      { icon: <FaBolt />,      value: '-R9 450',  label: 'Expenses', tone: 'neg' },
-      { icon: <FaBell />,      value: '2',        label: 'Alerts', tone: 'warn' },
+      { icon: <FaBolt />, value: '-R9 450', label: 'Expenses', tone: 'neg' },
+      { icon: <FaBell />, value: '2', label: 'Alerts', tone: 'warn' },
     ],
     upgrade: { label: 'Automate saving', coins: 44, xp: 25, cost: '—' },
     cta: { label: 'View Transactions', link: '/transactions' },
   },
   Large_Apartments: {
+    image: library,   // <— add
     icon: <GiArchiveResearch className="text-indigo-500" />,
     label: 'Library',
     description: 'Boost knowledge with short lessons and quizzes to earn XP.',
@@ -229,14 +238,15 @@ const BUILDING_BINDINGS = {
     sizeLabel: '5×5',
     headline: { label: 'XP potential', value: '+100 XP', icon: <FaBook /> },
     effects: [
-      { icon: <FaBook />,    value: '8',   label: 'Lessons', tone: 'pos' },
+      { icon: <FaBook />, value: '8', label: 'Lessons', tone: 'pos' },
       { icon: <FaChartLine />, value: '84%', label: 'Quiz avg', tone: 'pos' },
-      { icon: <FaBolt />,    value: '5',   label: 'Day streak', tone: 'pos' },
+      { icon: <FaBolt />, value: '5', label: 'Day streak', tone: 'pos' },
     ],
     upgrade: { label: 'Unlock module', coins: 44, xp: 25, cost: '—' },
     cta: { label: 'Continue Learning', link: '/learn' },
   },
   Building_F003: {
+    image: hospital,   // <— add
     icon: <GiHospitalCross className="text-red-400" />,
     label: 'Hospital',
     description: 'Track your financial health and risk. Keep your Health EF topped up.',
@@ -246,15 +256,16 @@ const BUILDING_BINDINGS = {
     headline: { label: 'Health score', value: '72/100', icon: <FaHeartbeat /> },
     effects: [
       { icon: <FaCoins />, value: '+R0', label: 'Medical cashback', tone: 'pos' },
-      { icon: <FaBolt />,  value: '-R320', label: 'Spend MTD', tone: 'neg' },
+      { icon: <FaBolt />, value: '-R320', label: 'Spend MTD', tone: 'neg' },
       { icon: <FaShieldAlt />, value: '62%', label: 'Health EF', tone: 'pos' },
     ],
     upgrade: { label: 'Improve score', coins: 44, xp: 25, cost: '—' },
     cta: { label: 'View Health Finances', link: '/goals?tag=health' },
   },
   Building_G004: {
+    image: homeResidence,   // <— add
     icon: <FaHome className="text-indigo-400" />,
-    label: 'Residences',
+    label: 'Residence',
     description: 'Home & personal care spending overview.',
     rating: 3,
     level: { current: 1, max: 3 },
@@ -262,15 +273,16 @@ const BUILDING_BINDINGS = {
     headline: { label: 'Home+Care MTD', value: 'R1 710', icon: <FaHome /> },
     effects: [
       { icon: <FaCoins />, value: 'R1 280', label: 'Home', tone: 'neg' },
-      { icon: <FaCoins />, value: 'R430',  label: 'Personal', tone: 'neg' },
+      { icon: <FaCoins />, value: 'R430', label: 'Personal', tone: 'neg' },
       { icon: <FaChartLine />, value: '31%', label: 'Income share', tone: 'warn' },
     ],
     upgrade: { label: 'Reduce utilities', coins: 44, xp: 25, cost: '—' },
     cta: { label: 'Tune Home & Care', link: '/budgets?c=home,personal' },
   },
   Building_G005: {
+    image: homeResidence,   // <— add
     icon: <FaHome className="text-indigo-400" />,
-    label: 'Residences',
+    label: 'Residence',
     description: 'Track trend vs last month and top up repairs.',
     rating: 3,
     level: { current: 1, max: 3 },
@@ -278,15 +290,16 @@ const BUILDING_BINDINGS = {
     headline: { label: 'Trend', value: '−3%', icon: <FaChartLine /> },
     effects: [
       { icon: <FaCoins />, value: 'R1 180', label: 'Home', tone: 'neg' },
-      { icon: <FaCoins />, value: 'R390',  label: 'Personal', tone: 'neg' },
+      { icon: <FaCoins />, value: 'R390', label: 'Personal', tone: 'neg' },
       { icon: <FaShieldAlt />, value: 'R150', label: 'Repairs top-up', tone: 'pos' },
     ],
     upgrade: { label: 'Top up fund', coins: 44, xp: 25, cost: '—' },
     cta: { label: 'Top Up Repairs', link: '/goals?tag=repairs' },
   },
   Building_G001: {
+    image: homeResidence,   // <— add
     icon: <FaHome className="text-indigo-400" />,
-    label: 'Residences',
+    label: 'Residence',
     description: 'Daily utilities and off-peak usage.',
     rating: 3,
     level: { current: 1, max: 3 },
@@ -301,6 +314,7 @@ const BUILDING_BINDINGS = {
     cta: { label: 'Utilities Tips', link: '/learn/utilities' },
   },
   Office_2: {
+    image: civicOffices,   // <— add
     icon: <GiPoliceBadge className="text-sky-500" />,
     label: 'Civic Offices',
     description: 'All your active goals and completion rates.',
@@ -317,6 +331,7 @@ const BUILDING_BINDINGS = {
     cta: { label: 'Manage Goals', link: '/goals' },
   },
   Building_D001: {
+    image: policeStation,   // <— add
     icon: <GiPoliceBadge className="text-cyan-600" />,
     label: 'Police Station',
     description: 'Anomalies, impulse buys and overspending warnings.',
@@ -333,6 +348,7 @@ const BUILDING_BINDINGS = {
     cta: { label: 'Review Anomalies', link: '/insights/anomalies' },
   },
   Building_B001: {
+    image: hotel,   // <— add
     icon: <FaBell className="text-rose-500" />,
     label: 'Hotel',
     description: 'Lifestyle, entertainment and subscription spending.',
@@ -349,6 +365,7 @@ const BUILDING_BINDINGS = {
     cta: { label: 'Manage Lifestyle', link: '/budgets?c=lifestyle' },
   },
   BARRA_CAFE_AL_PASO: {
+    image: cafe,   // <— add
     icon: <GiCoffeeCup className="text-amber-600" />,
     label: 'Café',
     description: 'See friends, challenges and community momentum.',
@@ -396,9 +413,22 @@ function GameModal({ open, onClose, data }) {
         <div className="bg-[#f6f3ea] p-5">
           <div className="grid gap-4 md:grid-cols-[280px_1fr]">
             <div className="bg-white rounded-2xl border border-black/5 shadow p-3">
-              <div className="h-40 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-4xl">
-                {icon}
+              {/* the tooltip image */}
+              <div className="h-40 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden">
+                {data?.image ? (
+                  <img
+                    src={data.image}
+                    alt={label}
+                    className="h-full w-full object-cover"
+                    draggable="false"
+                  />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center text-4xl">
+                    {icon}
+                  </div>
+                )}
               </div>
+
               <div className="mt-3 flex items-center justify-between">
                 <Stars />
                 <div className="text-[11px] text-gray-500">Уровень {level.current}/{level.max}</div>
@@ -418,9 +448,8 @@ function GameModal({ open, onClose, data }) {
               </div>
               <div className="grid sm:grid-cols-3 gap-3">
                 {effects.map((e, i) => (
-                  <div key={i} className={`flex items-center gap-2 rounded-xl border shadow-sm px-3 py-2 bg-white ${
-                    e.tone === 'neg' ? 'border-rose-200' : e.tone === 'warn' ? 'border-amber-200' : 'border-emerald-200'
-                  }`}>
+                  <div key={i} className={`flex items-center gap-2 rounded-xl border shadow-sm px-3 py-2 bg-white ${e.tone === 'neg' ? 'border-rose-200' : e.tone === 'warn' ? 'border-amber-200' : 'border-emerald-200'
+                    }`}>
                     <span className="text-lg">{e.icon}</span>
                     <div>
                       <div className="text-sm font-semibold">{e.value}</div>
@@ -453,7 +482,7 @@ function GameModal({ open, onClose, data }) {
             </div>
           </div>
         </div>
-      </div> 
+      </div>
     </div>
   )
 }
@@ -514,7 +543,13 @@ function CityModel({ glbPath, onPick, hideBeacons, useGltfLights = true }) {
           m.metalness = 0
           m.roughness = 0.5
           m.envMapIntensity = 0
-          m.flatShading = true
+          if (o.name.startsWith('Cloud')) {
+            m.flatShading = false
+            o.geometry.computeVertexNormals()
+            m.roughness = 0.9    // softer highlight like Blender
+          } else {
+            m.flatShading = true // keep the low-poly look elsewhere
+          }
           m.needsUpdate = true
         })
       }
@@ -586,6 +621,45 @@ function CityModel({ glbPath, onPick, hideBeacons, useGltfLights = true }) {
   )
 }
 
+function BrightDayRig() {
+  return (
+    <>
+      {/* soft sky tint (like Blender World) */}
+      <hemisphereLight
+        skyColor={'#fff4e6'}           // warm sky
+        groundColor={'#d9c3a8'}        // warm ground bounce
+        intensity={0.55}
+      />
+
+      {/* KEY SUN — warm, high right (≈ your top-right Sun in Blender) */}
+      <directionalLight
+        color={'#FFD4B8'}
+        position={[90, 140, 70]}       // tweak these to taste
+        intensity={2.4}                // Blender Strength ~9–10 maps ~2.0–2.8 here
+        castShadow
+        shadow-mapSize-width={4096}
+        shadow-mapSize-height={4096}
+        shadow-camera-left={-120}
+        shadow-camera-right={120}
+        shadow-camera-top={120}
+        shadow-camera-bottom={-120}
+        shadow-camera-near={1}
+        shadow-camera-far={400}
+        shadow-bias={-0.0006}          // reduce acne
+        shadow-normalBias={0.6}
+      />
+
+      {/* FILL/RIM SUN — cooler, lower left (your second Sun) */}
+      <directionalLight
+        color={'#BFD8FF'}
+        position={[-70, 50, -40]}
+        intensity={0.9}
+        castShadow={false}             // fill usually doesn’t cast shadows
+      />
+    </>
+  )
+}
+
 /* ===========================
    Viewer shell
 =========================== */
@@ -594,14 +668,73 @@ export default function CityViewer() {
   const [selected, setSelected] = useState(null)
 
   const [theme, setTheme] = useState('classic_day') // one of CITY_SCENES keys
-  const [mode, setMode]   = useState('day')         // 'day' | 'night' (if theme is single, both map to same file)
+  const [mode, setMode] = useState('day')         // 'day' | 'night' (if theme is single, both map to same file)
   const [panelOpen, setPanelOpen] = useState(false)
 
   const glbPath = getModelPath(theme, mode)
 
+  const [buildings, setBuildings] = useState([])
+  const user = JSON.parse(localStorage.getItem('user'));
+
+  // Map backend list -> lookup by id
+  const buildingsById = useMemo(() => {
+    const m = new Map();
+    (buildings || []).forEach(b => m.set(b.id, b));
+    return m;
+  }, [buildings]);
+
+  useEffect(() => {
+    // Fetch building data for the selected user
+    const fetchBuildingData = async () => {
+      const response = await fetch(`http://localhost:5000/api/city/buildings/${user.id}`);
+      const data = await response.json();
+      setBuildings(data);
+    };
+
+    fetchBuildingData();
+  }, [user]);
+
+  // Non-destructive merge: keep styling/icons; only swap values from server
+  function mergeBinding(staticBinding, server) {
+    if (!server) return staticBinding;
+
+    const merged = { ...staticBinding };
+
+    if (server.headline && typeof server.headline.value === 'string') {
+      merged.headline = { ...merged.headline, value: normalizeValue(server.headline.value) };
+    }
+
+    if (Array.isArray(merged.effects) && Array.isArray(server.effects)) {
+      const byLabel = new Map(server.effects.map(e => [e.label, e]));
+      merged.effects = merged.effects.map(e => {
+        const s = byLabel.get(e.label);
+        return s ? { ...e, value: normalizeValue(s.value) } : e;
+        // icons/classes untouched to respect styling
+      });
+    }
+
+    return merged;
+  }
+
+  // Tiny cleanup to avoid odd displays (no styling change)
+  function normalizeValue(v) {
+    if (typeof v !== 'string') return v;
+    if (/^-R0\b/.test(v)) return v.slice(1);           // "-R0" -> "R0"
+    if (/^-?\d+%$/.test(v)) {                           // clamp "267%" -> "100%"
+      const n = parseInt(v, 10);
+      const c = Math.max(0, Math.min(100, n));
+      return `${c}%`;
+    }
+    return v;
+  }
+
   const openModalFor = (target) => {
-    const binding = BUILDING_BINDINGS[target.key] || { label: target.label }
-    setSelected(binding)
+    // the static BUILDING_BINDINGS object is left as-is on purpose. 
+    // We don’t mutate it. Instead, we create a merged copy at click time that overrides just the values with what the API returns.
+    const staticBinding = BUILDING_BINDINGS[target.key] || { label: target.label }
+    const server = buildingsById.get(target.key) // e.g. "Building_E001"
+    const merged = mergeBinding(staticBinding, server) // only values swapped
+    setSelected(merged)
     setOpen(true)
   }
 
@@ -627,19 +760,26 @@ export default function CityViewer() {
           gl.shadowMap.enabled = true
           gl.shadowMap.type = THREE.PCFSoftShadowMap
           gl.toneMapping = THREE.ACESFilmicToneMapping
-          gl.toneMappingExposure = 1.0 // neutral; your GLB lights control the look
+          gl.toneMappingExposure = 1.2   // a bit less than 1.3 to avoid washout with the new suns
           if (gl.outputColorSpace !== undefined) gl.outputColorSpace = THREE.SRGBColorSpace
         }}
       >
-        <RendererTuning exposure={1.0} />
+        <RendererTuning exposure={1.2} />
+
         <Suspense fallback={<Loader />}>
           <CityModel
             glbPath={glbPath}
             hideBeacons={open}
             onPick={openModalFor}
-            useGltfLights={true}
+            useGltfLights={false}   // IMPORTANT: turn off embedded lights
           />
         </Suspense>
+
+        {/* Daylight rig (2 suns + sky) */}
+        <BrightDayRig />
+
+        {/* small ambient to lift interiors without flattening */}
+        <ambientLight intensity={0.2} />
 
         <OrbitControls
           enableDamping
@@ -651,6 +791,14 @@ export default function CityViewer() {
           target={[0, 0, 0]}
         />
       </Canvas>
+
+      {/* AR BUTTON */}
+      <a
+        href={`/ar?src=${encodeURIComponent(glbPath)}`}
+        className="fixed top-24 left-4 z-[10] px-4 py-2 rounded-xl bg-sky-600 text-white shadow hover:bg-sky-700 border border-black/10"
+      >
+        View in AR
+      </a>
     </div>
   )
 }

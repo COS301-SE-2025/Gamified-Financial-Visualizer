@@ -632,13 +632,13 @@ const RecentTransactionsTable = ({
             ) : (
               filteredSortedTransactions.map((txn) => {
                 const isEditing = editTransactionId === txn.transaction_id;
+                const isExpense = ['expense', 'withdrawal', 'fee'].includes(txn.transaction_type);
+                const isIncome = ['income', 'deposit'].includes(txn.transaction_type);
+                const isTransfer = ['transfer'].includes(txn.transaction_type);
 
-                const amountColor = txn._isExpense
-                  ? 'text-red-500'
-                  : txn._isIncome
-                    ? 'text-lime-600'
-                    : txn._isTransfer
-                      ? 'text-blue-500'
+                const amountColor = isExpense ? 'text-red-500'
+                  : isIncome ? 'text-lime-600'
+                    : isTransfer ? 'text-sky-500'
                       : '';
 
                 const amountSign = txn._isExpense ? '-' : txn._isIncome ? '+' : txn._isTransfer ? '→' : '';
@@ -699,10 +699,7 @@ const RecentTransactionsTable = ({
                         />
                       ) : (
                         <>
-                          {amountSign}{' '}
-                          {txn._isTransfer
-                            ? ''
-                            : Math.abs(txn._amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          {amountSign} {txn.amount.replace(/[+-]/g, '')}
                         </>
                       )}
                     </td>

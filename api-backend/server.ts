@@ -24,6 +24,7 @@ import { registerInsightsModule } from './modules/ai';
 import { registerCommunityModule } from './modules/community';
 import { registerAchievementModule } from './modules/achievements';
 import { registerNotificationsModule } from './modules/notifications';
+import { registerCityModule } from './modules/city';
 
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
@@ -143,6 +144,7 @@ registerInsightsModule(app);
 registerCommunityModule(app);
 registerAchievementModule(app);
 registerNotificationsModule(app);
+registerCityModule(app);
 
 // Health check
 app.get('/health', async (_req, res) => {

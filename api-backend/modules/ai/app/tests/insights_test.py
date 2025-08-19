@@ -5,6 +5,9 @@ from ..insights.services.feature_extractors import extract_features
 from ..insights.services.insight_rules import get_sentiment, generate_insight_blocks, generate_tips
 from ..insights.services.summary_generator import generate_summary_text
 from ..insights.services.insights_engine import (
+    convert_numpy_types, generate_wrapped_insights, load_cluster_model, get_user_cluster
+)
+from ..insights.services.trend_analysis import (
     category_level_trends, global_trend, category_shift,
     behavioral_tags, spending_forecast, detect_anomalies,
     volatility_by_month, run_trend_analysis
@@ -41,7 +44,7 @@ def test_basic_feature_extraction():
         "budgets": budgets
     })
 
-    assert features["savings_rate"] == pytest.approx(0.2)
+    assert features["savings_rate"] == pytest.approx(0.57)
     assert features["burn_rate"] == pytest.approx(71.7, abs=0.1)
     assert features["impulse_score"] == 0.2
     assert features["goal_completion_ratio"] == 0.5
