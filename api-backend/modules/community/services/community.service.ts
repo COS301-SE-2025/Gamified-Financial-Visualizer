@@ -1232,14 +1232,19 @@ export async function createSocialPost({
 export async function getFriendFeed(userId: number) {
   const { rows } = await pool.query(
     `
-    SELECT sp.*, u.username, u.avatar_id
+    SELECT 
+      sp.*, 
+      u.username, 
+      up.avatar_id
     FROM social_posts sp
     JOIN users u ON u.user_id = sp.user_id
-    WHERE sp.user_id IN (
-      SELECT friend_id FROM friendships WHERE user_id = $1 AND relationship_status = 'accepted'
-      UNION
-      SELECT user_id FROM friendships WHERE friend_id = $1 AND relationship_status = 'accepted'
-    )
+    LEFT JOIN user_preferences up ON up.user_id = u.user_id
+    WHERE sp.user_id = $1
+      OR sp.user_id IN (
+        SELECT friend_id FROM friendships WHERE user_id = $1 AND relationship_status = 'accepted'
+        UNION
+        SELECT user_id FROM friendships WHERE friend_id = $1 AND relationship_status = 'accepted'
+      )
     ORDER BY sp.created_at DESC
     LIMIT 50
     `,
