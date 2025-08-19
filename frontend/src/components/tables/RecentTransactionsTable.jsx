@@ -1,187 +1,308 @@
-import React, { useState, useEffect, useRef, useLayoutEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { FaTrash, FaEdit, FaPlus, FaChevronDown } from 'react-icons/fa';
 import AddTransactionModal from '../modals/AddTransactionModal';
 
-const CustomDropdown = ({ 
-  value, 
-  onChange, 
-  options, 
-  placeholder = 'Select',
-  disabled = false,
-  loading = false
+/* -------------------------- Helpers / Normalizers -------------------------- */
+
+const toTitleCase = (str = '') =>
+  String(str).trim().toLowerCase().split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+const parseDate = (input) => {
+  if (!input) return null;
+  if (input instanceof Date) return isNaN(input.getTime()) ? null : input;
+
+  const s = String(input).trim();
+  const d1 = new Date(s);
+  if (!isNaN(d1.getTime())) return d1;
+
+  if (s.includes('/')) {
+    const parts = s.split('/').map(v => parseInt(v, 10));
+    if (parts.length === 3 && parts.every(n => Number.isFinite(n))) {
+      const [a, b, c] = parts;
+      const dayFirst = a > 12;
+      const day = dayFirst ? a : b;
+      const month = dayFirst ? b : a;
+      const year = c;
+      const d = new Date(year, month - 1, day);
+      if (!isNaN(d.getTime())) return d;
+    }
+  }
+
+  if (s.includes('-')) {
+    const [y, m, d] = s.split('-').map(v => parseInt(v, 10));
+    if ([y, m, d].every(n => Number.isFinite(n))) {
+      const dt = new Date(y, m - 1, d);
+      if (!isNaN(dt.getTime())) return dt;
+    }
+  }
+
+  return null;
+};
+
+const ymd = (date) => {
+  const d = parseDate(date);
+  if (!d) return '';
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+
+const todayYMD = () => {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+
+const clampYMD = (valueYMD, { minYMD, maxYMD }) => {
+  if (!valueYMD) return valueYMD;
+  const v = valueYMD;
+  if (minYMD && v < minYMD) return minYMD;
+  if (maxYMD && v > maxYMD) return maxYMD;
+  return v;
+};
+
+// amounts
+const parseAmount = (val) => {
+  if (val == null) return 0;
+  if (typeof val === 'number') return val;
+  const s = String(val);
+  const sign = s.trim().startsWith('-') ? -1 : 1;
+  const num = parseFloat(s.replace(/[^\d.]/g, ''));
+  return Number.isFinite(num) ? sign * num : 0;
+};
+
+// Normalize to a consistent shape for rendering/filtering
+const normalizeTxn = (t) => {
+  const categoryRaw = (t.category ?? t.category_name ?? '').toString().trim();
+  const typeRaw = (t.transaction_type ?? t.type ?? '').toString().trim();
+  return {
+    ...t,
+    _name: (t.name ?? t.transaction_name ?? '').toString(),
+    _category: categoryRaw.toLowerCase(),
+    _categoryLabel: toTitleCase(categoryRaw),
+    _type: typeRaw.toLowerCase(),
+    _date: parseDate(t.date ?? t.transaction_date),
+    _amount: parseAmount(t.amount ?? t.transaction_amount),
+    _isExpense: ['expense', 'withdrawal', 'fee'].includes(typeRaw.toLowerCase()),
+    _isIncome: ['income', 'deposit'].includes(typeRaw.toLowerCase()),
+    _isTransfer: typeRaw.toLowerCase() === 'transfer',
+  };
+};
+
+/* --------------------------- SortDropdown --------------------------- */
+
+const SortDropdown = ({
+  name,
+  value,
+  onChange,
+  options,
+  placeholder = 'Select...',
+  offsetY = 12,
+  placement = 'auto',
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [highlightedIndex, setHighlightedIndex] = useState(0);
-  const dropdownRef = useRef(null);
-  const buttonRef = useRef(null);
-  const [menuStyle, setMenuStyle] = useState({});
+  const [open, setOpen] = React.useState(false);
+  const [highlight, setHighlight] = React.useState(0);
+  const wrapRef = React.useRef(null);
+  const btnRef = React.useRef(null);
+  const menuRef = React.useRef(null);
+  const [menuStyle, setMenuStyle] = React.useState({});
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
+  const selectedIndex = options.findIndex(o => String(o.value) === String(value));
+  const selected = selectedIndex >= 0 ? options[selectedIndex] : null;
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+  React.useEffect(() => {
+    const onPointerDown = (e) => {
+      const inButton = wrapRef.current?.contains(e.target);
+      const inMenu = menuRef.current?.contains(e.target);
+      if (inButton || inMenu) return;
+      setOpen(false);
     };
+    document.addEventListener('pointerdown', onPointerDown, true);
+    return () => document.removeEventListener('pointerdown', onPointerDown, true);
   }, []);
 
-  useLayoutEffect(() => {
-    if (!isOpen || !buttonRef.current) return;
+  React.useLayoutEffect(() => {
+    if (!open || !btnRef.current) return;
 
-    const calculatePosition = () => {
-      const buttonRect = buttonRef.current.getBoundingClientRect();
-      const maxHeight = Math.min(320, window.innerHeight - buttonRect.bottom - 16);
-      
+    const GAP = 8;
+    const MAX_MENU_WIDTH = Math.min(560, window.innerWidth - GAP * 2);
+    const viewportH = window.innerHeight;
+
+    const calcBase = () => {
+      const rect = btnRef.current.getBoundingClientRect();
+
+      const itemH = 36;
+      const chrome = 8;
+      const wantedH = chrome + (options?.length || 0) * itemH;
+      const maxH = Math.min(320, Math.floor(viewportH * 0.5));
+      const menuH = Math.min(wantedH, maxH);
+
+      const availBelow = viewportH - rect.bottom - GAP;
+      const availAbove = rect.top - GAP;
+      let placeBelow;
+      if (placement === 'bottom') placeBelow = true;
+      else if (placement === 'top') placeBelow = false;
+      else placeBelow = availBelow >= Math.min(menuH, 160) || availBelow >= availAbove;
+
+      const top = placeBelow ? rect.bottom + offsetY : Math.max(GAP, rect.top - offsetY - menuH);
+
       setMenuStyle({
         position: 'fixed',
-        top: buttonRect.bottom + 4,
-        left: buttonRect.left,
-        width: buttonRect.width,
-        maxHeight: `${maxHeight}px`,
-        zIndex: 1000,
+        top,
+        left: rect.left,
+        minWidth: rect.width,
+        width: 'max-content',
+        maxWidth: MAX_MENU_WIDTH,
+        maxHeight: maxH,
+        zIndex: 9999,
+      });
+
+      requestAnimationFrame(() => {
+        const menuRect = menuRef.current?.getBoundingClientRect();
+        if (!menuRect) return;
+        let left = rect.left;
+        if (left + menuRect.width + GAP > window.innerWidth) {
+          left = Math.max(GAP, window.innerWidth - menuRect.width - GAP);
+        }
+        setMenuStyle((s) => ({ ...s, left }));
       });
     };
 
-    calculatePosition();
-    window.addEventListener('resize', calculatePosition);
-    window.addEventListener('scroll', calculatePosition, true);
-
+    calcBase();
+    const onScrollOrResize = () => calcBase();
+    window.addEventListener('resize', onScrollOrResize);
+    window.addEventListener('scroll', onScrollOrResize, true);
     return () => {
-      window.removeEventListener('resize', calculatePosition);
-      window.removeEventListener('scroll', calculatePosition, true);
+      window.removeEventListener('resize', onScrollOrResize);
+      window.removeEventListener('scroll', onScrollOrResize, true);
     };
-  }, [isOpen]);
+  }, [open, offsetY, placement, options?.length]);
 
-  const handleKeyDown = (e) => {
-    if (!isOpen) {
-      if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(e.key)) {
-        e.preventDefault();
-        setIsOpen(true);
-      }
-      return;
-    }
+  React.useEffect(() => {
+    setHighlight(selectedIndex >= 0 ? selectedIndex : 0);
+  }, [open, selectedIndex]);
 
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setHighlightedIndex(prev => Math.min(prev + 1, options.length - 1));
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setHighlightedIndex(prev => Math.max(prev - 1, 0));
-        break;
-      case 'Enter':
-      case ' ':
-        e.preventDefault();
-        if (options[highlightedIndex]) {
-          onChange(options[highlightedIndex].value);
-          setIsOpen(false);
-        }
-        break;
-      case 'Escape':
-        e.preventDefault();
-        setIsOpen(false);
-        break;
-      default:
-        break;
-    }
+  const commit = (idx) => {
+    const opt = options[idx];
+    if (!opt) return;
+    onChange(opt.value);
+    setOpen(false);
   };
 
-  const handleOptionClick = (value) => {
-    onChange(value);
-    setIsOpen(false);
+  const onKey = (e) => {
+    if (!open && (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setOpen(true); return; }
+    if (!open) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); setHighlight(h => Math.min(options.length - 1, h + 1)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setHighlight(h => Math.max(0, h - 1)); }
+    else if (e.key === 'Enter') { e.preventDefault(); commit(highlight); }
+    else if (e.key === 'Escape') { e.preventDefault(); setOpen(false); }
   };
-
-  const selectedOption = options.find(opt => opt.value === value);
-
   return (
-    <div ref={dropdownRef} className="relative">
+    <div className="relative" ref={wrapRef}>
       <button
-        ref={buttonRef}
         type="button"
-        className={`flex items-center justify-between w-full px-4 py-1 rounded-full text-sm border dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-        onClick={() => !disabled && !loading && setIsOpen(!isOpen)}
-        onKeyDown={handleKeyDown}
-        disabled={disabled || loading}
+        ref={btnRef}
         aria-haspopup="listbox"
-        aria-expanded={isOpen}
+        aria-expanded={open}
+        onClick={() => setOpen(o => !o)}
+        onKeyDown={onKey}
+        className="w-full rounded-xl px-4 py-2 border dark:border-gray-600 shadow dark:shadow-none
+                   bg-white dark:bg-gray-800 text-left text-gray-900 dark:text-white flex items-center justify-between"
       >
-        <span className="truncate">
-          {loading ? 'Loading...' : (selectedOption?.label || placeholder)}
+        <span className={`${selected ? '' : 'text-gray-400 dark:text-gray-400'}`}>
+          {selected ? selected.label : placeholder}
         </span>
-        {!disabled && !loading && (
-          <FaChevronDown className={`ml-2 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-        )}
+        <FaChevronDown className="ml-3 text-gray-400 dark:text-gray-500" />
       </button>
 
-      {isOpen && createPortal(
-        <div
-          className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-lg overflow-y-auto"
-          style={menuStyle}
+      {open && createPortal(
+        <ul
+          ref={menuRef}
           role="listbox"
+          tabIndex={-1}
+          style={menuStyle}
+          onKeyDown={onKey}
           onWheel={(e) => e.stopPropagation()}
+          className="rounded-xl border border-gray-200 dark:border-gray-600
+                     bg-white dark:bg-gray-800 shadow-lg overflow-y-auto"
         >
-          <div style={{ overscrollBehavior: 'contain' }}>
-            {options.length === 0 ? (
-              <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
-                No options available
-              </div>
-            ) : (
-              options.map((option, index) => (
-                <div
-                  key={option.value}
-                  className={`px-4 py-2 text-sm cursor-pointer ${highlightedIndex === index ? 'bg-gray-100 dark:bg-gray-700' : ''} ${value === option.value ? 'font-medium text-[#1b5e20] dark:text-green-300' : 'text-gray-800 dark:text-gray-200'}`}
-                  onClick={() => handleOptionClick(option.value)}
-                  onMouseEnter={() => setHighlightedIndex(index)}
-                  role="option"
-                  aria-selected={value === option.value}
-                >
-                  {option.label}
-                </div>
-              ))
+          <style>{`.dropdown-overscroll { overscroll-behavior: contain; }`}</style>
+          <div className="dropdown-overscroll">
+            {options.length === 0 && (
+              <li className="px-3 h-8 flex items-center text-sm text-gray-500 dark:text-gray-300">No options</li>
             )}
+            {options.map((opt, idx) => (
+              <li
+                key={opt.value}
+                role="option"
+                aria-selected={String(opt.value) === String(value)}
+                onMouseEnter={() => setHighlight(idx)}
+                onClick={() => commit(idx)}
+                className={`px-3 h-8 flex items-center text-sm cursor-pointer
+                            ${idx === highlight ? 'bg-gray-100 dark:bg-gray-700' : ''}
+                            ${String(opt.value) === String(value) ? 'font-medium text-[#1b5e20]' : 'text-gray-800 dark:text-gray-100'}`}
+              >
+                {opt.label}
+              </li>
+            ))}
           </div>
-        </div>,
+        </ul>,
         document.body
       )}
+
+      <input type="hidden" name={name} value={value ?? ''} />
     </div>
   );
 };
 
-const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, onEdit, onDelete, onRefresh }) => {
+/* ----------------------------- Main Component ------------------------------ */
+
+const RecentTransactionsTable = ({
+  account,
+  transactions = [],
+  heading,
+  onAdd,       // optional: still called
+  onEdit,      // optional: now called with (id, updated)
+  onDelete,    // optional: now called with (id)
+  onRefresh,   // optional
+}) => {
   const isAccountView = Boolean(account);
+
+  // Keep a local, UI-controlled copy to allow instant updates
+  const [clientTxns, setClientTxns] = useState(transactions);
+  useEffect(() => setClientTxns(transactions), [transactions]);
+
+  // Controls
   const [sortBy, setSortBy] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [dateFilter, setDateFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
+
+  // UI state
   const [showAddModal, setShowAddModal] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+
+  // Categories
   const [categories, setCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
+
+  // Edit row state
   const [editTransactionId, setEditTransactionId] = useState(null);
   const [editValues, setEditValues] = useState({});
-  const [deleteConfirmation, setDeleteConfirmation] = useState({
-    show: false,
-    index: null,
-    transaction: null
-  });
+  const [deleteConfirmation, setDeleteConfirmation] = useState({ show: false, transactionId: null });
 
+  // Fetch categories
   useEffect(() => {
     const fetchCategories = async () => {
       setCategoriesLoading(true);
       try {
         const response = await fetch('http://localhost:5000/api/transactions/categories');
-        if (!response.ok) throw new Error('Failed to fetch categories');
-        const data = await response.json();
-        if (data.status === 'success') setCategories(data.data);
-      } catch (err) {
-        console.error('Error fetching categories:', err);
+        const data = await response.json().catch(() => ({}));
+        const list = Array.isArray(data?.data) ? data.data : [];
+        setCategories(list);
+      } catch {
+        // fallback
         setCategories([
           { category_id: 1, category_name: 'Food' },
           { category_id: 2, category_name: 'Transport' },
@@ -194,44 +315,52 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
         setCategoriesLoading(false);
       }
     };
-
     fetchCategories();
   }, []);
 
-  const toTitleCase = (str) => str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  // Normalize from local list
+  const normalizedTxns = useMemo(() => (clientTxns || []).map(normalizeTxn), [clientTxns]);
 
+  // Filtering + sorting
   const filteredSortedTransactions = useMemo(() => {
-    let filtered = [...transactions];
-    if (categoryFilter) filtered = filtered.filter(txn => txn.category === categoryFilter);
-    if (typeFilter) filtered = filtered.filter(txn => txn.transaction_type === typeFilter);
+    let rows = [...normalizedTxns];
+
+    if (categoryFilter) rows = rows.filter(txn => txn._category === categoryFilter);
+    if (typeFilter) rows = rows.filter(txn => txn._type === typeFilter);
+
     if (dateFilter) {
       const today = new Date();
-      filtered = filtered.filter(txn => {
-        const txnDate = new Date(txn.date);
-        const diffInDays = (today - txnDate) / (1000 * 60 * 60 * 24);
-        if (dateFilter === '7 Days') return diffInDays <= 7;
-        if (dateFilter === '10 Days') return diffInDays <= 10;
-        if (dateFilter === 'Last Month') {
-          const txnMonth = txnDate.getMonth();
-          const txnYear = txnDate.getFullYear();
-          const lastMonth = new Date();
-          lastMonth.setMonth(lastMonth.getMonth() - 1);
-          return txnMonth === lastMonth.getMonth() && txnYear === lastMonth.getFullYear();
+      rows = rows.filter(txn => {
+        if (!txn._date) return false;
+        if (dateFilter === '7d')  return (today - txn._date) / 86400000 <= 7;
+        if (dateFilter === '10d') return (today - txn._date) / 86400000 <= 10;
+        if (dateFilter === 'last_month') {
+          const last = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+          const lastEnd = new Date(today.getFullYear(), today.getMonth(), 0);
+          return txn._date >= last && txn._date <= lastEnd;
         }
         return true;
       });
     }
-    if (sortBy === 'Name') filtered.sort((a, b) => a.name.localeCompare(b.name));
-    else if (sortBy === 'AmountAsc') filtered.sort((a, b) => parseFloat(a.amount.replace(/[^\d.-]/g, '')) - parseFloat(b.amount.replace(/[^\d.-]/g, '')));
-    else if (sortBy === 'AmountDsc') filtered.sort((a, b) => parseFloat(b.amount.replace(/[^\d.-]/g, '')) - parseFloat(a.amount.replace(/[^\d.-]/g, '')));
-    else if (sortBy === 'Date') filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
-    return filtered;
-  }, [transactions, sortBy, categoryFilter, dateFilter, typeFilter]);
-  
+
+    switch (sortBy) {
+      case 'name':        rows.sort((a, b) => a._name.localeCompare(b._name)); break;
+      case 'amount_asc':  rows.sort((a, b) => a._amount - b._amount); break;
+      case 'amount_desc': rows.sort((a, b) => b._amount - a._amount); break;
+      case 'date_desc':   rows.sort((a, b) => (b._date?.getTime() || 0) - (a._date?.getTime() || 0)); break;
+      default: break;
+    }
+    return rows;
+  }, [normalizedTxns, sortBy, categoryFilter, dateFilter, typeFilter]);
+
+  /* ------------------------------- Handlers ------------------------------- */
+
+  // ADD — update UI immediately
   const handleAddTransaction = async (newTransaction) => {
     try {
       setError('');
-      await onAdd(newTransaction);
+      setClientTxns(prev => [newTransaction, ...prev]); // optimistic
+      onAdd?.(newTransaction);
       if (onRefresh) await onRefresh(account?.account_id);
     } catch (err) {
       setError('Failed to add transaction');
@@ -239,183 +368,241 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
     }
   };
 
-  const handleEditTransaction = async (index, updatedTransaction) => {
+  // EDIT — PUT by id, clamp date >= original_date and <= today, update local list by id
+  const saveEdit = async (originalTxn) => {
+    const id = originalTxn.transaction_id;
+    if (!id) { setError('Missing transaction ID for edit'); return; }
+
+    // Derive chosen values
+    const chosenName = editValues.name ?? originalTxn._name;
+    const chosenAmount = editValues.amount != null ? parseAmount(editValues.amount) : originalTxn._amount;
+
+    // Category – store category_id during edit
+    const chosenCategoryId = editValues.category_id != null
+      ? parseInt(editValues.category_id, 10)
+      : (originalTxn.category_id ?? null);
+
+    // Date rule: can only change to same or later than the original date, and not in the future
+    const origY = ymd(originalTxn._date || originalTxn.transaction_date || originalTxn.date);
+    const pickedY = editValues.date || origY;
+    const safeDate = clampYMD(pickedY, { minYMD: origY, maxYMD: todayYMD() });
+
+    const payload = {
+      transaction_name: chosenName,
+      transaction_amount: chosenAmount,
+      transaction_date: safeDate,
+      category_id: chosenCategoryId,
+      // keep original type/budget/links unless you also edit those
+      transaction_type: originalTxn.transaction_type ?? originalTxn._type,
+      budget_id: originalTxn.budget_id ?? null,
+      linked_goal_id: originalTxn.linked_goal_id ?? null,
+      linked_challenge_id: originalTxn.linked_challenge_id ?? null,
+      is_recurring: !!originalTxn.is_recurring,
+      points_awarded: originalTxn.points_awarded ?? 0,
+      account_id: originalTxn.account_id,
+    };
+
     try {
+      setBusy(true);
       setError('');
-      await onEdit(index, updatedTransaction);
-      if (onRefresh) await onRefresh(account?.account_id);
-    } catch (err) {
-      setError('Failed to update transaction');
-      console.error('Error updating transaction:', err);
-    }
-  };
-
-  const showDeleteConfirmation = (index) => {
-    setDeleteConfirmation({
-      show: true,
-      index,
-      transaction: transactions[index]
-    });
-  };
-
-  const hideDeleteConfirmation = () => {
-    setDeleteConfirmation({
-      show: false,
-      index: null,
-      transaction: null
-    });
-  };
-
-  const handleDeleteTransaction = async () => {
-    const { index, transaction } = deleteConfirmation;
-    
-    if (!transaction.transaction_id) {
-      setError('Cannot delete transaction: missing transaction ID');
-      hideDeleteConfirmation();
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-    try {
-      const response = await fetch(`http://localhost:5000/api/transactions/${transaction.transaction_id}`, { 
-        method: 'DELETE' 
+      const resp = await fetch(`http://localhost:5000/api/transactions/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
-      if (!response.ok) throw new Error((await response.json()).message || 'Failed to delete transaction');
-      onDelete(index);
+      let json = null;
+      try { json = await resp.json(); } catch {}
+
+      if (!resp.ok) {
+        const msg = json?.message || json?.error || `Failed to update transaction (${resp.status})`;
+        throw new Error(msg);
+      }
+
+      // Update local list immediately by id
+      setClientTxns(prev =>
+        prev.map(t => (t.transaction_id === id
+          ? {
+              ...t,
+              name: chosenName,
+              transaction_name: chosenName,
+              amount: chosenAmount,
+              transaction_amount: chosenAmount,
+              date: safeDate,
+              transaction_date: safeDate,
+              category_id: chosenCategoryId,
+              category: categories.find(c => c.category_id === chosenCategoryId)?.category_name ?? t.category,
+              category_name: categories.find(c => c.category_id === chosenCategoryId)?.category_name ?? t.category_name,
+            }
+          : t))
+      );
+
+      onEdit?.(id, payload);
+      if (onRefresh) await onRefresh(account?.account_id);
+      setEditTransactionId(null);
+    } catch (err) {
+      setError(err.message || 'Failed to update transaction');
+      console.error('Error updating transaction:', err);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // DELETE — delete by id, remove from local list
+  const handleDeleteById = async (transactionId) => {
+    if (!transactionId) return;
+    try {
+      setBusy(true);
+      setError('');
+      const response = await fetch(`http://localhost:5000/api/transactions/${transactionId}`, { method: 'DELETE' });
+      let json = null;
+      try { json = await response.json(); } catch {}
+      if (!response.ok) {
+        const msg = json?.message || json?.error || 'Failed to delete transaction';
+        throw new Error(msg);
+      }
+      setClientTxns(prev => prev.filter(t => t.transaction_id !== transactionId)); // instant UI update
+      onDelete?.(transactionId);
       if (onRefresh) await onRefresh(account?.account_id);
     } catch (err) {
       setError(err.message || 'Failed to delete transaction');
       console.error('Error deleting transaction:', err);
     } finally {
-      setLoading(false);
-      hideDeleteConfirmation();
+      setBusy(false);
+      setDeleteConfirmation({ show: false, transactionId: null });
     }
   };
 
+  const showDelete = (transactionId) =>
+    setDeleteConfirmation({ show: true, transactionId });
+
+  const hideDelete = () =>
+    setDeleteConfirmation({ show: false, transactionId: null });
+
+  /* --------------------------------- UI ---------------------------------- */
+
   return (
     <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-md px-6 py-6">
-      {deleteConfirmation.show && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div 
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={hideDeleteConfirmation}
-          />
-          <div 
-            className="relative z-10 w-[92%] max-w-md rounded-2xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-600">
-                <FaTrash />
+      {/* Delete confirmation */}
+      {deleteConfirmation.show && (() => {
+        const txn = normalizedTxns.find(t => t.transaction_id === deleteConfirmation.transactionId);
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={hideDelete} />
+            <div className="relative z-10 w-[92%] max-w-md rounded-2xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 p-6" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-600">
+                  <FaTrash />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Delete transaction?</h3>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                Delete transaction?
-              </h3>
-            </div>
 
-            <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">
-              You're about to delete a transaction of{' '}
-              <span className="font-semibold">
-                {deleteConfirmation.transaction.amount}
-              </span>{' '}
-              for <span className="font-semibold">{deleteConfirmation.transaction.name}</span>.
-              This action cannot be undone.
-            </p>
+              <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">
+                You&apos;re about to delete a transaction of{' '}
+                <span className="font-semibold">
+                  {txn?._isTransfer
+                    ? 'transfer'
+                    : (Math.abs(txn?._amount ?? 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>{' '}
+                for <span className="font-semibold">{txn?._name}</span>. This action cannot be undone.
+              </p>
 
-            <div className="mt-6 flex flex-wrap gap-3 justify-end">
-              <button
-                onClick={hideDeleteConfirmation}
-                className="px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                disabled={loading}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteTransaction}
-                disabled={loading}
-                className={`px-4 py-2 rounded-full text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-red-400
-                  ${loading ? 'bg-red-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'}`}
-              >
-                {loading ? 'Deleting...' : 'Yes, delete'}
-              </button>
+              <div className="mt-6 flex flex-wrap gap-3 justify-end">
+                <button
+                  onClick={hideDelete}
+                  className="px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                  disabled={busy}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleDeleteById(deleteConfirmation.transactionId)}
+                  disabled={busy}
+                  className={`px-4 py-2 rounded-full text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-red-400
+                    ${busy ? 'bg-red-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'}`}
+                >
+                  {busy ? 'Deleting...' : 'Yes, delete'}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
+      {/* Header + Controls */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-[#336699]">{heading}</h2>
-        {(
-          <div className="flex gap-2 items-center">
-            <CustomDropdown
-              value={sortBy}
-              onChange={setSortBy}
-              options={[
-                { value: '', label: 'Sort by' },
-                { value: 'Name', label: 'Name' },
-                { value: 'AmountAsc', label: 'Amount Asc' },
-                { value: 'AmountDsc', label: 'Amount Dsc' },
-                { value: 'Date', label: 'Date' }
-              ]}
-              placeholder="Sort by"
-            />
 
-            <CustomDropdown
-              value={categoryFilter}
-              onChange={setCategoryFilter}
-              options={[
-                { value: '', label: 'Filter by categories' },
-                ...categories.map(cat => ({
-                  value: cat.category_name,
-                  label: toTitleCase(cat.category_name)
-                }))
-              ]}
-              placeholder="Filter by categories"
-              disabled={categoriesLoading}
-              loading={categoriesLoading}
-            />
-            
-            <CustomDropdown
-              value={dateFilter}
-              onChange={setDateFilter}
-              options={[
-                { value: '', label: 'Filter by date' },
-                { value: '7 Days', label: 'Last 7 Days' },
-                { value: '10 Days', label: 'Last 10 Days' },
-                { value: 'Last Month', label: 'Last Month' }
-              ]}
-              placeholder="Filter by date"
-            />
-            
-            <CustomDropdown
-              value={typeFilter}
-              onChange={setTypeFilter}
-              options={[
-                { value: '', label: 'Filter by type' },
-                { value: 'income', label: 'Income' },
-                { value: 'expense', label: 'Expense' },
-                { value: 'deposit', label: 'Deposit' },
-                { value: 'withdrawal', label: 'Withdrawal' },
-                { value: 'fee', label: 'Fee' },
-                { value: 'transfer', label: 'Transfer' }
-              ]}
-              placeholder="Filter by type"
-            />
+        <div className="flex gap-2 items-center">
+          <SortDropdown
+            name="sortBy"
+            value={sortBy}
+            onChange={setSortBy}
+            options={[
+              { value: '', label: 'Sort by' },
+              { value: 'name', label: 'Name (A–Z)' },
+              { value: 'amount_asc', label: 'Amount ↑' },
+              { value: 'amount_desc', label: 'Amount ↓' },
+              { value: 'date_desc', label: 'Date (Newest)' },
+            ]}
+            placeholder="Sort by"
+          />
 
-            {isAccountView && (
-              <button
-                onClick={() => setShowAddModal(true)}
-                disabled={!account || loading}
-                className="flex items-center gap-2 px-4 py-1 bg-[#D8F5C5] dark:bg-[#AAD977] dark:text-white text-[#76B947] text-sm font-medium rounded-full hover:bg-[#c8ecb4] transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <FaPlus /> Add
-              </button>
-            )}
-          </div>
-        )}
+          <SortDropdown
+            name="categoryFilter"
+            value={categoryFilter}
+            onChange={setCategoryFilter}
+            options={[
+              { value: '', label: 'Filter by categories' },
+              ...categories.map(cat => {
+                const val = String(cat.category_name || '').trim().toLowerCase();
+                return { value: val, label: toTitleCase(val) };
+              }),
+            ]}
+            placeholder="Filter by categories"
+          />
+
+          <SortDropdown
+            name="dateFilter"
+            value={dateFilter}
+            onChange={setDateFilter}
+            options={[
+              { value: '', label: 'Filter by date' },
+              { value: '7d', label: 'Last 7 Days' },
+              { value: '10d', label: 'Last 10 Days' },
+              { value: 'last_month', label: 'Last Month' },
+            ]}
+            placeholder="Filter by date"
+          />
+
+          <SortDropdown
+            name="typeFilter"
+            value={typeFilter}
+            onChange={setTypeFilter}
+            options={[
+              { value: '', label: 'Filter by type' },
+              { value: 'income', label: 'Income' },
+              { value: 'expense', label: 'Expense' },
+              { value: 'deposit', label: 'Deposit' },
+              { value: 'withdrawal', label: 'Withdrawal' },
+              { value: 'fee', label: 'Fee' },
+              { value: 'transfer', label: 'Transfer' },
+            ]}
+            placeholder="Filter by type"
+          />
+
+          {isAccountView && (
+            <button
+              onClick={() => setShowAddModal(true)}
+              disabled={!account || busy}
+              className="flex items-center gap-2 px-4 py-1 bg-[#D8F5C5] dark:bg-[#AAD977] dark:text-white text-[#76B947] text-sm font-medium rounded-full hover:bg-[#c8ecb4] transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <FaPlus /> Add
+            </button>
+          )}
+        </div>
       </div>
 
+      {/* Errors */}
       {error && (
         <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded p-3 mb-4 text-red-700 dark:text-red-300 text-sm">
           {error}
@@ -423,6 +610,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
         </div>
       )}
 
+      {/* Table */}
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm text-left text-gray-700 dark:text-gray-300">
           <thead className="border-b dark:border-gray-700">
@@ -442,68 +630,79 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
                 </td>
               </tr>
             ) : (
-              filteredSortedTransactions.map((txn, idx) => {
+              filteredSortedTransactions.map((txn) => {
                 const isEditing = editTransactionId === txn.transaction_id;
-                const isExpense = ['expense', 'withdrawal', 'fee'].includes(txn.transaction_type);
-                const isIncome = ['income', 'deposit'].includes(txn.transaction_type);
-                const isTransfer = ['transfer'].includes(txn.transaction_type);
 
-                const amountColor = isExpense ? 'text-red-500'
-                  : isIncome ? 'text-lime-600'
-                    : isTransfer ? 'text-sky-500'
+                const amountColor = txn._isExpense
+                  ? 'text-red-500'
+                  : txn._isIncome
+                    ? 'text-lime-600'
+                    : txn._isTransfer
+                      ? 'text-blue-500'
                       : '';
 
-                const amountSign = isExpense ? '-'
-                  : isIncome ? '+'
-                    : isTransfer ? '→'
-                      : '';
+                const amountSign = txn._isExpense ? '-' : txn._isIncome ? '+' : txn._isTransfer ? '→' : '';
+
+                const originalYMD = ymd(txn._date || txn.transaction_date || txn.date);
 
                 return (
-                  <tr key={txn.transaction_id || idx} className="border-b hover:bg-gray-50">
+                  <tr key={txn.transaction_id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700/30">
                     <td className="px-4 py-2">
                       {isEditing ? (
                         <input
                           type="text"
-                          value={editValues.name}
-                          onChange={(e) => setEditValues({ ...editValues, name: e.target.value })}
+                          value={editValues.name ?? txn._name}
+                          onChange={(e) => setEditValues(v => ({ ...v, name: e.target.value }))}
                           className="border rounded px-2 py-1 w-full"
                         />
-                      ) : txn.name}
+                      ) : txn._name}
                     </td>
                     <td className="px-4 py-2">
                       {isEditing ? (
                         <input
                           type="date"
-                          value={editValues.date}
-                          onChange={(e) => setEditValues({ ...editValues, date: e.target.value })}
+                          value={editValues.date ?? originalYMD}
+                          min={originalYMD}                 // only allow same day or later
+                          max={todayYMD()}                  // not in the future
+                          onChange={(e) => {
+                            const clamped = clampYMD(e.target.value, { minYMD: originalYMD, maxYMD: todayYMD() });
+                            setEditValues(v => ({ ...v, date: clamped }));
+                          }}
                           className="border rounded px-2 py-1 w-full"
                         />
-                      ) : txn.date}
+                      ) : (txn._date ? txn._date.toLocaleDateString() : (txn.date ?? ''))}
                     </td>
                     <td className="px-4 py-2">
                       {isEditing ? (
                         <select
-                          value={editValues.category}
-                          onChange={(e) => setEditValues({ ...editValues, category: e.target.value })}
+                          value={editValues.category_id ?? txn.category_id ?? ''}
+                          onChange={(e) => setEditValues(v => ({ ...v, category_id: e.target.value }))}
                           className="border rounded px-2 py-1 w-full"
                         >
+                          <option value="">Uncategorized</option>
                           {categories.map((cat) => (
-                            <option key={cat.category_id} value={cat.category_name}>{cat.category_name}</option>
+                            <option key={cat.category_id} value={cat.category_id}>{cat.category_name}</option>
                           ))}
                         </select>
-                      ) : toTitleCase(txn.category)}
+                      ) : txn._categoryLabel || 'Uncategorized'}
                     </td>
                     <td className={`px-4 py-2 font-semibold ${amountColor}`}>
                       {isEditing ? (
                         <input
                           type="number"
-                          value={editValues.amount.replace(/[^\d.-]/g, '')}
-                          onChange={(e) => setEditValues({ ...editValues, amount: e.target.value })}
+                          value={String(editValues.amount ?? txn._amount)}
+                          onChange={(e) => setEditValues(v => ({ ...v, amount: e.target.value }))}
                           className="border rounded px-2 py-1 w-full"
+                          step="0.01"
+                          min="0"
+                          inputMode="decimal"
                         />
                       ) : (
                         <>
-                          {amountSign} {txn.amount.replace(/[+-]/g, '')}
+                          {amountSign}{' '}
+                          {txn._isTransfer
+                            ? ''
+                            : Math.abs(txn._amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </>
                       )}
                     </td>
@@ -512,20 +711,13 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
                         <>
                           <button
                             className="text-green-600 hover:underline text-sm"
-                            onClick={() => {
-                              handleEditTransaction(idx, {
-                                ...txn,
-                                name: editValues.name,
-                                date: editValues.date,
-                                category: editValues.category,
-                                amount: editValues.amount
-                              });
-                              setEditTransactionId(null);
-                            }}
+                            onClick={() => saveEdit(txn)}
+                            disabled={busy}
                           >Save</button>
                           <button
                             className="text-gray-500 hover:underline text-sm"
-                            onClick={() => setEditTransactionId(null)}
+                            onClick={() => { setEditTransactionId(null); setEditValues({}); }}
+                            disabled={busy}
                           >Cancel</button>
                         </>
                       ) : (
@@ -535,16 +727,16 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
                             onClick={() => {
                               setEditTransactionId(txn.transaction_id);
                               setEditValues({
-                                name: txn.name,
-                                date: txn.date.split('/').reverse().join('-'),
-                                category: txn.category,
-                                amount: txn.amount.replace(/[^\d.-]/g, '')
+                                name: txn._name,
+                                date: originalYMD,
+                                category_id: txn.category_id ?? '',
+                                amount: String(txn._amount),
                               });
                             }}
                           ><FaEdit /></button>
                           <button
                             className="text-red-500 hover:text-red-600 text-sm"
-                            onClick={() => showDeleteConfirmation(idx)}
+                            onClick={() => showDelete(txn.transaction_id)}
                           ><FaTrash /></button>
                         </>
                       )}
@@ -557,13 +749,7 @@ const RecentTransactionsTable = ({ account, transactions = [], heading, onAdd, o
         </table>
       </div>
 
-      {loading && (
-        <div className="flex justify-center items-center py-4">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#336699] dark:border-blue-400"></div>
-          <span className="ml-2 text-gray-600 dark:text-gray-400">Processing...</span>
-        </div>
-      )}
-
+      {/* Add modal */}
       <AddTransactionModal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}

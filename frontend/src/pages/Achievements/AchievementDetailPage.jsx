@@ -186,8 +186,6 @@ const AchievementDetailPage = () => {
       } catch (e) {
         console.error(e);
         toast.error('Could not load achievement data');
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -208,18 +206,6 @@ const AchievementDetailPage = () => {
   const completedTasks = tasks.filter(t => (t.progress || 0) >= Math.max(1, t.total || 0)).length;
   const completionPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
-  if (isLoading) {
-    return (
-      <AchievementsLayout>
-        <div className="max-w-4xl mx-auto p-6">
-          <div className="flex flex-col items-center justify-center py-10">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500 mb-4"></div>
-            <p className="text-gray-600">Loading achievement details...</p>
-          </div>
-        </div>
-      </AchievementsLayout>
-    );
-  }
 
   return (
     <AchievementsLayout>
