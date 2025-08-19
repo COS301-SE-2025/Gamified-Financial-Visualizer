@@ -46,28 +46,34 @@ Gamified Financial Visualizer revolutionizes the way people interact with their 
 </p>
 
 <h2 align="center">Tech Stack That Powers Innovation</h2>
-<h3 align="center">Frontend: Next-Level User Experiences </h3>
+
+<h3 align="center">Frontend: Next-Level User Experiences</h3>
 <p align="center">
-  <img src="https://skillicons.dev/icons?i=react,tailwindcss,figma,typescript" />
+  <img src="https://skillicons.dev/icons?i=react,tailwindcss,figma,javascript,threejs" />
 </p>
 
-<h3 align="center">Backend: Rock-Solid Foundation </h3>
+<h3 align="center">3D & Interactive Visualization</h3>
+<p align="center">
+  <img src="https://skillicons.dev/icons?i=blender,unity" />
+</p>
+
+<h3 align="center">Backend: Rock-Solid Foundation</h3>
 <p align="center">
   <img src="https://skillicons.dev/icons?i=nodejs,express,postgres,typescript,redis" /><br>
-  <img src="https://skillicons.dev/icons?i=python,sklearn,tensorflow,pytorch,kafka" />
+  <img src="https://skillicons.dev/icons?i=python,sklearn,pytorch" />
 </p>
 
-<h3 align="center">DevOps: Enterprise-Grade Delivery </h3>
+<h3 align="center">DevOps: Enterprise-Grade Delivery</h3>
 <p align="center">
-  <img src="https://skillicons.dev/icons?i=githubactions,docker,supabase,vercel" />
+  <img src="https://skillicons.dev/icons?i=githubactions,docker,supabase,vercel,azure" />
 </p>
 
-<h3 align="center">Testing: For smooth system delivery </h3>
+<h3 align="center">Testing: For Smooth System Delivery</h3>
 <p align="center">
   <img src="https://skillicons.dev/icons?i=jest,babel,cypress,sentry" />
 </p>
 
-<h3 align="center">Project Management: With modern technology</h3>
+<h3 align="center">Project Management: With Modern Technology</h3>
 <p align="center">
   <img src="https://skillicons.dev/icons?i=github,notion,discord" />
 </p>
@@ -82,15 +88,17 @@ This table provides quick access to the key documents and planning resources for
 
 | Resource Name | Description | Link |
 |---------------|-------------|------|
-| **Software Requirements Specification (SRS)** | Outlines the functional and non-functional requirements of the system. | [View SRS](https://drive.google.com/file/d/1P-zHO8nlxd5WIi0egwTgvPa18IMBnqpN/view?usp=drive_link) |
-| **Architectural Requirements Specification (ARS)** | Describes system architecture, service design, and technology stack. | [View ARS](https://drive.google.com/file/d/18SeSOtxtNB3BYHp0IevVYLXO7PVNeODX/view?usp=drive_link) |
-| **User Stories** | User-focused feature breakdown using Agile methodology. | [View User Stories](https://drive.google.com/file/d/15W0QNBl9YfHC1M-liT4e9_xkXi2rQUrP/view?usp=drive_link) |
-| **Use Cases** | Details of system interactions between users and core features. | [View Use Cases](https://drive.google.com/file/d/1RYJx_-DA8SJ5KiFeP35hvWPykjhdn8F3/view?usp=drive_link) |
+| **Sys Requirements Specification (SRS)** | Outlines the functional and non-functional requirements of the system. | [View SRS](https://drive.google.com/drive/folders/1SNT8_zECcaguP18D0xsKKZDJcYN9H5AT?usp=sharing) |
+| **Architectural Requirements Specification (ARS)** | Describes system architecture, service design, and technology stack. | [View ARS](https://drive.google.com/drive/folders/1TEZrZn1mY-EfNBvy9Xi22u1kedBqHHuu?usp=sharing) |
+| **User Stories** | User-focused feature breakdown using Agile methodology. | [View User Stories](https://drive.google.com/drive/folders/1M-RTc8-XCj7hHo-bbrS_e_EQcpABaUmq?usp=sharing) |
+| **Use Cases** | Details of system interactions between users and core features. | [View Use Cases](https://drive.google.com/drive/folders/1lj8108uMSNYwX4NIk1CRfGE-tQDHA7yB?usp=sharing) |
 | **Project Board & Sprint Tracker** | A live board displaying tasks, issues, and sprint progress. | [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/140) |
-| **Domain Model** | A visual representation of key entities and their relationships. | [View Domain Model](https://drive.google.com/file/d/172k-GoCfRzXFlRVkc58cxvUSWxHhIxoS/view?usp=drive_link) |
+| **Domain Model** | A visual representation of key entities and their relationships. | [View Domain Model](https://drive.google.com/drive/folders/1DQmIiDWRnHQmnQpzgAyw23VIWb4kCm4y?usp=sharing) |
 | **Project / Group Framework** | Overview of team structure, responsibilities, and collaboration tools. | [View Group Framework](https://www.notion.so/Gamified-Financial-Visualizer-1f842477e71680879e19d535dcb688dc?pvs=4) |
-| **Coding Standards** | This document outlines the coding conventions and styles used across the project to promote uniformity, clarity, flexibility, reliability, and efficiency. | [View Coding Standards](https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/blob/development/documentation/Demo%202/documents/Coding_Standards.md) |
-| **Service Contract** |  It serves as a formal agreement between backend service providers and frontend/service consumers, ensuring that all endpoints, data formats, authentication mechanisms, and error responses are well-documented and traceable. | [View Service Contract](https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/blob/development/documentation/Demo%202/documents/API%20service%20contract%20v1.2.0.pdf) |
+| **Coding Standards** | This document outlines the coding conventions and styles used across the project to promote uniformity, clarity, flexibility, reliability, and efficiency. | [View Coding Standards](https://drive.google.com/drive/folders/1nxFz-W9G-qbLN8TvGWwgk3uLCxURO-uv?usp=sharing) |
+| **Service Contract** |  It serves as a formal agreement between backend service providers and frontend/service consumers, ensuring that all endpoints, data formats, authentication mechanisms, and error responses are well-documented and traceable. | [View Service Contract](https://drive.google.com/drive/folders/1uMm1lL_FnIjSP8c2eXFI3WC96dK0-Ekd?usp=sharing) |
+| **Technical Installation** |  Step-by-step guide to set up and run the project on Windows, macOS, or Linux. Covers prerequisites, installing Node/Python/PostgreSQL/Redis, configuring environment variables, starting frontend/API/AI services, and notes for Azure deployment & CI/CD. | [View Technical Installation](https://drive.google.com/drive/folders/17MMg3Fh6O4WM_D6UKOXQCcKBrIh-Mc5E?usp=sharing) |
+| **User Manual** |  End-user guide to the app’s features and workflows. Explains navigation, learning modules and quizzes, goals, accounts & transactions, budgets, challenges, community posts, and achievements—with screenshots, tips, and troubleshooting. | [View User Manual](https://drive.google.com/drive/folders/1eGzi0SqqqJy4BXIT63ev2gV0308Xb6rm?usp=sharing) |
 
 <p align="center">
   <img src="./assests/greenBar.png" alt="divider" width="100%"/>
@@ -118,9 +126,9 @@ This table provides quick access to the key documents and planning resources for
 
 | Photo | Name | About | Role | Links |
 |-------|------|-------|------|-------|
-| <img src="./assests/Team Profiles/Malaika.png" width="800" style="border-radius: 50%"/> | **Yohali Malaika Kumangu** | Experienced in Java development with a portfolio of diverse, hands-on projects leveraging the language. Proficient in backend technologies, particularly Node.js, with a strong background in financial management. Skilled in integration development with Python, MongoDB, and Node.js. | Project Manager, Data Engineer | [<img src="https://img.icons8.com/ios-glyphs/30/ffffff/github.png"/>](https://github.com/YourfavCompSciGirlie) <br> [<img src="https://img.shields.io/badge/LinkedIn-0A66C2?logo=linkedin&logoColor=white" height="30"/>](https://www.linkedin.com/in/ymkamangu/) |
+| <img src="./assests/Team Profiles/Malaika.png" width="800" style="border-radius: 50%"/> | **Yohali Malaika Kumangu** | Backend developer skilled in Node.js, PostgreSQL, and Python, with expertise in integration, database design, and financial systems. Expanding into AI by building a chatbot powered by a custom model that answers user questions in real time.  | Project Manager, Data Engineer | [<img src="https://img.icons8.com/ios-glyphs/30/ffffff/github.png"/>](https://github.com/YourfavCompSciGirlie) <br> [<img src="https://img.shields.io/badge/LinkedIn-0A66C2?logo=linkedin&logoColor=white" height="30"/>](https://www.linkedin.com/in/ymkamangu/) |
 | <img src="./assests/Team Profiles/Lebo.png" width="800" style="border-radius: 50%"/> | **Lebogang Masenya** | Possesses foundational experience in Data Science, having implemented small-scale machine learning models. Familiar with AI tools such as Hugging Face, applied in full-stack personal projects. | Systems Architect, Services Engineer | [<img src="https://img.icons8.com/ios-glyphs/30/ffffff/github.png"/>](https://github.com/B-WayneZA) <br> [<img src="https://img.shields.io/badge/LinkedIn-0A66C2?logo=linkedin&logoColor=white" height="30"/>](https://www.linkedin.com/in/lebogang-masenya/) |
-| <img src="./assests/Team Profiles/Mpho.png" width="800" style="border-radius: 50%"/> | **Mpho Siminya** | A creative front-end developer with a strong ability to translate Figma wireframes into responsive web apps. Proficient in React and has explored 3D modeling in Blender for AR interfaces. | UI Engineer, UI/UX Designer | [<img src="https://img.icons8.com/ios-glyphs/30/ffffff/github.png"/>](https://github.com/MphoSiminya) <br> [<img src="https://img.shields.io/badge/LinkedIn-0A66C2?logo=linkedin&logoColor=white" height="30"/>](www.linkedin.com/in/mpho-siminya-531b91348) |
+| <img src="./assests/Team Profiles/Mpho.png" width="800" style="border-radius: 50%"/> | **Mpho Siminya** | A creative front-end developer with a strong ability to translate Figma wireframes into responsive web apps. Proficient in React, Three.js, and has explored 3D modeling in Blender for AR interfaces. Experience in Unity and game animations/development. | UI Engineer, UI/UX Designer | [<img src="https://img.icons8.com/ios-glyphs/30/ffffff/github.png"/>](https://github.com/MphoSiminya) <br> [<img src="https://img.shields.io/badge/LinkedIn-0A66C2?logo=linkedin&logoColor=white" height="30"/>](www.linkedin.com/in/mpho-siminya-531b91348) |
 | <img src="./assests/Team Profiles/Nobuhle.png" width="800" style="border-radius: 50%"/> | **Nobuhle Mtshali** | Proficient in React and Java, with a strong foundation in UI/UX and responsive development. Passionate about immersive VR/AR solutions and driving financial literacy through engaging experiences. | DevOps, UI Engineer | [<img src="https://img.icons8.com/ios-glyphs/30/ffffff/github.png"/>](https://github.com/ReituTheCompSciGirlie) <br> [<img src="https://img.shields.io/badge/LinkedIn-0A66C2?logo=linkedin&logoColor=white" height="30"/>](https://www.linkedin.com/in/nobuhle-reitumetse-mtshali-150767210/) |
 | <img src="./assests/Team Profiles/Aundrea.png" width="800" style="border-radius: 50%"/> | **Aundrea Ncube** | Skilled in JavaScript, PHP, and Java. Strong in DBMS and API integration. Proficient in both frontend and backend development for seamless system integration. | Integration & Testing Engineer | [<img src="https://img.icons8.com/ios-glyphs/30/ffffff/github.png"/>](https://github.com/AundreaNcube) <br> [<img src="https://img.shields.io/badge/LinkedIn-0A66C2?logo=linkedin&logoColor=white" height="30"/>](http://www.linkedin.com/in/aundrea-ncube-1484a9356) |
 
