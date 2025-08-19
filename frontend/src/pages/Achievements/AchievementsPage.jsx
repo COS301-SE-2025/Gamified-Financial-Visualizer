@@ -6,7 +6,6 @@ import { FaSearch, FaFilter, FaChevronDown } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 
-// Badge images
 import badge1 from '../../assets/Images/badges/coin.png';
 import badge2 from '../../assets/Images/badges/banknote.png';
 import badge3 from '../../assets/Images/badges/target.png';
@@ -128,7 +127,7 @@ const computePercent = (a) => {
   return Math.min((completed / Math.max(1, total)) * 100, 100);
 };
 
-const AchievementCard = ({ achievement }) => {
+const AchievementCard = ({ title, reward, progress, total, image, color, border, text }) => {
   const navigate = useNavigate();
 
   const {
@@ -154,16 +153,27 @@ const AchievementCard = ({ achievement }) => {
 
   return (
     <div
-      onClick={() => navigate(`/achievements/${encodeURIComponent(achievement_title)}`)}
-      className={`cursor-pointer border-2 ${border} rounded-xl p-4 bg-white dark:bg-gray-800 flex flex-col items-center gap-3 hover:shadow-md transition-shadow ${bg}`}
-      title="Click to view details and sub-achievements"
-      data-achievement-id={achievement_id}
+      className={`rounded-2xl p-4 shadow-md transition duration-300 ease-in-out hover:shadow-lg cursor-pointer border-2 ${border} bg-white`}
+      onClick={() => navigate(`/achievements/${encodeURIComponent(title)}`)}
     >
-      <div className="relative">
-        <img src={image} alt={achievement_title} className="w-16 h-16 object-contain dark:text-gray-200" />
-        {percent === 100 && (
-          <div className="absolute -top-1 -right-1 bg-yellow-400 rounded-full w-5 h-5 flex items-center justify-center dark:text-gray-300">
-            <span className="text-xs font-bold">✓</span>
+      <div className="flex flex-col items-center gap-2">
+        {/* Title */}
+        <h3 className={`text-sm font-bold ${text}`}>{title}</h3>
+
+        {/* Image */}
+        <img
+          src={image}
+          alt={title}
+          className="w-22 h-20 object-contain"
+        />
+
+        {/* Progress bar */}
+        <div className="w-full mt-1">
+          <div className="relative h-2 rounded-full bg-gray-200">
+            <div
+              className={`absolute top-0 left-0 h-2 rounded-full bg-gradient-to-r ${color}`}
+              style={{ width: `${progressPercent}%` }}
+            ></div>
           </div>
         )}
       </div>
@@ -184,8 +194,11 @@ const AchievementCard = ({ achievement }) => {
             </span>
           )}
         </div>
-        <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-700">
-          <div className={`${fill} h-2 rounded-full`} style={{ width: `${percent}%` }} />
+
+        {/* Footer */}
+        <div className="flex justify-between w-full text-xs text-gray-600 font-medium pt-1">
+          <span>{reward} XP Reward</span>
+          <span>{progress}/{total}</span>
         </div>
       </div>
 

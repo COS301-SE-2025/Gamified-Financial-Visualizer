@@ -1,26 +1,23 @@
 // GoalsPage.jsx
 import React, { useEffect, useState, useMemo } from 'react';
 import GoalsViewLayout from './GoalsViewLayout';
-import { FaSearch, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+
+import { FaSearch } from 'react-icons/fa';
+
 import GoalOverviewCards from '../../components/cards/GoalOverviewCards';
 import GoalCard from '../../components/cards/GoalCard';
 import DonutChart from '../../components/charts/DonutChart';
 import BarChart from '../../components/charts/BarChart';
-
-import goal1 from '../../assets/Images/banners/pixelApartment.gif';
-import goal2 from '../../assets/Images/banners/pixelHouse.gif';
-import goal3 from '../../assets/Images/banners/pixelOffice1.gif';
-
-const PAGE_SIZE = 3;
+import UpcomingDeadlinesCard from '../../components/cards/UpcomingDeadlinesCard';
+import vacationImg from '../../assets/Images/banners/pixelStore.gif';
+import pcImg from '../../assets/Images/banners/pixelHouse.gif';
+import cameraImg from '../../assets/Images/banners/pixelStudents.jpeg';
 
 const GoalsPage = () => {
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const user = JSON.parse(localStorage.getItem('user'));
   const [goals, setGoals] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [latestGoal, setLatestGoal] = useState(null);
-  const [page, setPage] = useState(1);
 
-  const bannerImages = [goal1, goal2, goal3];
+  const bannerImages = [vacationImg, pcImg, cameraImg];
 
   // ---- helpers -------------------------------------------------------------
   // stable banner pick: 1->0, 2->1, 3->2 (wraps safely)
@@ -37,8 +34,8 @@ const GoalsPage = () => {
         const res = await fetch(`http://localhost:5000/api/goal/user/${user.id}`);
         const data = await res.json();
         setGoals(data.data || []);
-      } catch (e) {
-        console.error('Failed to fetch goals', e);
+      } catch (error) {
+        console.error('Failed to fetch goals:', error);
       }
     };
     if (user?.id) fetchGoals();
@@ -183,22 +180,17 @@ const GoalsPage = () => {
               <GoalOverviewCards />
             </div>
           </div>
+        </div>
 
-          {/* RIGHT: 1x3 list with pagination */}
-          <div className="col-span-12 lg:col-span-4">
-            <div className="bg-white rounded-2xl shadow-md p-4 dark:bg-gray-800">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 dark:text-gray-200">
-                Your Goals
-              </h3>
-
-              <div className="grid grid-cols-1 gap-6">
-                {visibleGoals.map(renderGoalCard)}
-                {visibleGoals.length === 0 && (
-                  <div className="text-center text-gray-500 text-sm py-10">
-                    {searchTerm ? 'No matching goals.' : 'No goals yet.'}
-                  </div>
-                )}
-              </div>
+        {/*Search Input */}
+        <div className="flex items-center w-full max-w-3xl -ml-[8px] px-4 py-2 rounded-3xl border-2 border-[#E5794B] bg-white shadow-sm">
+          <FaSearch className="text-[#E5794B] mr-2" />
+          <input
+            type="text"
+            placeholder="Search your goals..."
+            className="w-full outline-none bg-transparent text-sm text-[#E5794B] placeholder-[#E5794B]/70"
+          />
+        </div>
 
               {/* Pagination */}
               {filtered.length > PAGE_SIZE && (

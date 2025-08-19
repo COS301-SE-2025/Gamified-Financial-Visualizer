@@ -11,7 +11,8 @@ import banner5 from '../../assets/Images/banners/pixelCornerStore.gif';
 import banner6 from '../../assets/Images/banners/pixelGirl.gif';
 import { FaFilter, FaSearch, FaClock, FaChevronDown } from 'react-icons/fa';
 
-const bannerImages = { 
+// Map of banner images to use for courses
+const bannerImages = {
   1: banner1,
   2: banner2,
   3: banner3,
@@ -188,7 +189,6 @@ const TopicDropdown = ({
 const LearningIncompletePage = () => {
   const user = JSON.parse(localStorage.getItem('user'));
   const [modulesData, setModulesData] = useState([]);
-  const [filteredModules, setFilteredModules] = useState([]);
   const [error, setError] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [difficultyFilter, setDifficultyFilter] = useState('all');
@@ -412,3 +412,4 @@ const LearningIncompletePage = () => {
 };
 
 export default LearningIncompletePage;
+

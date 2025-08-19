@@ -1,15 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import PacmanLoader from '../../components/loaders/PacmanLoader';
-import AchievementsSidebar from '../../layouts/sidebars/AchievementsSidebar'; // rename if needed
+import React,{useState}from 'react';
+import AchievementsSidebar from '../../layouts/sidebars/AchievementsSidebar';
+import AchievementsHeader from '../../layouts/headers/AchievementsHeader';
 
-const AchievementsLayout = ({ children }) => {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => setIsLoading(false), 500);
-    return () => clearTimeout(timer);
-  }, []);
+const AccountsLayout = ({ children }) => {
+  const [tab, setTab] = useState('achievements'); // or 'main', etc.
 
   return (
     <div className="relative min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -27,12 +21,9 @@ const AchievementsLayout = ({ children }) => {
           <AchievementsSidebar />
         </div>
 
-        {/* Page Content */}
-        <div className="flex">
-          <div className="flex-1 flex flex-col h-full pr-6">
-            <div className="px-6 pb-6">
-              {children}
-            </div>
+          {/* Scrollable content area */}
+          <div className="flex-1 px-6 pb-6 overflow-y-auto min-h-0">
+            {children}
           </div>
         </div>
       </div>

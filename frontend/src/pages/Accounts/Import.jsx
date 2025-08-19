@@ -1,49 +1,15 @@
 import React, { useState , useEffect} from 'react';
 import AccountsLayout from './AccountsLayout';
-import { 
-  FaUpload, FaFilePdf, FaLink, FaTrash, FaQuestionCircle, 
-  FaSpinner, FaCheckCircle, FaTimes, FaArrowLeft, 
-  FaExclamationTriangle, FaSave, FaLock, FaFolderOpen,
-  FaGlobe, FaDownload, FaArrowRight, FaFileAlt, FaExclamationCircle
-} from 'react-icons/fa';
+import { FaUpload, FaFilePdf, FaLink, FaTrash, FaQuestionCircle, FaSpinner } from 'react-icons/fa';
 
 const ImportPage = () => {
-  const userData = JSON.parse(localStorage.getItem('user') || '{}');
-  const userId = userData?.id || null;
-
-  // File upload state
   const [files, setFiles] = useState([]);
   const [url, setUrl] = useState('');
   const [isDragging, setIsDragging] = useState(false);
-
-  // Import configuration state
-  const [selectedAccount, setSelectedAccount] = useState('');
-  const [accounts, setAccounts] = useState(null);
-  const [selectedBank, setSelectedBank] = useState('');
-  const [password, setPassword] = useState('');
-
-  const [transactions, setTransactions] = useState([]);
-  const [categories, setCategories] = useState([]);
-
-  // Import process state
   const [isImporting, setIsImporting] = useState(false);
   const [importError, setImportError] = useState(null);
   const [importSuccess, setImportSuccess] = useState(false);
-  const [showReview, setShowReview] = useState(false);
-  const [importProgress, setImportProgress] = useState(0);
 
-  const banks = [
-    { id: 'bank1', name: 'Nedbank' },
-    { id: 'bank2', name: 'Standard Bank' },
-    { id: 'bank3', name: 'FNB' },
-    { id: 'bank4', name: 'Capitec' },
-    { id: 'bank5', name: 'Absa' },
-    { id: 'bank6', name: 'Old Mutual' }
-  ];
-
-  const transactionTypes = ['income', 'expense', 'transfer'];
-
-  // File handling functions
   const handleDragEnter = (e) => {
     e.preventDefault();
     setIsDragging(true);
@@ -57,14 +23,14 @@ const ImportPage = () => {
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
-    const droppedFiles = Array.from(e.dataTransfer.files).filter(file =>
+    const droppedFiles = Array.from(e.dataTransfer.files).filter(file => 
       file.type === 'application/pdf'
     );
     setFiles(droppedFiles.slice(0, 1)); // Only keep the first file
   };
 
   const handleFileChange = (e) => {
-    const selectedFiles = Array.from(e.target.files).filter(file =>
+    const selectedFiles = Array.from(e.target.files).filter(file => 
       file.type === 'application/pdf'
     );
     setFiles(selectedFiles.slice(0, 1)); // Only keep the first file
@@ -81,10 +47,8 @@ const ImportPage = () => {
     setUrl('');
     setImportError(null);
     setImportSuccess(false);
-    setShowReview(false);
   };
 
-  // Import process
   const handleImport = async () => {
     if (files.length === 0 && !url) {
       setImportError('Please upload a file or enter a URL');
@@ -102,183 +66,25 @@ const ImportPage = () => {
     setIsImporting(true);
     setImportError(null);
     setImportSuccess(false);
-    setImportProgress(0);
 
     try {
-      let res, body;
-      if (files.length) {
-        const form = new FormData();
-        form.append('statement', files[0]);
-        form.append('accountId', selectedAccount);
-        form.append('password', password);
-        form.append('bankName', selectedBank.toLowerCase());    
-              
-        res = await fetch(
-          `http://localhost:5000/api/classifier/upload-statement`,
-          { method: 'POST',
-           headers: { 'Accept': 'application/json' }, 
-           body: form
-         }
-        );
-      } else {
-        res = await fetch(
-          `http://localhost:5000/api/classifier/upload-statement-url`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              url,
-              accountId: selectedAccount,
-              bankName: selectedBank,
-              password
-            })
-          }
-        );
+      if (files.length > 0) {
+        const formData = new FormData();
+        files.forEach(file => formData.append('statements', file));
+        await new Promise(resolve => setTimeout(resolve, 1500));
       }
-const contentType = res.headers.get('content-type');
 
-      if (!contentType || !contentType.includes('application/json')) {
-  const text = await res.text();
-  throw new Error(`Expected JSON, got: ${text.slice(0, 100)}`);
-}
-
-      body = await res.json();
-      if (!res.ok) throw new Error(body.error || 'Upload failed');
-
-      const txns = body.preview.map((tx) => {
-        const match = categories.find(c => c.category_name === tx.predicted_category.toLowerCase());
-        const id = match ? match.category_id : null;
-
-        return {
-          id: `${tx.accountId}-${tx.date}-${tx.description}-${Math.random().toString(36).substr(2, 9)}`,
-          accountId: tx.accountId,
-          date: tx.date,
-          description: tx.description,
-          amount: tx.amount,
-          direction: tx.direction,
-          transaction_type: tx.transaction_type,
-          category: tx.category_id,
-          originalCategory: id,
-          originalType: tx.transaction_type,
-        };
-      });
-      setTransactions(txns);
-      setShowReview(true);
-    } catch (error) {
-      setImportError(error.message || 'Import failed. Please try again.');
-    } finally {
-      setIsImporting(false);
-    }
-  };
-
-  // Transaction editing
-  const handleCategoryChange = (id, newCategory) => {
-    setTransactions(transactions.map(tx =>
-      tx.id === id ? { ...tx, category: newCategory } : tx
-    ));
-  };
-
-  const handleTypeChange = (id, newType) => {
-    setTransactions(transactions.map(tx =>
-      tx.id === id ? { ...tx, type: newType } : tx
-    ));
-  };
-
-  const handleDescriptionChange = (id, newDescription) => {
-    setTransactions(transactions.map(tx =>
-      tx.id === id ? { ...tx, description: newDescription } : tx
-    ));
-  };
-
-  const handleFinalImport = async () => {
-    setIsImporting(true);
-    setIsImporting(true);
-    setImportError(null);
-
-    const payload = {
-      feedbacks: transactions
-        .filter(tx => tx.category !== tx.originalCategory)
-        .map(tx => ({
-          desc: tx.description,
-          corrected_category: categories.find(c => c.category_id === tx.category)?.category_name || 'Uncategorized'
-        }))
-    };
-
-    try {
-      const res = await fetch(
-        `http://localhost:5000/api/classifier/confirm-statement`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            preview: transactions.map(tx => ({
-              accountId: tx.accountId,
-              date: tx.date,
-              description: tx.description,
-              amount: tx.amount,
-              direction: tx.direction,
-              balance: tx.balance,
-              predicted_category: tx.predicted_category,
-              classification_source: tx.classification_source,
-              category_id: tx.category,
-              transaction_type: tx.transaction_type
-            })),
-            recurringFlags: transactions.map(_ => false)
-          })
-        }
-      );
-
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.error || 'Feedback save failed');
+      if (url) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
 
       setImportSuccess(true);
-      setShowReview(false);
-                
-      if (payload.feedbacks.length) {
-        fetch(
-          `http://localhost:5000/api/classifier/feedback`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ feedback: payload.feedbacks })
-          }
-        );
-      }
-    } catch (err) {
-      setImportError(err.message);
+    } catch (error) {
+      setImportError(error.message || 'Failed to import statements. Please try again.');
     } finally {
       setIsImporting(false);
     }
   };
-
-  const hasChanges = transactions.some(tx => 
-    tx.category !== tx.originalCategory || tx.type !== tx.originalType
-  );
-
-  useEffect(() => {
-    fetch(`http://localhost:5000/api/accounts/user/${userId}`)
-      .then(r => r.json())
-      .then(j => setAccounts(j.data))
-      .catch(() => setAccounts([]));
-
-    fetch(`http://localhost:5000/api/transactions/categories`)
-      .then(r => r.json())
-      .then(j => setCategories(j.data))
-      .catch(() => setCategories([]));
-  }, [userId]);
-
-  if (!accounts) {
-    return (
-      <AccountsLayout>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">Loading accounts...</h1>
-            <p className="text-gray-600 dark:text-gray-400">Please wait while we fetch your accounts.</p>
-          </div>
-        </div>
-      </AccountsLayout>
-    );
-  }
 
   return (
     <AccountsLayout>
@@ -311,26 +117,18 @@ const contentType = res.headers.get('content-type');
                     </p>
                   </div>
 
-                  {/* Status Messages */}
-                  {importError && (
-                    <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg flex items-start">
-                      <FaExclamationCircle className="text-red-500 mt-0.5 mr-3 flex-shrink-0" />
-                      <div>
-                        <h3 className="font-medium text-red-800">Error</h3>
-                        <p className="text-red-700">{importError}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {importSuccess && (
-                    <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-lg flex items-start">
-                      <FaCheckCircle className="text-green-500 mt-0.5 mr-3 flex-shrink-0" />
-                      <div>
-                        <h3 className="font-medium text-green-800">Success</h3>
-                        <p className="text-green-700">Transactions imported successfully</p>
-                      </div>
-                    </div>
-                  )}
+            {/* Status Messages */}
+            {importError && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                {importError}
+              </div>
+            )}
+            
+            {importSuccess && (
+              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
+                Statements imported successfully!
+              </div>
+            )}
 
                   {/* Configuration */}
                   <div className="bg-gray-50 p-5 rounded-xl mb-6 dark:bg-gray-700">
@@ -453,48 +251,42 @@ const contentType = res.headers.get('content-type');
                     )}
                   </div>
 
-                  {/* URL Import */}
-                  <div className="mb-8">
-                    <h2 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center">
-                      <FaLink className="mr-2 text-gray-500 dark:text-gray-400" />
-                      Or import from URL
-                    </h2>
-                    <div className="flex space-x-2">
-                      <div className="flex-1 relative">
-                        <input
-                          type="text"
-                          placeholder="https://yourbank.com/statement.pdf"
-                          className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 pl-10 focus:ring-2 focus:ring-sky-400 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                          value={url}
-                          onChange={(e) => setUrl(e.target.value)}
-                        />
-                        <FaGlobe className="absolute left-3 top-3 text-gray-400" />
-                      </div>
-                      <button
-                        className="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition flex items-center"
-                        onClick={() => url && handleImport()}
-                        disabled={!url}
-                      >
-                        <FaDownload className="mr-2" />
-                        Fetch
-                      </button>
-                    </div>
-                  </div>
+            {/* URL Import */}
+            <div className="mb-8">
+              <h3 className="text-md font-medium text-gray-700 mb-3 flex items-center">
+                <FaLink className="mr-2 text-gray-500" />
+                Or import from URL
+              </h3>
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  placeholder="https://yourbank.com/statement.pdf"
+                  className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                />
+                <button 
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                  onClick={() => {
+                    if (url) {
+                      handleImport();
+                    }
+                  }}
+                >
+                  Fetch
+                </button>
+              </div>
+            </div>
 
-                  {/* Actions */}
-                  <div className="border-t pt-6">
-                    <div className="flex items-start text-sm text-gray-500 mb-6">
-                      <div className="bg-blue-100 p-2 rounded-full text-sky-500 mr-3">
-                        <FaQuestionCircle />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-700 mb-1">Need help?</p>
-                        <p>
-                          We support PDFs from most major banks. If your bank is not listed, please contact support. <br />
-                          All statements are processed securely, privately and never stored on the system nor shared to third parties.<br />
-                        </p>
-                      </div>
-                    </div>
+            {/* Info & Actions */}
+            <div className="border-t pt-6">
+              <div className="flex items-start text-sm text-gray-500 mb-6">
+                <FaQuestionCircle className="mt-1 mr-2 flex-shrink-0" />
+                <p>
+                  Some statement formats may require additional mapping. We support PDFs from most major banks.
+                  <a href="#" className="text-blue-600 hover:underline ml-1">Learn more</a>
+                </p>
+              </div>
 
                     <div className="flex justify-between">
                       <button

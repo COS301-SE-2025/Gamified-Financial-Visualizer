@@ -13,53 +13,58 @@ import {
 import toast, { Toaster } from 'react-hot-toast';
 
 const categoryIcons = {
-  groceries: { icon: <FaUtensils />, color: 'bg-orange-100 text-orange-500' },
-  transport: { icon: <FaBus />, color: 'bg-blue-100 text-blue-500' },
-  fuel: { icon: <FaGasPump />, color: 'bg-yellow-100 text-yellow-500' },
-  utilities: { icon: <FaBolt />, color: 'bg-purple-100 text-purple-500' },
-  rent: { icon: <FaHome />, color: 'bg-indigo-100 text-indigo-500' },
-  mortgage: { icon: <FaBuilding />, color: 'bg-gray-100 text-gray-500' },
-  internet: { icon: <FaWifi />, color: 'bg-teal-100 text-teal-500' },
-  phone: { icon: <FaMobileAlt />, color: 'bg-green-100 text-green-500' },
-  insurance: { icon: <FaShieldAlt />, color: 'bg-red-100 text-red-500' },
-  medical: { icon: <FaHeartbeat />, color: 'bg-pink-100 text-pink-500' },
-  health: { icon: <FaHeartbeat />, color: 'bg-pink-100 text-pink-500' },
-  fitness: { icon: <FaDumbbell />, color: 'bg-amber-100 text-amber-500' },
-  education: { icon: <FaBook />, color: 'bg-blue-100 text-blue-500' },
-  subscriptions: { icon: <FaTv />, color: 'bg-purple-100 text-purple-500' },
-  entertainment: { icon: <FaFilm />, color: 'bg-red-100 text-red-500' },
-  restaurants: { icon: <FaUtensils />, color: 'bg-orange-100 text-orange-500' },
-  clothing: { icon: <FaTshirt />, color: 'bg-indigo-100 text-indigo-500' },
-  'personal care': { icon: <FaUser />, color: 'bg-pink-100 text-pink-500' },
-  gifts: { icon: <FaHandsHelping />, color: 'bg-teal-100 text-teal-500' },
-  charity: { icon: <FaHandsHelping />, color: 'bg-teal-100 text-teal-500' },
-  taxes: { icon: <FaMoneyBillWave />, color: 'bg-gray-100 text-gray-500' },
-  savings: { icon: <FaPiggyBank />, color: 'bg-green-100 text-green-500' },
-  investments: { icon: <FaChartLine />, color: 'bg-blue-100 text-blue-500' },
-  'loan repayment': { icon: <FaUniversity />, color: 'bg-indigo-100 text-indigo-500' },
-  debt: { icon: <FaMoneyBillWave />, color: 'bg-gray-100 text-gray-500' },
-  travel: { icon: <FaPlane />, color: 'bg-cyan-100 text-cyan-500' },
-  accommodation: { icon: <FaHome />, color: 'bg-indigo-100 text-indigo-500' },
-  salary: { icon: <FaWallet />, color: 'bg-green-100 text-green-500' },
-  freelance: { icon: <FaLaptop />, color: 'bg-blue-100 text-blue-500' },
-  bonus: { icon: <FaCoins />, color: 'bg-yellow-100 text-yellow-500' },
-  refund: { icon: <FaExchangeAlt />, color: 'bg-teal-100 text-teal-500' },
-  'transfer in': { icon: <FaExchangeAlt />, color: 'bg-teal-100 text-teal-500' },
-  'transfer out': { icon: <FaExchangeAlt />, color: 'bg-teal-100 text-teal-500' },
-  'cash withdrawal': { icon: <FaMoneyBillWave />, color: 'bg-gray-100 text-gray-500' },
-  'cash deposit': { icon: <FaMoneyBillWave />, color: 'bg-gray-100 text-gray-500' },
-  'business income': { icon: <FaLaptop />, color: 'bg-blue-100 text-blue-500' },
-  'business expense': { icon: <FaLaptop />, color: 'bg-blue-100 text-blue-500' },
-  maintenance: { icon: <FaTools />, color: 'bg-amber-100 text-amber-500' },
-  repairs: { icon: <FaTools />, color: 'bg-amber-100 text-amber-500' },
-  childcare: { icon: <FaChild />, color: 'bg-pink-100 text-pink-500' },
-  pets: { icon: <FaPaw />, color: 'bg-purple-100 text-purple-500' },
-  'home improvement': { icon: <FaHome />, color: 'bg-indigo-100 text-indigo-500' },
-  fees: { icon: <FaMoneyBillWave />, color: 'bg-gray-100 text-gray-500' },
-  commissions: { icon: <FaCoins />, color: 'bg-yellow-100 text-yellow-500' },
-  'interest income': { icon: <FaCoins />, color: 'bg-yellow-100 text-yellow-500' },
-  dividends: { icon: <FaCoins />, color: 'bg-yellow-100 text-yellow-500' },
-  default: { icon: <FaMoneyBillWave />, color: 'bg-gray-100 text-gray-500' }
+  groceries: <FaUtensils />,
+  transport: <FaBus />,
+  fuel: <FaGasPump />,
+  utilities: <FaBolt />,
+  rent: <FaHome />,
+  mortgage: <FaBuilding />,
+  internet: <FaWifi />,
+  phone: <FaMobileAlt />,
+  insurance: <FaShieldAlt />,
+  medical: <FaHeartbeat />,
+  health: <FaHeartbeat />,
+  fitness: <FaDumbbell />,
+  education: <FaBook />,
+  subscriptions: <FaTv />,
+  entertainment: <FaFilm />,
+  restaurants: <FaUtensils />,
+  clothing: <FaTshirt />,
+  'personal care': <FaUser />,
+  gifts: <FaHandsHelping />,
+  charity: <FaHandsHelping />,
+  taxes: <FaMoneyBillWave />,
+  savings: <FaPiggyBank />,
+  investments: <FaChartLine />,
+  'loan repayment': <FaUniversity />,
+  debt: <FaMoneyBillWave />,
+  travel: <FaPlane />,
+  accommodation: <FaHome />,
+  salary: <FaWallet />,
+  freelance: <FaLaptop />,
+  bonus: <FaCoins />,
+  refund: <FaExchangeAlt />,
+  'transfer in': <FaExchangeAlt />,
+  'transfer out': <FaExchangeAlt />,
+  'cash withdrawal': <FaMoneyBillWave />,
+  'cash deposit': <FaMoneyBillWave />,
+  'business income': <FaLaptop />,
+  'business expense': <FaLaptop />,
+  maintenance: <FaTools />,
+  repairs: <FaTools />,
+  childcare: <FaChild />,
+  pets: <FaPaw />,
+  'home improvement': <FaHome />,
+  fees: <FaMoneyBillWave />,
+  commissions: <FaCoins />,
+  'interest income': <FaCoins />,
+  dividends: <FaCoins />,
+  'crypto purchase': <FaCoins />,
+  'crypto sale': <FaCoins />,
+  forex: <FaExchangeAlt />,
+  'wallet top-up': <FaWallet />,
+  'wallet withdrawal': <FaWallet />,
+  default: <FaMoneyBillWave />
 };
 
 const CategoryDropdown = ({
@@ -224,10 +229,7 @@ const BudgetForm = ({
   isEdit = false
 }) => {
   const [formData, setFormData] = useState(initialData);
-  const selectedCategory = categories.find(cat => cat.category_id === formData.category_id);
-  const categoryName = selectedCategory?.category_name?.toLowerCase() || '';
-  const iconData = categoryIcons[categoryName] || categoryIcons.default;
-
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -248,24 +250,27 @@ const BudgetForm = ({
     onSave(formData);
   };
 
+  const selectedCategory = categories.find(cat => cat.category_id === formData.category_id);
+  const categoryName = selectedCategory?.category_name?.toLowerCase() || '';
+
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 mb-4 border border-gray-100 dark:border-gray-700">
+    <div className="bg-white rounded-xl shadow-md p-4 mb-4">
       <form onSubmit={handleSubmit}>
-        <div className="flex items-start gap-4">
-          <div className={`w-12 h-12 ${iconData.color} rounded-xl flex items-center justify-center text-xl`}>
-            {iconData.icon}
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-xl text-[#555]">
+            {categoryIcons[categoryName] || categoryIcons.default}
           </div>
-          <div className="flex-1 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex-1">
+            <div className="grid grid-cols-3 gap-4">
               {isEdit ? (
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Budget Name</label>
+                <div>
+                  <label className="block text-sm text-gray-500 mb-1">Budget Name</label>
                   <input
                     type="text"
                     name="budget_name"
                     value={formData.budget_name}
                     onChange={handleChange}
-                    className="w-full p-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#467D35] focus:border-[#467D35] dark:bg-gray-700 dark:text-gray-200"
+                    className="w-full p-2 border rounded-md"
                     required
                     placeholder="Enter budget name"
                   />
@@ -301,21 +306,21 @@ const BudgetForm = ({
                 </>
               )}
             </div>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={onCancel}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 text-sm font-medium text-white bg-[#AAD977] rounded-lg hover:bg-[#6d9140] transition flex items-center gap-2"
-              >
-                <FaCheck /> Save
-              </button>
-            </div>
+          </div>
+          <div className="flex gap-2">
+            <button 
+              type="submit" 
+              className="flex items-center gap-1 bg-green-100 text-green-600 px-4 py-1 rounded-full hover:bg-green-200"
+            >
+              <FaCheck /> Save
+            </button>
+            <button 
+              type="button" 
+              onClick={onCancel}
+              className="flex items-center gap-1 bg-gray-100 text-gray-600 px-4 py-1 rounded-full hover:bg-gray-200"
+            >
+              <FaTimes /> Cancel
+            </button>
           </div>
         </div>
       </form>
@@ -323,21 +328,21 @@ const BudgetForm = ({
   );
 };
 
-const BudgetCard = ({
+const BudgetCard = ({ 
   budget_id,
-  budget_name,
-  total_target,
-  used,
-  onEdit,
-  onDelete
+  budget_name, 
+  total_target, 
+  used, 
+  onEdit, 
+  onDelete 
 }) => {
   const targetAmount = Number(total_target) || 0;
   const usedAmount = Number(used) || 0;
   const remainingAmount = targetAmount - usedAmount;
   const percentageUsed = targetAmount > 0 ? Math.min((usedAmount / targetAmount) * 100, 100) : 0;
   const categoryName = budget_name?.toLowerCase() || '';
-  const iconData = categoryIcons[categoryName] || categoryIcons.default;
-
+  const icon = categoryIcons[categoryName] || categoryIcons.default;
+  
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 mb-4 border border-gray-100 dark:border-gray-700 hover:shadow-md transition w-full">
       <div className="flex items-center justify-between gap-4">
@@ -482,6 +487,7 @@ const BudgetPage = () => {
   const handleSave = async (formData) => {
     try {
       if (editingId) {
+        // Update existing budget (name only)
         const response = await fetch(`http://localhost:5000/api/budget/${editingId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -501,6 +507,7 @@ const BudgetPage = () => {
           setError(result.message || 'Failed to update budget');
         }
       } else {
+        // Create new budget
         const response = await fetch('http://localhost:5000/api/budget', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -579,18 +586,15 @@ const BudgetPage = () => {
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Budget Management</h2>
           <button
             onClick={handleCreate}
-            className="flex items-center gap-2 px-5 py-2.5 bg-[#AAD977] text-white text-sm font-medium rounded-lg hover:bg-[#6d9140] transition shadow-sm"
+            className="flex items-center gap-2 px-4 py-1 bg-[#D8F5C5] text-[#467D35] text-sm font-medium rounded-full hover:bg-[#c8ecb4] transition"
           >
-            <FaPlus /> Create Budget
+            <FaPlus /> Create
           </button>
         </div>
 
         {error && (
-          <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 text-red-500 dark:text-red-300 p-4 mb-6 rounded">
-            <div className="flex items-center">
-              <FaTimes className="mr-2" />
-              <span>{error}</span>
-            </div>
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
           </div>
         )}
 
@@ -609,7 +613,7 @@ const BudgetPage = () => {
 
         <div className="space-y-4">
           {isCreating && (
-            <BudgetForm
+            <BudgetForm 
               onSave={handleSave}
               onCancel={handleCancel}
               categories={categories}
@@ -617,7 +621,8 @@ const BudgetPage = () => {
             />
           )}
 
-          {filteredBudgets.map((budget) => (
+          {/* Budget List */}
+          {budgets.map((budget) => (
             editingId === budget.budget_id ? (
               <BudgetForm
                 key={budget.budget_id}
@@ -641,28 +646,8 @@ const BudgetPage = () => {
           ))}
 
           {budgets.length === 0 && !isCreating && (
-            <div className="text-center py-12">
-              <div className="mx-auto w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
-                <FaWallet className="text-gray-400 dark:text-gray-500 text-3xl" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-1">No budgets yet</h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-4">Create your first budget to start tracking your expenses</p>
-              <button
-                onClick={handleCreate}
-                className="px-5 py-2.5 bg-[#AAD977] text-white rounded-lg hover:bg-[#6d9140] transition"
-              >
-                <FaPlus className="inline mr-2" /> Create Budget
-              </button>
-            </div>
-          )}
-
-          {budgets.length > 0 && filteredBudgets.length === 0 && (
-            <div className="text-center py-12">
-              <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <FaSearch className="text-gray-400 text-3xl" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-700 mb-1">No budgets found</h3>
-              <p className="text-gray-500">Try adjusting your search term</p>
+            <div className="text-center text-gray-500 py-8">
+              No budgets created yet. Click "Create" to add your first budget.
             </div>
           )}
         </div>

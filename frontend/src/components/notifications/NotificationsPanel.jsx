@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import React from 'react';
 import {
-  FaTimes, FaUserPlus, FaCheckCircle, FaTrophy, FaBell, FaChartBar,
-  FaCalendarAlt, FaExclamationTriangle, FaCoins, FaMedal, FaFire, FaHeart, FaGem
+  FaTimes,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaBell
 } from 'react-icons/fa';
 
 const notificationStyles = {

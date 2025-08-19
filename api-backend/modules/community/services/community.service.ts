@@ -19,10 +19,10 @@ export async function createCommunity(data: CommunityRecord) {
     RETURNING *;
   `;
   try {
-    const result = await pool.query(query, [ data.owner_id, data.community_name, data.description || null, data.banner_id || 1 ]
+    const result = await pool.query(query, [data.owner_id, data.community_name, data.description || null, data.banner_id || 1]
     );
     logger.info(`[CommunityService] Created community: ${data.community_name}`);
-    return result.rows[ 0 ];
+    return result.rows[0];
   } catch (err) {
     logger.error('[CommunityService] Failed to create community:', err);
     throw err;
@@ -32,185 +32,12 @@ export async function createCommunity(data: CommunityRecord) {
 export async function getCommunityById(community_id: number) {
   const query = 'SELECT * FROM communities WHERE community_id = $1';
   try {
-    const result = await pool.query(query, [ community_id ]);
-    return result.rows[ 0 ];
+    const result = await pool.query(query, [community_id]);
+    return result.rows[0];
   } catch (err) {
     logger.error(`[CommunityService] Failed to fetch community ID ${community_id}:`, err);
     throw err;
   }
-}
-
-
-export async function getCommunityByTitle(name: string) {
-  const query = `
-    SELECT
-      c.community_id,
-      c.community_name,
-      c.description,
-      c.banner_id      AS "bannerId",
-      CONCAT('../../assets/Images', '/', b.banner_image_path) AS banner_url,
-
-      /* 1) MEMBERS */
-      (
-        SELECT COALESCE(json_agg(json_build_object(
-          'user_id',   u.user_id,
-          'username',  u.username,
-          'level',     p.tier_status,
-          'avatar',    CONCAT('../../assets/Images', '/', ai.avatar_image_path),
-          'joined_at', m.joined_at
-        )), '[]'::json)
-        FROM community_members m
-        JOIN users u         ON u.user_id = m.user_id
-        JOIN user_points p   ON p.user_id = u.user_id
-        JOIN user_preferences up ON up.user_id = u.user_id
-        JOIN avatar_images ai    ON ai.avatar_id  = up.avatar_id
-        WHERE m.community_id = c.community_id
-          AND m.membership_status = 'accepted'
-      ) AS members,
-
-      /* 2) CHALLENGES */
-      (
-        SELECT COALESCE(json_agg(json_build_object(
-          'id',               ch.challenge_id,
-          'title',            ch.challenge_title,
-          'challenge_type',   ch.challenge_type,
-          'measurement_type', ch.measurement_type,
-          'challenge_status',  ch.challenge_status,
-          'xp',               GREATEST(10, FLOOR(ch.target_amount/100)),
-          'deadline',         to_char(ch.target_date,'YYYY-MM-DD'),
-
-          /* get current_amount via a sub-select */
-          'current_amount', ch.current_amount,
-
-          /* target is on the challenge row itself */
-          'target_amount', ch.target_amount,
-
-          /* count COMPLETED entries correctly */
-          'status',
-            CONCAT(
-              (
-                SELECT COUNT(*) 
-                FROM challenge_progress cpB
-                JOIN challenges chp ON chp.challenge_id = cpB.challenge_id
-                WHERE cpB.challenge_id    = ch.challenge_id
-                  AND chp.challenge_status = 'completed'
-              ),
-              ' completed'
-            ),
-
-          /* avatarGroup as before */
-          'avatarGroup',
-            (
-              SELECT COALESCE(json_agg(
-                CONCAT('../../assets/Images', '/', ai2.avatar_image_path)
-              ), '[]'::json)
-              FROM challenge_progress cp2
-              JOIN user_preferences up2 ON up2.user_id = cp2.user_id
-              JOIN avatar_images ai2    ON ai2.avatar_id = up2.avatar_id
-              WHERE cp2.challenge_id = ch.challenge_id
-              LIMIT 5
-            )
-
-        )), '[]'::json)
-        FROM challenges ch
-        WHERE ch.community_id = c.community_id
-      ) AS challenges,  
-
-      /* 3) XP COLLECTED */
-      (
-        SELECT COALESCE(SUM(
-          GREATEST(10, FLOOR(ch2.target_amount/100))
-        ),0)
-        FROM challenge_progress cp3
-        JOIN challenges ch2 ON ch2.challenge_id = cp3.challenge_id
-        WHERE ch2.challenge_status = 'completed'
-          AND ch2.community_id = c.community_id
-      ) AS "xpCollected",
-
-      /* 4) XP GOAL */
-      (
-        SELECT COALESCE(SUM(
-          GREATEST(10, FLOOR(ch3.target_amount/100))
-        ),0)
-        FROM challenges ch3
-        WHERE ch3.community_id = c.community_id
-      ) AS "xpGoal",
-
-      /* 5) GOALS COMPLETED */
-      (
-        SELECT COUNT(*)
-        FROM challenge_progress cp4
-        JOIN challenges ch4 ON ch4.challenge_id = cp4.challenge_id
-        WHERE ch4.challenge_status = 'completed'
-          AND ch4.community_id = c.community_id
-      ) AS "goalsCompleted",
-
-      /* 6) TOTAL CHALLENGES */
-      (
-        SELECT COUNT(*) 
-        FROM challenges ch5
-        WHERE ch5.community_id = c.community_id
-      ) AS "goalsTotal"
-
-    FROM communities c
-    LEFT JOIN banner_images b ON b.banner_id = c.banner_id
-    WHERE c.community_name ILIKE $1
-    LIMIT 1;
-  `;
-
-  const { rows } = await pool.query(query, [
-    `%${name}%`
-  ]);
-   
-  // add member contributions
-  if (rows.length) {
-    const contributions = await getContributionScoresByCommunity(rows[0].community_id);
-    rows[0].contributions = contributions;
-  }
-  if (!rows.length) throw new Error(`No community "${name}"`);
-  return rows[0];
-}
-
-
-// 1) Update the community’s core fields
-export async function updateCommunity(
-  communityId: number,
-  data: {
-    community_name: string;
-    description: string;
-  }
-) {
-  const { community_name, description } = data;
-  const query = `
-    UPDATE communities
-    SET community_name = $2,
-        description    = $3
-    WHERE community_id = $1
-    RETURNING community_id,
-              community_name,
-              description,
-              banner_id AS "bannerId";
-  `;
-
-  const { rows } = await pool.query(query, [
-    communityId,
-    community_name,
-    description
-  ]);
-
-  if (rows.length === 0) {
-    throw new Error(`Community ${communityId} not found`);
-  }
-  return rows[ 0 ];
-}
-
-export async function removeMember(communityId: number, userId: number): Promise<void> {
-  const query = `
-    DELETE FROM community_members
-    WHERE community_id = $1
-      AND user_id      = $2
-  `;
-  await pool.query(query, [ communityId, userId ]);
 }
 
 export async function listCommunitiesByUser(user_id: number) {
@@ -221,7 +48,7 @@ export async function listCommunitiesByUser(user_id: number) {
     WHERE m.user_id = $1 AND m.membership_status = 'accepted'
   `;
   try {
-    const result = await pool.query(query, [ user_id ]);
+    const result = await pool.query(query, [user_id]);
     return result.rows;
   } catch (err) {
     logger.error(`[CommunityService] Failed to list communities for user ID ${user_id}:`, err);
@@ -301,9 +128,9 @@ export async function addCommunityMember(community_id: number, user_id: number, 
     RETURNING *;
   `;
   try {
-    const result = await pool.query(query, [ community_id, user_id, status ]);
+    const result = await pool.query(query, [community_id, user_id, status]);
     logger.info(`[CommunityService] Membership updated: user ${user_id} in community ${community_id} as ${status}`);
-    return result.rows[ 0 ];
+    return result.rows[0];
   } catch (err) {
     logger.error(`[CommunityService] Failed to add/update member ${user_id} to community ${community_id}:`, err);
     throw err;
@@ -318,7 +145,7 @@ export async function getCommunityMembers(community_id: number) {
     WHERE m.community_id = $1
   `;
   try {
-    const result = await pool.query(query, [ community_id ]);
+    const result = await pool.query(query, [community_id]);
     return result.rows;
   } catch (err) {
     logger.error(`[CommunityService] Failed to fetch members of community ${community_id}:`, err);
@@ -329,9 +156,8 @@ export async function getCommunityMembers(community_id: number) {
 export async function removeCommunityMember(community_id: number, user_id: number) {
   const query = 'DELETE FROM community_members WHERE community_id = $1 AND user_id = $2';
   try {
-    await pool.query(query, [ community_id, user_id ]);
+    await pool.query(query, [community_id, user_id]);
     logger.info(`[CommunityService] Removed user ${user_id} from community ${community_id}`);
-    return;
   } catch (err) {
     logger.error(`[CommunityService] Failed to remove user ${user_id} from community ${community_id}:`, err);
     throw err;
@@ -347,60 +173,11 @@ export async function getPendingInvites(user_id: number) {
     WHERE m.user_id = $1 AND m.membership_status IN ('invited', 'requested')
   `;
   try {
-    const result = await pool.query(query, [ user_id ]);
+    const result = await pool.query(query, [user_id]);
     logger.info(`[CommunityService] Fetched pending invites/requests for user ID ${user_id}`);
     return result.rows;
   } catch (err) {
     logger.error(`[CommunityService] Failed to fetch pending invites for user ID ${user_id}:`, err);
-    throw err;
-  }
-}
-
-export async function getCommunityInvites(community_id: number) {
-  const query = `
-    SELECT u.user_id, u.username, m.membership_status, ai.avatar_image_path, up2.total_points
-    FROM community_members m
-    INNER JOIN users u ON m.user_id = u.user_id
-    JOIN user_preferences up ON u.user_id = up.user_id
-    JOIN avatar_images ai ON up.avatar_id = ai.avatar_id
-    JOIN user_points up2 ON u.user_id = up2.user_id
-    WHERE m.community_id = $1 AND m.membership_status IN ('invited', 'requested')
-  `;
-  try {
-    const result = await pool.query(query, [ community_id ]);
-    logger.info(`[CommunityService] Fetched invites for community ID ${community_id}`);
-    return result.rows;
-  } catch (err) {
-    logger.error(`[CommunityService] Failed to fetch invites for community ID ${community_id}:`, err);
-    throw err;
-  }
-}
-
-export async function respondToInvite(community_id: number, user_id: number, response: 'accepted' | 'declined') {
-  const query = `
-    UPDATE community_members
-    SET membership_status = $1
-    WHERE community_id = $2 AND user_id = $3
-  `;
-  try {
-    await pool.query(query, [ response, community_id, user_id ]);
-    logger.info(`[CommunityService] Updated invite response for user ID ${user_id} in community ID ${community_id} to ${response}`);
-  } catch (err) {
-    logger.error(`[CommunityService] Failed to update invite response for user ID ${user_id} in community ID ${community_id}:`, err);
-    throw err;
-  }
-}
-
-export async function requestCommunityMembership(community_id: number, user_id: number) {
-  const query = `
-    INSERT INTO community_members (community_id, user_id, membership_status)
-    VALUES ($1, $2, 'requested')
-  `;
-  try {
-    await pool.query(query, [ community_id, user_id ]);
-    logger.info(`[CommunityService] User ID ${user_id} requested membership for community ID ${community_id}`);
-  } catch (err) {
-    logger.error(`[CommunityService] Failed to request membership for user ID ${user_id} in community ID ${community_id}:`, err);
     throw err;
   }
 }
@@ -502,7 +279,7 @@ export async function getChallengesByUserCategorized(user_id: number): Promise<{
     ORDER BY ch.challenge_status, COALESCE(cp.join_date, ch.start_date) DESC;
   `;
 
-  const { rows } = await pool.query(query, [ user_id ]);
+  const { rows } = await pool.query(query, [user_id]);
 
   const categorized = {
     active: [] as ChallengeItem[],
@@ -546,7 +323,7 @@ export async function getChallengesByUserCategorized(user_id: number): Promise<{
     if (row.challenge_status === 'completed') {
       categorized.completed.push({
         ...base,
-        completedOn: end.toISOString().split('T')[ 0 ],
+        completedOn: end.toISOString().split('T')[0],
       });
     } else if (row.challenge_status === 'expired') {
       categorized.expired.push(base);
@@ -655,7 +432,7 @@ export async function getCommunityStats(user_id: number) {
       client.query(`
         SELECT COUNT(*) FROM community_members
         WHERE user_id = $1 AND membership_status = 'accepted'
-      `, [ user_id ]),
+      `, [user_id]),
 
       // 2. Challenges across user's communities
       client.query(`
@@ -664,39 +441,38 @@ export async function getCommunityStats(user_id: number) {
           SELECT community_id FROM community_members
           WHERE user_id = $1 AND membership_status = 'accepted'
         )
-      `, [ user_id ]),
+      `, [user_id]),
 
       // 3. Leaderboard rank (assumes 1 row per user)
       client.query(`
-        SELECT ranking FROM (
-          SELECT user_id, RANK() OVER (ORDER BY total_points DESC) AS ranking
-          FROM user_points
-        ) ranked
+        SELECT ranking FROM leaderboard_entries
         WHERE user_id = $1
-      `, [ user_id ]),
+        ORDER BY created_at DESC
+        LIMIT 1
+      `, [user_id]),
 
       // 4. Games played — from quiz attempts
       client.query(`
         SELECT COUNT(*) FROM quiz_attempts
         WHERE user_id = $1
-      `, [ user_id ]),
+      `, [user_id]),
 
       // 5. Friends — accepted only
       client.query(`
         SELECT COUNT(*) FROM friendships
         WHERE (user_id = $1 OR friend_id = $1)
         AND relationship_status = 'accepted'
-      `, [ user_id ])
+      `, [user_id])
     ]);
 
     client.release();
 
     return {
-      communities: parseInt(communities.rows[ 0 ].count),
-      challenges: parseInt(challenges.rows[ 0 ].count),
-      leaderboard: leaderboardRank.rows[ 0 ]?.ranking || null,
-      gamesPlayed: parseInt(gamesPlayed.rows[ 0 ].count),
-      friends: parseInt(friends.rows[ 0 ].count),
+      communities: parseInt(communities.rows[0].count),
+      challenges: parseInt(challenges.rows[0].count),
+      leaderboard: leaderboardRank.rows[0]?.ranking || null,
+      gamesPlayed: parseInt(gamesPlayed.rows[0].count),
+      friends: parseInt(friends.rows[0].count),
       socialPosts: 7 // Mocked static value for now
     };
   } catch (err) {
@@ -705,39 +481,6 @@ export async function getCommunityStats(user_id: number) {
   }
 }
 
-async function getContributionScoresByCommunity(communityId: number) {
-  try {
-  const query = `
-    SELECT
-      cp.user_id,
-      u.username AS name,
-      SUM(cp.progress_amount) AS total_user_progress,
-      SUM(c.target_amount) AS total_target
-    FROM challenge_progress cp
-    JOIN challenges c ON cp.challenge_id = c.challenge_id
-    JOIN users u ON cp.user_id = u.user_id
-    WHERE c.community_id = $1
-      AND cp.participation_status = 'joined'
-      AND c.challenge_status = 'active'
-    GROUP BY cp.user_id, u.username
-    ORDER BY total_user_progress DESC
-  `;
-
-  const { rows } = await pool.query(query, [communityId]);
-
-  return rows.map(row => ({
-    userId: row.user_id,
-    name: row.name,
-    score: Math.min(100, Number(((row.total_user_progress / row.total_target) * 100).toFixed(2))),
-  }));
-  } catch (err) {
-    logger.error(`[CommunityService] Failed to fetch contribution scores for community ${communityId}:`, err);
-    throw new Error("Could not fetch contribution scores.");
-  }
-}
-
-
-
 // Get community performance summary for a user
 export async function getCommunityPerformanceSummary(user_id: number) {
   try {
@@ -745,7 +488,7 @@ export async function getCommunityPerformanceSummary(user_id: number) {
       INSERT INTO user_points (user_id, total_points)
       VALUES ($1, 0)
       ON CONFLICT (user_id) DO NOTHING
-    `, [ user_id ]);
+    `, [user_id]);
 
     const query = `
       SELECT
@@ -791,21 +534,21 @@ export async function getCommunityPerformanceSummary(user_id: number) {
       WHERE up.user_id = $1;
     `;
 
-    const { rows } = await pool.query(query, [ user_id ]);
-    const d = rows[ 0 ];
+    const { rows } = await pool.query(query, [user_id]);
+    const d = rows[0];
     if (!d) throw new Error("No data found for user.");
 
     const xp = d.total_points;
 
     // Scoring weights
     const score =
-      (Math.min(d.challenges, 30) * 3) +       // Max 90
-      (d.leaderboard * 1.0) +                  // Max 100
-      (Math.min(d.games_played, 50) * 2) +     // Max 100
-      (Math.min(d.communities, 20) * 2) +      // Max 40
-      (Math.min(d.friends, 30) * 1.5) +        // Max 45
-      (Math.min(7, 20) * 2) +        // Max 40
-      50;                                      // Bonus for participating in all areas
+    (Math.min(d.challenges, 30) * 3) +       // Max 90
+    (d.leaderboard * 1.0) +                  // Max 100
+    (Math.min(d.games_played, 50) * 2) +     // Max 100
+    (Math.min(d.communities, 20) * 2) +      // Max 40
+    (Math.min(d.friends, 30) * 1.5) +        // Max 45
+    (Math.min(7, 20) * 2) +        // Max 40
+    50;                                      // Bonus for participating in all areas
 
     const performance_score = Math.min(Math.round(score), 1000);
 
@@ -836,7 +579,7 @@ export async function deleteCommunityById(community_id: number) {
   try {
     const result = await pool.query(
       'DELETE FROM communities WHERE community_id = $1 RETURNING *;',
-      [ community_id ]
+      [community_id]
     );
 
     if (result.rowCount === 0) {
@@ -844,7 +587,7 @@ export async function deleteCommunityById(community_id: number) {
     }
 
     logger.info(`[CommunityService] Deleted community ID ${community_id}`);
-    return result.rows[ 0 ];
+    return result.rows[0];
   } catch (err) {
     logger.error(`[CommunityService] Failed to delete community ID ${community_id}:`, err);
     throw err;
@@ -857,26 +600,10 @@ export async function getAllBanners() {
     const result = await pool.query(`
       SELECT banner_id, banner_image_path FROM banner_images
     `);
+    logger.info('[CommunityService] Fetched all banners');
     return result.rows;
   } catch (err) {
     logger.error('[CommunityService] Failed to fetch banners:', err);
-    throw err;
-  }
-}
-
-export async function getUserID(username: string) {
-  const query = `
-    SELECT user_id FROM users WHERE username ILIKE $1
-  `;
-
-  try {
-    const result = await pool.query(query, [ `%${username}%` ]);
-    if (result.rowCount === 0) {
-      throw new Error(`No user found with username "${username}"`);
-    }
-    return result.rows[ 0 ].user_id;
-  } catch (err) {
-    logger.error(`[CommunityService] Failed to fetch user ID for username "${username}":`, err);
     throw err;
   }
 }
@@ -902,34 +629,11 @@ export async function getUserFriendsWithAvatars(user_id: number) {
   `;
 
   try {
-    const result = await pool.query(query, [ user_id ]);
+    const result = await pool.query(query, [user_id]);
     logger.info(`[CommunityService] Fetched friends with avatars and tier for user ID ${user_id}`);
     return result.rows;
   } catch (err) {
     logger.error(`[CommunityService] Failed to fetch friends for user ${user_id}:`, err);
-    throw err;
-  }
-}
-
-export async function fetchAllUsers() {
-  const query = `
-    SELECT 
-      u.user_id,  
-      u.username,
-      ai.avatar_image_path,
-      up.tier_status
-    FROM users u
-    JOIN user_preferences pref ON pref.user_id = u.user_id  
-    JOIN avatar_images ai ON pref.avatar_id = ai.avatar_id
-    LEFT JOIN user_points up ON u.user_id = up.user_id
-    ORDER BY u.username;
-  `;
-
-  try {
-    const result = await pool.query(query);
-    return result.rows;
-  } catch (err) {
-    logger.error('[CommunityService] Failed to fetch all users:', err);
     throw err;
   }
 }
@@ -974,7 +678,7 @@ export async function getFriendRecommendations(user_id: number, limit: number = 
       LIMIT $2;
     `;
 
-    const { rows } = await pool.query(query, [ user_id, limit ]);
+    const { rows } = await pool.query(query, [user_id, limit]);
     logger.info(`[CommunityService] Fetched ${rows.length} friend recommendations for user ${user_id}`);
     return rows;
   } catch (err) {
@@ -984,31 +688,9 @@ export async function getFriendRecommendations(user_id: number, limit: number = 
 }
 
 export async function sendFriendRequest(sender_id: number, receiver_id: number) {
-  // check if sender and receiver are not the same
-  if (sender_id === receiver_id) {
-    throw new Error("You cannot send a friend request to yourself silly.");
-  }
-
-  // check if a friendship already exists
-  const existingQuery = `
-    SELECT * FROM friendships
-    WHERE (user_id = $1 AND friend_id = $2)
-       OR (user_id = $2 AND friend_id = $1);
-  `;
-  
-  const existingResult = await pool.query(existingQuery, [ sender_id, receiver_id ]);
-
-  if ((existingResult?.rowCount ?? 0) > 0) {
-    const existingFriendship = existingResult.rows[ 0 ];
-    
-    if (existingFriendship.relationship_status === 'accepted') {
-      throw new Error("You are already friends with this user.");
-    } else if (existingFriendship.relationship_status === 'pending') {
-      throw new Error("A friend request is already pending.");
-    } else if (existingFriendship.relationship_status === 'declined') {
-      throw new Error("You cannot send a new request after it was declined.");
-    }
-  }
+  const [user1, user2] = sender_id < receiver_id
+    ? [sender_id, receiver_id]
+    : [receiver_id, sender_id];
 
   const query = `
     INSERT INTO friendships (user_id, friend_id, relationship_status)
@@ -1020,9 +702,9 @@ export async function sendFriendRequest(sender_id: number, receiver_id: number) 
   `;
 
   try {
-    const result = await pool.query(query, [ sender_id, receiver_id ]);
-    logger.info(`[CommunityService] Friend request recorded between ${sender_id} and ${receiver_id}`);
-    return result.rows[ 0 ];
+    const result = await pool.query(query, [user1, user2]);
+    logger.info(`[CommunityService] Friend request recorded between ${user1} and ${user2}`);
+    return result.rows[0];
   } catch (err) {
     logger.error(`[CommunityService] Failed to send friend request:`, err);
     throw err;
@@ -1031,6 +713,8 @@ export async function sendFriendRequest(sender_id: number, receiver_id: number) 
 
 
 export async function deleteFriend(user_id: number, friend_id: number) {
+  const [u1, u2] = user_id < friend_id ? [user_id, friend_id] : [friend_id, user_id];
+
   const query = `
     DELETE FROM friendships
     WHERE user_id = $1 AND friend_id = $2
@@ -1038,52 +722,14 @@ export async function deleteFriend(user_id: number, friend_id: number) {
   `;
 
   try {
-    const result = await pool.query(query, [user_id, friend_id]);
+    const result = await pool.query(query, [u1, u2]);
     if (result.rowCount === 0) {
-      throw new Error(`No friendship found between ${user_id} and ${friend_id}`);
+      throw new Error(`No friendship found between ${u1} and ${u2}`);
     }
-    logger.info(`[CommunityService] Friendship deleted between ${user_id} and ${friend_id}`);
+    logger.info(`[CommunityService] Friendship deleted between ${u1} and ${u2}`);
     return result.rows[0];
   } catch (err) {
-    logger.error(`[CommunityService] Failed to delete friend between ${user_id} and ${friend_id}:`, err);
-    throw err;
-  }
-}
-
-export async function getFriendshipStatus(user_id: number, friend_id: number) {
-  const query = `
-    SELECT user_id, friend_id, relationship_status AS status
-    FROM friendships
-    WHERE user_id = $1
-    AND friend_id = $2
-  `;
-
-  try {
-    const result = await pool.query(query,[ user_id, friend_id]);
-    logger.info(`[CommunityService] Fetched friend request `);
-    return result.rows[0];
-  } catch (error) {
-    logger.error(`[CommunityService] Failed to get friend requests`, error);
-    throw error;
-  }
-}
-
-export async function respondToFriendRequests(userId: number, receiver_id: number, response: string) {
-
-  const query = `
-    UPDATE friendships
-    SET relationship_status = $1
-    WHERE user_id = $2
-    AND  friend_id = $3
-      RETURNING *;
-  `;
-
-  try {
-    const res = await pool.query(query, [response, userId, receiver_id]);
-    if (res.rowCount === 0) throw new Error('No such friendship');
-    return res.rows[0];
-  } catch (err) {
-    logger.error(`[CommunityService] Friend requests for userID ${userId} updated with ${response} failed`);
+    logger.error(`[CommunityService] Failed to delete friend between ${u1} and ${u2}:`, err);
     throw err;
   }
 }
@@ -1166,29 +812,9 @@ export async function createChallenge(data: ChallengeRecord) {
   try {
     const result = await pool.query(query, values);
     logger.info(`[CommunityService] Created challenge '${challenge_title}'`);
-    return result.rows[ 0 ]; // includes xp_reward as virtual field
+    return result.rows[0]; // includes xp_reward as virtual field
   } catch (err) {
     logger.error('[CommunityService] Failed to create challenge:', err);
-    throw err;
-  }
-}
-
-export async function deleteChallengeById(challenge_id: number) {
-  const query = `
-    DELETE FROM challenges
-    WHERE challenge_id = $1
-    RETURNING *;
-  `;
-
-  try {
-    const result = await pool.query(query, [ challenge_id ]);
-    if (result.rowCount === 0) {
-      throw new Error(`Challenge ID ${challenge_id} not found.`);
-    }
-    logger.info(`[CommunityService] Deleted challenge ID ${challenge_id}`);
-    return result.rows[ 0 ];
-  } catch (err) {
-    logger.error(`[CommunityService] Failed to delete challenge ID ${challenge_id}:`, err);
     throw err;
   }
 }
@@ -1204,7 +830,7 @@ export async function getCategoriesWithCustom(userId: number) {
   `;
 
   try {
-    const result = await pool.query(query, [ userId ]);
+    const result = await pool.query(query, [userId]);
     return result.rows;
   } catch (err) {
     logger.error('[CommunityService] Failed to fetch categories:', err);

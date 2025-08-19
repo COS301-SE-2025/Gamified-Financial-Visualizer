@@ -514,4 +514,6 @@ const CompleteAchievement = () => {
   );
 };
 
-export default CompleteAchievement;
+
+export default CompleteAchievementsPage;
+

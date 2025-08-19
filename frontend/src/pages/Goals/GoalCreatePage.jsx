@@ -1,7 +1,6 @@
 // GoalCreatePage.jsx
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { FaChevronDown } from 'react-icons/fa';
-import { createPortal } from 'react-dom';
 import goal1 from '../../assets/Images/banners/pixelApartment.gif';
 import goal2 from '../../assets/Images/banners/pixelHouse.gif';
 import goal3 from '../../assets/Images/banners/pixelOffice1.gif';
@@ -199,7 +198,7 @@ const GoalCreatePage = () => {
   });
 
   const user = JSON.parse(localStorage.getItem('user'));
-  const [categories, setCategories] = useState([]);
+const [categories, setCategories] = useState([]);
 
   const toLocalISO = (d) => {
     const x = new Date(d);
@@ -247,23 +246,24 @@ const GoalCreatePage = () => {
       category_id: Number(form.category)
     };
 
-    try {
-      const res = await fetch('http://localhost:5000/api/goal', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(goalPayload)
-      });
+  try {
+    const res = await fetch('http://localhost:5000/api/goal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(goalPayload)
+    });
 
-      const data = await res.json();
-      if (res.ok) {
-        window.location.href = '/goals';
-      } else {
-        console.error(`Failed to create goal: ${data.message}`);
-      }
-    } catch (err) {
-      console.error('Error submitting goal:', err);
+    const data = await res.json();
+    if (res.ok) {
+      window.location.href = '/goals';
+    } else {
+      alert(`Failed to create goal: ${data.message}`);
     }
-  };
+  } catch (err) {
+    console.error('Error submitting goal:', err);
+    alert('An error occurred while creating the goal.');
+  }
+};
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -286,26 +286,29 @@ const GoalCreatePage = () => {
     setForm((prev) => ({ ...prev, image: img }));
   };
 
+
+
+
   return (
     <GoalsViewLayout>
       <form onSubmit={handleSubmit} className="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-2xl shadow dark:shadow-lg space-y-6 border border-gray-100 dark:border-gray-700">
         {/* Basic Information */}
         <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Create a Goal</h3>
+          <h3 className="text-lg font-semibold text-gray-800">Create a Goal</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Goal Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Goal Name</label>
               <input
                 type="text"
                 name="name"
                 placeholder="e.g. Vacation Fund"
                 value={form.name}
                 onChange={handleChange}
-                className="rounded-xl px-4 py-2 border dark:border-gray-600 shadow dark:shadow-none focus:outline-none w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="rounded-xl px-4 py-2 border shadow focus:outline-none w-full"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target Amount (R)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Target Amount (R)</label>
               <input
                 type="number"
                 name="amount"
@@ -313,7 +316,7 @@ const GoalCreatePage = () => {
                 value={form.amount}
                 onChange={handleChange}
                 min="0"
-                className="rounded-xl px-4 py-2 border dark:border-gray-600 shadow dark:shadow-none w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="rounded-xl px-4 py-2 border shadow w-full"
               />
             </div>
           </div>
@@ -321,28 +324,28 @@ const GoalCreatePage = () => {
 
         {/* Timeframe */}
         <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Timeframe</h3>
+          <h3 className="text-lg font-semibold text-gray-800">Timeframe</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
               <input
                 type="date"
                 name="startDate"
                 value={form.startDate}
                 onChange={handleChange}
-                min={today}
-                className="rounded-xl px-4 py-2 border dark:border-gray-600 shadow dark:shadow-none w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                min={new Date().toISOString().split('T')[0]}
+                className="rounded-xl px-4 py-2 border shadow w-full"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
               <input
                 type="date"
                 name="endDate"
                 value={form.endDate}
                 onChange={handleChange}
-                min={form.startDate || today}
-                className="rounded-xl px-4 py-2 border dark:border-gray-600 shadow dark:shadow-none w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                min={new Date().toISOString().split('T')[0]}
+                className="rounded-xl px-4 py-2 border shadow w-full"
               />
             </div>
 
@@ -368,19 +371,27 @@ const GoalCreatePage = () => {
 
         {/* Category */}
         <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Category</h3>
+          <h3 className="text-lg font-semibold text-gray-800">Category</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Goal Category</label>
               <CategoryDropdown
                 name="category"
                 value={form.category}
-                onChange={(val) => handleChange({ target: { name: 'category', value: val } })}
-                options={(categories || []).map(c => ({ value: c.category_id, label: c.category_name }))}
-                placeholder="Select a category"
-              />
-            </div>
+                onChange={handleChange}
+                className="rounded-xl px-4 py-2 border shadow w-full appearance-none"
+                 >
+                <option value="">Select a category</option>
+                {categories.map((cat) => (
+                  <option key={cat.category_id} value={cat.category_id}>
+                    {cat.category_name}
+                  </option>
+                ))} 
 
+                </select>
+                <FaChevronDown className="absolute right-4 top-3 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
             <div className="flex items-end">
               <span className="text-sm font-medium text-green-500 dark:text-green-400">XP Reward: 20 XP</span>
             </div>
@@ -441,23 +452,21 @@ const GoalCreatePage = () => {
           )}
         </div>
       </form>
-
-      {/* Confirmation Modal */}
       {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg dark:shadow-xl w-[90%] max-w-md text-center space-y-4 border border-gray-200 dark:border-gray-700">
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Confirm Goal Creation</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Are you sure you want to create this goal?</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white p-6 rounded-2xl shadow-lg w-[90%] max-w-md text-center space-y-4">
+            <h2 className="text-xl font-semibold text-gray-800">Confirm Goal Creation</h2>
+            <p className="text-sm text-gray-600">Are you sure you want to create this goal?</p>
             <div className="flex justify-center gap-4 pt-2">
               <button
                 onClick={handleSubmit}
-                className="px-5 py-2 bg-[#AAD977] dark:bg-[#7FDD53] text-white rounded-full hover:bg-[#B4CB98] dark:hover:bg-[#86EFAC]"
+                className="px-5 py-2 bg-[#AAD977] text-white rounded-full hover:bg-[#B4CB98]"
               >
                 Yes, Create
               </button>
               <button
                 onClick={() => setShowConfirm(false)}
-                className="px-5 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600"
+                className="px-5 py-2 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300"
               >
                 Cancel
               </button>
@@ -465,6 +474,7 @@ const GoalCreatePage = () => {
           </div>
         </div>
       )}
+
     </GoalsViewLayout>
   );
 };

@@ -250,6 +250,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
   const [loadingGoals, setLoadingGoals] = useState(false);
   const [loadingChallenges, setLoadingChallenges] = useState(false);
 
+  // Fetch categories from API
   useEffect(() => {
     if (!isOpen) return;
     const user = (() => { try { return JSON.parse(localStorage.getItem('user') || 'null'); } catch { return null; } })();
@@ -302,7 +303,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    setError('');
+    setError(''); // Clear error when user types
   };
 
   const submit = async () => {
@@ -468,7 +469,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
         </h3>
 
         {error && (
-          <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded p-3 mb-4 text-red-700 dark:text-red-300 text-sm">
+          <div className="bg-red-50 border border-red-200 rounded p-3 mb-4 text-red-700 text-sm">
             {error}
           </div>
         )}
@@ -614,14 +615,14 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
           <button
             onClick={onClose}
             disabled={loading}
-            className="flex items-center gap-2 bg-red-100 dark:bg-red-800 text-red-500 dark:text-red-200 px-4 py-2 rounded-full disabled:opacity-50 hover:bg-red-300 dark:hover:bg-red-700 transition"
+            className="flex items-center gap-2 bg-red-200 text-red-600 px-4 py-2 rounded-full disabled:opacity-50"
           >
             <FaTimes /> Cancel
           </button>
           <button
             onClick={submit}
             disabled={loading}
-            className="flex items-center gap-2 bg-lime-100 dark:bg-green-700 text-lime-600 dark:text-green-100 px-4 py-2 rounded-full disabled:opacity-50 hover:bg-green-300 dark:hover:bg-green-600 transition"
+            className="flex items-center gap-2 bg-green-200 text-green-700 px-4 py-2 rounded-full disabled:opacity-50"
           >
             <FaSave /> {loading ? 'Saving…' : 'Save'}
           </button>

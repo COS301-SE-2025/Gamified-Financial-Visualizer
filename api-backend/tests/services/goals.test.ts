@@ -242,7 +242,7 @@ describe('Goal Service', () => {
 
       const result = await getTotalGoalValue(1);
 
-      expect(result.total_goal_value).toBe(5000);
+      expect(result).toBe(5000);
     });
 
     it('should return 0 when no goals exist', async () => {
@@ -250,7 +250,7 @@ describe('Goal Service', () => {
 
       const result = await getTotalGoalValue(1);
 
-      expect(result.total_goal_value).toBe(0);
+      expect(result).toBe(0);
     });
   });
 
@@ -279,7 +279,7 @@ describe('Goal Service', () => {
       const result = await getWeeklyGoalCompletions(1);
 
       expect(pool.query).toHaveBeenCalledWith(
-        expect.stringMatching(/TO_CHAR\(\s*w\.day\s*,\s*'Dy'\s*\)/),
+        expect.stringContaining('TO_CHAR(DATE(t.transaction_date), \'Dy\') AS day'),
         [ 1 ]
       );
       expect(result).toEqual(mockCompletions);
@@ -388,28 +388,28 @@ describe('Goal Service', () => {
   });
 
   describe('getUserGoalStats', () => {
-    it('should return correct goal statistics', async () => {
-      // Mock the database response
-      (pool.query as jest.Mock).mockResolvedValue({
-        rows: [ {
-          total_goals: 5,
-          completed_goals: 2,
-          total_saved: 1500.50
-        } ]
-      });
-
-      const result = await getUserGoalStats(1);
-
-      // Verify the query was called correctly
-      expect(pool.query).toHaveBeenCalledWith(expect.stringContaining('COUNT(*) FILTER'), [ 1 ]);
-
-      // Verify the returned structure
-      expect(result).toEqual({
+     it('should return correct goal statistics', async () => {
+    // Mock the database response
+    (pool.query as jest.Mock).mockResolvedValue({
+      rows: [{
         total_goals: 5,
         completed_goals: 2,
         total_saved: 1500.50
-      });
+      }]
     });
+
+    const result = await getUserGoalStats(1);
+
+    // Verify the query was called correctly
+    expect(pool.query).toHaveBeenCalledWith(expect.stringContaining('COUNT(*) FILTER'), [1]);
+    
+    // Verify the returned structure
+    expect(result).toEqual({
+      total_goals: 5,
+      completed_goals: 2,
+      total_saved: 1500.50
+    });
+  });
   });
 
   describe('getUpcomingGoals', () => {

@@ -2,10 +2,6 @@ import { Router, Request, Response } from 'express';
 import pool from '../../../config/db';
 import { logger } from '../../../config/logger';
 import * as communityService from '../services/community.service';
-import * as au from '../../auth/services/auth.service';
-import { notifyUser } from '../../notifications/services/notifications.services';
-import { redisClient } from '../../../config/redis';
-import { error } from 'console';
 
 const router = Router();
 
@@ -240,30 +236,6 @@ router.get('/leaderboard', async (_req: Request, res: Response) => {
   }
 });
 
-router.get('/userID/:username', async (req: Request, res: Response) => {
-  const username = req.params.username;
-
-  if (!username) {
-    res.status(400).json({ status: 'error', message: 'Username is required.' });
-    return;
-  }
-
-  try {
-    const user = await communityService.getUserID(username);
-    if (!user) {
-      res.status(404).json({ status: 'error', message: 'User not found.' });
-      return;
-    }
-    res.status(200).json({
-      status: 'success',
-      message: 'User ID retrieved successfully.',
-      data: user,
-    });
-  } catch (err) {
-    logger.error(`[Community] Failed to fetch user ID for username ${username}:`, err);
-    res.status(500).json({ status: 'error', message: 'Could not fetch user ID.' });
-  }
-})
 
 /**
  * @route DELETE /api/community/friends
@@ -286,7 +258,6 @@ router.delete('/friends', async (req: Request, res: Response) => {
     res.status(500).json({ status: 'error', message: 'Could not delete friend.' });
   }
 });
-
 
 
 /**
@@ -354,7 +325,6 @@ router.post('/', async (req: Request, res: Response) => {
   const { owner_id, community_name, description, banner_id, invited_usernames } = req.body;
 
   if (!owner_id || !community_name) {
-    logger.error('[Community] Missing required fields for community creation');
     res.status(400).json({ status: 'error', message: 'Missing required fields.' });
     return;
   }
@@ -374,9 +344,9 @@ router.post('/', async (req: Request, res: Response) => {
     if (Array.isArray(invited_usernames)) {
       const client = await pool.connect();
       for (const username of invited_usernames) {
-        const userRes = await client.query(`SELECT user_id FROM users WHERE username = $1`, [ username ]);
-        if (userRes.rows[ 0 ]) {
-          await communityService.addCommunityMember(newCommunity.community_id, userRes.rows[ 0 ].user_id, 'invited');
+        const userRes = await client.query(`SELECT user_id FROM users WHERE username = $1`, [username]);
+        if (userRes.rows[0]) {
+          await communityService.addCommunityMember(newCommunity.community_id, userRes.rows[0].user_id, 'invited');
         }
       }
       client.release();
@@ -401,14 +371,12 @@ router.post('/', async (req: Request, res: Response) => {
  * @route GET /api/community/banners
  * @desc Fetch all available banner options
  */
-router.get('/banners/banners', async (_req: Request, res: Response) => {
+router.get('/banners', async (_req, res) => {
   try {
     const banners = await communityService.getAllBanners();
     res.status(200).json({ status: 'success', data: banners });
-    return;
   } catch (err) {
     res.status(500).json({ status: 'error', message: 'Could not fetch banners.' });
-    return;
   }
 });
 
@@ -428,88 +396,10 @@ router.get('/friends/:userId', async (req, res) => {
     const friends = await communityService.getUserFriendsWithAvatars(userId);
     res.status(200).json({ status: 'success', data: friends });
   } catch (err) {
-      logger.error(
-      `[Community] Failed to fetch friends for user ID ${userId}:`,
-      err
-    );
     res.status(500).json({ status: 'error', message: 'Could not fetch friends.' });
   }
 });
 
-router.put('/:communityId', async (req, res) => {
-  const communityId = Number(req.params.communityId);
-  const { community_name, description } = req.body;
-  if (isNaN(communityId)) {
-    res.status(400).json({ status: 'error', message: 'Invalid community ID.' });
-    return;
-  }
-
-  if (!community_name || !description) {
-    logger.error('[Community] Missing required fields for community update');
-    res.status(400).json({ status: 'error', message: 'Missing required fields.' });
-    return;
-  }
-  try {
-    const updatedCommunity = await communityService.updateCommunity(communityId, {
-      community_name,
-      description
-    });
-
-    res.status(200).json({
-      status: 'success',
-      message: 'Community updated successfully.',
-      data: updatedCommunity,
-    });
-  } catch (err) {
-    logger.error(`[Community] Failed to update community ID ${communityId}:`, err);
-    res.status(500).json({ status: 'error', message: 'Could not update community.' });
-  }
-});
-
-router.get('/recommended/:userId', async (req, res) => {
-  const userId = Number(req.params.userId);
-
-  if (isNaN(userId)) {
-    res.status(400).json({ status: 'error', message: 'Invalid user ID.' });
-    return;
-  }
-
-  try {
-    const recommendations = await communityService.getRecommendedCommunities(userId);
-    res.status(200).json({ status: 'success', data: recommendations });
-  } catch (err) {
-    logger.error(`[Community] Failed to get recommended communities for user ID ${userId}:`, err);
-    res.status(500).json({ status: 'error', message: 'Could not fetch recommended communities.' });
-  }
-});
-
-router.delete('/:communityId/members/:userId', async (req, res) => {
-  const communityId = Number(req.params.communityId);
-  const userId = Number(req.params.userId);
-
-  if (isNaN(communityId) || isNaN(userId)) {
-    res.status(400).json({ status: 'error', message: 'Invalid community or user ID.' });
-    return;
-  }
-
-  try {
-    await communityService.removeCommunityMember(communityId, userId);
-    res.status(200).json({ status: 'success', message: 'Member removed successfully.' });
-  } catch (err) {
-    logger.error(`[Community] Failed to remove member from community ID ${communityId}:`, err);
-    res.status(500).json({ status: 'error', message: 'Could not remove member from community.' });
-  }
-});
-
-router.get('/friends/all/members', async (req, res) => {
-  try {
-    const members = await communityService.fetchAllUsers();
-    res.status(200).json({ status: 'success', data: members });
-  } catch (err) {
-    logger.error('[Community] Failed to fetch all members:', err);
-    res.status(500).json({ status: 'error', message: 'Could not fetch members.' });
-  }
-});
 
 /**
  * @route GET /api/community/friends/recommendations/:userId
@@ -527,38 +417,18 @@ router.get('/friends/recommendations/:userId', async (req, res) => {
     const recommendations = await communityService.getFriendRecommendations(userId);
     res.status(200).json({ status: 'success', data: recommendations });
   } catch (err) {
-    logger.error(`[Community] Failed to get friend recommendations:`, err);
     res.status(500).json({ status: 'error', message: 'Could not fetch recommendations' });
   }
 });
 
-router.get('/friends/status/:userId/:friendId', async (req, res) => {
-  const userID = Number(req.params.userId);
-  const friendID = Number(req.params.friendId);
-
-  if (!userID || !friendID) {
-    res.status(400).json({ status: 'error', message: 'Invalid user ID' });
-    return;
-  }
-
-  try {
-    const result = await communityService.getFriendshipStatus(userID, friendID);
-    const isInitiator = result.user_id === userID;
-    res.status(200).json({ status: 'success', data: { status: result.status, isInitiator } });
-  } catch (err) {
-    logger.error(`[Community] Failed to get friendship status for ${userID}:`, err);
-    res.status(500).json({ status: 'error', message: 'Could not fetch friendship status' });
-  }
-});
 
 /**
  * @route POST /api/community/friends/request
  * @desc Sends a friend request from one user to another
  * @body { sender_id, receiver_id }
  */
-router.post('/friends/request/:sender_id/:receiver_id', async (req: Request, res: Response) => {
-  const sender_id = Number(req.params.sender_id);
-  const receiver_id = Number(req.params.receiver_id);
+router.post('/friends/request', async (req: Request, res: Response) => {
+  const { sender_id, receiver_id } = req.body;
 
   if (!sender_id || !receiver_id) {
     res.status(400).json({ status: 'error', message: 'Missing sender or receiver ID.' });
@@ -568,12 +438,6 @@ router.post('/friends/request/:sender_id/:receiver_id', async (req: Request, res
   try {
     const request = await communityService.sendFriendRequest(sender_id, receiver_id);
     res.status(200).json({ status: 'success', message: 'Friend request sent.', data: request });
-
-    // Notify the receiver about the friend request
-    await notifyUser(receiver_id, 'friend_request', {
-      user_id: sender_id,
-      sender_id: sender_id
-    });
   } catch (err) {
     logger.error(`[Community] Failed to send friend request:`, err);
     res.status(500).json({ status: 'error', message: 'Could not send friend request.' });
@@ -737,41 +601,6 @@ router.get('/challenges/user/:userId', async (req, res) => {
   }
 });
 
-router.get('/challenges/:challengeId', async (req, res) => {
-  const challengeId = Number(req.params.challengeId);
-
-  if (isNaN(challengeId)) {
-    res.status(400).json({
-      status: 'error',
-      message: 'Invalid challenge ID.',
-    });
-    return;
-  }
-
-  try {
-    const challenge = await communityService.getChallenge(challengeId);
-    if (!challenge) {
-      res.status(404).json({
-        status: 'error',
-        message: 'Challenge not found.',
-      });
-      return;
-    }
-
-    res.status(200).json({
-      status: 'success',
-      message: 'Challenge details retrieved successfully.',
-      data: challenge,
-    });
-  } catch (err) {
-    logger.error(`[Route] Failed to fetch challenge ID ${challengeId}:`, err);
-    res.status(500).json({
-      status: 'error',
-      message: 'Could not fetch challenge details.',
-    });
-  }
-});
-
 
 /**
  * @route POST /api/community/challenges
@@ -805,11 +634,11 @@ router.post('/challenges', async (req: Request, res: Response) => {
   };
 
   const missingFields = Object.entries(requiredFields)
-    .filter(([ _, value ]) => !value)
-    .map(([ key ]) => key);
+    .filter(([_, value]) => !value)
+    .map(([key]) => key);
 
   if (missingFields.length > 0) {
-    logger.error(`[Community] Missing required challenge fields: ${missingFields.join(', ')}`);
+    logger.debug(`[Community] Missing required challenge fields: ${missingFields.join(', ')}`);
     res.status(400).json({
       status: 'error',
       message: `Missing required challenge fields: ${missingFields.join(', ')}`,
@@ -851,36 +680,13 @@ router.post('/challenges', async (req: Request, res: Response) => {
   }
 });
 
-
-router.delete('/challenges/:challengeId', async (req: Request, res: Response) => {
-  const challengeId = Number(req.params.challengeId);
-
-  if (isNaN(challengeId)) {
-    res.status(400).json({ status: 'error', message: 'Invalid challenge ID.' });
-    return;
-  }
-
-  try {
-    const deletedChallenge = await communityService.deleteChallengeById(challengeId);
-    res.status(200).json({
-      status: 'success',
-      message: `Challenge "${deletedChallenge.challenge_title}" deleted successfully.`,
-    });
-    return;
-  } catch (error) {
-    logger.error(`[Community] Failed to delete challenge ID ${challengeId}:`, error);
-    res.status(500).json({ status: 'error', message: 'Could not delete challenge.' });
-    return;
-  }
-});
-
 /**
  * @route GET /api/community/categories/:userId
  * @desc Returns global and user-specific custom categories
  */
 router.get('/categories/:userId', async (req, res) => {
   const userId = Number(req.params.userId);
-
+  
   if (isNaN(userId)) {
     res.status(400).json({ status: 'error', message: 'Invalid user ID.' });
     return;

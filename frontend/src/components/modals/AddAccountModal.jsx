@@ -208,6 +208,7 @@ const AddAccountModal = ({ isOpen, onClose, onAdd }) => {
     accountName: '',
     accountType: '',
     balance: '',
+    available: '',
     currency: 'ZAR',
   });
 
@@ -280,7 +281,7 @@ const AddAccountModal = ({ isOpen, onClose, onAdd }) => {
           <FaTimes size={18} />
         </button>
 
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Add Account</h2>
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">Add Account</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           {/* Bank Name */}
@@ -345,12 +346,6 @@ const AddAccountModal = ({ isOpen, onClose, onAdd }) => {
 
         <div className="flex justify-end gap-3 mt-6">
           <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition"
-          >
-            Cancel
-          </button>
-          <button
             onClick={handleSubmit}
             className="px-6 py-2 bg-[#D8F5C5] dark:bg-green-700 text-[#467D35] dark:text-green-100 text-sm font-semibold rounded-full hover:bg-[#c8ecb4] dark:hover:bg-green-600 transition shadow-md"
           >
@@ -363,3 +358,4 @@ const AddAccountModal = ({ isOpen, onClose, onAdd }) => {
 };
 
 export default AddAccountModal;
+

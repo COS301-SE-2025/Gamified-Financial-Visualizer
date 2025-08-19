@@ -194,10 +194,6 @@ const CategoryDropdown = ({
 const LearningPage = () => {
   const [modulesData, setModulesData] = useState([]);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
-  const [difficultyFilter, setDifficultyFilter] = useState('all');
-  const [topicFilter, setTopicFilter] = useState('all');
 
   useEffect(() => {
     const fetchModules = async () => {
@@ -227,6 +223,7 @@ const LearningPage = () => {
     .concat(uniqueTopics.map(t => ({ value: t, label: t })));
 
   return (
+
     <LearnLayout>
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}

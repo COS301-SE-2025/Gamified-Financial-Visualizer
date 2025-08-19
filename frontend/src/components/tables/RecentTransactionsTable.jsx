@@ -339,6 +339,7 @@ const RecentTransactionsTable = ({
           const lastEnd = new Date(today.getFullYear(), today.getMonth(), 0);
           return txn._date >= last && txn._date <= lastEnd;
         }
+
         return true;
       });
     }
@@ -604,16 +605,21 @@ const RecentTransactionsTable = ({
 
       {/* Errors */}
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded p-3 mb-4 text-red-700 dark:text-red-300 text-sm">
+        <div className="bg-red-50 border border-red-200 rounded p-3 mb-4 text-red-700 text-sm">
           {error}
-          <button onClick={() => setError('')} className="ml-2 text-red-500 dark:text-red-300 hover:text-red-700 dark:hover:text-red-400">×</button>
+          <button
+            onClick={() => setError('')}
+            className="ml-2 text-red-500 hover:text-red-700"
+          >
+            ×
+          </button>
         </div>
       )}
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="min-w-full text-sm text-left text-gray-700 dark:text-gray-300">
-          <thead className="border-b dark:border-gray-700">
+        <table className="min-w-full text-sm text-left text-gray-700">
+          <thead className="border-b">
             <tr>
               <th className="px-4 py-2">Name</th>
               <th className="px-4 py-2">Date</th>
@@ -625,8 +631,12 @@ const RecentTransactionsTable = ({
           <tbody>
             {filteredSortedTransactions.length === 0 ? (
               <tr>
-                <td colSpan="5" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                  {isAccountView ? (account ? 'No transactions found for this account' : 'Select an account to view transactions') : 'No transactions available'}
+                <td colSpan="5" className="px-4 py-8 text-center text-gray-500">
+                  {isAccountView ? (
+                    account ? 'No transactions found for this account' : 'Select an account to view transactions'
+                  ) : (
+                    'No transactions available'
+                  )}
                 </td>
               </tr>
             ) : (
@@ -756,6 +766,22 @@ const RecentTransactionsTable = ({
         onAdd={handleAddTransaction}
         activeAccount={account}
       />
+
+      {editTxnData && (
+        <EditTransactionModal
+          isOpen={!!editTxnData}
+          transaction={editTxnData}
+          onClose={() => {
+            setEditTxnData(null);
+            setEditTxnIndex(null);
+          }}
+          onSave={(updatedTxn) => {
+            handleEditTransaction(editTxnIndex, updatedTxn);
+            setEditTxnData(null);
+            setEditTxnIndex(null);
+          }}
+        />
+      )}
     </div>
   );
 };

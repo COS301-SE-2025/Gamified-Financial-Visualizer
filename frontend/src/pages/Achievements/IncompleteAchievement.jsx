@@ -510,4 +510,4 @@ const IncompleteAchievement = () => {
   );
 };
 
-export default IncompleteAchievement;
+export default IncompleteAchievementsPage;

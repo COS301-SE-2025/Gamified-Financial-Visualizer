@@ -11,7 +11,7 @@ import banner5 from '../../assets/Images/learn_banners/Budget.png'; // fixed dou
 import banner6 from '../../assets/Images/learn_banners/Budget.png';
 import { FaFilter, FaSearch, FaCheckCircle, FaChevronDown } from 'react-icons/fa';
 
-const bannerImages = { 
+const bannerImages = {
   1: banner1,
   2: banner2,
   3: banner3,
@@ -187,7 +187,6 @@ const TopicDropdown = ({
 const LearningCompletePage = () => {
   const user = JSON.parse(localStorage.getItem('user'));
   const [modulesData, setModulesData] = useState([]);
-  const [filteredModules, setFilteredModules] = useState([]);
   const [error, setError] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [difficultyFilter, setDifficultyFilter] = useState('all');
@@ -203,19 +202,15 @@ const LearningCompletePage = () => {
   useEffect(() => {
     const fetchModules = async () => {
       try {
-        setIsLoading(true);
         const response = await fetch(`http://localhost:5000/api/learning/completed/${user.id}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
         setModulesData(data.data);
-        setFilteredModules(data.data);
       } catch (error) {
         console.error('Error fetching modules:', error);
         setError(error.message);
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -413,3 +408,4 @@ const LearningCompletePage = () => {
 };
 
 export default LearningCompletePage;
+

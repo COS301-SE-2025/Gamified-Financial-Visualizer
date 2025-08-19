@@ -2,10 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { FaTrophy } from 'react-icons/fa';
 
 // Medals
-import goldMedal from '../../assets/Images/medals/goldMedal.png';
-import silverMedal from '../../assets/Images/medals/silverMedal.png';
-import bronzeMedal from '../../assets/Images/medals/bronzeMedal.png';
-import avatar from '../../assets/Images/avatars/Ramen.png';
+import goldMedal from '../../assets/Images/badges/goldMedal.png';
+import silverMedal from '../../assets/Images/badges/silverMedal.png';
+import bronzeMedal from '../../assets/Images/badges/bronzeMedal.png';
 
 // Utility for top 3 medals
 const getMedalIcon = (rank) => {
@@ -26,35 +25,35 @@ const LeaderboardPanel = () => {
   }, []);
 
   return (
-    <div className="bg-white p-5 rounded-2xl shadow space-y-2 dark:bg-gray-800">
-      <h3 className="text-lg font-bold text-gray-700 flex items-center gap-2 border-b pb-3 dark:text-gray-200 dark:border-gray-700">
+    <div className="bg-white p-5 rounded-2xl shadow space-y-2">
+      <h3 className="text-lg font-bold text-gray-700 flex items-center gap-2 border-b pb-3">
         <FaTrophy className="text-[#FBBF24]" /> Leaderboard
       </h3>
 
       {leaderboard.map((user, i) => (
         <div
           key={user.username}
-          className="flex items-start py-3 border-b last:border-b-0 gap-4 dark:border-gray-700"
+          className="flex items-start py-3 border-b last:border-b-0 gap-4"
         >
           {/* Rank */}
-          <span className="text-sm font-bold text-gray-600 w-6 text-right dark:text-gray-400">#{user.rank}</span>
+          <span className="text-sm font-bold text-gray-600 w-6 text-right">#{user.rank}</span>
 
           {/* Avatar */}
           <img
-            src={`/assets/Images/${user.avatar_image_path}` || avatar}
+            src={`/assets/Images/${user.avatar_image_path}`}
             alt={user.username}
             className="w-12 h-12 rounded-full object-cover border-2 border-white shadow"
           />
 
           {/* Info */}
           <div className="flex flex-col">
-            <span className="text-sm font-semibold text-gray-800 leading-tight dark:text-gray-200">{user.username}</span>
-            <span className="text-xs text-gray-500 leading-tight mb-1 dark:text-gray-400">{user.tier_status}</span>
+            <span className="text-sm font-semibold text-gray-800 leading-tight">{user.username}</span>
+            <span className="text-xs text-gray-500 leading-tight mb-1">{user.tier_status}</span>
             <div className="flex items-center gap-2 mt-1">
               {getMedalIcon(i) && (
                 <img src={getMedalIcon(i)} alt="medal" className="w-5 h-5 object-contain" />
               )}
-              <span className="text-sm font-semibold text-gray-800 whitespace-nowrap dark:text-gray-200">
+              <span className="text-sm font-semibold text-gray-800 whitespace-nowrap">
                 {user.total_points} XP
               </span>
             </div>

@@ -4,9 +4,6 @@ import AuthLayout from '../../components/AuthLayout';
 import logoImg from '../../assets/Images/Logo.png';
 import { FaLock, FaEye, FaEyeSlash, FaCheckCircle, FaTimesCircle, FaExclamationCircle } from 'react-icons/fa';
 
-const BASE_URL = process.env.REACT_APP_API_BASE_URL;
-
-
 const Register = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -29,7 +26,7 @@ const Register = () => {
   };
 
   const usernameCriteria = {
-    pattern: /^[a-z0-9._]{3,15}$/,
+    pattern: /^[a-z._]{3,15}$/,
   };
 
   const nameCriteria = {
@@ -149,7 +146,7 @@ const Register = () => {
             {formData.username && !usernameValid && (
               <div className="text-xs mt-1 space-y-1">
                 <p>{renderCheck(formData.username.length >= 3 && formData.username.length <= 15)} Between 3–15 characters</p>
-                <p>{renderCheck(/^[a-z0-9._]+$/.test(formData.username))} Only lowercase letters, numbers, dots, underscores</p>
+                <p>{renderCheck(/^[a-z._]+$/.test(formData.username))} Only lowercase, dots, underscores</p>
               </div>
             )}
           </div>

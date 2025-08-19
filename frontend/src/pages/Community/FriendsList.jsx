@@ -13,7 +13,6 @@ const FriendsList = () => {
   const [modalText, setModalText] = useState('');
   const [modalData, setModalData] = useState({ username: '', avatar_image_path: '' });
   const [onConfirm, setOnConfirm] = useState(() => () => { });
-  const [members, setMembers] = useState([]);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -21,19 +20,17 @@ const FriendsList = () => {
 
     const fetchFriendsAndRecommendations = async () => {
       try {
-        const [friendsRes, recsRes, members] = await Promise.all([
+        const [friendsRes, recsRes] = await Promise.all([
           fetch(`http://localhost:5000/api/community/friends/${user.id}`),
-          fetch(`http://localhost:5000/api/community/friends/recommendations/${user.id}`),
-          fetch(`http://localhost:5000/api/community/friends/all/members`)
+          fetch(`http://localhost:5000/api/community/friends/recommendations/${user.id}`) // ← fixed
         ]);
+
 
         const friendsData = await friendsRes.json();
         const recsData = await recsRes.json();
-        const membersData = await members.json();
 
         setYourFriends(friendsData.data || []);
         setRecommended(recsData.data || []);
-        setMembers(membersData.data || []);
       } catch (err) {
         toast.error('Failed to fetch friends or recommendations.');
         console.error(err);
@@ -50,19 +47,22 @@ const FriendsList = () => {
     setModalOpen(true);
   };
 
-  // friend request handler
   const handleFriendRequest = (user) => {
     const currentUser = JSON.parse(localStorage.getItem('user'));
     openModal(`Send a friend request to @${user.username}?`, user, async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/community/friends/request/${currentUser.id}/${user.user_id}`, {
+        const res = await fetch(`http://localhost:5000/api/community/friends/request`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sender_id: currentUser.id,
+            receiver_id: user.user_id,
+          }),
         });
 
         const result = await res.json();
         if (res.ok) {
-          toast.success(`Friend request sent to ${user.username}`, {
+          toast.success(`Friend request sent to @${user.username}`, {
             icon: <FaPaperPlane className="text-[#1E3A8A]" />,
             style: {
               borderRadius: '9999px',
@@ -81,7 +81,6 @@ const FriendsList = () => {
     });
   };
 
-  // friend remove handler
   const handleRemoveFriend = (user) => {
     const currentUser = JSON.parse(localStorage.getItem('user'));
     openModal(`Remove @${user.username} from your friends list?`, user, async () => {
@@ -97,7 +96,7 @@ const FriendsList = () => {
 
         const result = await res.json();
         if (res.ok) {
-          toast.success(`${user.username} removed from your friends list`, {
+          toast.success(`@${user.username} removed from your friends list`, {
             icon: <FaUserMinus className="text-[#7F1D1D]" />,
             style: {
               borderRadius: '9999px',
@@ -119,7 +118,6 @@ const FriendsList = () => {
     });
   };
 
-  // friend filter
   const filteredFriends = yourFriends.filter(f =>
     f.username.toLowerCase().includes(search.toLowerCase())
   );
@@ -134,16 +132,16 @@ const FriendsList = () => {
 
   return (
     <CommunityLayout>
-      <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4 dark:bg-gray-900">
+      <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
+        <CommunityHeader />
         <Toaster position="top-right" />
 
-        {/* Search bar */}
-        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm dark:bg-gray-800 dark:border-[#88BC46]">
-          <FaSearch className="text-[#76B947] mr-2 dark:text-[#88BC46F]" />
+        <div className="flex items-center w-full max-w-4xl -ml-[8px] px-4 py-2 rounded-3xl border-2 border-[#E5794B] bg-white shadow-sm">
+          <FaSearch className="text-[#E5794B] mr-2" />
           <input
             type="text"
             placeholder="Search your friends..."
-            className="w-full outline-none bg-transparent text-sm text-[#76B947] dark:text-[#88BC46] placeholder-[#76B947]/70"
+            className="w-full outline-none bg-transparent text-sm text-[#E5794B] placeholder-[#E5794B]/70"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -151,35 +149,31 @@ const FriendsList = () => {
 
         {/* Your Friends */}
         <div>
-          <h3 className="text-lg font-semibold text-[#333333] mb-3 dark:text-gray-200">Your Friends</h3>
-          <div className="bg-white rounded-xl shadow p-4 space-y-2 border border-[#E5E7EB] dark:bg-gray-800 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-[#333333] mb-3">Your Friends</h3>
+          <div className="bg-white rounded-xl shadow p-4 space-y-2 border border-[#E5E7EB]">
             {filteredFriends.length === 0 ? (
-              <p className="text-sm text-gray-500 text-center py-4 dark:text-gray-400">
+              <p className="text-sm text-gray-500 text-center py-4">
                 {search ? `No friends found matching "${search}"` : "You have no friends yet."}
               </p>
             ) : (
               filteredFriends.map((friend, i) => (
-                <div key={i} className="flex justify-between items-center py-2 border-b border-[#F3F4F6] last:border-0 dark:border-gray-700">
+                <div key={i} className="flex justify-between items-center py-2 border-b border-[#F3F4F6] last:border-0">
                   <div className="flex items-center gap-4">
-                    <img
-                      src={`/assets/Images/${friend.avatar_image_path}`}
-                      alt={friend.username}
-                      className="w-10 h-10 rounded-full object-cover border dark:border-gray-600"
-                    />
+                    <img src={`/assets/Images/${friend.avatar_image_path}`} alt={friend.username} className="w-10 h-10 rounded-full object-cover border" />
                     <div>
-                      <p className="text-sm font-semibold text-[#111827] dark:text-gray-200">{friend.username}</p>
-                      <p className="text-xs text-[#6B7280] dark:text-gray-400">{friend.tier_status || 'Unranked'}</p>
+                      <p className="text-sm font-semibold text-[#111827]">@{friend.username}</p>
+                      <p className="text-xs text-[#6B7280]">{friend.tier_status || 'Unranked'}</p>
                     </div>
                   </div>
                   <div className="flex gap-2">
                     <Link to={`/community/member/${friend.username}`}>
-                      <button className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#AAD977] text-white hover:bg-[#83AB55] dark:bg-[#AAD977] dark:hover:bg-[#88BC46]">
+                      <button className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#AAD977] text-white">
                         <FaEye /> View
                       </button>
                     </Link>
                     <button
                       onClick={() => handleRemoveFriend(friend)}
-                      className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#FA8B81] text-white hover:bg-[#F87171] dark:bg-[#F47466] dark:hover:bg-[#E55C4C]"
+                      className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#FA8B81] text-white"
                     >
                       <FaUserMinus /> Remove
                     </button>
@@ -192,30 +186,26 @@ const FriendsList = () => {
 
         {/* Someone New */}
         <div>
-          <h3 className="text-lg font-semibold text-[#333333] mb-3 dark:text-gray-200">Someone New</h3>
-          <div className="bg-white rounded-xl shadow p-4 space-y-2 border border-[#E5E7EB] dark:bg-gray-800 dark:border-gray-700">
-            {someoneList.map((person, i) => (
-              <div key={i} className="flex justify-between items-center py-2 border-b border-[#F3F4F6] last:border-0 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-[#333333] mb-3">Someone New</h3>
+          <div className="bg-white rounded-xl shadow p-4 space-y-2 border border-[#E5E7EB]">
+            {recommended.map((person, i) => (
+              <div key={i} className="flex justify-between items-center py-2 border-b border-[#F3F4F6] last:border-0">
                 <div className="flex items-center gap-4">
-                  <img
-                    src={`/assets/Images/${person.avatar_image_path}`}
-                    alt={person.username}
-                    className="w-10 h-10 rounded-full object-cover border dark:border-gray-600"
-                  />
+                  <img src={`/assets/Images/${person.avatar_image_path}`} alt={person.username} className="w-10 h-10 rounded-full object-cover border" />
                   <div>
-                    <p className="text-sm font-semibold text-[#111827] dark:text-gray-200">{person.username}</p>
-                    <p className="text-xs text-[#6B7280] dark:text-gray-400">{person.tier_status || 'Unranked'}</p>
+                    <p className="text-sm font-semibold text-[#111827]">@{person.username}</p>
+                    <p className="text-xs text-[#6B7280]">{person.tier_status || 'Unranked'}</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
                   <Link to={`/community/member/${person.username}`}>
-                    <button className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#AAD977] text-white hover:bg-[#83AB55] dark:bg-[#AAD977] dark:hover:bg-[#88BC46]">
+                    <button className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#AAD977] text-white">
                       <FaEye /> View
                     </button>
                   </Link>
                   <button
                     onClick={() => handleFriendRequest(person)}
-                    className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#72C1F5] text-white hover:bg-[#5CA8D8] dark:bg-[#88D1FF] dark:hover:bg-[#6BB7F5]"
+                    className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#FFD18C] text-white"
                   >
                     <FaPaperPlane /> Request
                   </button>
@@ -228,24 +218,24 @@ const FriendsList = () => {
 
       {/* Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 dark:bg-black/60">
-          <div className="bg-white p-6 rounded-2xl shadow-xl text-center space-y-4 max-w-sm w-full dark:bg-gray-800">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-2xl shadow-xl text-center space-y-4 max-w-sm w-full">
             <img
               src={`/assets/Images/${modalData.avatar_image_path}`}
               alt={modalData.username}
-              className="w-20 h-20 rounded-full mx-auto object-cover border-4 border-white shadow-md dark:border-gray-700"
+              className="w-20 h-20 rounded-full mx-auto object-cover border-4 border-white shadow-md"
             />
-            <p className="text-gray-800 font-semibold dark:text-gray-200">{modalText}</p>
+            <p className="text-gray-800 font-semibold">{modalText}</p>
             <div className="flex justify-center gap-4">
               <button
                 onClick={onConfirm}
-                className="bg-[#AAD977] hover:bg-[#83AB55] text-white px-4 py-2 rounded-full font-medium dark:bg-[#A0E555] dark:hover:bg-[#88BC46]"
+                className="bg-[#AAD977] hover:bg-[#83AB55] text-white px-4 py-2 rounded-full font-medium"
               >
                 Yes
               </button>
               <button
                 onClick={() => setModalOpen(false)}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-full font-medium dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-gray-200"
+                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-full font-medium"
               >
                 Cancel
               </button>

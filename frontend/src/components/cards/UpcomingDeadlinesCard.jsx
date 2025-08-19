@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { FaUmbrellaBeach, FaDesktop, FaCameraRetro, FaCalendarAlt, FaQuestion } from 'react-icons/fa';
-import { categoryIconMap, categorize } from './categoryIcons.ts';
 
 const UpcomingDeadlinesCard = () => {
   const user = JSON.parse(localStorage.getItem('user'));
@@ -20,10 +19,12 @@ const UpcomingDeadlinesCard = () => {
     if (user?.id) fetchDeadlines();
   }, [user?.id]);
 
-  const getIcon = (goalType) => {
-    const category = categorize(goalType);
-    const Icon = categoryIconMap[category];
-    return <Icon className="text-[#5FBFFF]" />;
+  const getIcon = (title) => {
+    title = title.toLowerCase();
+    if (title.includes('vacation')) return <FaUmbrellaBeach className="text-[#5FBFFF]" />;
+    if (title.includes('pc') || title.includes('computer')) return <FaDesktop className="text-[#AAD977]" />;
+    if (title.includes('camera')) return <FaCameraRetro className="text-[#F97156]" />;
+    return <FaQuestion className="text-gray-400" />;
   };
 
   const formatDate = (iso) => {
@@ -32,22 +33,22 @@ const UpcomingDeadlinesCard = () => {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow p-4 dark:bg-gray-700">
-      <h3 className="text-md font-semibold text-gray-600 dark:text-gray-300 mb-3 flex items-center gap-2">
+    <div className="bg-white rounded-2xl shadow p-4">
+      <h3 className="text-md font-semibold text-gray-600 mb-3 flex items-center gap-2">
         <FaCalendarAlt className="text-[#F59E0B]" /> Upcoming Deadlines
       </h3>
-      <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+      <ul className="space-y-2 text-sm text-gray-700">
         {deadlines.map((goal, index) => (
           <li key={index} className="flex justify-between items-center">
             <div className="flex items-center gap-2">
-              {getIcon(goal.goal_type)}
-              <span className="dark:text-gray-200">{goal.goal_name}</span>
+              {getIcon(goal.goal_name)}
+              <span>{goal.goal_name}</span>
             </div>
-            <span className="text-gray-500 dark:text-gray-400">{formatDate(goal.target_date)}</span>
+            <span className="text-gray-500">{formatDate(goal.target_date)}</span>
           </li>
         ))}
         {deadlines.length === 0 && (
-          <li className="text-gray-400 dark:text-gray-500 text-sm italic">No upcoming deadlines</li>
+          <li className="text-gray-400 text-sm italic">No upcoming deadlines</li>
         )}
       </ul>
     </div>

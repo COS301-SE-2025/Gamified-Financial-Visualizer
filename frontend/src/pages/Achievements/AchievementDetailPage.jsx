@@ -100,40 +100,49 @@ const detectColorKey = (title = '') => {
   return 'red';
 };
 
-const BadgeTaskCard = ({ task, colorInfo, image }) => {
-  const progressPercent = Math.min((task.progress / Math.max(1, task.total)) * 100, 100);
-  const isComplete = progressPercent >= 100;
+const BadgeTaskCard = ({ task, primaryColor, image, barGradient }) => {
+  const isComplete = task.status === 'complete';
+
   return (
-    <div className={`flex items-center justify-between p-5 rounded-xl shadow-sm transition-all hover:shadow-md ${colorInfo.bg} border-l-4`} style={{ borderLeftColor: colorInfo.hex }}>
-      <div className="flex items-center gap-4 w-full">
-        <div className={`relative flex-shrink-0 w-16 h-16 flex items-center justify-center rounded-full ${isComplete ? 'ring-2 ring-yellow-400' : ''}`} style={{ backgroundColor: `${colorInfo.hex}20` }}>
-          <img src={image} alt={task.title} className="w-10 h-10 object-contain" />
-          {isComplete && (
-            <div className="absolute -top-2 -right-2 bg-yellow-400 rounded-full w-6 h-6 flex items-center justify-center">
-              <FaCheck className="text-white text-xs" />
-            </div>
-          )}
+    <div className="flex items-center justify-between bg-white rounded-2xl p-4 shadow-md border"
+         style={{ borderColor: primaryColor }}>
+      <div className="flex items-center gap-4">
+        <div
+          className="w-14 h-14 flex items-center justify-center rounded-full bg-gradient-to-br "
+          style={{ border: `1.5px solid ${primaryColor}` }}
+        >
+          <img src={image} alt="icon" className="w-9 h-9 object-contain" />
         </div>
-        <div className="flex-grow">
-          <div className="flex items-center justify-between">
-            <h3 className={`text-lg font-semibold ${colorInfo.text}`}>{task.title}</h3>
-            <span className={`text-sm font-medium ${colorInfo.text}`}>{task.points_awarded} XP</span>
+
+        <div>
+          <div className="flex items-center gap-4">
+            <h3 className="text-[16px] font-semibold" style={{ color: primaryColor }}>
+              {task.title}
+            </h3>
+            <p className="text-sm font-light" style={{ color: primaryColor }}>
+              {task.reward} XP Reward
+            </p>
           </div>
-          <div className="mt-2">
-            <div className="flex justify-between text-sm mb-1">
-              <span className="text-gray-600">Progress</span>
-              <span className="font-medium">({Math.round(progressPercent)}%)</span>
-            </div>
-            <div className="w-full bg-gray-200 h-2.5 rounded-full">
-              <div className="h-2.5 rounded-full" style={{ width: `${progressPercent}%`, background: colorInfo.gradient }} />
-            </div>
+
+          <div className="w-64 bg-gray-200 h-2 rounded-full mt-2">
+            <div
+              className="h-2 rounded-full"
+              style={{
+                width: `${(task.progress / task.total) * 100}%`,
+                background: barGradient
+              }}
+            />
           </div>
-          {task.description && <p className="text-sm text-gray-600 mt-2">{task.description}</p>}
+
+          <p className="text-xs mt-1" style={{ color: primaryColor }}>
+            {task.progress}/{task.total}
+          </p>
         </div>
       </div>
     </div>
   );
 };
+
 
 const AchievementDetailPage = () => {
   const { id } = useParams();

@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
-import { createPortal } from 'react-dom';
+
 import CommunityLayout from '../../pages/Community/CommunityLayout';
+import CommunityHeader from '../../layouts/headers/CommunityHeader';
 import {
   FaFire, FaTag, FaClock, FaMedal, FaArrowLeft, FaCoins, FaListUl, FaUserPlus,
-  FaUsers,
-  FaChevronDown
+  FaUsers
 } from 'react-icons/fa';
 
 const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Select...' }) => {
@@ -158,6 +158,7 @@ const ChallengeCreate = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    xpReward: '',
     category: '',
     type: '',
     community: '',
@@ -172,7 +173,6 @@ const ChallengeCreate = () => {
   });
   const [searchFriend, setSearchFriend] = useState('');
   const [invitedFriends, setInvitedFriends] = useState([]);
-  const [friendsList, setFriendsList] = useState([]);
   const [isCreating, setIsCreating] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [categories, setCategories] = useState([]);
@@ -192,7 +192,6 @@ const ChallengeCreate = () => {
     fetchCategories();
   }, []);
 
-  // fetch communities 
   const fetchCommunities = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user?.id) return;
@@ -206,24 +205,10 @@ const ChallengeCreate = () => {
     }
   };
 
-  // fetch friends 
-  const fetchFriends = async () => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (!user?.id) return;
-
-    try {
-      const res = await fetch(`http://localhost:5000/api/community/friends/${user.id}`);
-      const data = await res.json();
-      setFriendsList(data.data || []);
-    } catch (err) {
-      console.error('Failed to load friends:', err);
-    }
-  }
-
   useEffect(() => {
     fetchCommunities();
-    fetchFriends();
   }, []);
+
 
   const imageOptions = [
     { id: 'store_banner', apiId: 1, src: require('../../assets/Images/banners/pixelStore.gif'), label: 'Pixel Store' },
@@ -231,8 +216,7 @@ const ChallengeCreate = () => {
     { id: 'ally_banner', apiId: 3, src: require('../../assets/Images/banners/pixelGirlAlly.gif'), label: 'Pixel Ally' },
     { id: 'students_banner', apiId: 4, src: require('../../assets/Images/banners/pixelStudents.jpeg'), label: 'Pixel Students' },
   ];
-
-  // chnage handler
+  // 
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
     if (type === 'file') {
@@ -242,7 +226,7 @@ const ChallengeCreate = () => {
     }
   };
 
-  // handle invites
+  // handles sending an invite to a friend 
   const handleInvite = (friend) => {
     if (!invitedFriends.includes(friend.name)) {
       setInvitedFriends([...invitedFriends, friend.name]);
@@ -250,13 +234,13 @@ const ChallengeCreate = () => {
     }
   };
 
-  // handle the submits
+  // handle the submitting of the form 
   const handleSubmit = (e) => {
     e.preventDefault();
     setShowConfirmation(true);
   };
 
-  // confirm the creation 
+  // Challenges confirmation popup
   const confirmCreate = async () => {
     setIsCreating(true);
     setShowConfirmation(false);
@@ -327,6 +311,7 @@ const ChallengeCreate = () => {
       difficulty = 'extreme';
     }
 
+    // Map form data to API expected structure
     const challengeData = {
       creator_id: user.id,
       community_id: formData.community,
@@ -337,9 +322,9 @@ const ChallengeCreate = () => {
       start_date: formData.startDate,
       target_date: formData.endDate,
       category_id: formData.category || null,
-      custom_category_id: null,
+      custom_category_id: null, // Not in form yet
       banner_id: formData.imageId || 1,
-      difficulty: difficulty,
+      difficulty: difficulty, // Default or could add to form
     };
 
     try {
@@ -347,7 +332,7 @@ const ChallengeCreate = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('token')}`, // Add if your API needs auth
         },
         body: JSON.stringify(challengeData)
       });
@@ -360,8 +345,10 @@ const ChallengeCreate = () => {
 
       toast.success('Challenge created successfully!');
 
+      // Handle sending invitations if any
       if (invitedFriends.length > 0) {
         try {
+          // Assuming you have an endpoint to handle invitations
           await fetch('http://localhost:5000/api/community/challenges/invite', {
             method: 'POST',
             headers: {
@@ -369,7 +356,7 @@ const ChallengeCreate = () => {
               'Authorization': `Bearer ${localStorage.getItem('token')}`,
             },
             body: JSON.stringify({
-              challenge_id: data.data.challenge_id,
+              challenge_id: data.data.challenge_id, // Assuming API returns the new challenge ID
               invited_users: invitedFriends
             })
           });
@@ -380,8 +367,9 @@ const ChallengeCreate = () => {
         }
       }
 
+      // Redirect after success
       setTimeout(() => {
-        navigate('/community/challenges');
+        navigate('/community');
       }, 2000);
 
     } catch (error) {
@@ -392,20 +380,21 @@ const ChallengeCreate = () => {
     }
   };
 
-  // create cancels functions
   const cancelCreate = () => {
     setShowConfirmation(false);
   };
 
+
   const today = new Date().toISOString().split('T')[0];
-  const filteredFriends = friendsList?.filter(f => f.username.toLowerCase().includes(searchFriend.toLowerCase()));
+  const filteredFriends = mockFriends.filter(f => f.name.toLowerCase().includes(searchFriend.toLowerCase()));
 
   return (
     <CommunityLayout>
       <Toaster position="top-right" />
-      <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4 dark:bg-gray-900">
+      <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
+        <CommunityHeader />
 
-        {/* Confirmation popup */}
+        {/* Confrimation popup */}
         {showConfirmation && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl max-w-md w-full">
@@ -422,7 +411,7 @@ const ChallengeCreate = () => {
                 <button
                   onClick={cancelCreate}
                   disabled={isCreating}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
+                  className="px-4 py-2 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-100 disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -446,78 +435,55 @@ const ChallengeCreate = () => {
           </div>
         )}
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-md">
-          {/* Header */}
+        <div className="bg-white p-6 rounded-3xl shadow-md">
+          {/* Create a challenge button */}
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold text-[#1F2937] dark:text-gray-200 flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-[#1F2937] flex items-center gap-2">
               <FaFire className="text-[#B1E1FF]" /> Create New Challenge
             </h2>
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 bg-[#E5E7EB] dark:bg-gray-700 text-[#374151] dark:text-gray-200 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-[#D1D5DB] dark:hover:bg-gray-600 transition"
+              className="flex items-center gap-2 bg-[#E5E7EB] text-[#374151] px-4 py-1.5 rounded-full text-sm font-medium hover:bg-[#D1D5DB] transition"
             >
               <FaArrowLeft /> Back
             </button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Title */}
+            {/* Title and Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
               <input
                 type="text"
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B1E1FF]"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B1E1FF]"
                 required
               />
             </div>
 
             {/* Challenge Icon */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Challenge Image</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Select Challenge Image</label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {imageOptions.map((img) => (
                   <label
                     key={img.id}
-                    role="radio"
-                    tabIndex={0}
-                    aria-checked={formData.imageId === img.apiId}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        setFormData({ ...formData, imageId: img.apiId });
-                      }
-                    }}
-                    className={`relative cursor-pointer group border rounded-xl overflow-hidden transition focus:outline-none
-        ${formData.imageId === img.apiId
-                        ? 'ring-2 ring-[#B1E1FF] border-[#B1E1FF]'
-                        : 'border-gray-300 dark:border-gray-600'}`}
-                    onClick={() => setFormData({ ...formData, imageId: img.apiId })}
+                    className={`cursor-pointer border rounded-xl overflow-hidden transition ${formData.imageId === img.id ? 'ring-2 ring-[#B1E1FF]' : 'border-gray-300'}`}
                   >
                     <input
                       type="radio"
                       name="imageId"
-                      value={img.apiId}
-                      checked={formData.imageId === img.apiId}
-                      onChange={() => setFormData({ ...formData, imageId: img.apiId })}
-                      className="sr-only"
+                      value={img.id}
+                      onChange={(e) => {
+                        const selected = imageOptions.find(i => i.id === e.target.value);
+                        setFormData({ ...formData, imageId: selected?.apiId || null });
+                      }}
+                      className="hidden"
                     />
                     <img src={img.src} alt={img.label} className="w-full h-24 object-cover" />
-                    <div className="p-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {img.label}
-                    </div>
-
-                    {/* subtle overlay + tick when selected */}
-                    {formData.imageId === img.apiId && (
-                      <>
-                        <div className="absolute inset-0 ring-inset ring-2 ring-[#B1E1FF] pointer-events-none" />
-                        <span className="absolute top-2 right-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#B1E1FF] text-white text-xs">
-                          ✓
-                        </span>
-                      </>
-                    )}
+                    <div className="p-2 text-center text-sm font-medium text-gray-700">{img.label}</div>
                   </label>
                 ))}
               </div>
@@ -527,24 +493,23 @@ const ChallengeCreate = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Challenge type dropdown */}
               <div>
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                   <FaListUl /> Challenge Type
                 </label>
-                <CategoryDropdown
+                <select
                   name="type"
                   value={formData.type}
-                  onChange={(val) => setFormData({ ...formData, type: val })}
-                  options={[
-                    { value: 'savings', label: 'Savings' },
-                    { value: 'debt', label: 'Debt' },
-                    { value: 'investment', label: 'Investment' },
-                    { value: 'spending limit', label: 'Spending Limit' },
-                    { value: 'donation', label: 'Donation' },
-                  ]}
-                  placeholder="Select Type"
-                />
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                >
+                  <option value="">Select Type</option>
+                  <option value="savings">Savings</option>
+                  <option value="debt">Debt</option>
+                  <option value="investment">Investment</option>
+                  <option value="spending limit">Spending Limit</option>
+                  <option value="donation">Donation</option>
+                </select>
               </div>
-
               {/* Category dropdown */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -563,46 +528,49 @@ const ChallengeCreate = () => {
 
               {/* Community dropdown */}
               <div>
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                   <FaUsers /> Community
                 </label>
-                <CategoryDropdown
+                <select
+                  type="text"
                   name="community"
                   value={formData.community}
-                  onChange={(val) => setFormData({ ...formData, community: val })}
-                  options={(communities || []).map(c => ({
-                    value: String(c.community_id),
-                    label: c.community_name
-                  }))}
-                  placeholder="Select a community"
-                />
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                >
+                  <option value="">Select Type</option>
+                  {communities.map((cat) => (
+                    <option key={cat.community_id} value={cat.community_id}>
+                      {cat.community_name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              {/* Measurement type */}
               <div>
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                   <FaListUl /> Measurement Type
                 </label>
-                <CategoryDropdown
+                <select
                   name="measurementType"
                   value={formData.measurementType}
-                  onChange={(val) => setFormData({ ...formData, measurementType: val })}
-                  options={[
-                    { value: 'goals_completed', label: 'Goals Completed' },
-                    { value: 'transactions_logged', label: 'Transactions Logged' },
-                    { value: 'amount_invested', label: 'Amount Invested' },
-                    { value: 'amount_donated', label: 'Amount Donated' },
-                    { value: 'spending_within_limit', label: 'Spending within limit' },
-                  ]}
-                  placeholder="Select Type"
-                />
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                >
+                  <option value="">Select Type</option>
+                  <option value="goals_completed">Goals Completed</option>
+                  <option value="transactions_logged">Transactions Logged</option>
+                  <option value="amount_invested">Amount Invested</option>
+                  <option value="amount_donated">Amount Donated</option>
+                  <option value="spending_within_limit">Spending within limit</option>
+                </select>
               </div>
             </div>
 
             {/* Target & XP */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                   <FaCoins /> Target Amount (ZAR)
                 </label>
                 <input
@@ -611,11 +579,11 @@ const ChallengeCreate = () => {
                   value={formData.targetAmount}
                   onChange={handleChange}
                   min="1"
-                  className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                   <FaMedal /> XP Reward
                 </label>
                 <input
@@ -624,7 +592,7 @@ const ChallengeCreate = () => {
                   value={formData.xpReward}
                   onChange={handleChange}
                   min="0"
-                  className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
                 />
               </div>
             </div>
@@ -632,7 +600,7 @@ const ChallengeCreate = () => {
             {/* Dates */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                   <FaClock /> Start Date
                 </label>
                 <input
@@ -641,11 +609,11 @@ const ChallengeCreate = () => {
                   value={formData.startDate}
                   min={today}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                   <FaClock /> End Date
                 </label>
                 <input
@@ -661,7 +629,7 @@ const ChallengeCreate = () => {
 
             {/* Invite Friends */}
             <div className="space-y-3">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                 <FaUserPlus /> Invite Friends to Challenge
               </label>
               <input
@@ -669,18 +637,18 @@ const ChallengeCreate = () => {
                 placeholder="Search friend by username..."
                 value={searchFriend}
                 onChange={(e) => setSearchFriend(e.target.value)}
-                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2"
               />
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                 {filteredFriends.map((friend, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center gap-4 bg-gray-50 dark:bg-gray-700 p-2 rounded-xl border border-gray-200 dark:border-gray-600"
+                    className="flex items-center gap-4 bg-gray-50 p-2 rounded-xl border border-gray-200"
                   >
-                    <img src={`../../assets/Images/${friend.avatar_image_path}`} alt={friend.username} className="w-10 h-10 rounded-full object-cover" />
+                    <img src={friend.avatar} alt={friend.name} className="w-10 h-10 rounded-full object-cover" />
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{friend.username}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 italic">{friend.tier_status}</p>
+                      <p className="text-sm font-medium text-gray-800">@{friend.name}</p>
+                      <p className="text-xs text-gray-500 italic">{friend.level}</p>
                     </div>
                     <button
                       onClick={() => handleInvite(friend)}
@@ -710,3 +678,4 @@ const ChallengeCreate = () => {
 };
 
 export default ChallengeCreate;
+
