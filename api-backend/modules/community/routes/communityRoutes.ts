@@ -11,7 +11,7 @@ const router = Router();
 
 // Post Feature Routes
 
-// POST /api/social/posts
+// POST community/api/social/posts
 router.post('/social/posts', async (req, res) => {
   try {
     const { userId, achievementId, caption, communityTagIds = [] } = req.body;
@@ -35,7 +35,7 @@ router.post('/social/posts', async (req, res) => {
   }
 });
 
-// GET /api/social/achievements/:userId
+// GET community/api/social/achievements/:userId
 router.get('/social/achievements/:userId', async (req, res) => {
   try {
     const userId = parseInt(req.params.userId);
@@ -54,7 +54,7 @@ router.get('/social/achievements/:userId', async (req, res) => {
   }
 });
 
-// GET /api/social/communities/:userId
+// GET community/api/social/communities/:userId
 router.get('/social/communities/:userId', async (req, res) => {
   try {
     const userId = parseInt(req.params.userId);
@@ -65,8 +65,7 @@ router.get('/social/communities/:userId', async (req, res) => {
   }
 });
 
-
-// GET /api/social/feed/:userId
+// GET community/api/social/feed/:userId
 router.get('/social/feed/:userId', async (req, res) => {
   try {
     const userId = parseInt(req.params.userId);
@@ -78,7 +77,7 @@ router.get('/social/feed/:userId', async (req, res) => {
   }
 });
 
-// POST /api/social/posts/:postId/like
+// POST community/api/social/posts/:postId/like
 router.post('/social/posts/:postId/like', async (req, res) => {
   try {
     const userId = req.body.userId;
@@ -92,7 +91,7 @@ router.post('/social/posts/:postId/like', async (req, res) => {
   }
 });
 
-// DELETE /api/social/posts/:postId/unlike
+// DELETE community/api/social/posts/:postId/unlike
 router.delete('/social/posts/:postId/unlike', async (req, res) => {
   try {
     const userId = req.body.userId;
@@ -106,7 +105,7 @@ router.delete('/social/posts/:postId/unlike', async (req, res) => {
   }
 });
 
-// POST /api/social/posts/:postId/comment
+// POST community/api/social/posts/:postId/comment
 router.post('/social/posts/:postId/comment', async (req, res) => {
   try {
     const userId = req.body.userId;
@@ -121,7 +120,7 @@ router.post('/social/posts/:postId/comment', async (req, res) => {
   }
 });
 
-// GET /api/social/posts/:postId/comments
+// GET community/api/social/posts/:postId/comments
 router.get('/social/posts/:postId/comments', async (req, res) => {
   try {
     const postId = parseInt(req.params.postId);
