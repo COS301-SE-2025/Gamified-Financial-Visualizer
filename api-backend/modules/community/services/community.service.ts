@@ -1212,3 +1212,281 @@ export async function getCategoriesWithCustom(userId: number) {
   }
 }
 
+
+// Post Feature Services
+
+export async function createSocialPost({
+  userId,
+  achievementId,
+  caption = '',
+  communityTagIds = [],
+}: {
+  userId: number;
+  achievementId: number;
+  caption?: string;
+  communityTagIds?: number[]; // Optional, max 3
+}) {
+  if (communityTagIds.length > 3) {
+    throw new Error('You can tag a maximum of 3 communities.');
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // 1. Validate all provided communities belong to the user
+    if (communityTagIds.length > 0) {
+      const { rows: validCommunities } = await client.query(
+        `
+        SELECT community_id
+        FROM community_members
+        WHERE user_id = $1
+          AND community_id = ANY($2)
+        `,
+        [userId, communityTagIds]
+      );
+
+      const validIds = validCommunities.map(row => row.community_id);
+
+      const invalidIds = communityTagIds.filter(id => !validIds.includes(id));
+      if (invalidIds.length > 0) {
+        throw new Error(`You are not a member of community ID(s): ${invalidIds.join(', ')}`);
+      }
+    }
+
+    // 2. Insert post
+    const { rows } = await client.query(
+      `INSERT INTO social_posts (user_id, achievement_id, caption)
+       VALUES ($1, $2, $3)
+       RETURNING post_id`,
+      [userId, achievementId, caption]
+    );
+    const postId = rows[0].post_id;
+
+    // 3. Insert valid community tags
+    for (const communityId of communityTagIds) {
+      await client.query(
+        `INSERT INTO post_community_tags (post_id, community_id)
+         VALUES ($1, $2)`,
+        [postId, communityId]
+      );
+    }
+
+    await client.query('COMMIT');
+    return { postId, message: 'Post created successfully' };
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Error creating post with community validation:', err);
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+export async function getCompletedUmbrellaAchievements(userId: number) {
+  const { rows } = await pool.query(
+    `
+    SELECT 
+      a.achievement_id,
+      a.achievement_title,
+      a.banner_image_path
+    FROM achievements a
+    WHERE a.is_umbrella = TRUE
+      AND NOT EXISTS (
+        SELECT 1
+        FROM achievements sub
+        LEFT JOIN user_achievements ua 
+          ON ua.achievement_id = sub.achievement_id AND ua.user_id = $1
+        WHERE sub.parent_id = a.achievement_id
+          AND (ua.achievement_status IS NULL OR ua.achievement_status != 'complete')
+      )
+    ORDER BY a.display_order
+    `,
+    [userId]
+  );
+
+  return rows;
+}
+
+export async function getUserCommunities(userId: number) {
+  const { rows } = await pool.query(
+    `
+    SELECT 
+      c.community_id,
+      c.community_name
+    FROM communities c
+    JOIN community_members cm ON cm.community_id = c.community_id
+    WHERE cm.user_id = $1
+    ORDER BY c.community_name
+    `,
+    [userId]
+  );
+  return rows;
+}
+
+export async function getFriendFeed(userId: number) {
+  const { rows } = await pool.query(
+    `
+    SELECT 
+      sp.post_id,
+      sp.caption,
+      sp.created_at,
+
+      -- User info
+      u.user_id,
+      u.username,
+      up.avatar_id,
+      pts.tier_status,
+
+      -- Achievement
+      a.achievement_title,
+      a.banner_image_path,
+
+      -- Community tags
+      COALESCE(
+        JSON_AGG(DISTINCT c.community_name)
+        FILTER (WHERE c.community_id IS NOT NULL),
+        '[]'
+      ) AS community_tags,
+
+      -- Comments (as array of JSON objects)
+      COALESCE(
+        JSON_AGG(
+          DISTINCT JSONB_BUILD_OBJECT(
+            'comment_id', pc.comment_id,
+            'user_id', cu.user_id,
+            'username', cu.username,
+            'avatar_id', cp.avatar_id,
+            'comment', pc.comment,
+            'created_at', pc.created_at
+          )
+        ) FILTER (WHERE pc.comment_id IS NOT NULL),
+        '[]'
+      ) AS comments,
+
+      COUNT(DISTINCT pl.user_id) AS like_count
+
+    FROM social_posts sp
+
+    JOIN users u ON u.user_id = sp.user_id
+    LEFT JOIN user_preferences up ON up.user_id = u.user_id
+    LEFT JOIN user_points pts ON pts.user_id = u.user_id
+    JOIN achievements a ON a.achievement_id = sp.achievement_id
+
+    LEFT JOIN post_likes pl ON pl.post_id = sp.post_id
+
+    LEFT JOIN post_community_tags pct ON pct.post_id = sp.post_id
+    LEFT JOIN communities c ON c.community_id = pct.community_id
+
+    -- Comments + comment users
+    LEFT JOIN post_comments pc ON pc.post_id = sp.post_id
+    LEFT JOIN users cu ON cu.user_id = pc.user_id
+    LEFT JOIN user_preferences cp ON cp.user_id = cu.user_id
+
+    WHERE sp.user_id = $1
+      OR sp.user_id IN (
+        SELECT friend_id FROM friendships WHERE user_id = $1 AND relationship_status = 'accepted'
+        UNION
+        SELECT user_id FROM friendships WHERE friend_id = $1 AND relationship_status = 'accepted'
+      )
+
+    GROUP BY 
+      sp.post_id, u.user_id, up.avatar_id, pts.tier_status, a.achievement_id
+    ORDER BY sp.created_at DESC
+    LIMIT 50
+    `,
+    [userId]
+  );
+
+  return rows;
+}
+
+export async function likePost(userId: number, postId: number) {
+  // Check if post exists
+  const { rowCount } = await pool.query(
+    `SELECT 1 FROM social_posts WHERE post_id = $1`,
+    [postId]
+  );
+  if (rowCount === 0) {
+    throw new Error('Post not found');
+  }
+
+  // Insert like
+  await pool.query(
+    `INSERT INTO post_likes (user_id, post_id)
+     VALUES ($1, $2)
+     ON CONFLICT DO NOTHING`,
+    [userId, postId]
+  );
+
+  // Return updated like count
+  const { rows } = await pool.query(
+    `SELECT COUNT(*)::INT AS like_count FROM post_likes WHERE post_id = $1`,
+    [postId]
+  );
+
+  return rows[0];
+}
+
+export async function unlikePost(userId: number, postId: number) {
+  await pool.query(
+    `DELETE FROM post_likes
+     WHERE user_id = $1 AND post_id = $2`,
+    [userId, postId]
+  );
+
+  const { rows } = await pool.query(
+    `SELECT COUNT(*) AS like_count
+     FROM post_likes
+     WHERE post_id = $1`,
+    [postId]
+  );
+
+  return { like_count: Number(rows[0]?.like_count || 0) };
+}
+
+export async function addPostComment(userId: number, postId: number, comment: string) {
+  const trimmedComment = comment.trim();
+
+  if (!trimmedComment) {
+    throw new Error('Comment cannot be empty');
+  }
+
+  // Check if post exists
+  const { rowCount } = await pool.query(
+    `SELECT 1 FROM social_posts WHERE post_id = $1`,
+    [postId]
+  );
+  if (rowCount === 0) {
+    throw new Error('Post not found');
+  }
+
+  // Insert comment and return minimal response
+  const { rows } = await pool.query(
+    `INSERT INTO post_comments (user_id, post_id, comment)
+     VALUES ($1, $2, $3)
+     RETURNING comment_id, comment, created_at`,
+    [userId, postId, trimmedComment]
+  );
+
+  return rows[0];
+}
+
+export async function getPostComments(postId: number) {
+  const { rows } = await pool.query(
+    `SELECT 
+        pc.comment_id,
+        pc.comment,
+        pc.created_at,
+        u.username,
+        up.avatar_id
+     FROM post_comments pc
+     JOIN users u ON pc.user_id = u.user_id
+     LEFT JOIN user_preferences up ON up.user_id = u.user_id
+     WHERE pc.post_id = $1
+     ORDER BY pc.created_at ASC`,
+    [postId]
+  );
+
+  return rows;
+}
