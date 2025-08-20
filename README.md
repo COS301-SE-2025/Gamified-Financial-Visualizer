@@ -88,10 +88,10 @@ This table provides quick access to the key documents and planning resources for
 
 | Resource Name | Description | Link |
 |---------------|-------------|------|
-| **Software Requirements Specification (SRS)** | Outlines the functional and non-functional requirements of the system. | [View SRS](https://drive.google.com/file/d/1P-zHO8nlxd5WIi0egwTgvPa18IMBnqpN/view?usp=drive_link) |
-| **Architectural Requirements Specification (ARS)** | Describes system architecture, service design, and technology stack. | [View ARS](https://drive.google.com/file/d/1CMtMXzBY3NeMmU1tTGMOL_54sTObispc/view?usp=sharing) |
-| **User Stories** | User-focused feature breakdown using Agile methodology. | [View User Stories](https://drive.google.com/file/d/15W0QNBl9YfHC1M-liT4e9_xkXi2rQUrP/view?usp=drive_link) |
-| **Use Cases** | Details of system interactions between users and core features. | [View Use Cases](https://drive.google.com/file/d/1RYJx_-DA8SJ5KiFeP35hvWPykjhdn8F3/view?usp=drive_link) |
+| **Software Requirements Specification (SRS)** | Outlines the functional and non-functional requirements of the system. | [View SRS](https://drive.google.com/file/d/1TalTYrt6JzCrcwr8y9srv5HlJVF9D2y5/view?usp=drive_link) |
+| **Architectural Requirements Specification (ARS)** | Describes system architecture, service design, and technology stack. | [View ARS](https://drive.google.com/file/d/1HgHw0pO71GXVudRQZ-zVCWl2GoR2UEHm/view?usp=drive_link) |
+| **User Stories** | User-focused feature breakdown using Agile methodology. | [View User Stories](https://drive.google.com/file/d/1eLtt5LrXVqmp16dYSmBIRXonsUrRRjNT/view?usp=drive_link) |
+| **Use Cases** | Details of system interactions between users and core features. | [View Use Cases](https://drive.google.com/file/d/1Bptk20z983p5lF79e3MVSbXkqGS2Hn1l/view?usp=sharing) |
 | **Project Board & Sprint Tracker** | A live board displaying tasks, issues, and sprint progress. | [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/140) |
 | **Domain Model** | A visual representation of key entities and their relationships. | [View Domain Model](https://drive.google.com/drive/folders/1DQmIiDWRnHQmnQpzgAyw23VIWb4kCm4y?usp=sharing) |
 | **Deployment Model** | A visual representation of the infrastructure setup and shows how different system components are distributed across nodes or services. | [View Deployment Model](https://drive.google.com/file/d/1Up7XcsZnelA8KpyiZsgHkoTTiqgCSU1O/view?usp=sharing) |
@@ -112,7 +112,7 @@ This table provides quick access to the key documents and planning resources for
 |------------|----------------|
 |[<img src="https://img.icons8.com/ios-filled/20/88BC46/play-button-circled.png"/> Demo 1 Video](https://drive.google.com/drive/u/0/folders/11WsEpVxedP9OobPVyirSWup9hacDLVAH) | [Demo 1 Documentation](https://drive.google.com/drive/u/0/folders/1oXzqPzukLE2dVK9OftUkWXMTAlR7tb4I) |
 |[<img src="https://img.icons8.com/ios-filled/20/88BC46/play-button-circled.png"/> Demo 2 Video](https://drive.google.com/file/d/152yEfAs2liL6fUAY6_nJPMdphsqQRPw6/view?usp=drive_link) | [Demo 2 Documentation](https://drive.google.com/drive/u/2/folders/1qBoA2zMqF3u-Fo400Q0mdA1-wOFhmfVY) |
-|[<img src="https://img.icons8.com/ios-filled/20/88BC46/play-button-circled.png"/> Demo 3 Video](https://drive.google.com/drive/folders/17R40RsQUSfzsPa6zXZv1KLLmsTFbqvlR?usp=sharing) | [Demo 3 Documentation](https://drive.google.com/drive/u/2/folders/1qBoA2zMqF3u-Fo400Q0mdA1-wOFhmfVY) |
+|[<img src="https://img.icons8.com/ios-filled/20/88BC46/play-button-circled.png"/> Demo 3 Video](https://drive.google.com/drive/folders/17R40RsQUSfzsPa6zXZv1KLLmsTFbqvlR?usp=sharing) | [Demo 3 Documentation](https://drive.google.com/drive/folders/1FOvvIB2v0AfdCQubxC_2sZO0DH0l7eHS?usp=sharing) |
 
 </div>
 
