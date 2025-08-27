@@ -12,14 +12,14 @@
 
 <p align="center">
 
-<h1 align="center">🚀 Project Badges</h1>
+<h2 align="center">🚀 Project Badges</h2>
 <p align="center"> <!-- 🧪 CI/CD --> <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/actions/workflows/integration-test.yml"> <img src="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/actions/workflows/integration-test.yml/badge.svg" alt="Backend Integration Tests" /> </a> <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/actions/workflows/unitTests.yml"> <img src="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/actions/workflows/unitTests.yml/badge.svg" alt="Backend Unit Tests with Coverage" /> </a> <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/actions/workflows/building.yml"> <img src="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/actions/workflows/building.yml/badge.svg" alt="Build Status" /> </a> <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/actions/workflows/linting.yml"> <img src="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/actions/workflows/linting.yml/badge.svg" alt="Lint Frontend & API Modules" /> </a> <br/> <!-- 🗃️ Repo Info --> <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/issues"> <img src="https://img.shields.io/github/issues/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Open Issues" /> </a> <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/pulls"> <img src="https://img.shields.io/github/issues-pr/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Open Pull Requests" /> </a> <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer"> <img src="https://img.shields.io/github/languages/count/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Languages Count" /> <a href="https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer"> <img src="https://img.shields.io/github/repo-size/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Repo Size" /> </a> <a href="https://libraries.io/github/COS301-SE-2025/Gamified-Financial-Visualizer"> <img src="https://img.shields.io/librariesio/github/COS301-SE-2025/Gamified-Financial-Visualizer" alt="Dependencies Status" /> </a> <br/>
 
 <p align="center">
   <img src="./assests/greenBar.png" alt="divider" width="100%"/>
 </p>
 
-<h2 align="center">Project Overview </h2> 
+<h1 align="center">Project Overview </h1> 
 Gamified Financial Visualizer revolutionizes the way people interact with their finances. By combining gamification, AI-powered insights, and AR visualization, users are empowered to take control of their spending, saving, and goal-setting while enjoying the journey.
 
 > "Financial literacy doesn't have to feel like homework anymore" - Our Vision
@@ -88,12 +88,13 @@ This table provides quick access to the key documents and planning resources for
 
 | Resource Name | Description | Link |
 |---------------|-------------|------|
-| **System Requirements Specification (SRS)** | Outlines the functional and non-functional requirements of the system. | [View SRS](https://drive.google.com/drive/folders/1SNT8_zECcaguP18D0xsKKZDJcYN9H5AT?usp=sharing) |
-| **Architectural Requirements Specification (ARS)** | Describes system architecture, service design, and technology stack. | [View ARS](https://drive.google.com/drive/folders/1TEZrZn1mY-EfNBvy9Xi22u1kedBqHHuu?usp=sharing) |
-| **User Stories** | User-focused feature breakdown using Agile methodology. | [View User Stories](https://drive.google.com/drive/folders/1M-RTc8-XCj7hHo-bbrS_e_EQcpABaUmq?usp=sharing) |
-| **Use Cases** | Details of system interactions between users and core features. | [View Use Cases](https://drive.google.com/drive/folders/1lj8108uMSNYwX4NIk1CRfGE-tQDHA7yB?usp=sharing) |
+| **Software Requirements Specification (SRS)** | Outlines the functional and non-functional requirements of the system. | [View SRS](https://drive.google.com/file/d/1TalTYrt6JzCrcwr8y9srv5HlJVF9D2y5/view?usp=drive_link) |
+| **Architectural Requirements Specification (ARS)** | Describes system architecture, service design, and technology stack. | [View ARS](https://drive.google.com/file/d/1HgHw0pO71GXVudRQZ-zVCWl2GoR2UEHm/view?usp=drive_link) |
+| **User Stories** | User-focused feature breakdown using Agile methodology. | [View User Stories](https://drive.google.com/file/d/1eLtt5LrXVqmp16dYSmBIRXonsUrRRjNT/view?usp=drive_link) |
+| **Use Cases** | Details of system interactions between users and core features. | [View Use Cases](https://drive.google.com/file/d/1Bptk20z983p5lF79e3MVSbXkqGS2Hn1l/view?usp=sharing) |
 | **Project Board & Sprint Tracker** | A live board displaying tasks, issues, and sprint progress. | [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/140) |
 | **Domain Model** | A visual representation of key entities and their relationships. | [View Domain Model](https://drive.google.com/drive/folders/1DQmIiDWRnHQmnQpzgAyw23VIWb4kCm4y?usp=sharing) |
+| **Deployment Model** | A visual representation of the infrastructure setup that shows how different system components are distributed across nodes or services. | [View Deployment Model](https://drive.google.com/drive/folders/1I8rBQ23P1d6jqJhyn7CxGLl-4KW3LwsJ?usp=sharing) |
 | **Project / Group Framework** | Overview of team structure, responsibilities, and collaboration tools. | [View Group Framework](https://www.notion.so/Gamified-Financial-Visualizer-1f842477e71680879e19d535dcb688dc?pvs=4) |
 | **Coding Standards** | This document outlines the coding conventions and styles used across the project to promote uniformity, clarity, flexibility, reliability, and efficiency. | [View Coding Standards](https://drive.google.com/drive/folders/1nxFz-W9G-qbLN8TvGWwgk3uLCxURO-uv?usp=sharing) |
 | **Service Contract** |  It serves as a formal agreement between backend service providers and frontend/service consumers, ensuring that all endpoints, data formats, authentication mechanisms, and error responses are well-documented and traceable. | [View Service Contract](https://drive.google.com/drive/folders/1uMm1lL_FnIjSP8c2eXFI3WC96dK0-Ekd?usp=sharing) |
@@ -111,7 +112,7 @@ This table provides quick access to the key documents and planning resources for
 |------------|----------------|
 |[<img src="https://img.icons8.com/ios-filled/20/88BC46/play-button-circled.png"/> Demo 1 Video](https://drive.google.com/drive/u/0/folders/11WsEpVxedP9OobPVyirSWup9hacDLVAH) | [Demo 1 Documentation](https://drive.google.com/drive/u/0/folders/1oXzqPzukLE2dVK9OftUkWXMTAlR7tb4I) |
 |[<img src="https://img.icons8.com/ios-filled/20/88BC46/play-button-circled.png"/> Demo 2 Video](https://drive.google.com/file/d/152yEfAs2liL6fUAY6_nJPMdphsqQRPw6/view?usp=drive_link) | [Demo 2 Documentation](https://drive.google.com/drive/u/2/folders/1qBoA2zMqF3u-Fo400Q0mdA1-wOFhmfVY) |
-|[<img src="https://img.icons8.com/ios-filled/20/88BC46/play-button-circled.png"/> Demo 3 Video](https://drive.google.com/drive/folders/17R40RsQUSfzsPa6zXZv1KLLmsTFbqvlR?usp=sharing) | [Demo 3 Documentation](https://drive.google.com/drive/u/2/folders/1qBoA2zMqF3u-Fo400Q0mdA1-wOFhmfVY) |
+|[<img src="https://img.icons8.com/ios-filled/20/88BC46/play-button-circled.png"/> Demo 3 Video](https://drive.google.com/drive/folders/17R40RsQUSfzsPa6zXZv1KLLmsTFbqvlR?usp=sharing) | [Demo 3 Documentation](https://drive.google.com/drive/folders/1FOvvIB2v0AfdCQubxC_2sZO0DH0l7eHS?usp=sharing) |
 
 </div>
 
