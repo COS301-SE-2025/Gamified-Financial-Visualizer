@@ -113,50 +113,34 @@ Each record represents one push-enabled device or browser instance linked to a u
 
 ---
 
+## Table: `accounts`
 
+The `accounts` table stores financial accounts linked to users.  
+Each account represents a bank, investment, credit, or digital wallet account associated with a specific user.
 
+| Column Name      | Data Type      | Constraints / Default               | Description                                                                 |
+|------------------|---------------|-------------------------------------|-----------------------------------------------------------------------------|
+| `account_id`     | SERIAL        | **PK**                              | Unique identifier for each account.                                         |
+| `user_id`        | INT           | **NOT NULL**, FK → `users(user_id)`, `ON DELETE CASCADE` | User that owns this account.                                                |
+| `bank_name`      | VARCHAR(100)  | **NOT NULL**, DEFAULT `'GFV Bank'`  | Name of the financial institution.                                          |
+| `account_name`   | VARCHAR(100)  | **NOT NULL**, DEFAULT `'My Account'`, **UNIQUE per user** | Custom account name provided by the user. Must be unique for each user.     |
+| `account_type`   | VARCHAR(50)   | **NOT NULL**, CHECK constraint       | Type of account (must be one of the predefined values listed below).        |
+| `currency`       | VARCHAR(20)   | **NOT NULL**, DEFAULT `'ZAR'`, CHECK constraint | Currency code supported by the system.                                     |
+| `account_balance`| NUMERIC(14,2) | **NOT NULL**, DEFAULT `0`            | Current total balance of the account. Updated dynamically by transactions.  |
+| `created_at`     | TIMESTAMP     | DEFAULT `CURRENT_TIMESTAMP`, **NOT NULL** | Timestamp when the account was created.                                     |
 
+> A user cannot reuse the same `account_name` for multiple accounts.  
+> The `account_balance` should always reflect the sum of related transactions.
 
+### Allowed `account_type` values:
+- `current`, `cheque`, `savings`, `investment`, `credit`,  
+- `fixed deposit`, `business`, `transmission`, `tax-free savings`,  
+- `trust`, `corporate trading`, `crypto`, `forex`
 
-
-
-
-
-## 💼 Table: `accounts`
-Stores user-linked financial accounts across various financial institutions or platforms.
-
-| Column Name      | Data Type     | Description                                                                 |
-|-------------------|--------------|-----------------------------------------------------------------------------|
-| `account_id`      | SERIAL       | Primary key. Unique identifier for each account.                            |
-| `user_id`         | INT          | Foreign key to `users`. Associates the account with a specific user.        |
-| `bank_name`       | VARCHAR(100) | Name of the financial institution. Defaults to `'GFV Bank'`.                |
-| `account_name`    | VARCHAR(100) | Custom name for the account. Must be unique per user. Defaults to `'My Account'`. |
-| `account_type`    | VARCHAR(50)  | Type of account. Must be one of the predefined values (see below).          |
-| `currency`        | VARCHAR(20)  | Currency code. Must be one of the supported values (see below).             |
-| `account_balance` | NUMERIC(14,2)| Current total balance of the account. Calculated from associated transactions. |
-| `created_at`      | TIMESTAMP    | Timestamp when the account was added. **Never null.**                       |
-
-> 🔒 A user may not reuse the same `account_name` for multiple accounts. Uniqueness is enforced per user.  
-> 💰 `account_balance` should be dynamically updated by the backend whenever a transaction is created, updated, or deleted.
-
-### 🏦 Allowed `account_type` values:
-- `current`
-- `cheque`
-- `savings`
-- `investment`
-- `credit`
-- `fixed deposit`
-- `business`
-- `transmission`
-- `tax-free savings`
-- `trust`
-- `corporate trading`
-- `crypto`
-- `forex`
-
-### 💱 Allowed `currency` values:
-- **Fiat**: `ZAR`, `USD`, `EUR`, `GBP`, `JPY`, `CAD`, `AUD`, `CHF`, `CNY`, `INR`, `KES`, `NGN`
+### Allowed `currency` values:
+- **Fiat**: `ZAR`, `USD`, `EUR`, `GBP`, `JPY`, `CAD`, `AUD`, `CHF`, `CNY`, `INR`, `KES`, `NGN`  
 - **Crypto**: `BTC`, `ETH`, `USDT`, `BUSD`, `LTC`, `XRP`, `SOL`, `BNB`, `DOGE`, `USDC`
+
 
 ---
 
