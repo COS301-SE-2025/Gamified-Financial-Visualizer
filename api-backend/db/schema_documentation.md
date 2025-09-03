@@ -93,46 +93,33 @@ It has a one-to-one relationship with the `users` table.
 
 ---
 
+## Table: `user_push_subscriptions`
 
+The `user_push_subscriptions` table stores device-specific push subscription details for Progressive Web App (PWA) notifications.  
+Each record represents one push-enabled device or browser instance linked to a user.
 
+| Column Name  | Data Type | Constraints / Default              | Description                                                   |
+|--------------|-----------|------------------------------------|---------------------------------------------------------------|
+| `push_id`    | SERIAL    | **PK**                             | Unique identifier for the push subscription record.           |
+| `user_id`    | INT       | FK → `users(user_id)`, `ON DELETE CASCADE` | User who owns this subscription.                             |
+| `endpoint`   | TEXT      | **NOT NULL**                       | Web push endpoint URL where notifications are delivered.      |
+| `p256dh`     | TEXT      | **NOT NULL**                       | Public encryption key used for secure message encryption.     |
+| `auth`       | TEXT      | **NOT NULL**                       | Authentication secret for verifying push message integrity.   |
+| `created_at` | TIMESTAMP | DEFAULT `CURRENT_TIMESTAMP`        | Timestamp when the subscription was created.                  |
+| `enabled`    | BOOLEAN   | DEFAULT `TRUE`                     | Indicates if the subscription is currently active/valid.      |
 
+> Supports out-of-app notifications by registering secure endpoints tied to specific user devices.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## 📲 Table: `user_push_subscriptions`
-Stores device-specific push subscription details for PWA notifications.
-
-| Column Name  | Data Type | Description                                          |
-|--------------|-----------|------------------------------------------------------|
-| `push_id`    | SERIAL    | Primary key for the push subscription record.        |
-| `user_id`    | INT       | Foreign key to `users`. Links subscription to user.  |
-| `endpoint`   | TEXT      | Web push endpoint URL where notifications are sent.  |
-| `p256dh`     | TEXT      | Public encryption key used for secure messaging.     |
-| `auth`       | TEXT      | Authentication secret for verifying the message.     |
-| `created_at` | TIMESTAMP | Timestamp when the subscription was registered.      |
-| `enabled`    | BOOLEAN   | True if the subscription is currently active.        |
 
 ---
+
+
+
+
+
+
+
+
 
 
 ## 💼 Table: `accounts`
