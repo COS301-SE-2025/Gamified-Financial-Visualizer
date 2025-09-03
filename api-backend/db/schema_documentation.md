@@ -248,8 +248,24 @@ Communities allow users to collaborate on challenges, share insights, and engage
 
 > Communities inherit banners from the `banner_images` table, ensuring consistency and allowing themes to be updated centrally.
 
+---
 
+## Table: `community_members`
 
+The `community_members` table tracks the membership of users within communities, including their invitation or request status and join date.  
+It enables management of who belongs to each community and in what capacity.
+
+| Column Name        | Data Type   | Constraints / Default              | Description                                                                 |
+|--------------------|------------|------------------------------------|-----------------------------------------------------------------------------|
+| `community_id`     | INT        | FK → `communities(community_id)`, `ON DELETE CASCADE` | Identifies the community.                                                   |
+| `user_id`          | INT        | FK → `users(user_id)`, `ON DELETE CASCADE`           | Identifies the user who is a member or invitee.                             |
+| `membership_status`| VARCHAR(20)| **NOT NULL**, CHECK constraint     | Membership state: must be one of `invited`, `requested`, `accepted`, `declined`. |
+| `joined_at`        | TIMESTAMP  | DEFAULT `CURRENT_TIMESTAMP`        | Timestamp when the membership record was created.                           |
+
+> Composite primary key `(community_id, user_id)` ensures no duplicate membership records.  
+> The `membership_status` field defines whether the user is pending, accepted, or declined in the community.
+
+---
 
 
 
@@ -323,36 +339,6 @@ Tracks repeating transactions such as subscriptions, monthly bills, or salary de
 > ⛔ Set `is_active = FALSE` to stop a recurring transaction without deleting it.
 
 
----
-
-## 🏘️ Table: `communities`
-Stores information about user-created financial communities where members can collaborate on challenges, share insights, and compete socially.
-
-| Column Name        | Data Type     | Description                                                                 |
-|--------------------|--------------|-----------------------------------------------------------------------------|
-| `community_id`     | SERIAL       | Primary key. Unique identifier for each community.                          |
-| `owner_id`         | INT          | Foreign key to `users`. The creator/owner of the community.                 |
-| `community_name`   | VARCHAR(100) | Name of the community.                                                      |
-| `description`      | TEXT         | Optional description of the community's purpose or culture.                 |
-| `banner_filename`  | VARCHAR(100) | File name of the community banner image (e.g., `beach_theme.png`). Defaults to `default_banner_01.png`. |
-| `created_at`       | TIMESTAMP    | Timestamp when the community was created.                                   |
-
-> 📛 Community banners are chosen from predefined options stored in `/public/banners/` and served via `/banners/{filename}`.
-
----
-
-## 👥 Table: `community_members`
-Tracks membership of users within communities, including their invitation/request status and when they joined.
-
-| Column Name        | Data Type   | Description                                                                 |
-|--------------------|------------|-----------------------------------------------------------------------------|
-| `community_id`     | INT        | Foreign key to `communities`. Identifies the community.                    |
-| `user_id`          | INT        | Foreign key to `users`. Identifies the user who is a member or invitee.    |
-| `membership_status`| VARCHAR(20)| Membership state: one of `invited`, `requested`, `accepted`, `declined`.   |
-| `joined_at`        | TIMESTAMP  | Timestamp when the membership record was created. Defaults to now.         |
-
-> ✅ Primary key `(community_id, user_id)` prevents duplicate membership records.  
-> 🧑‍🤝‍🧑 Membership status determines whether the user has been accepted into the community.
 
 ---
 
