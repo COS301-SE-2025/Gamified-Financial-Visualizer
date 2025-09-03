@@ -42,7 +42,7 @@ It is used to manage login states, handle token expiration, and secure user acce
 
 ---
 
-## 🧑‍🎨 Table: `avatar_images`
+## Table: `avatar_images`
 
 The `avatar_images` table stores references to selectable avatar images that users can choose for profile customization.
 
@@ -57,8 +57,20 @@ The `avatar_images` table stores references to selectable avatar images that use
 
 ---
 
+## Table: `banner_images`
+
+The `banner_images` table stores decorative UI assets such as icons, and feature tab images.
+
+| Column Name        | Data Type     | Constraints / Default       | Description                                                  |
+|---------------------|--------------|-----------------------------|--------------------------------------------------------------|
+| `banner_id`         | SERIAL       | **PK**                      | Unique identifier for each banner image.                     |
+| `banner_image_path` | VARCHAR(255) | **NOT NULL**                | File path or URL pointing to the stored banner image asset.  |
+| `created_at`        | TIMESTAMP    | DEFAULT `CURRENT_TIMESTAMP` | Timestamp when the banner image was added to the system.     |
+
+> Supports profile themes, and decorative assets for goals or categories.
 
 
+---
 
 
 
