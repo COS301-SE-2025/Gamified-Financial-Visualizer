@@ -42,6 +42,45 @@ It is used to manage login states, handle token expiration, and secure user acce
 
 ---
 
+## 🧑‍🎨 Table: `avatar_images`
+
+The `avatar_images` table stores references to selectable avatar images that users can choose for profile customization.
+
+| Column Name         | Data Type     | Constraints / Default               | Description                                                   |
+|----------------------|--------------|-------------------------------------|---------------------------------------------------------------|
+| `avatar_id`          | SERIAL       | **PK**                              | Unique identifier for each avatar image.                      |
+| `avatar_image_path`  | VARCHAR(255) | **NOT NULL**                        | File path or URL pointing to the stored avatar image asset.   |
+| `created_at`         | TIMESTAMP    | DEFAULT `CURRENT_TIMESTAMP`         | Timestamp when the avatar image was added to the system.      |
+
+> Provides a library of avatar options for users.
+
+
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## ⚙️ Table: `user_preferences`
 Holds user customization and in-app notification settings.
 
@@ -590,21 +629,6 @@ Stores decorative UI image assets like icons, event banners, and feature tabs.
 | `created_at`   | TIMESTAMP | Timestamp when the image was added. Defaults to current timestamp.      |
 
 > Used for rotating banners, UI themes, seasonal events, or category illustrations.
-
----
-
-## 🧑‍🎨 Table: `avatar_images`
-
-Stores user avatar assets that can be selected during profile customization.
-
-| Column Name     | Data Type     | Description                                                              |
-|------------------|--------------|--------------------------------------------------------------------------|
-| `avatar_id`      | SERIAL       | Primary key. Unique ID for each avatar image.                            |
-| `image_data`     | BYTEA        | Binary data representing the avatar image.                               |
-| `avatar_name`    | VARCHAR(100) | Unique name or label for the avatar (e.g., `"ninja_cat"`, `"wizard_elf"`). |
-| `created_at`     | TIMESTAMP    | Timestamp when the avatar was added. Defaults to current timestamp.      |
-
-> Used for profile personalization. Can be expanded later to support unlockable or animated avatars.
 
 ---
 
