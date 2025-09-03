@@ -4,7 +4,7 @@ This document outlines the schema of the main tables in the PostgreSQL database.
 
 ---
 
-## Table: `users`
+## 1. Table: `users`
 
 The `users` table stores core account information and authentication metadata for every registered user in the system.
 
@@ -24,7 +24,7 @@ The `users` table stores core account information and authentication metadata fo
 
 ---
 
-## Table: `user_tokens`
+## 2. Table: `user_tokens`
 
 The `user_tokens` table stores authentication tokens for active user sessions.  
 It is used to manage login states, handle token expiration, and secure user access.
@@ -42,7 +42,7 @@ It is used to manage login states, handle token expiration, and secure user acce
 
 ---
 
-## Table: `avatar_images`
+## 3. Table: `avatar_images`
 
 The `avatar_images` table stores references to selectable avatar images that users can choose for profile customization.
 
@@ -57,7 +57,7 @@ The `avatar_images` table stores references to selectable avatar images that use
 
 ---
 
-## Table: `banner_images`
+## 4. Table: `banner_images`
 
 The `banner_images` table stores decorative UI assets such as icons, and feature tab images.
 
@@ -72,7 +72,7 @@ The `banner_images` table stores decorative UI assets such as icons, and feature
 
 ---
 
-## Table: `user_preferences`
+## 5. Table: `user_preferences`
 
 The `user_preferences` table stores each user’s customization settings and in-app notification preferences.  
 It has a one-to-one relationship with the `users` table.
@@ -93,7 +93,7 @@ It has a one-to-one relationship with the `users` table.
 
 ---
 
-## Table: `user_push_subscriptions`
+## 6. Table: `user_push_subscriptions`
 
 The `user_push_subscriptions` table stores device-specific push subscription details for Progressive Web App (PWA) notifications.  
 Each record represents one push-enabled device or browser instance linked to a user.
@@ -113,7 +113,7 @@ Each record represents one push-enabled device or browser instance linked to a u
 
 ---
 
-## Table: `accounts`
+## 7. Table: `accounts`
 
 The `accounts` table stores financial accounts linked to users.  
 Each account represents a bank, investment, credit, or digital wallet account associated with a specific user.
@@ -144,7 +144,7 @@ Each account represents a bank, investment, credit, or digital wallet account as
 ---
 
 
-## Table: `categories`
+## 8. Table: `categories`
 
 The `categories` table defines global system-wide categories for classifying user transactions.  
 These include expenses, income, transfers, and investment-related activities.  
@@ -175,7 +175,7 @@ Categories are standardized to ensure consistent reporting and analytics across 
 
 ---
 
-## Table: `custom_categories`
+## 9. Table: `custom_categories`
 
 The `custom_categories` table stores user-defined personal categories for transaction classification.  
 This allows users to create custom labels beyond the global system categories.
@@ -191,7 +191,7 @@ This allows users to create custom labels beyond the global system categories.
 
 ---
 
-## Table: `visual_assets`
+## 10. Table: `visual_assets`
 
 The `visual_assets` table stores unlockable AR world themes that represent a user’s financial progress.  
 Themes are tied to gamification features and unlock based on user milestones such as completing goals, earning XP, or maintaining strong financial habits.
@@ -216,7 +216,7 @@ Themes are tied to gamification features and unlock based on user milestones suc
 
 ---
 
-## Table: `ar_scene_state`
+## 11. Table: `ar_scene_state`
 
 The `ar_scene_state` table stores the current state of a user’s AR (augmented reality) financial environment.  
 It captures layout, customization, and progress so the user’s virtual city/world can be consistently restored across sessions.
@@ -232,7 +232,7 @@ It captures layout, customization, and progress so the user’s virtual city/wor
 
 ---
 
-## Table: `communities`
+## 12. Table: `communities`
 
 The `communities` table stores information about user-created financial communities.  
 Communities allow users to collaborate on challenges, share insights, and engage in social competition.
@@ -250,7 +250,7 @@ Communities allow users to collaborate on challenges, share insights, and engage
 
 ---
 
-## Table: `community_members`
+## 13. Table: `community_members`
 
 The `community_members` table tracks the membership of users within communities, including their invitation or request status and join date.  
 It enables management of who belongs to each community and in what capacity.
@@ -267,7 +267,7 @@ It enables management of who belongs to each community and in what capacity.
 
 ---
 
-## Table: `friendships`
+## 14. Table: `friendships`
 
 The `friendships` table represents mutual social connections between users.  
 Each friendship is symmetric, meaning it is stored only once per user pair, and includes the relationship status along with its creation timestamp.
@@ -284,7 +284,7 @@ Each friendship is symmetric, meaning it is stored only once per user pair, and 
 
 ---
 
-## Table: `goals`
+## 15. Table: `goals`
 
 The `goals` table defines personal financial goals set by users.  
 Each goal tracks a financial target, associated category, deadline, and progress toward completion.
@@ -316,7 +316,7 @@ Each goal tracks a financial target, associated category, deadline, and progress
 
 ---
 
-## Table: `goal_progress`
+## 16. Table: `goal_progress`
 
 The `goal_progress` table tracks incremental contributions made toward a user’s personal financial goals.  
 Each record represents a single contribution entry, which automatically updates the running total for the associated goal.
@@ -348,7 +348,7 @@ Each record represents a single contribution entry, which automatically updates 
 
 ---
 
-## Table: `challenges`
+## 17. Table: `challenges`
 
 The `challenges` table represents community-based challenges where users collaborate or compete around specific financial behaviors.  
 Each challenge belongs to a community and has defined rules, progress metrics, and status tracking.
@@ -380,7 +380,7 @@ Each challenge belongs to a community and has defined rules, progress metrics, a
 
 ---
 
-## Table: `challenge_progress`
+## 18. Table: `challenge_progress`
 
 The `challenge_progress` table tracks each user’s participation and contributions in a specific community challenge.  
 Users must join a challenge before they can contribute progress.
@@ -412,7 +412,7 @@ Users must join a challenge before they can contribute progress.
 
 ---
 
-## Table: `leaderboard_entries`
+## 19. Table: `leaderboard_entries`
 
 The `leaderboard_entries` table stores snapshots of user rankings based on XP points.  
 Leaderboards can be calculated globally, within communities, or friend networks to encourage competition.
@@ -429,7 +429,7 @@ Leaderboards can be calculated globally, within communities, or friend networks 
 
 ---
 
-## Table: `budgets`
+## 20. Table: `budgets`
 
 The `budgets` table defines user-specific financial budgets within a set time range.  
 Budgets help users track and control spending behavior, often linked to categories or custom allocations.
@@ -449,7 +449,7 @@ Budgets help users track and control spending behavior, often linked to categori
 
 ---
 
-## Table: `budget_categories`
+## 21. Table: `budget_categories`
 
 The `budget_categories` table defines budget allocations per category under a specific budget.  
 It supports both global categories and user-defined custom categories to provide detailed budget tracking.
@@ -469,7 +469,7 @@ It supports both global categories and user-defined custom categories to provide
 
 ---
 
-## Table: `transactions`
+## 22. Table: `transactions`
 
 The `transactions` table tracks all financial activity, including income, expenses, transfers, fees, and deposits/withdrawals.  
 Transactions can be linked to budgets, goals, or challenges, and may award gamified points for achievements.
@@ -500,22 +500,24 @@ Transactions can be linked to budgets, goals, or challenges, and may award gamif
 
 ---
 
-## 🔁 Table: `recurring_transactions`
-Tracks repeating transactions such as subscriptions, monthly bills, or salary deposits. Each entry links to a base transaction and includes frequency and scheduling metadata.
+## 23. Table: `recurring_transactions`
 
-| Column Name       | Data Type     | Description                                                                 |
-|--------------------|--------------|-----------------------------------------------------------------------------|
-| `recurring_id`     | SERIAL       | Primary key. Unique identifier for the recurring pattern.                   |
-| `transaction_id`   | INT          | Foreign key to `transactions`. The base transaction this recurrence is based on. Must be unique. |
-| `frequency`        | VARCHAR(50)  | Recurrence interval. Allowed values: `daily`, `weekly`, `biweekly`, `monthly`, `quarterly`, `yearly`. |
-| `next_occurrence`  | DATE         | The next expected date this transaction should occur.                       |
-| `end_date`         | DATE         | Optional end date for the recurrence. If null, it's considered indefinite.  |
-| `last_run`         | DATE         | Timestamp of the last time this recurrence was processed.                   |
-| `is_active`        | BOOLEAN      | Indicates whether the recurrence is currently running. Defaults to `TRUE`.  |
-| `created_at`       | TIMESTAMP    | Timestamp when the recurrence was created. Defaults to current timestamp.   |
+The `recurring_transactions` table tracks repeating transactions such as subscriptions, monthly bills, or salary deposits.  
+Each record links to a base transaction and defines its recurrence schedule.
 
-> 🔁 Each recurring transaction is linked to a single transaction template via `transaction_id`.  
-> ⛔ Set `is_active = FALSE` to stop a recurring transaction without deleting it.
+| Column Name      | Data Type     | Constraints / Default               | Description                                                                 |
+|------------------|--------------|-------------------------------------|-----------------------------------------------------------------------------|
+| `recurring_id`   | SERIAL       | **PK**                              | Unique identifier for the recurring transaction pattern.                    |
+| `transaction_id` | INT          | **UNIQUE**, FK → `transactions(transaction_id)`, `ON DELETE CASCADE` | Base transaction this recurrence is linked to. Each transaction can only have one recurrence rule. |
+| `frequency`      | VARCHAR(50)  | **NOT NULL**, CHECK constraint      | Recurrence interval: one of `daily`, `weekly`, `biweekly`, `monthly`, `quarterly`, `yearly`. |
+| `next_occurrence`| DATE         | **NOT NULL**                        | The next scheduled date this transaction should occur.                      |
+| `end_date`       | DATE         |                                     | Optional end date. If null, the recurrence is indefinite.                    |
+| `last_run`       | DATE         | DEFAULT `NULL`                      | Logs the last time this recurrence was processed.                           |
+| `is_active`      | BOOLEAN      | DEFAULT `TRUE`, **NOT NULL**        | Indicates whether the recurrence is currently active.                        |
+| `created_at`     | TIMESTAMP    | DEFAULT `CURRENT_TIMESTAMP`, **NOT NULL** | Timestamp when the recurrence entry was created.                             |
+
+> Each recurring transaction is tied to exactly one base `transaction`.  
+> Setting `is_active = FALSE` pauses the recurrence without deleting the record.
 
 
 ---
