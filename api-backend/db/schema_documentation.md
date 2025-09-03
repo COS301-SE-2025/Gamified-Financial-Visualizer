@@ -4,22 +4,23 @@ This document outlines the schema of the main tables in the PostgreSQL database.
 
 ---
 
-## 🧑‍💼 Table: `users`
-Stores user account and authentication metadata.
+## Table: `users`
 
-| Column Name            | Data Type    | Description                                                                 |
-|------------------------|--------------|-----------------------------------------------------------------------------|
-| `user_id`              | SERIAL       | Primary key for the user.                                                   |
-| `email`                | VARCHAR(255) | Unique login email address.                                                 |
-| `username`             | VARCHAR(50)  | Unique display name for the user.                                           |
-| `full_name`            | VARCHAR(100) | **Required** full name, provided during registration.                       |
-| `hashed_password`      | TEXT         | Securely hashed password.                                                   |
-| `two_factor_enabled`   | BOOLEAN      | Indicates whether 2FA is currently active for the user.                     |
-| `two_factor_mandatory` | BOOLEAN      | **True** if 2FA must be completed to access the system after registration.  |
-| `created_at`           | TIMESTAMP    | Timestamp when the user account was created. **Never null.**               |
-| `updated_at`           | TIMESTAMP    | Timestamp of the last update to the user’s record. **Never null.**         |
+The `users` table stores core account information and authentication metadata for every registered user in the system.
 
-> ⚙️ `two_factor_mandatory` ensures OTP is enforced on first login, while allowing users to later opt out of continuous 2FA logins if `two_factor_enabled = false`.
+| Column Name            | Data Type    | Constraints / Default                      | Description                                                                |
+|------------------------|--------------|-------------------------------------------|----------------------------------------------------------------------------|
+| `user_id`              | SERIAL       | **PK**                                    | Unique identifier for each user.                                           |
+| `email`                | VARCHAR(255) | **UNIQUE**, **NOT NULL**                  | User’s login email address.                                                |
+| `username`             | VARCHAR(50)  | **UNIQUE**, **NOT NULL**                  | User-chosen display name.                                                  |
+| `full_name`            | VARCHAR(100) | **NOT NULL**                              | User’s full name, required at registration.                                |
+| `hashed_password`      | TEXT         | **NOT NULL**                              | Securely hashed password.                                                  |
+| `two_factor_enabled`   | BOOLEAN      | DEFAULT `FALSE`                           | Indicates if two-factor authentication is currently active.                |
+| `two_factor_mandatory` | BOOLEAN      | DEFAULT `TRUE`                            | Requires 2FA on first login; can be relaxed if disabled later.              |
+| `created_at`           | TIMESTAMP    | DEFAULT `CURRENT_TIMESTAMP`, **NOT NULL** | Timestamp when the user account was created.                               |
+| `updated_at`           | TIMESTAMP    | DEFAULT `CURRENT_TIMESTAMP`, **NOT NULL** | Timestamp of the most recent update to the user record.                    |
+
+> `two_factor_mandatory` ensures OTP is enforced on first login, while allowing users to later opt out of continuous 2FA logins if `two_factor_enabled = false`.
 
 ---
 
