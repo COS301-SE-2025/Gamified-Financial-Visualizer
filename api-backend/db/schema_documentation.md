@@ -175,6 +175,55 @@ Categories are standardized to ensure consistent reporting and analytics across 
 
 ---
 
+## Table: `custom_categories`
+
+The `custom_categories` table stores user-defined personal categories for transaction classification.  
+This allows users to create custom labels beyond the global system categories.
+
+| Column Name           | Data Type     | Constraints / Default                      | Description                                                                 |
+|-----------------------|---------------|--------------------------------------------|-----------------------------------------------------------------------------|
+| `custom_category_id`  | SERIAL        | **PK**                                     | Unique identifier for each custom category.                                 |
+| `user_id`             | INT           | **NOT NULL**, FK → `users(user_id)`, `ON DELETE CASCADE` | User who owns the custom category.                                          |
+| `custom_category_name`| VARCHAR(100)  | **NOT NULL**, **UNIQUE per user**          | Name of the custom category. Must be unique for each user.                  |
+
+> Enforces uniqueness on (`user_id`, `custom_category_name`) so users cannot duplicate their own categories.  
+> Applications should prevent users from creating custom categories that overlap with system-defined `categories`.
+
+---
+
+## Table: `visual_assets`
+
+The `visual_assets` table stores unlockable AR world themes that represent a user’s financial progress.  
+Themes are tied to gamification features and unlock based on user milestones such as completing goals, earning XP, or maintaining strong financial habits.
+
+| Column Name   | Data Type    | Constraints / Default               | Description                                                                 |
+|---------------|-------------|-------------------------------------|-----------------------------------------------------------------------------|
+| `asset_id`    | SERIAL      | **PK**                              | Unique identifier for each unlocked theme.                                  |
+| `user_id`     | INT         | **NOT NULL**, FK → `users(user_id)`, `ON DELETE CASCADE` | User who owns the unlocked theme.                                           |
+| `asset_theme` | VARCHAR(50) | **NOT NULL**, CHECK constraint       | Name of the AR theme. Must be one of the predefined values listed below.    |
+| `created_at`  | TIMESTAMP   | DEFAULT `CURRENT_TIMESTAMP`          | Timestamp when the theme was unlocked or granted.                           |
+
+### Allowed `asset_theme` values:
+- `classic_day`  
+- `sunset_pink`  
+- `rainy_evening`  
+- `foggy_morning`  
+- `golden_hour`  
+- `neon_night`
+
+> Unlockable themes enhance the AR experience by changing the overall look and feel of the financial world.  
+> Access to specific themes may depend on user level, achievements, or special event rewards.
+
+---
+
+
+
+
+
+
+
+
+
 
 
 
@@ -225,24 +274,6 @@ Tracks all user transactions, including income, expenses, transfers, and system 
 
 
 
-
----
-
-## 🛠️ Table: `custom_categories`
-Stores user-defined personal categories for transaction classification, allowing customization beyond global system categories.
-
-| Column Name             | Data Type     | Description                                                               |
-|--------------------------|---------------|---------------------------------------------------------------------------|
-| `custom_category_id`     | SERIAL        | Primary key. Unique identifier for each custom category.                  |
-| `user_id`                | INT           | Foreign key to `users`. Specifies the owner of the category.              |
-| `custom_category_name`   | VARCHAR(100)  | Name of the custom category. Must be unique per user (case-insensitive).  |
-
-> 🔒 This table enforces uniqueness on (`user_id`, `custom_category_name`) to prevent duplicate names per user.  
-> ⚠️ A trigger prevents users from creating custom category names that conflict with global category names, even with different casing.
-
----
-
-
 ## 🔁 Table: `recurring_transactions`
 Tracks repeating transactions such as subscriptions, monthly bills, or salary deposits. Each entry links to a base transaction and includes frequency and scheduling metadata.
 
@@ -259,59 +290,6 @@ Tracks repeating transactions such as subscriptions, monthly bills, or salary de
 
 > 🔁 Each recurring transaction is linked to a single transaction template via `transaction_id`.  
 > ⛔ Set `is_active = FALSE` to stop a recurring transaction without deleting it.
-
----
-
-
-
-## 🧠 Table: `ai_scores`
-Stores AI-generated financial health evaluations for users, based on their transaction history, budgeting behavior, and other financial activities.
-
-| Column Name              | Data Type     | Description                                                                 |
-|--------------------------|---------------|------------------------------------------------------------------------------|
-| `score_id`               | SERIAL        | Primary key. Unique identifier for each AI evaluation.                       |
-| `user_id`                | INT           | Foreign key to `users`. The user this score belongs to.                      |
-| `generated_at`           | TIMESTAMP     | Timestamp when the score was generated. Defaults to current timestamp.       |
-| `score_value`            | INTEGER       | Numeric representation of the user's financial health.                       |
-| `financial_health_level` | VARCHAR(50)   | Textual rating of financial status. Allowed values: `poor`, `fair`, `average`, `good`, `excellent`. |
-
-> 🧠 These scores are generated by the system’s AI engine and may be used for analytics, progress tracking, or personalized recommendations.
-
----
-
-## 🏠 Table: `visual_assets`
-Stores visual representations of financial progress in a user's AR environment. These assets evolve or unlock based on financial activity like goal completion, XP growth, or budget consistency.
-
-| Column Name     | Data Type     | Description                                                                 |
-|------------------|--------------|-----------------------------------------------------------------------------|
-| `asset_id`       | SERIAL       | Primary key. Unique identifier for each visual asset.                       |
-| `user_id`        | INT          | Foreign key to `users`. Specifies who owns the asset.                       |
-| `asset_type`     | VARCHAR(50)  | Type of asset. Must be one of the predefined types (see list below).        |
-| `created_at`     | TIMESTAMP    | Timestamp when the asset was added.                                         |
-
-### 🎨 Allowed `asset_type` values:
-- `house`
-- `flat`
-- `shop`
-- `shop_cafe`
-- `shop_bakery`
-- `bank`
-- `school`
-- `fountain`
-- `tree`
-- `bench`
-- `car`
-- `sign_post`
-- `road`
-- `pavement`
-- `grass`
-- `floor`
-- `bushes`
-- `parking_lot`
-- `lamp_post`
-
-> 🎮 These assets are used to visually gamify progress in the user’s AR environment.  
-> 🏆 Access to certain asset types can be restricted or enhanced based on the user’s `tier_status` (stored in `user_points`).
 
 ---
 
