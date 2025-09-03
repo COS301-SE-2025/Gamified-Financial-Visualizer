@@ -522,18 +522,22 @@ Each record links to a base transaction and defines its recurrence schedule.
 
 ---
 
-## 📚 Table: `learning_modules`
-Stores financial literacy modules that group together related lessons and quizzes. Each module focuses on a specific topic and difficulty level.
+## 24. Table: `learning_modules`
 
-| Column Name       | Data Type     | Description                                                              |
-|--------------------|--------------|--------------------------------------------------------------------------|
-| `module_id`        | SERIAL       | Primary key. Unique identifier for the module.                           |
-| `module_title`     | VARCHAR(100) | Title of the module. E.g., "Budgeting Basics".                           |
-| `topic`            | VARCHAR(100) | The main topic covered in the module (e.g., "Investing", "Debt").        |
-| `difficulty`       | VARCHAR(50)  | Indicates the complexity: `beginner`, `intermediate`, or `advanced`.     |
-| `banner_image`     | BYTEA        | Raw binary content of the module's banner image.                         |
+The `learning_modules` table stores financial literacy modules, each grouping together related lessons and quizzes.  
+Every module has a topic, difficulty level, and an associated banner for presentation.
 
-> 🖼️ The `banner_image` column stores image files (e.g., PNG, JPEG) directly in binary form. It is loaded by the backend and served as media content.
+| Column Name        | Data Type     | Constraints / Default               | Description                                                                 |
+|--------------------|--------------|-------------------------------------|-----------------------------------------------------------------------------|
+| `module_id`        | SERIAL       | **PK**                              | Unique identifier for the module.                                           |
+| `module_title`     | VARCHAR(100) | **NOT NULL**                        | Title of the module (e.g., `"Budgeting Basics"`).                           |
+| `topic`            | VARCHAR(100) | **NOT NULL**                        | The main topic covered (e.g., `"Investing"`, `"Debt"`).                     |
+| `difficulty`       | VARCHAR(50)  | CHECK constraint                    | Indicates the complexity: `beginner`, `intermediate`, or `advanced`.        |
+| `banner_image_path`| VARCHAR(255) | **NOT NULL**, DEFAULT `'banners/default_module.png'` | Path or URL pointing to the module’s banner image file.                     |
+
+> Each module has a banner image that provides visual context.  
+> Modules are linked to lessons and quizzes that reinforce financial literacy skills.
+
 
 ---
 
@@ -581,22 +585,6 @@ Logs individual user quiz attempts, scores, and timestamps. Also tracks pass/fai
 | `timestamp`       | TIMESTAMP | When the attempt occurred. Defaults to current timestamp.                   |
 
 > The `passed` field is a stored computed column that automatically evaluates quiz success based on score thresholds.
-
----
-
-
-
-## 🖼️ Table: `banner_images`
-
-Stores decorative UI image assets like icons, event banners, and feature tabs.
-
-| Column Name   | Data Type  | Description                                                             |
-|----------------|-----------|-------------------------------------------------------------------------|
-| `banner_id`    | SERIAL    | Primary key. Unique ID for each banner image.                           |
-| `image_data`   | BYTEA     | Binary data representing the banner image.                              |
-| `created_at`   | TIMESTAMP | Timestamp when the image was added. Defaults to current timestamp.      |
-
-> Used for rotating banners, UI themes, seasonal events, or category illustrations.
 
 ---
 
@@ -672,6 +660,10 @@ Defines the system’s point-awarding rules for various gamified actions. Used t
 > This table allows the backend to dynamically retrieve and apply point rules without hardcoding logic. It supports scalable and adjustable gamification systems.
 
 ---
+
+
+
+
 
 ## 🗑️ Delete Rules Strategy (`ON DELETE` Behavior)
 
