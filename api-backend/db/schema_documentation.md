@@ -216,6 +216,22 @@ Themes are tied to gamification features and unlock based on user milestones suc
 
 ---
 
+## Table: `ar_scene_state`
+
+The `ar_scene_state` table stores the current state of a user’s AR (augmented reality) financial environment.  
+It captures layout, customization, and progress so the user’s virtual city/world can be consistently restored across sessions.
+
+| Column Name     | Data Type  | Constraints / Default              | Description                                                                 |
+|-----------------|-----------|------------------------------------|-----------------------------------------------------------------------------|
+| `scene_id`      | SERIAL    | **PK**                             | Unique identifier for the AR scene record.                                  |
+| `user_id`       | INT       | **UNIQUE**, FK → `users(user_id)`, `ON DELETE CASCADE` | User linked to this AR scene. Each user can only have one active AR scene.  |
+| `snapshot_jsonb`| JSONB     |                                    | Serialized snapshot of the AR layout (objects, positions, customizations).  |
+| `last_updated`  | TIMESTAMP | DEFAULT `CURRENT_TIMESTAMP`        | Timestamp when the AR scene state was last saved or modified.               |
+
+> Enables real-time saving and persistent rendering of user AR environments, ensuring continuity of visual progress.
+
+---
+
 
 
 
@@ -291,19 +307,6 @@ Tracks repeating transactions such as subscriptions, monthly bills, or salary de
 > 🔁 Each recurring transaction is linked to a single transaction template via `transaction_id`.  
 > ⛔ Set `is_active = FALSE` to stop a recurring transaction without deleting it.
 
----
-
-## 🧱 Table: `ar_scene_state`
-Stores the current state of a user’s AR (augmented reality) financial environment, which reflects their visual layout, progress, and virtual city.
-
-| Column Name       | Data Type  | Description                                                                 |
-|--------------------|-----------|-----------------------------------------------------------------------------|
-| `scene_id`         | SERIAL    | Primary key. Unique ID for the scene record.                                |
-| `user_id`          | INT       | Foreign key to `users`. Each user has one AR scene (enforced by `UNIQUE`).  |
-| `snapshot_jsonb`   | JSONB     | Serialized snapshot of the user's AR layout (positions, objects, styles).   |
-| `last_updated`     | TIMESTAMP | Timestamp when the AR scene was last saved or rendered.                     |
-
-> 🧩 This table supports real-time layout saving and persistent state rendering for AR-based financial progress environments.
 
 ---
 
