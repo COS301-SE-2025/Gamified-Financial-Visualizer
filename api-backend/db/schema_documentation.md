@@ -469,31 +469,34 @@ It supports both global categories and user-defined custom categories to provide
 
 ---
 
-## 💳 Table: `transactions`
-Tracks all user transactions, including income, expenses, transfers, and system fees. Supports both global and custom categories, and identifies recurring entries. Transactions may also contribute to financial goals or challenges, and reward gamified points.
+## Table: `transactions`
 
-| Column Name           | Data Type     | Description                                                                 |
-|------------------------|--------------|-----------------------------------------------------------------------------|
-| `transaction_id`       | SERIAL       | Primary key. Unique identifier for the transaction.                         |
-| `account_id`           | INT          | Foreign key to `accounts`. Specifies which account this transaction affects. |
-| `category_id`          | INT          | Foreign key to `categories`. Used if the transaction is assigned a global category. |
-| `custom_category_id`   | INT          | Foreign key to `custom_categories`. Used if assigned a personal category.   |
-| `budget_id` | INT | Foreign key to budgets. Updates budget progress dynamically if linked. |
-| `transaction_amount`   | NUMERIC(12,2)| Amount of the transaction. Cannot be 0.                                     |
-| `transaction_type`     | VARCHAR(20)  | Required. Must be one of: `expense`, `income`, `transfer`, `fee`, `withdrawal`, `deposit`. |
-| `transaction_date`     | TIMESTAMP    | The date and time when the transaction occurred. Defaults to now.           |
-| `transaction_name`     | TEXT         | Short name or label for the transaction (e.g., "Netflix", "Salary").        |
-| `is_recurring`         | BOOLEAN      | Marks the transaction as recurring or not. Defaults to `FALSE`.             |
-| `linked_goal_id`       | INT          | Foreign key to `goals`. Automatically updates progress if linked.           |
-| `linked_challenge_id`  | INT          | Foreign key to `challenges`. Automatically updates progress if linked.      |
-| `points_awarded`       | INT          | XP points awarded for this transaction. Defaults to `0`.                    |
-| `created_at`           | TIMESTAMP    | Timestamp when the transaction was created in the system. **Never null.**   |
+The `transactions` table tracks all financial activity, including income, expenses, transfers, fees, and deposits/withdrawals.  
+Transactions can be linked to budgets, goals, or challenges, and may award gamified points for achievements.
 
-> ✅ Only one of `category_id` or `custom_category_id` must be present per transaction (enforced by `CHECK` constraint).  
-> 🔁 When `is_recurring` is true, additional metadata is stored in the `recurring_transactions` table.  
-> 🎯 If linked to a goal or challenge, their progress is automatically updated when the transaction is created.  
-> 💰 If `budget_id` is provided, the transaction contributes toward that budget’s progress and remaining balance.
-> 🏆 Points may be awarded for gamification and used toward achievements.
+| Column Name          | Data Type      | Constraints / Default               | Description                                                                 |
+|----------------------|---------------|-------------------------------------|-----------------------------------------------------------------------------|
+| `transaction_id`     | SERIAL        | **PK**                              | Unique identifier for each transaction.                                     |
+| `account_id`         | INT           | **NOT NULL**, FK → `accounts(account_id)`, `ON DELETE CASCADE` | The account affected by this transaction.                                   |
+| `category_id`        | INT           | FK → `categories(category_id)`, `ON DELETE SET NULL` | Global category classification (nullable).                                  |
+| `custom_category_id` | INT           | FK → `custom_categories(custom_category_id)`, `ON DELETE SET NULL` | User-defined category classification (nullable).                            |
+| `budget_id`          | INT           | FK → `budgets(budget_id)`, `ON DELETE SET NULL` | If linked, contributes toward this budget’s progress.                       |
+| `transaction_amount` | NUMERIC(12,2) | **NOT NULL**, CHECK (`!= 0`)        | The transaction amount (positive or negative).                              |
+| `transaction_type`   | VARCHAR(20)   | **NOT NULL**, CHECK constraint      | One of: `expense`, `income`, `transfer`, `fee`, `withdrawal`, `deposit`.   |
+| `transaction_date`   | TIMESTAMP     | DEFAULT `CURRENT_TIMESTAMP`, **NOT NULL** | When the transaction occurred.                                              |
+| `transaction_name`   | TEXT          | DEFAULT `''`, **NOT NULL**          | Short label or description (e.g., `"Netflix"`, `"Salary"`).                 |
+| `is_recurring`       | BOOLEAN       | DEFAULT `FALSE`, **NOT NULL**       | Indicates whether the transaction repeats.                                  |
+| `linked_goal_id`     | INT           | FK → `goals(goal_id)`, `ON DELETE SET NULL` | If linked, updates progress on the associated goal.                         |
+| `linked_challenge_id`| INT           | FK → `challenges(challenge_id)`, `ON DELETE SET NULL` | If linked, updates progress on the associated challenge.                    |
+| `points_awarded`     | INT           | DEFAULT `0`, CHECK (≥ 0)            | Gamified points awarded for completing this transaction.                    |
+| `created_at`         | TIMESTAMP     | DEFAULT `CURRENT_TIMESTAMP`, **NOT NULL** | Timestamp when the transaction was logged in the system.                    |
+
+> Only one of `category_id` or `custom_category_id` may be set per transaction (enforced by a `CHECK` constraint).  
+> Recurring transactions (`is_recurring = TRUE`) are managed alongside metadata in a related table.  
+> Linking to goals or challenges updates their progress automatically.  
+> If associated with a budget, the transaction contributes toward that budget’s tracking.  
+> Points awarded can drive gamification and achievements.
+
 
 ---
 
