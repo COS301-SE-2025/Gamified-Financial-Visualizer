@@ -429,20 +429,23 @@ Leaderboards can be calculated globally, within communities, or friend networks 
 
 ---
 
-## 💰 Table: `budgets`
-Defines financial budgets for users within a specific time range. Used to track and control spending behavior.
+## Table: `budgets`
 
-| Column Name     | Data Type     | Description                                                                 |
-|------------------|--------------|-----------------------------------------------------------------------------|
-| `budget_id`      | SERIAL       | Primary key. Unique identifier for the budget.                              |
-| `user_id`        | INT          | Foreign key to `users`. The owner of the budget.                            |
-| `budget_name`    | VARCHAR(100) | User-defined name for the budget (e.g., "March 2025 Budget"). **Must be unique per user.** |
-| `period_start`   | DATE         | The starting date of the budget period.                                     |
-| `period_end`     | DATE         | The ending date of the budget period.                                       |
-| `created_at`     | TIMESTAMP    | Timestamp when the budget was created. Defaults to current timestamp.       |
+The `budgets` table defines user-specific financial budgets within a set time range.  
+Budgets help users track and control spending behavior, often linked to categories or custom allocations.
 
-> 🔐 A user cannot have two budgets with the same name. Enforced via `UNIQUE(user_id, budget_name)` constraint.  
-> 📊 Each budget can be linked to one or more category allocations in the `budget_categories` table.
+| Column Name   | Data Type     | Constraints / Default               | Description                                                                 |
+|---------------|--------------|-------------------------------------|-----------------------------------------------------------------------------|
+| `budget_id`   | SERIAL       | **PK**                              | Unique identifier for each budget.                                          |
+| `user_id`     | INT          | **NOT NULL**, FK → `users(user_id)`, `ON DELETE CASCADE` | The owner of the budget.                                                    |
+| `budget_name` | VARCHAR(100) | **NOT NULL**, **UNIQUE per user**   | User-defined name for the budget (e.g., `"March 2025 Budget"`).             |
+| `period_start`| DATE         | **NOT NULL**                        | Starting date of the budget period.                                         |
+| `period_end`  | DATE         | **NOT NULL**                        | Ending date of the budget period.                                           |
+| `created_at`  | TIMESTAMP    | DEFAULT `CURRENT_TIMESTAMP`         | Timestamp when the budget was created.                                      |
+
+> A user cannot define multiple budgets with the same name — enforced via `UNIQUE(user_id, budget_name)`.  
+> Budgets can be linked to category allocations for detailed spending analysis.
+
 
 ---
 
