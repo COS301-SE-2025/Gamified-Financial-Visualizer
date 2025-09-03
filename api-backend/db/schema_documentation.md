@@ -72,43 +72,52 @@ The `banner_images` table stores decorative UI assets such as icons, and feature
 
 ---
 
+## Table: `user_preferences`
 
+The `user_preferences` table stores each user’s customization settings and in-app notification preferences.  
+It has a one-to-one relationship with the `users` table.
 
+| Column Name                    | Data Type     | Constraints / Default                 | Description                                                                 |
+|--------------------------------|---------------|---------------------------------------|-----------------------------------------------------------------------------|
+| `user_id`                      | INT           | **PK**, FK → `users(user_id)`, **NOT NULL**, `ON DELETE CASCADE` | Unique identifier linking preferences to a specific user.                   |
+| `theme`                        | VARCHAR(50)   | CHECK (`'light'`, `'dark'`)            | Selected UI theme preference.                                               |
+| `in_app_notifications_enabled` | BOOLEAN       | DEFAULT `TRUE`                         | Toggles whether in-app notifications are enabled.                           |
+| `avatar_id`                    | INT           | FK → `avatar_images(avatar_id)`, NOT NULL, DEFAULT `1`, `ON DELETE SET DEFAULT` | Selected avatar image for the user.                                         |
+| `banner_id`                    | INT           | FK → `banner_images(banner_id)`, NOT NULL, DEFAULT `1`, `ON DELETE SET DEFAULT` | Selected banner image for the user.                                         |
+| `ar_customizations_jsonb`      | JSONB         |                                       | JSON data for AR environment customizations.                                |
+| `created_at`                   | TIMESTAMP     | DEFAULT `CURRENT_TIMESTAMP`            | Timestamp when the preferences were first created.                          |
+| `updated_at`                   | TIMESTAMP     | DEFAULT `CURRENT_TIMESTAMP`            | Timestamp for the last update to the preferences record.                    |
 
+> Supports profile personalization, including theme, avatars, banners, and AR world customization.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## ⚙️ Table: `user_preferences`
-Holds user customization and in-app notification settings.
-
-| Column Name                    | Data Type     | Description                                                                 |
-|--------------------------------|---------------|-----------------------------------------------------------------------------|
-| `user_id`                      | INT NOT NULL  | Primary key and FK to `users`. One-to-one relationship.                     |
-| `theme`                        | VARCHAR(50)   | Selected UI theme. Must be `'light'` or `'dark'`.                           |
-| `in_app_notifications_enabled` | BOOLEAN       | Toggles in-app notifications on or off. Defaults to `TRUE`.                 |
-| `avatar_id`                    | INT NOT NULL  | FK to `avatar_images.avatar_id`. Identifies selected avatar image.         |
-| `ar_customizations_jsonb`      | JSONB         | JSON data for user’s AR environment customizations.                         |
-| `created_at`                   | TIMESTAMP     | Timestamp when preferences were created. **Never null.**                    |
-| `updated_at`                   | TIMESTAMP     | Timestamp for last update. Auto-updated by trigger. **Never null.**        |
-
-> 🔒 Avatar selection is restricted to entries in the `avatar_images` table. Images are served from `/avatars/{avatar_name}` or stored as binary blobs depending on deployment mode.
 
 ---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## 📲 Table: `user_push_subscriptions`
 Stores device-specific push subscription details for PWA notifications.
