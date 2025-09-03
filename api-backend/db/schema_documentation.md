@@ -348,30 +348,35 @@ Each record represents a single contribution entry, which automatically updates 
 
 ---
 
-## ⚔️ Table: `challenges`
+## Table: `challenges`
 
-Represents community-based challenges where users voluntarily participate and contribute based on specific financial behaviors.
+The `challenges` table represents community-based challenges where users collaborate or compete around specific financial behaviors.  
+Each challenge belongs to a community and has defined rules, progress metrics, and status tracking.
 
-| Column Name         | Data Type     | Description                                                                 |
-|----------------------|--------------|-----------------------------------------------------------------------------|
-| `challenge_id`       | SERIAL       | Primary key. Unique ID for each challenge.                                  |
-| `community_id`       | INT          | FK to `communities`. The group that owns the challenge.                     |
-| `creator_id`         | INT          | FK to `users`. The user who created the challenge.                          |
-| `challenge_title`    | VARCHAR(100) | Title or name of the challenge. Must be unique per community.               |
-| `challenge_type`     | VARCHAR(50)  | Thematic type: one of `savings`, `debt`, `investment`, `spending limit`, `donation`. |
-| `target_amount`      | NUMERIC(12,2)| Financial goal for the group. Must be greater than 0.                       |
-| `current_amount`     | NUMERIC(12,2)| Auto-updated sum of all participant contributions. Starts at 0.             |
-| `target_date`        | DATE         | Intended completion deadline.                                               |
-| `end_date`           | DATE         | Optional end/cutoff date for the challenge.                                 |
-| `category_id`        | INT          | FK to `categories` for system-level classification.                         |
-| `custom_category_id` | INT          | FK to `custom_categories` for personal tagging.                             |
-| `measurement_type`   | VARCHAR(50)  | Progress metric. One of:<br>`amount_saved`, `goals_completed`, `transactions_logged`, `amount_invested`, `amount_donated`, `spending_within_limit`. |
-| `challenge_status`   | VARCHAR(50)  | Status: one of `active`, `completed`, `cancelled`, `expired`.              |
-| `created_at`         | TIMESTAMP    | Timestamp when the challenge was created.                                   |
-| `updated_at`         | TIMESTAMP    | Auto-updated on progress or status change.                                  |
+| Column Name         | Data Type      | Constraints / Default               | Description                                                                 |
+|---------------------|---------------|-------------------------------------|-----------------------------------------------------------------------------|
+| `challenge_id`      | SERIAL        | **PK**                              | Unique identifier for each challenge.                                       |
+| `community_id`      | INT           | **NOT NULL**, FK → `communities(community_id)`, `ON DELETE CASCADE` | Community to which the challenge belongs.                                   |
+| `creator_id`        | INT           | **NOT NULL**, FK → `users(user_id)`, `ON DELETE CASCADE` | User who created the challenge.                                             |
+| `challenge_title`   | VARCHAR(100)  | **NOT NULL**                        | Title or name of the challenge.                                             |
+| `challenge_type`    | VARCHAR(50)   | **NOT NULL**, CHECK constraint      | Thematic type: one of `savings`, `debt`, `investment`, `spending limit`, `donation`. |
+| `target_amount`     | NUMERIC(12,2) | **NOT NULL**, CHECK (> 0)           | Financial goal amount for the challenge. Must be greater than 0.            |
+| `current_amount`    | NUMERIC(12,2) | DEFAULT `0`, **NOT NULL**           | Running total of all contributions toward the challenge.                    |
+| `start_date`        | DATE          | **NOT NULL**                        | Explicit start date of the challenge.                                       |
+| `target_date`       | DATE          | **NOT NULL**                        | Intended completion/milestone date.                                         |
+| `end_date`          | DATE          |                                     | Actual end date if completed or expired.                                    |
+| `banner_id`         | INT           | DEFAULT `1`, FK → `banner_images(banner_id)`, `ON UPDATE CASCADE` | Banner image associated with the challenge.                                 |
+| `category_id`       | INT           | FK → `categories(category_id)`      | Optional system-level classification.                                       |
+| `custom_category_id`| INT           | FK → `custom_categories(custom_category_id)` | Optional user-defined category classification.                              |
+| `measurement_type`  | VARCHAR(50)   | **NOT NULL**, CHECK constraint      | Progress metric. One of: `amount_saved`, `goals_completed`, `transactions_logged`, `amount_invested`, `amount_donated`, `spending_within_limit`. |
+| `difficulty`        | VARCHAR(20)   | DEFAULT `easy`, **NOT NULL**        | Challenge difficulty: `easy`, `medium`, `hard`, or `extreme`.               |
+| `challenge_status`  | VARCHAR(50)   | DEFAULT `active`, **NOT NULL**      | Current status: one of `active`, `completed`, `cancelled`, or `expired`.    |
+| `created_at`        | TIMESTAMP     | DEFAULT `CURRENT_TIMESTAMP`         | Timestamp when the challenge was created.                                   |
+| `updated_at`        | TIMESTAMP     | DEFAULT `CURRENT_TIMESTAMP`         | Timestamp of the last update (auto-updated via triggers).                   |
 
-> 🔁 Only one of `category_id` or `custom_category_id` can be set per challenge.  
-> ⚙️ Status updates and `current_amount` are managed via backend triggers.
+> Either `category_id` or `custom_category_id` may be set, but not both.  
+> Triggers manage progress aggregation, automatic completion when `target_amount` is met, and expiry when past the deadline.  
+> Challenges are inherently **community-driven** and cannot exist outside of a community.
 
 ---
 
