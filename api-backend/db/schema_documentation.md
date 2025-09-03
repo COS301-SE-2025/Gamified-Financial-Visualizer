@@ -267,6 +267,22 @@ It enables management of who belongs to each community and in what capacity.
 
 ---
 
+## Table: `friendships`
+
+The `friendships` table represents mutual social connections between users.  
+Each friendship is symmetric, meaning it is stored only once per user pair, and includes the relationship status along with its creation timestamp.
+
+| Column Name          | Data Type   | Constraints / Default              | Description                                                                 |
+|----------------------|------------|------------------------------------|-----------------------------------------------------------------------------|
+| `user_id`            | INT        | **NOT NULL**, FK → `users(user_id)`, `ON DELETE CASCADE` | One user in the friendship pair.             |
+| `friend_id`          | INT        | **NOT NULL**, FK → `users(user_id)`, `ON DELETE CASCADE` | The other user in the friendship pair.      |
+| `relationship_status`| VARCHAR(20)| **NOT NULL**, CHECK constraint     | Status of the relationship: one of `pending`, `accepted`, or `declined`.    |
+| `created_at`         | TIMESTAMP  | DEFAULT `CURRENT_TIMESTAMP`        | Timestamp when the friendship record was created.                           |
+
+> Friendships are symmetric: only one record exists per user pair. 
+> The composite primary key `(user_id, friend_id)` ensures each friendship is unique.
+
+---
 
 
 
@@ -340,21 +356,6 @@ Tracks repeating transactions such as subscriptions, monthly bills, or salary de
 
 
 
----
-
-## 👥 Table: `friendships`
-Represents mutual social connections between users. Each friendship is symmetric — stored only once per user pair — and includes the relationship status and timestamp.
-
-| Column Name           | Data Type     | Description                                                                  |
-|------------------------|--------------|------------------------------------------------------------------------------|
-| `user_id`              | INT          | Foreign key to `users`. Must be less than `friend_id` (enforces uniqueness). |
-| `friend_id`            | INT          | Foreign key to `users`. Must be greater than `user_id`.                      |
-| `relationship_status` | VARCHAR(20)   | Status of the relationship: `pending`, `accepted`, or `declined`.           |
-| `created_at`           | TIMESTAMP    | Timestamp when the friendship record was created.                            |
-
-> 🔄 Friendships are symmetric: only one record exists per user pair.  
-> ✅ The `CHECK (user_id < friend_id)` ensures consistency and prevents duplication.  
-> 🔐 The primary key `(user_id, friend_id)` ensures each friendship is unique.
 
 ---
 
