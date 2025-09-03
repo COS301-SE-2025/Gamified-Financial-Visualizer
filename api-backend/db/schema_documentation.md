@@ -140,9 +140,60 @@ Each account represents a bank, investment, credit, or digital wallet account as
 ### Allowed `currency` values:
 - **Fiat**: `ZAR`, `USD`, `EUR`, `GBP`, `JPY`, `CAD`, `AUD`, `CHF`, `CNY`, `INR`, `KES`, `NGN`  
 - **Crypto**: `BTC`, `ETH`, `USDT`, `BUSD`, `LTC`, `XRP`, `SOL`, `BNB`, `DOGE`, `USDC`
+ 
+---
+
+
+## Table: `categories`
+
+The `categories` table defines global system-wide categories for classifying user transactions.  
+These include expenses, income, transfers, and investment-related activities.  
+Categories are standardized to ensure consistent reporting and analytics across all users.
+
+| Column Name    | Data Type     | Constraints / Default      | Description                                                                |
+|----------------|--------------|----------------------------|----------------------------------------------------------------------------|
+| `category_id`  | SERIAL       | **PK**                     | Unique identifier for each category.                                       |
+| `category_name`| VARCHAR(100) | **NOT NULL**, **UNIQUE**, CHECK constraint | Name of the category, selected from the predefined system-wide list.       |
+
+### Allowed `category_name` values:
+
+- `groceries`, `transport`, `fuel`, `utilities`, `rent`, `mortgage`  
+- `internet`, `phone`, `insurance`, `medical`, `health`, `fitness`  
+- `education`, `subscriptions`, `entertainment`, `restaurants`  
+- `clothing`, `personal care`, `gifts`, `charity`, `taxes`  
+- `savings`, `investments`, `loan repayment`, `debt`, `travel`, `accommodation`  
+- `salary`, `freelance`, `bonus`, `refund`  
+- `transfer in`, `transfer out`, `cash withdrawal`, `cash deposit`  
+- `business income`, `business expense`, `maintenance`, `repairs`  
+- `childcare`, `pets`, `home improvement`, `fees`, `commissions`  
+- `interest income`, `dividends`, `crypto purchase`, `crypto sale`, `forex`  
+- `wallet top-up`, `wallet withdrawal`
+
+> These categories are **system-defined** and enforced with a `CHECK` constraint.  
+> This ensures transactions are consistently classified and prevents invalid or duplicate entries.
 
 
 ---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## 💳 Table: `transactions`
 Tracks all user transactions, including income, expenses, transfers, and system fees. Supports both global and custom categories, and identifies recurring entries. Transactions may also contribute to financial goals or challenges, and reward gamified points.
@@ -174,69 +225,6 @@ Tracks all user transactions, including income, expenses, transfers, and system 
 
 
 
-## 🏷️ Table: `categories`
-Shared global categories for classifying user transactions, such as expenses, income, and transfers.
-
-| Column Name     | Data Type     | Description                                                                 |
-|------------------|--------------|-----------------------------------------------------------------------------|
-| `category_id`     | SERIAL       | Primary key. Unique identifier for each category.                           |
-| `category_name`   | VARCHAR(100) | Name of the category. Must be unique and selected from a predefined list.   |
-
-### ✅ Allowed `category_name` values:
-
-- `groceries`
-- `transport`
-- `fuel`
-- `utilities`
-- `rent`
-- `mortgage`
-- `internet`
-- `phone`
-- `insurance`
-- `medical`
-- `health`
-- `fitness`
-- `education`
-- `subscriptions`
-- `entertainment`
-- `restaurants`
-- `clothing`
-- `personal care`
-- `gifts`
-- `charity`
-- `taxes`
-- `savings`
-- `investments`
-- `loan repayment`
-- `debt`
-- `travel`
-- `accommodation`
-- `salary`
-- `freelance`
-- `bonus`
-- `refund`
-- `transfer in`
-- `transfer out`
-- `cash withdrawal`
-- `cash deposit`
-- `business income`
-- `business expense`
-- `maintenance`
-- `repairs`
-- `childcare`
-- `pets`
-- `home improvement`
-- `fees`
-- `commissions`
-- `interest income`
-- `dividends`
-- `crypto purchase`
-- `crypto sale`
-- `forex`
-- `wallet top-up`
-- `wallet withdrawal`
-
-> ✅ These categories are system-defined and enforced using a `CHECK` constraint. This ensures consistent classification across all users and prevents duplicate or invalid entries.
 
 ---
 
