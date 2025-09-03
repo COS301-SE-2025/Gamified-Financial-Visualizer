@@ -232,6 +232,21 @@ It captures layout, customization, and progress so the user’s virtual city/wor
 
 ---
 
+## Table: `communities`
+
+The `communities` table stores information about user-created financial communities.  
+Communities allow users to collaborate on challenges, share insights, and engage in social competition.
+
+| Column Name      | Data Type     | Constraints / Default               | Description                                                                 |
+|------------------|--------------|-------------------------------------|-----------------------------------------------------------------------------|
+| `community_id`   | SERIAL       | **PK**                              | Unique identifier for each community.                                       |
+| `owner_id`       | INT          | **NOT NULL**, FK → `users(user_id)`, `ON DELETE CASCADE` | The creator and owner of the community.                                    |
+| `community_name` | VARCHAR(100) | **NOT NULL**                        | Name of the community.                                                      |
+| `description`    | TEXT         |                                     | Optional description of the community’s purpose, focus, or culture.         |
+| `banner_id`      | INT          | **NOT NULL**, DEFAULT `1`, FK → `banner_images(banner_id)`, `ON UPDATE CASCADE` | Associated banner image representing the community.                         |
+| `created_at`     | TIMESTAMP    | DEFAULT `CURRENT_TIMESTAMP`          | Timestamp when the community was created.                                   |
+
+> Communities inherit banners from the `banner_images` table, ensuring consistency and allowing themes to be updated centrally.
 
 
 
