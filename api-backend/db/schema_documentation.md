@@ -449,18 +449,23 @@ Budgets help users track and control spending behavior, often linked to categori
 
 ---
 
-## 📊 Table: `budget_categories`
-Defines budget allocations per category under a specific user-defined budget. Supports both global and custom categories.
+## Table: `budget_categories`
 
-| Column Name          | Data Type     | Description                                                                 |
-|-----------------------|--------------|-----------------------------------------------------------------------------|
-| `budget_category_id`  | SERIAL       | Primary key. Unique ID for the category allocation.                         |
-| `budget_id`           | INT          | Foreign key to `budgets`. Identifies which budget this allocation belongs to. |
-| `category_id`         | INT          | Foreign key to `categories`. Used for global categories (nullable).         |
-| `custom_category_id`  | INT          | Foreign key to `custom_categories`. Used for personal categories (nullable).|
-| `target_amount`       | NUMERIC(12,2)| The max amount a user plans to spend in this category during the period. Must be ≥ 0. |
+The `budget_categories` table defines budget allocations per category under a specific budget.  
+It supports both global categories and user-defined custom categories to provide detailed budget tracking.
 
-> ✅ Either `category_id` or `custom_category_id` must be provided—**not both**. Enforced via a `CHECK` constraint.
+| Column Name         | Data Type      | Constraints / Default               | Description                                                                 |
+|---------------------|---------------|-------------------------------------|-----------------------------------------------------------------------------|
+| `budget_category_id`| SERIAL        | **PK**                              | Unique identifier for the category allocation.                              |
+| `budget_id`         | INT           | **NOT NULL**, FK → `budgets(budget_id)`, `ON DELETE CASCADE` | Identifies which budget this allocation belongs to.                         |
+| `category_id`       | INT           | FK → `categories(category_id)`       | Link to a global category (nullable).                                       |
+| `custom_category_id`| INT           | FK → `custom_categories(custom_category_id)` | Link to a user-defined category (nullable).                                 |
+| `current_amount`    | NUMERIC(12,2) | DEFAULT `0`, CHECK (≥ 0)             | Tracks the actual amount spent so far in this category.                      |
+| `target_amount`     | NUMERIC(12,2) | **NOT NULL**, CHECK (≥ 0)            | Maximum amount the user plans to spend in this category during the budget period. |
+
+> Either `category_id` or `custom_category_id` must be provided — but not both.  
+> `current_amount` is dynamically updated as transactions are logged against the budget.
+
 
 ---
 
