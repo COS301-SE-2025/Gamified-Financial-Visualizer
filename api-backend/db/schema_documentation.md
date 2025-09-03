@@ -380,29 +380,35 @@ Each challenge belongs to a community and has defined rules, progress metrics, a
 
 ---
 
-## 🎮 Table: `challenge_participants`
+## Table: `challenge_progress`
 
-Tracks individual user participation and progress in a specific challenge. A user must join a challenge to contribute.
+The `challenge_progress` table tracks each user’s participation and contributions in a specific community challenge.  
+Users must join a challenge before they can contribute progress.
 
-| Column Name         | Data Type     | Description                                                                 |
-|----------------------|--------------|-----------------------------------------------------------------------------|
-| `challenge_id`       | INT          | FK to `challenges`. The challenge the user joined.                          |
-| `user_id`            | INT          | FK to `users`. The participant.                                             |
-| `join_date`          | TIMESTAMP    | Timestamp when the user joined the challenge. Defaults to now.              |
-| `progress_amount`    | NUMERIC(12,2)| How much the user has contributed to the challenge. Starts at 0.            |
+| Column Name          | Data Type      | Constraints / Default               | Description                                                                 |
+|----------------------|---------------|-------------------------------------|-----------------------------------------------------------------------------|
+| `challenge_id`       | INT           | **NOT NULL**, FK → `challenges(challenge_id)`, `ON DELETE CASCADE` | The challenge that the user is participating in.                            |
+| `user_id`            | INT           | **NOT NULL**, FK → `users(user_id)`, `ON DELETE CASCADE` | The participating user.                                                     |
+| `participation_status`| VARCHAR(20)  | **NOT NULL**, DEFAULT `invited`, CHECK constraint | Status of the participant: one of `invited`, `joined`, or `left`.           |
+| `join_date`          | TIMESTAMP     | DEFAULT `CURRENT_TIMESTAMP`         | Timestamp when the user joined the challenge.                               |
+| `last_updated`       | TIMESTAMP     | DEFAULT `CURRENT_TIMESTAMP`         | Timestamp of the last progress update.                                      |
+| `progress_amount`    | NUMERIC(12,2) | DEFAULT `0`                          | Amount contributed by the user toward the challenge.                        |
 
-> 🧠 The combination of (`challenge_id`, `user_id`) is the primary key.  
-> 🔄 Changes to `progress_amount` trigger automatic updates to the challenge's total.
+> Composite primary key (`challenge_id`, `user_id`) ensures each user can only have one membership record per challenge.  
+> Updates to `progress_amount` automatically roll up into the challenge’s `current_amount`.
 
 ---
 
-## 🧠 Trigger Behavior
+### Trigger Behavior
 
-| Trigger Function                  | When It Runs                         | What It Does                                                               |
-|----------------------------------|--------------------------------------|----------------------------------------------------------------------------|
-| `update_challenge_progress()`    | On insert/update/delete in `challenge_participants` | Recalculates `current_amount` and updates `updated_at`.              |
-| `complete_challenge_if_met()`    | When `current_amount >= target_amount` | Sets `challenge_status = 'completed'`.                                   |
-| `expire_challenge_if_overdue()`  | On any challenge update (time-sensitive) | Sets `challenge_status = 'expired'` if past `end_date`.              |
+| Trigger Function              | When It Runs                                | What It Does                                                               |
+|-------------------------------|---------------------------------------------|----------------------------------------------------------------------------|
+| `update_challenge_progress()` | On `INSERT`, `UPDATE`, or `DELETE` in `challenge_progress` | Recalculates the challenge’s `current_amount` and refreshes `updated_at`. |
+| `complete_challenge_if_met()` | After `current_amount >= target_amount`      | Automatically sets `challenge_status = 'completed'`.                       |
+| `expire_challenge_if_overdue()`| On any challenge `UPDATE`                   | Marks `challenge_status = 'expired'` if the `end_date` has passed.         |
+
+> These triggers ensure that challenges remain synchronized with participant contributions and status conditions in real time.
+
 
 ---
 
@@ -420,26 +426,39 @@ Stores periodic leaderboard snapshots based on user XP (from `user_points`). Can
 
 > 📊 Leaderboards can be recalculated dynamically or stored as historical records.
 
+---
 
+## 💰 Table: `budgets`
+Defines financial budgets for users within a specific time range. Used to track and control spending behavior.
 
+| Column Name     | Data Type     | Description                                                                 |
+|------------------|--------------|-----------------------------------------------------------------------------|
+| `budget_id`      | SERIAL       | Primary key. Unique identifier for the budget.                              |
+| `user_id`        | INT          | Foreign key to `users`. The owner of the budget.                            |
+| `budget_name`    | VARCHAR(100) | User-defined name for the budget (e.g., "March 2025 Budget"). **Must be unique per user.** |
+| `period_start`   | DATE         | The starting date of the budget period.                                     |
+| `period_end`     | DATE         | The ending date of the budget period.                                       |
+| `created_at`     | TIMESTAMP    | Timestamp when the budget was created. Defaults to current timestamp.       |
 
+> 🔐 A user cannot have two budgets with the same name. Enforced via `UNIQUE(user_id, budget_name)` constraint.  
+> 📊 Each budget can be linked to one or more category allocations in the `budget_categories` table.
 
+---
 
+## 📊 Table: `budget_categories`
+Defines budget allocations per category under a specific user-defined budget. Supports both global and custom categories.
 
+| Column Name          | Data Type     | Description                                                                 |
+|-----------------------|--------------|-----------------------------------------------------------------------------|
+| `budget_category_id`  | SERIAL       | Primary key. Unique ID for the category allocation.                         |
+| `budget_id`           | INT          | Foreign key to `budgets`. Identifies which budget this allocation belongs to. |
+| `category_id`         | INT          | Foreign key to `categories`. Used for global categories (nullable).         |
+| `custom_category_id`  | INT          | Foreign key to `custom_categories`. Used for personal categories (nullable).|
+| `target_amount`       | NUMERIC(12,2)| The max amount a user plans to spend in this category during the period. Must be ≥ 0. |
 
+> ✅ Either `category_id` or `custom_category_id` must be provided—**not both**. Enforced via a `CHECK` constraint.
 
-
-
-
-
-
-
-
-
-
-
-
-
+---
 
 ## 💳 Table: `transactions`
 Tracks all user transactions, including income, expenses, transfers, and system fees. Supports both global and custom categories, and identifies recurring entries. Transactions may also contribute to financial goals or challenges, and reward gamified points.
@@ -469,8 +488,6 @@ Tracks all user transactions, including income, expenses, transfers, and system 
 
 ---
 
-
-
 ## 🔁 Table: `recurring_transactions`
 Tracks repeating transactions such as subscriptions, monthly bills, or salary deposits. Each entry links to a base transaction and includes frequency and scheduling metadata.
 
@@ -487,7 +504,6 @@ Tracks repeating transactions such as subscriptions, monthly bills, or salary de
 
 > 🔁 Each recurring transaction is linked to a single transaction template via `transaction_id`.  
 > ⛔ Set `is_active = FALSE` to stop a recurring transaction without deleting it.
-
 
 
 ---
@@ -554,37 +570,7 @@ Logs individual user quiz attempts, scores, and timestamps. Also tracks pass/fai
 
 ---
 
-## 💰 Table: `budgets`
-Defines financial budgets for users within a specific time range. Used to track and control spending behavior.
 
-| Column Name     | Data Type     | Description                                                                 |
-|------------------|--------------|-----------------------------------------------------------------------------|
-| `budget_id`      | SERIAL       | Primary key. Unique identifier for the budget.                              |
-| `user_id`        | INT          | Foreign key to `users`. The owner of the budget.                            |
-| `budget_name`    | VARCHAR(100) | User-defined name for the budget (e.g., "March 2025 Budget"). **Must be unique per user.** |
-| `period_start`   | DATE         | The starting date of the budget period.                                     |
-| `period_end`     | DATE         | The ending date of the budget period.                                       |
-| `created_at`     | TIMESTAMP    | Timestamp when the budget was created. Defaults to current timestamp.       |
-
-> 🔐 A user cannot have two budgets with the same name. Enforced via `UNIQUE(user_id, budget_name)` constraint.  
-> 📊 Each budget can be linked to one or more category allocations in the `budget_categories` table.
-
----
-
-## 📊 Table: `budget_categories`
-Defines budget allocations per category under a specific user-defined budget. Supports both global and custom categories.
-
-| Column Name          | Data Type     | Description                                                                 |
-|-----------------------|--------------|-----------------------------------------------------------------------------|
-| `budget_category_id`  | SERIAL       | Primary key. Unique ID for the category allocation.                         |
-| `budget_id`           | INT          | Foreign key to `budgets`. Identifies which budget this allocation belongs to. |
-| `category_id`         | INT          | Foreign key to `categories`. Used for global categories (nullable).         |
-| `custom_category_id`  | INT          | Foreign key to `custom_categories`. Used for personal categories (nullable).|
-| `target_amount`       | NUMERIC(12,2)| The max amount a user plans to spend in this category during the period. Must be ≥ 0. |
-
-> ✅ Either `category_id` or `custom_category_id` must be provided—**not both**. Enforced via a `CHECK` constraint.
-
----
 
 ## 🖼️ Table: `banner_images`
 
