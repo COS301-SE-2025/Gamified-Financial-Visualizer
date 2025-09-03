@@ -316,34 +316,34 @@ Each goal tracks a financial target, associated category, deadline, and progress
 
 ---
 
-## 📈 Table: `goal_progress`
-Tracks incremental contributions made toward a user's personal financial goal. Each row represents a single contribution entry made by the goal owner.
+## Table: `goal_progress`
 
-| Column Name       | Data Type     | Description                                                                 |
-|--------------------|--------------|-----------------------------------------------------------------------------|
-| `progress_id`      | SERIAL       | Primary key. Unique identifier for each progress entry.                     |
-| `goal_id`          | INT          | Foreign key to `goals`. Identifies the goal being contributed to.           |
-| `contributor_id`   | INT          | Foreign key to `users`. Must match the goal's `user_id`.                    |
-| `progress_date`    | DATE         | Date of the contribution. Defaults to the current date.                     |
-| `amount_added`     | NUMERIC(12,2)| Amount of money added toward the goal. Must be greater than 0.              |
+The `goal_progress` table tracks incremental contributions made toward a user’s personal financial goals.  
+Each record represents a single contribution entry, which automatically updates the running total for the associated goal.
 
-> 🔒 Only the owner of the goal may contribute progress. This is enforced in the backend service layer.  
-> 🔄 The associated goal's `current_amount` is automatically updated via a backend trigger when a new progress entry is inserted.  
-> 🔁 Edits and deletions to `goal_progress` also update `current_amount` accordingly via trigger functions.
+| Column Name     | Data Type      | Constraints / Default               | Description                                                                 |
+|-----------------|---------------|-------------------------------------|-----------------------------------------------------------------------------|
+| `progress_id`   | SERIAL        | **PK**                              | Unique identifier for each progress entry.                                  |
+| `goal_id`       | INT           | **NOT NULL**, FK → `goals(goal_id)`, `ON DELETE CASCADE` | The goal being contributed to.                                              |
+| `contributor_id`| INT           | **NOT NULL**, FK → `users(user_id)`, `ON DELETE CASCADE` | The user making the contribution (typically the goal owner).                |
+| `progress_date` | DATE          | DEFAULT `CURRENT_DATE`, **NOT NULL** | The date of the contribution entry.                                         |
+| `amount_added`  | NUMERIC(12,2) | **NOT NULL**, CHECK (> 0)            | The amount of money added toward the goal. Must be greater than 0.          |
 
----
-
-### ⚙️ Goal Progress Trigger Behavior
-
-| Operation     | Behavior                                                                          |
-|----------------|-----------------------------------------------------------------------------------|
-| `INSERT`       | Adds `amount_added` to the goal’s `current_amount`.                              |
-| `UPDATE`       | Adjusts `current_amount` by subtracting the old value and adding the new one.     |
-| `DELETE`       | Subtracts `amount_added` from the goal’s `current_amount`.                        |
-
-> These database triggers ensure accurate real-time synchronization between goal contributions and total saved progress.
+> Only the goal owner is permitted to contribute progress entries.  
+> The associated goal’s `current_amount` is automatically updated through triggers whenever progress is inserted, updated, or deleted.
 
 ---
+
+### Goal Progress Trigger Behavior
+
+| Operation | Trigger Function                  | Behavior                                                                 |
+|-----------|-----------------------------------|--------------------------------------------------------------------------|
+| `INSERT`  | `update_goal_current_amount`      | Increases the goal’s `current_amount` by adding the new `amount_added`.  |
+| `UPDATE`  | `adjust_goal_on_progress_update`  | Recalculates `current_amount` by subtracting the old `amount_added` and adding the new one. |
+| `DELETE`  | `subtract_goal_on_progress_delete`| Decreases the goal’s `current_amount` by subtracting the deleted `amount_added`. |
+
+> These database triggers ensure that the `goals.current_amount` field always reflects the real-time total of contributions stored in `goal_progress`.  
+> Synchronization occurs automatically whenever progress entries are added, updated, or removed.
 
 
 ---
