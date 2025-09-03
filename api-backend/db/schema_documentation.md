@@ -24,18 +24,21 @@ The `users` table stores core account information and authentication metadata fo
 
 ---
 
-## 🔐 Table: `user_tokens`
-Stores authentication tokens for active user sessions. Used to manage login states, token expiration, and secure user access.
+## Table: `user_tokens`
 
-| Column Name     | Data Type  | Description                                                              |
-|------------------|-----------|--------------------------------------------------------------------------|
-| `token_id`       | SERIAL    | Primary key. Unique ID for the token record.                             |
-| `user_id`        | INT       | Foreign key to `users`. Identifies the user that owns the token.         |
-| `token`          | TEXT      | The session token (e.g., JWT, Paseto, or opaque value).                  |
-| `created_at`     | TIMESTAMP | Timestamp when the token was issued. Defaults to current time.           |
-| `expires_at`     | TIMESTAMP | When the token becomes invalid and should be rejected.                   |
+The `user_tokens` table stores authentication tokens for active user sessions.  
+It is used to manage login states, handle token expiration, and secure user access.
 
-> Tokens are typically created on login and removed on logout. Backend services should validate token expiration on every request.
+| Column Name | Data Type  | Constraints / Default              | Description                                                        |
+|-------------|-----------|-----------------------------------|--------------------------------------------------------------------|
+| `token_id`  | SERIAL    | **PK**                            | Unique identifier for the token record.                            |
+| `user_id`   | INT       | **UNIQUE**, **NOT NULL**, FK → `users(user_id)` | The user who owns the token. Cascades on user deletion.            |
+| `token`     | TEXT      | **NOT NULL**                      | Session token value (e.g., JWT, Paseto, or opaque string).         |
+| `created_at`| TIMESTAMP | DEFAULT `CURRENT_TIMESTAMP`        | Timestamp when the token was issued.                               |
+| `expires_at`| TIMESTAMP | **NOT NULL**                      | Expiration time after which the token is invalid.                   |
+
+> Tokens are created on login and invalidated on logout. Backend services should always validate `expires_at` before granting access.
+
 
 ---
 
