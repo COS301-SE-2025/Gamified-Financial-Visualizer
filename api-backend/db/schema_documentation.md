@@ -412,19 +412,20 @@ Users must join a challenge before they can contribute progress.
 
 ---
 
-## 🏆 Table: `leaderboard_entries`
+## Table: `leaderboard_entries`
 
-Stores periodic leaderboard snapshots based on user XP (from `user_points`). Can be used globally or within friend networks.
+The `leaderboard_entries` table stores snapshots of user rankings based on XP points.  
+Leaderboards can be calculated globally, within communities, or friend networks to encourage competition.
 
-| Column Name         | Data Type     | Description                                                                 |
-|----------------------|--------------|-----------------------------------------------------------------------------|
-| `entry_id`           | SERIAL       | Primary key. Unique ID for this leaderboard entry.                          |
-| `user_id`            | INT          | FK to `users`. The user being ranked.                                       |
-| `leaderboard_score`  | INT          | The user’s score at the time (typically from `user_points.total_points`).   |
-| `ranking`            | INT          | Their position on the leaderboard (1 = top).                                |
-| `created_at`         | TIMESTAMP    | When this leaderboard snapshot was created.                                 |
+| Column Name        | Data Type   | Constraints / Default               | Description                                                                 |
+|--------------------|------------|-------------------------------------|-----------------------------------------------------------------------------|
+| `entry_id`         | SERIAL     | **PK**                              | Unique identifier for the leaderboard entry.                                |
+| `user_id`          | INT        | **NOT NULL**, FK → `users(user_id)`, `ON DELETE CASCADE` | The user being ranked.                                                      |
+| `leaderboard_score`| INT        | **NOT NULL**                        | The user’s score at the time (e.g., `user_points.total_points`).            |
+| `ranking`          | INT        |                                     | The user’s rank in the leaderboard (1 = top position).                      |
+| `created_at`       | TIMESTAMP  | DEFAULT `CURRENT_TIMESTAMP`         | Timestamp when the leaderboard snapshot was recorded.                       |
 
-> 📊 Leaderboards can be recalculated dynamically or stored as historical records.
+> Leaderboard entries can be recalculated periodically or stored historically for tracking long-term performance.
 
 ---
 
