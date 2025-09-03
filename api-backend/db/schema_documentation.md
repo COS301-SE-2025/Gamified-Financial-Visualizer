@@ -284,105 +284,35 @@ Each friendship is symmetric, meaning it is stored only once per user pair, and 
 
 ---
 
+## Table: `goals`
 
+The `goals` table defines personal financial goals set by users.  
+Each goal tracks a financial target, associated category, deadline, and progress toward completion.
 
+| Column Name         | Data Type      | Constraints / Default               | Description                                                                 |
+|---------------------|---------------|-------------------------------------|-----------------------------------------------------------------------------|
+| `goal_id`           | SERIAL        | **PK**                              | Unique identifier for each goal.                                            |
+| `user_id`           | INT           | **NOT NULL**, FK → `users(user_id)`, `ON DELETE CASCADE` | The owner of the goal.                                                      |
+| `goal_name`         | VARCHAR(100)  | **NOT NULL**, **UNIQUE per user**   | Name/title of the goal. Must be unique for each user.                       |
+| `goal_type`         | VARCHAR(50)   | **NOT NULL**, CHECK constraint      | One of: `savings`, `debt`, `investment`, `spending limit`, `donation`.     |
+| `target_amount`     | NUMERIC(12,2) | **NOT NULL**, CHECK (> 0)           | The total amount the user aims to reach.                                    |
+| `current_amount`    | NUMERIC(12,2) | DEFAULT `0`, **NOT NULL**           | Running total of contributions made toward the goal.                        |
+| `start_date`        | DATE          | **NOT NULL**                        | The date when the goal begins.                                              |
+| `target_date`       | DATE          | **NOT NULL**                        | Intended completion date for the goal.                                      |
+| `end_date`          | DATE          |                                     | Actual completion date (nullable).                                          |
+| `banner_id`         | INT           | DEFAULT `1`, FK → `banner_images(banner_id)`, `ON UPDATE CASCADE` | Visual banner associated with the goal.                                     |
+| `category_id`       | INT           | FK → `categories(category_id)`      | Optional link to a system-wide category.                                    |
+| `custom_category_id`| INT           | FK → `custom_categories(custom_category_id)` | Optional link to a user-defined custom category.                            |
+| `goal_status`       | VARCHAR(50)   | **NOT NULL**, CHECK constraint      | Status of the goal: one of `in-progress`, `completed`, `cancelled`, `failed`. |
+| `created_at`        | TIMESTAMP     | DEFAULT `CURRENT_TIMESTAMP`         | Timestamp when the goal was created.                                        |
+| `updated_at`        | TIMESTAMP     | DEFAULT `CURRENT_TIMESTAMP`         | Timestamp of the last update (auto-updated by trigger).                     |
 
+> Goals are **personal only** — they do not link directly to communities.  
+> Either `category_id` or `custom_category_id` must be set (but not both).  
+> `end_date` enables tracking of overdue or late completions.  
+> `updated_at` is automatically refreshed on updates.  
+> Enforces unique `goal_name` per user.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## 💳 Table: `transactions`
-Tracks all user transactions, including income, expenses, transfers, and system fees. Supports both global and custom categories, and identifies recurring entries. Transactions may also contribute to financial goals or challenges, and reward gamified points.
-
-| Column Name           | Data Type     | Description                                                                 |
-|------------------------|--------------|-----------------------------------------------------------------------------|
-| `transaction_id`       | SERIAL       | Primary key. Unique identifier for the transaction.                         |
-| `account_id`           | INT          | Foreign key to `accounts`. Specifies which account this transaction affects. |
-| `category_id`          | INT          | Foreign key to `categories`. Used if the transaction is assigned a global category. |
-| `custom_category_id`   | INT          | Foreign key to `custom_categories`. Used if assigned a personal category.   |
-| `budget_id` | INT | Foreign key to budgets. Updates budget progress dynamically if linked. |
-| `transaction_amount`   | NUMERIC(12,2)| Amount of the transaction. Cannot be 0.                                     |
-| `transaction_type`     | VARCHAR(20)  | Required. Must be one of: `expense`, `income`, `transfer`, `fee`, `withdrawal`, `deposit`. |
-| `transaction_date`     | TIMESTAMP    | The date and time when the transaction occurred. Defaults to now.           |
-| `transaction_name`     | TEXT         | Short name or label for the transaction (e.g., "Netflix", "Salary").        |
-| `is_recurring`         | BOOLEAN      | Marks the transaction as recurring or not. Defaults to `FALSE`.             |
-| `linked_goal_id`       | INT          | Foreign key to `goals`. Automatically updates progress if linked.           |
-| `linked_challenge_id`  | INT          | Foreign key to `challenges`. Automatically updates progress if linked.      |
-| `points_awarded`       | INT          | XP points awarded for this transaction. Defaults to `0`.                    |
-| `created_at`           | TIMESTAMP    | Timestamp when the transaction was created in the system. **Never null.**   |
-
-> ✅ Only one of `category_id` or `custom_category_id` must be present per transaction (enforced by `CHECK` constraint).  
-> 🔁 When `is_recurring` is true, additional metadata is stored in the `recurring_transactions` table.  
-> 🎯 If linked to a goal or challenge, their progress is automatically updated when the transaction is created.  
-> 💰 If `budget_id` is provided, the transaction contributes toward that budget’s progress and remaining balance.
-> 🏆 Points may be awarded for gamification and used toward achievements.
-
----
-
-
-
-## 🔁 Table: `recurring_transactions`
-Tracks repeating transactions such as subscriptions, monthly bills, or salary deposits. Each entry links to a base transaction and includes frequency and scheduling metadata.
-
-| Column Name       | Data Type     | Description                                                                 |
-|--------------------|--------------|-----------------------------------------------------------------------------|
-| `recurring_id`     | SERIAL       | Primary key. Unique identifier for the recurring pattern.                   |
-| `transaction_id`   | INT          | Foreign key to `transactions`. The base transaction this recurrence is based on. Must be unique. |
-| `frequency`        | VARCHAR(50)  | Recurrence interval. Allowed values: `daily`, `weekly`, `biweekly`, `monthly`, `quarterly`, `yearly`. |
-| `next_occurrence`  | DATE         | The next expected date this transaction should occur.                       |
-| `end_date`         | DATE         | Optional end date for the recurrence. If null, it's considered indefinite.  |
-| `last_run`         | DATE         | Timestamp of the last time this recurrence was processed.                   |
-| `is_active`        | BOOLEAN      | Indicates whether the recurrence is currently running. Defaults to `TRUE`.  |
-| `created_at`       | TIMESTAMP    | Timestamp when the recurrence was created. Defaults to current timestamp.   |
-
-> 🔁 Each recurring transaction is linked to a single transaction template via `transaction_id`.  
-> ⛔ Set `is_active = FALSE` to stop a recurring transaction without deleting it.
-
-
-
-
----
-
-## 🎯 Table: `goals`
-Defines personal financial goals set by users. Each goal tracks a financial target, deadline, and current progress.
-
-| Column Name         | Data Type     | Description                                                                 |
-|----------------------|--------------|-----------------------------------------------------------------------------|
-| `goal_id`            | SERIAL       | Primary key. Unique identifier for each goal.                               |
-| `user_id`            | INT          | Foreign key to `users`. The owner of the goal.                              |
-| `goal_name`          | VARCHAR(100) | Name/title of the goal. Must be unique per user.                            |
-| `goal_type`          | VARCHAR(50)  | One of: `savings`, `debt`, `investment`, `spending limit`, `donation`.     |
-| `target_amount`      | NUMERIC(12,2)| Total amount the user aims to reach. Must be greater than 0.                |
-| `current_amount`     | NUMERIC(12,2)| Running total of progress made toward the goal. Defaults to `0`.            |
-| `target_date`        | DATE         | Intended completion date for the goal.                                      |
-| `end_date`           | DATE         | Actual end/cutoff date. Used to assess on-time completion.                  |
-| `category_id`        | INT          | FK to `categories` (global). Used to classify the goal. Nullable.           |
-| `custom_category_id` | INT          | FK to `custom_categories`. Used for personal classification. Nullable.      |
-| `goal_status`        | VARCHAR(50)  | One of: `in-progress`, `completed`, `cancelled`, `failed`.                  |
-| `created_at`         | TIMESTAMP    | When the goal was created.                                                  |
-| `updated_at`         | TIMESTAMP    | Auto-updated on any change to the goal.                                     |
-
-> 🧍 Goals are strictly personal — no community linkage.  
-> 🧠 Either `category_id` or `custom_category_id` may be set (not both).  
-> 📅 Use `end_date` to track overdue or late completions.  
-> 🔄 `updated_at` is auto-managed by a backend or trigger.  
-> 🔐 Enforces unique `goal_name` per user.
 
 ---
 
@@ -484,6 +414,76 @@ Stores periodic leaderboard snapshots based on user XP (from `user_points`). Can
 | `created_at`         | TIMESTAMP    | When this leaderboard snapshot was created.                                 |
 
 > 📊 Leaderboards can be recalculated dynamically or stored as historical records.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 💳 Table: `transactions`
+Tracks all user transactions, including income, expenses, transfers, and system fees. Supports both global and custom categories, and identifies recurring entries. Transactions may also contribute to financial goals or challenges, and reward gamified points.
+
+| Column Name           | Data Type     | Description                                                                 |
+|------------------------|--------------|-----------------------------------------------------------------------------|
+| `transaction_id`       | SERIAL       | Primary key. Unique identifier for the transaction.                         |
+| `account_id`           | INT          | Foreign key to `accounts`. Specifies which account this transaction affects. |
+| `category_id`          | INT          | Foreign key to `categories`. Used if the transaction is assigned a global category. |
+| `custom_category_id`   | INT          | Foreign key to `custom_categories`. Used if assigned a personal category.   |
+| `budget_id` | INT | Foreign key to budgets. Updates budget progress dynamically if linked. |
+| `transaction_amount`   | NUMERIC(12,2)| Amount of the transaction. Cannot be 0.                                     |
+| `transaction_type`     | VARCHAR(20)  | Required. Must be one of: `expense`, `income`, `transfer`, `fee`, `withdrawal`, `deposit`. |
+| `transaction_date`     | TIMESTAMP    | The date and time when the transaction occurred. Defaults to now.           |
+| `transaction_name`     | TEXT         | Short name or label for the transaction (e.g., "Netflix", "Salary").        |
+| `is_recurring`         | BOOLEAN      | Marks the transaction as recurring or not. Defaults to `FALSE`.             |
+| `linked_goal_id`       | INT          | Foreign key to `goals`. Automatically updates progress if linked.           |
+| `linked_challenge_id`  | INT          | Foreign key to `challenges`. Automatically updates progress if linked.      |
+| `points_awarded`       | INT          | XP points awarded for this transaction. Defaults to `0`.                    |
+| `created_at`           | TIMESTAMP    | Timestamp when the transaction was created in the system. **Never null.**   |
+
+> ✅ Only one of `category_id` or `custom_category_id` must be present per transaction (enforced by `CHECK` constraint).  
+> 🔁 When `is_recurring` is true, additional metadata is stored in the `recurring_transactions` table.  
+> 🎯 If linked to a goal or challenge, their progress is automatically updated when the transaction is created.  
+> 💰 If `budget_id` is provided, the transaction contributes toward that budget’s progress and remaining balance.
+> 🏆 Points may be awarded for gamification and used toward achievements.
+
+---
+
+
+
+## 🔁 Table: `recurring_transactions`
+Tracks repeating transactions such as subscriptions, monthly bills, or salary deposits. Each entry links to a base transaction and includes frequency and scheduling metadata.
+
+| Column Name       | Data Type     | Description                                                                 |
+|--------------------|--------------|-----------------------------------------------------------------------------|
+| `recurring_id`     | SERIAL       | Primary key. Unique identifier for the recurring pattern.                   |
+| `transaction_id`   | INT          | Foreign key to `transactions`. The base transaction this recurrence is based on. Must be unique. |
+| `frequency`        | VARCHAR(50)  | Recurrence interval. Allowed values: `daily`, `weekly`, `biweekly`, `monthly`, `quarterly`, `yearly`. |
+| `next_occurrence`  | DATE         | The next expected date this transaction should occur.                       |
+| `end_date`         | DATE         | Optional end date for the recurrence. If null, it's considered indefinite.  |
+| `last_run`         | DATE         | Timestamp of the last time this recurrence was processed.                   |
+| `is_active`        | BOOLEAN      | Indicates whether the recurrence is currently running. Defaults to `TRUE`.  |
+| `created_at`       | TIMESTAMP    | Timestamp when the recurrence was created. Defaults to current timestamp.   |
+
+> 🔁 Each recurring transaction is linked to a single transaction template via `transaction_id`.  
+> ⛔ Set `is_active = FALSE` to stop a recurring transaction without deleting it.
+
+
 
 ---
 
