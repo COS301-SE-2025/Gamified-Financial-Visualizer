@@ -1051,8 +1051,7 @@ CREATE INDEX idx_post_comments_user_id ON post_comments(user_id);
 ### Best Practice
 
 > All indexes are non-unique unless required by constraints (`PK, UNIQUE`).
-> They support core app features like dashboards, transactions, goals, achievements, leaderboards, communities, and social feeds.
-> Regular monitoring with EXPLAIN ANALYZE ensures indexes remain effective and unused ones can be dropped.
+They support core app features like dashboards, transactions, goals, achievements, leaderboards, communities, and social feeds. Regular monitoring with EXPLAIN ANALYZE ensures indexes remain effective and unused ones can be dropped.
 
 ---
 
