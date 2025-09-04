@@ -678,17 +678,21 @@ The `user_achievements` table tracks which achievements users have earned, their
 
 ---
 
-## 🧮 Table: `user_points`
-Tracks a user’s total accumulated gamified points from various activities.
+## 32. Table: `user_points`
 
-| Column Name     | Data Type   | Description                                                                 |
-|------------------|------------|------------------------------------------------------------------------------|
-| `user_id`        | INT        | Primary key and foreign key to `users`. The user earning points.           |
-| `total_points`   | INT        | Total points accumulated. Defaults to `0`.                                 |
-| `last_updated`   | TIMESTAMP  | Timestamp of the last update to the total points.                          |
-| `tier_status`    | VARCHAR(20)| User’s tier. Must be one of: `wood`, `bronze`, `silver`, `gold`, `platinum`, `diamond`. Defaults to `wood`. |
+The `user_points` table tracks a user’s accumulated gamified points.  
+These points are earned through activities such as transactions, goals, quizzes, and challenges, and determine the user’s tier level.
 
-> Useful for tier progression, unlocks, and leaderboard displays.
+| Column Name    | Data Type   | Constraints / Default               | Description                                                                 |
+|----------------|------------|-------------------------------------|-----------------------------------------------------------------------------|
+| `user_id`      | INT        | **PK**, FK → `users(user_id)`, `ON DELETE CASCADE` | The user earning points.                                                    |
+| `total_points` | INT        | DEFAULT `0`, **NOT NULL**           | The total number of points accumulated by the user.                         |
+| `last_updated` | TIMESTAMP  | DEFAULT `CURRENT_TIMESTAMP`         | Timestamp of the most recent update to the points balance.                   |
+| `tier_status`  | VARCHAR(20)| **NOT NULL**, CHECK constraint      | The user’s tier: one of `Wood`, `Bronze`, `Silver`, `Gold`, `Platinum`, `Diamond`. |
+
+> Points are used for tier progression, unlocking rewards, and leaderboard displays.  
+> The `tier_status` reflects milestones of user engagement and progress in the gamification system.
+
 
 ---
 
