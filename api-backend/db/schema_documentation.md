@@ -696,19 +696,22 @@ These points are earned through activities such as transactions, goals, quizzes,
 
 ---
 
-## 🗂️ Table: `points_log`
-Stores a log of all point-earning events for historical tracking and auditing.
+## 33. Table: `points_log`
 
-| Column Name    | Data Type    | Description                                                                 |
-|----------------|-------------|------------------------------------------------------------------------------|
-| `log_id`       | SERIAL      | Primary key. Unique log entry.                                              |
-| `user_id`      | INT         | Foreign key to `users`. The user earning points.                            |
-| `source`       | VARCHAR(50) | The origin of the event. Must be one of: `achievement`, `quiz`, `goal`, `challenge`, `transaction`. |
-| `source_id`    | INT         | Optional ID referencing the event (e.g., `quiz_id`, `achievement_id`).      |
-| `points`       | INT         | Points earned from this action. Must be > 0.                                |
-| `created_at`   | TIMESTAMP   | When the points were logged. Defaults to now.                               |
+The `points_log` table stores a historical log of all point-earning events for auditing and progress tracking.  
+Each entry records the source of the points, the number earned, and when they were logged.
 
-> Enables granular tracking of how, when, and why users earned points.
+| Column Name | Data Type    | Constraints / Default               | Description                                                                 |
+|-------------|-------------|-------------------------------------|-----------------------------------------------------------------------------|
+| `log_id`    | SERIAL      | **PK**                              | Unique identifier for each log entry.                                       |
+| `user_id`   | INT         | **NOT NULL**, FK → `users(user_id)`, `ON DELETE CASCADE` | The user earning the points.                                                |
+| `source`    | VARCHAR(50) | **NOT NULL**, CHECK constraint       | The origin of the points: one of `achievement`, `quiz`, `goal`, `challenge`, `transaction`. |
+| `source_id` | INT         |                                     | Optional reference to the related event (e.g., `quiz_id`, `achievement_id`). |
+| `points`    | INT         | **NOT NULL**, CHECK (> 0)            | Number of points earned from the action. Must be greater than 0.            |
+| `created_at`| TIMESTAMP   | DEFAULT `CURRENT_TIMESTAMP`         | Timestamp when the points were logged.                                      |
+
+> This table enables granular tracking of how, when, and why users earned points.  
+> Useful for analytics, debugging, and rewarding historical consistency.
 
 ---
 
@@ -722,6 +725,16 @@ Defines the system’s point-awarding rules for various gamified actions. Used t
 | `base_points`  | INT           | Number of points to award for the action. Must be ≥ 0.                      |
 
 > This table allows the backend to dynamically retrieve and apply point rules without hardcoding logic. It supports scalable and adjustable gamification systems.
+
+---
+
+---
+
+---
+
+---
+
+---
 
 ---
 
