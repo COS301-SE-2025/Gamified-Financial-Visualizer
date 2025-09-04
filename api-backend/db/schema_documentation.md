@@ -560,9 +560,19 @@ Each lesson has a sequence number, title, and written content, with an optional 
 
 ---
 
-## 📝 Table: `user_lessons`
+## 26. Table: `user_lessons`
 
+The `user_lessons` table tracks user progress in financial literacy lessons.  
+Each record indicates that a specific user has completed a specific lesson.
 
+| Column Name   | Data Type   | Constraints / Default               | Description                                                                 |
+|---------------|------------|-------------------------------------|-----------------------------------------------------------------------------|
+| `user_id`     | INT        | **NOT NULL**, FK → `users(user_id)`, `ON DELETE CASCADE` | The user who completed the lesson.                                          |
+| `lesson_id`   | INT        | **NOT NULL**, FK → `lessons(lesson_id)`, `ON DELETE CASCADE` | The lesson that was completed.                                              |
+| `completed_at`| TIMESTAMP  | DEFAULT `CURRENT_TIMESTAMP`         | Timestamp when the lesson was marked as completed.                          |
+
+> Composite primary key (`user_id`, `lesson_id`) ensures that each user can only complete a given lesson once.  
+> This table allows progress tracking and is used to unlock quizzes, achievements, or module completion milestones.
 
 ---
 
