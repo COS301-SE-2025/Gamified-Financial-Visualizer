@@ -616,8 +616,22 @@ It allows tracking of multiple attempts per user and provides data for learning 
 
 ---
 
-## Table: `badges`
+## 29. Table: `badges`
 
+The `badges` table defines collectible achievement badges used in the gamification system.  
+Badges are awarded when users unlock specific **achievements**, creating a visible symbol of their progress.
+
+| Column Name  | Data Type     | Constraints / Default               | Description                                                                 |
+|--------------|--------------|-------------------------------------|-----------------------------------------------------------------------------|
+| `badge_id`   | SERIAL       | **PK**                              | Unique identifier for each badge.                                           |
+| `badge_title`| VARCHAR(100) | **NOT NULL**, **UNIQUE**            | Title of the badge (e.g., `"Challenge Champion"`).                          |
+| `image_path` | VARCHAR(255) | **NOT NULL**                        | File path or URL to the badge image (e.g., `"badges/badge1.png"`).          |
+| `rarity`     | VARCHAR(20)  | CHECK constraint                    | Indicates badge rarity: one of `Common`, `Uncommon`, `Rare`, `Epic`, `Legendary`, `Obsidian`. |
+| `created_at` | TIMESTAMP    | DEFAULT `CURRENT_TIMESTAMP`         | Timestamp when the badge was created.                                       |
+
+> Badges are **linked to achievements** and act as the visual collectible tied to them.  
+> `rarity` tiers badges from common milestones to highly exclusive rewards.  
+> This separation allows multiple achievements to exist while reusing a single badge design.
 
 ---
 
