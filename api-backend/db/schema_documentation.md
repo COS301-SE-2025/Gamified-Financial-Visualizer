@@ -541,19 +541,28 @@ Every module has a topic, difficulty level, and an associated banner for present
 
 ---
 
-## 🧑‍🏫 Table: `lessons`
-Defines lessons that belong to a specific financial module. Each lesson is numbered and contains written content and an optional estimated time to complete.
+## 25. Table: `lessons`
 
-| Column Name        | Data Type     | Description                                                              |
-|---------------------|--------------|--------------------------------------------------------------------------|
-| `lesson_id`         | SERIAL       | Primary key. Unique identifier for each lesson.                          |
-| `module_id`         | INT          | Foreign key to `learning_modules`. Specifies which module this lesson belongs to. |
-| `lesson_number`     | INT          | Sequential order of the lesson within the module. Must be unique per module. |
-| `lesson_title`      | VARCHAR(100) | Title of the lesson.                                                     |
-| `content`           | TEXT         | The full written content of the lesson.                                  |
-| `estimated_duration`| INT          | Optional. Estimated time to complete the lesson, in minutes.             |
+The `lessons` table defines individual lessons that belong to a financial literacy module.  
+Each lesson has a sequence number, title, and written content, with an optional estimated completion time.
 
-> The combination of `module_id` and `lesson_number` is unique to ensure logical ordering within a module.
+| Column Name        | Data Type     | Constraints / Default               | Description                                                                 |
+|--------------------|--------------|-------------------------------------|-----------------------------------------------------------------------------|
+| `lesson_id`        | SERIAL       | **PK**                              | Unique identifier for each lesson.                                          |
+| `module_id`        | INT          | **NOT NULL**, FK → `learning_modules(module_id)`, `ON DELETE CASCADE` | The module that this lesson belongs to.                                     |
+| `lesson_number`    | INT          | **NOT NULL**, **UNIQUE per module** | Sequential order of the lesson within the module.                           |
+| `lesson_title`     | VARCHAR(100) | **NOT NULL**                        | Title of the lesson.                                                        |
+| `content`          | TEXT         | **NOT NULL**                        | Full written content of the lesson.                                         |
+| `estimated_duration`| INT         |                                     | Optional. Estimated time to complete the lesson, in minutes.                 |
+
+> The combination of (`module_id`, `lesson_number`) ensures lessons are uniquely ordered within each module.
+
+
+---
+
+## 📝 Table: `user_lessons`
+
+
 
 ---
 
