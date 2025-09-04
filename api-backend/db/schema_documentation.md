@@ -1,4 +1,4 @@
-# 📊 Database Schema Documentation: Gamified Financial Visualizer
+# Database Schema Documentation: Gamified Financial Visualizer
 
 This document outlines the schema of the main tables in the PostgreSQL database. Each table includes its attributes and the purpose of each field.
 
@@ -803,21 +803,24 @@ Each comment is linked to a post and includes the author and timestamp.
 
 
 
-## 🗑️ Delete Rules Strategy (`ON DELETE` Behavior)
+## Delete Rules Strategy (`ON DELETE` Behavior)
 
-To preserve data integrity and avoid orphaned records, the schema uses carefully selected `ON DELETE` rules on foreign key relationships. These rules dictate what happens to dependent records when a parent record is deleted.
-
-### 🔧 Purpose of Delete Rules
-
-- **`ON DELETE CASCADE`**: Automatically deletes child records when the parent is deleted.
-- **`ON DELETE SET NULL`**: Retains the child record but nullifies the reference if the parent is removed.
-- **No Rule (Default)**: Prevents deletion of parent if child rows exist (`RESTRICT` behavior).
+To preserve data integrity and avoid orphaned records, the schema uses carefully selected `ON DELETE` rules on foreign key relationships.  
+These rules dictate what happens to dependent records when a parent record is deleted.
 
 ---
 
-### ✅ Key Applications
+### Purpose of Delete Rules
 
-#### `users`  
+- **`ON DELETE CASCADE`**: Automatically deletes child records when the parent is deleted.
+- **`ON DELETE SET NULL`**: Retains the child record but nullifies the reference if the parent is removed.
+- **`ON DELETE RESTRICT` / Default**: Prevents deletion of parent if child rows exist.
+
+---
+
+### Key Applications
+
+#### `users`
 - **CASCADE** on:
   - `accounts`
   - `user_tokens`
@@ -826,6 +829,8 @@ To preserve data integrity and avoid orphaned records, the schema uses carefully
   - `custom_categories`
   - `goals`
   - `goal_progress`
+  - `challenges` (via `creator_id`)
+  - `challenge_progress`
   - `quiz_attempts`
   - `user_achievements`
   - `user_points`
@@ -835,8 +840,12 @@ To preserve data integrity and avoid orphaned records, the schema uses carefully
   - `ai_scores`
   - `visual_assets`
   - `ar_scene_state`
-  
-  > Ensures that deleting a user removes all their associated records cleanly.
+  - `leaderboard_entries`
+  - `social_posts`
+  - `post_likes`
+  - `post_comments`
+
+  > Deleting a user removes all their dependent records cleanly.
 
 #### `accounts`
 - **CASCADE** on `transactions`  
@@ -851,10 +860,11 @@ To preserve data integrity and avoid orphaned records, the schema uses carefully
   - `budget_id`
   - `linked_goal_id`
   - `linked_challenge_id`
+  - `category_id`
+  - `custom_category_id`
   
-  > Keeps transaction history even if associated goal/challenge is removed.
+  > Preserves transaction history even if linked entities are deleted.
 
-#### `transactions`
 - **CASCADE** on `recurring_transactions`  
   > Automatically removes recurring metadata if the base transaction is deleted.
 
@@ -865,37 +875,52 @@ To preserve data integrity and avoid orphaned records, the schema uses carefully
 #### `communities`
 - **CASCADE** on:
   - `community_members`
-  - `challenge_progress`
-  - `leaderboard_entries`
+  - `challenges`
+  - `post_community_tags`
   
-  > Prevents orphaned records in community-related tables.
+  > Ensures community removal cascades into related memberships and posts.
+
+#### `challenges`
+- **CASCADE** on:
+  - `challenge_progress`
+  - `transactions` (when linked via `linked_challenge_id` → set null instead of cascade)  
+
+  > Keeps challenge integrity by removing dependent progress records.
 
 #### `learning_modules`
 - **CASCADE** on:
   - `lessons`
   - `quizzes`
   
-  > Ensures module deletion removes all linked content.
+  > Ensures module deletion removes all associated content.
 
 #### `quizzes`
 - **CASCADE** on `quiz_attempts`  
-  > Removes attempts if the quiz is deleted.
+  > Removes all attempts when a quiz is deleted.
+
+#### `social_posts`
+- **CASCADE** on:
+  - `post_community_tags`
+  - `post_likes`
+  - `post_comments`
+  
+  > Cleans up all associated engagement when a post is deleted.
 
 ---
 
-### 🔒 Summary of Best Practices
+### Summary of Best Practices
 
-- Use **CASCADE** when child records lose meaning without the parent (e.g., goal progress, transactions).
-- Use **SET NULL** when historical data must remain but without reference (e.g., transactions linked to removed goals).
-- Avoid ambiguous defaults; always define an explicit rule when creating foreign keys.
+- Use **CASCADE** when child records lose meaning without the parent (e.g., goal progress, community members).
+- Use **SET NULL** when historical records should remain but without broken references (e.g., transactions linked to goals or budgets).
+- Use **RESTRICT** (default) when the child must always require a valid parent, and deletion should be disallowed.
 
 ---
 
-## 🧠 Indexing Strategy
+## Indexing Strategy
 
-To ensure efficient data retrieval and maintain optimal performance, strategic indexes have been added to frequently queried columns across the schema. These indexes reduce lookup time for large datasets, especially in user-centric and transactional operations.
+To ensure efficient data retrieval and maintain optimal performance, strategic indexes have been added to frequently queried columns across the schema. These indexes reduce lookup time for large datasets, especially in user-centric, financial, community, and gamification operations.
 
-### 🔍 Why Indexing Matters
+### Why Indexing Matters
 
 Indexes improve the speed of:
 - Searching and filtering (`WHERE`, `JOIN`, `ORDER BY`)
@@ -906,7 +931,7 @@ However, indexes also slightly increase storage usage and insert/update costs �
 
 ---
 
-### ✅ Key Indexes
+### Key Indexes
 
 #### Users
 ```sql
@@ -921,7 +946,7 @@ CREATE INDEX idx_users_username ON users(username);
 CREATE INDEX idx_accounts_user_id ON accounts(user_id);
 ```
 
-> Efficient retrieval of user accounts.
+> Efficient retrieval of user accounts per user.
 
 #### Transactions
 ```sql
@@ -930,27 +955,11 @@ CREATE INDEX idx_transactions_user_type_date ON transactions(transaction_type, t
 CREATE INDEX idx_transactions_category_id ON transactions(category_id);
 CREATE INDEX idx_transactions_custom_category_id ON transactions(custom_category_id);
 CREATE INDEX idx_transactions_budget_id ON transactions(budget_id);
+CREATE INDEX idx_transactions_linked_goal_id ON transactions(linked_goal_id);
+CREATE INDEX idx_transactions_linked_challenge_id ON transactions(linked_challenge_id);
 ```
 
-> Optimizes filtering by account, category, type, and date for dashboards, budgets, and reports.
-
-#### Goals & Progress
-```sql
-CREATE INDEX idx_goals_user_id ON goals(user_id);
-CREATE INDEX idx_goals_goal_status ON goals(goal_status);
-CREATE INDEX idx_goal_progress_goal_id ON goal_progress(goal_id);
-CREATE INDEX idx_goal_progress_contributor_id ON goal_progress(contributor_id);
-```
-
-> Enhances performance on user goals overview and progress calculations.
-
-#### Quizzes & Attempts
-```sql
-CREATE INDEX idx_quiz_attempts_user_id ON quiz_attempts(user_id);
-CREATE INDEX idx_quiz_attempts_quiz_id ON quiz_attempts(quiz_id);
-```
-
-> Useful for retrieving quiz history and statistics per user/module.
+> Optimizes filtering by account, category, type, date, budgets, and links to goals/challenges.
 
 #### Budgets
 ```sql
@@ -960,17 +969,91 @@ CREATE INDEX idx_budget_categories_budget_id ON budget_categories(budget_id);
 
 > Speeds up fetching budgets and category allocations tied to users.
 
-#### Achievements
+#### Goals & Progress
 ```sql
+CREATE INDEX idx_goals_user_id ON goals(user_id);
+CREATE INDEX idx_goals_goal_status ON goals(goal_status);
+CREATE INDEX idx_goal_progress_goal_id ON goal_progress(goal_id);
+CREATE INDEX idx_goal_progress_contributor_id ON goal_progress(contributor_id);
+```
+
+> Enhances performance for goal dashboards and collaborative progress.
+
+#### Quizzes & Attempts
+```sql
+CREATE INDEX idx_quiz_attempts_user_id ON quiz_attempts(user_id);
+CREATE INDEX idx_quiz_attempts_quiz_id ON quiz_attempts(quiz_id);
+```
+
+> Useful for retrieving quiz history and statistics per user/module.
+
+#### Achievements & Badges
+```sql
+CREATE INDEX idx_achievements_type ON achievements(achievement_type);
 CREATE INDEX idx_user_achievements_user_id ON user_achievements(user_id);
 CREATE INDEX idx_user_achievements_achievement_id ON user_achievements(achievement_id);
 ```
 
-> Fast access to user achievement records and badge assignment.
+> Fast access to achievements, badge assignment, and user progress.
+
+#### Points & Logs
+```sql
+CREATE INDEX idx_user_points_tier ON user_points(tier_status);
+CREATE INDEX idx_points_log_user_id ON points_log(user_id);
+CREATE INDEX idx_points_log_source ON points_log(source);
+```
+
+> Supports leaderboard queries, historical breakdowns, and XP progression.
 
 
-ℹ️ Best Practice: All indexes are non-unique unless needed for constraints. They are designed to support core application features like dashboard rendering, financial calculations, leaderboards, and gamification logic.
+#### Communities & Memberships
+```sql
+CREATE INDEX idx_communities_owner_id ON communities(owner_id);
+CREATE INDEX idx_community_members_user_id ON community_members(user_id);
+CREATE INDEX idx_community_members_status ON community_members(membership_status);
+```
+
+> Optimizes loading communities, memberships, and invitations.
+
+#### Friendships
+```sql
+CREATE INDEX idx_friendships_user_id ON friendships(user_id);
+CREATE INDEX idx_friendships_friend_id ON friendships(friend_id);
+CREATE INDEX idx_friendships_status ON friendships(relationship_status);
+```
+
+> Enables quick mutual-friend lookups and social graph operations.
+
+#### Challenges & Progress
+```sql
+CREATE INDEX idx_challenges_community_id ON challenges(community_id);
+CREATE INDEX idx_challenges_creator_id ON challenges(creator_id);
+CREATE INDEX idx_challenges_status ON challenges(challenge_status);
+CREATE INDEX idx_challenge_progress_user_id ON challenge_progress(user_id);
+```
+
+> Improves filtering of active, upcoming, and completed challenges.
+
+#### Social Posts & Interactions
+```sql
+CREATE INDEX idx_social_posts_user_id ON social_posts(user_id);
+CREATE INDEX idx_social_posts_achievement_id ON social_posts(achievement_id);
+CREATE INDEX idx_post_community_tags_post_id ON post_community_tags(post_id);
+CREATE INDEX idx_post_likes_post_id ON post_likes(post_id);
+CREATE INDEX idx_post_likes_user_id ON post_likes(user_id);
+CREATE INDEX idx_post_comments_post_id ON post_comments(post_id);
+CREATE INDEX idx_post_comments_user_id ON post_comments(user_id);
+```
+
+> Supports newsfeed rendering, like/comment aggregation, and filtering posts by community or achievement.
+
+
+### Best Practice
+
+> All indexes are non-unique unless required by constraints (`PK, UNIQUE`).
+> They support core app features like dashboards, transactions, goals, achievements, leaderboards, communities, and social feeds.
+> Regular monitoring with EXPLAIN ANALYZE ensures indexes remain effective and unused ones can be dropped.
 
 ---
 
-> ✅ End of database schema documentation.
+> End of database schema documentation.
