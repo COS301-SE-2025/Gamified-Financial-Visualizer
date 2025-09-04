@@ -1,0 +1,85 @@
+export interface Player {
+  id: number;
+  username: string;
+  socketId: string;
+  position: number;
+  cash: number;
+  assets: Asset[];
+  loans: Loan[];
+  cards: Card[];
+  lapsCompleted: number;
+  salary: number;
+  isActive: boolean;
+  isBankrupt: boolean;
+}
+
+export interface GameState {
+  id: string;
+  players: Map<number, Player>;
+  currentPlayerId: number;
+  gamePhase: 'waiting' | 'playing' | 'finished';
+  board: Board;
+  communityDeck: Card[];
+  chanceDeck: Card[];
+  communityDiscard: Card[];
+  chanceDiscard: Card[];
+  gameMode: 'laps' | 'elimination';
+  maxLaps?: number;
+  targetNetWorth?: number;
+  createdAt: Date;
+  startedAt?: Date;
+  finishedAt?: Date;
+}
+
+export interface Asset {
+  id: string;
+  name: string;
+  type: 'business' | 'investment' ;
+  purchasePrice: number;
+  incomePerLap: number;
+  sellbackMultiplier: number;
+  blockPosition: number;
+}
+
+export interface Loan {
+  id: string;
+  amount: number;
+  interestRate: number;
+  source: 'bank' | 'loan_shark';
+  lapsRemaining?: number;
+}
+
+export interface Card {
+  id: string;
+  type: 'community' | 'chance';
+  title: string;
+  description: string;
+  effect: CardEffect;
+}
+
+export interface CardEffect {
+  type: 'cash' | 'move' | 'salary' | 'asset' | 'special';
+  amount?: number;
+  targetPosition?: number;
+  relativeMoves?: number;
+  salaryChange?: number;
+  message?: string;
+}
+
+export interface Board {
+  blocks: Block[
+
+    
+  ];
+  startSalary: number;
+}
+
+export interface Block {
+  id: number;
+  type: 'start' | 'bankruptcy' | 'go_to_bankruptcy' | 'bank' | 'community' | 'chance' | 'business' | 'action';
+  name: string;
+  description?: string;
+  cost?: number;
+  asset?: Asset;
+  action?: string;
+}

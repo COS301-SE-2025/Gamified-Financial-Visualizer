@@ -25,6 +25,7 @@ import { registerCommunityModule } from './modules/community';
 import { registerAchievementModule } from './modules/achievements';
 import { registerNotificationsModule } from './modules/notifications';
 import { registerCityModule } from './modules/city';
+import { registerGameModule } from 'modules/game';
 
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
@@ -145,6 +146,7 @@ registerCommunityModule(app);
 registerAchievementModule(app);
 registerNotificationsModule(app);
 registerCityModule(app);
+registerGameModule(app, io);
 
 // Health check
 app.get('/health', async (_req, res) => {
