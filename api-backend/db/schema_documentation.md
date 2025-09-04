@@ -596,20 +596,23 @@ Each quiz stores its questions in JSON format and sets the scoring thresholds fo
 
 ---
 
-## 🧪 Table: `quiz_attempts`
-Logs individual user quiz attempts, scores, and timestamps. Also tracks pass/fail status based on dynamic rule evaluation.
+## 28. Table: `quiz_attempts`
 
-| Column Name      | Data Type  | Description                                                                 |
-|-------------------|-----------|-----------------------------------------------------------------------------|
-| `attempt_id`      | SERIAL    | Primary key. Unique ID for the attempt.                                     |
-| `user_id`         | INT       | Foreign key to `users`. The user who attempted the quiz.                    |
-| `quiz_id`         | INT       | Foreign key to `quizzes`. Identifies the quiz taken.                        |
-| `attempt_score`   | INT       | Number of points earned during the attempt.                                 |
-| `passed`          | BOOLEAN   | Computed. True if `attempt_score` ≥ `pass_score` of the quiz.               |
-| `attempt_number`  | INT       | Sequential number of attempts by the user on this quiz.                     |
-| `timestamp`       | TIMESTAMP | When the attempt occurred. Defaults to current timestamp.                   |
+The `quiz_attempts` table logs user attempts at quizzes, including score, pass/fail status, and attempt number.  
+It allows tracking of multiple attempts per user and provides data for learning analytics.
 
-> The `passed` field is a stored computed column that automatically evaluates quiz success based on score thresholds.
+| Column Name     | Data Type  | Constraints / Default               | Description                                                                 |
+|-----------------|-----------|-------------------------------------|-----------------------------------------------------------------------------|
+| `attempt_id`    | SERIAL    | **PK**                              | Unique identifier for each quiz attempt.                                    |
+| `user_id`       | INT       | **NOT NULL**, FK → `users(user_id)`, `ON DELETE CASCADE` | The user who attempted the quiz.                                           |
+| `quiz_id`       | INT       | **NOT NULL**, FK → `quizzes(quiz_id)`, `ON DELETE CASCADE` | The quiz that was attempted.                                               |
+| `attempt_score` | INT       | **NOT NULL**                        | Number of points earned during the attempt.                                |
+| `passed`        | BOOLEAN   |                                      | Indicates whether the attempt passed. Typically `TRUE` if `attempt_score ≥ pass_score`. |
+| `attempt_number`| INT       | **NOT NULL**                        | Sequential number of the user’s attempts on this quiz.                      |
+| `timestamp`     | TIMESTAMP | DEFAULT `CURRENT_TIMESTAMP`         | Timestamp when the attempt occurred.                                       |
+
+> The `passed` field is determined by comparing `attempt_score` against the quiz’s `pass_score`.  
+> Users may attempt quizzes multiple times, with `attempt_number` enforcing ordering of attempts.
 
 ---
 
