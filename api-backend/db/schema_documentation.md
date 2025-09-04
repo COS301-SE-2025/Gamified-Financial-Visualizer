@@ -732,16 +732,73 @@ It centralizes the rules so point values can be adjusted dynamically without mod
 
 ---
 
----
+## 35. Table: `social_posts`
+
+The `social_posts` table stores user-generated social content related to achievements.  
+Each post highlights an earned achievement and may include a caption for community sharing.
+
+| Column Name     | Data Type   | Constraints / Default               | Description                                                                 |
+|-----------------|------------|-------------------------------------|-----------------------------------------------------------------------------|
+| `post_id`       | SERIAL     | **PK**                              | Unique identifier for each social post.                                     |
+| `user_id`       | INT        | **NOT NULL**, FK → `users(user_id)`, `ON DELETE CASCADE` | The user who created the post.                                              |
+| `achievement_id`| INT        | **NOT NULL**, FK → `achievements(achievement_id)`, `ON DELETE CASCADE` | The achievement being shared in the post.                                   |
+| `caption`       | TEXT       |                                     | Optional user-written caption for the post.                                 |
+| `created_at`    | TIMESTAMP  | DEFAULT `CURRENT_TIMESTAMP`         | Timestamp when the post was created.                                        |
+
+> Social posts allow users to showcase achievements within the community feed and foster engagement.
+
 
 ---
 
----
+## 36. Table: `post_community_tags`
+
+The `post_community_tags` table links social posts to one or more communities.  
+This enables posts to be shared within relevant community feeds.
+
+| Column Name   | Data Type | Constraints / Default               | Description                                                                 |
+|---------------|----------|-------------------------------------|-----------------------------------------------------------------------------|
+| `post_id`     | INT      | **NOT NULL**, FK → `social_posts(post_id)`, `ON DELETE CASCADE` | The social post being tagged.                                               |
+| `community_id`| INT      | **NOT NULL**, FK → `communities(community_id)`, `ON DELETE CASCADE` | The community where the post is shared or tagged.                           |
+
+> Composite primary key (`post_id`, `community_id`) ensures each post can only be tagged once per community.  
+> Supports community-specific feeds by associating posts with multiple groups.
+
 
 ---
 
+## 37. Table: `post_likes`
+
+The `post_likes` table tracks which users have liked specific social posts.  
+Each like is unique per user per post.
+
+| Column Name | Data Type  | Constraints / Default               | Description                                                                 |
+|-------------|-----------|-------------------------------------|-----------------------------------------------------------------------------|
+| `post_id`   | INT       | **NOT NULL**, FK → `social_posts(post_id)`, `ON DELETE CASCADE` | The post that was liked.                                                    |
+| `user_id`   | INT       | **NOT NULL**, FK → `users(user_id)`, `ON DELETE CASCADE` | The user who liked the post.                                                |
+| `liked_at`  | TIMESTAMP | DEFAULT `CURRENT_TIMESTAMP`         | Timestamp when the like was added.                                          |
+
+> Composite primary key (`post_id`, `user_id`) ensures a user can only like a post once.  
+> Used to measure engagement and popularity of posts.
+
 ---
 
+## 38. Table: `post_comments`
+
+The `post_comments` table stores comments made by users on social posts.  
+Each comment is linked to a post and includes the author and timestamp.
+
+| Column Name | Data Type   | Constraints / Default               | Description                                                                 |
+|-------------|------------|-------------------------------------|-----------------------------------------------------------------------------|
+| `comment_id`| SERIAL     | **PK**                              | Unique identifier for each comment.                                         |
+| `post_id`   | INT        | **NOT NULL**, FK → `social_posts(post_id)`, `ON DELETE CASCADE` | The post being commented on.                                                |
+| `user_id`   | INT        | **NOT NULL**, FK → `users(user_id)`, `ON DELETE CASCADE` | The user who made the comment.                                              |
+| `comment`   | TEXT       | **NOT NULL**                        | The content of the comment.                                                 |
+| `created_at`| TIMESTAMP  | DEFAULT `CURRENT_TIMESTAMP`         | Timestamp when the comment was created.                                     |
+
+> Comments enable richer interaction within community posts.  
+> Each comment is tied to a specific post and authored by a single user.
+
+---
 
 
 
