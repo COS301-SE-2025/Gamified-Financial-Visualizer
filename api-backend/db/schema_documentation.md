@@ -635,20 +635,29 @@ Badges are awarded when users unlock specific **achievements**, creating a visib
 
 ---
 
-## 🏅 Table: `achievements`
-Defines achievement milestones users can earn by completing specific actions such as saving goals, completing modules, or participating in challenges.
+## 30. Table: `achievements`
 
-| Column Name              | Data Type     | Description                                                                 |
-|--------------------------|---------------|-----------------------------------------------------------------------------|
-| `achievement_id`         | SERIAL        | Primary key. Unique ID for each achievement.                                |
-| `achievement_title`      | VARCHAR(100)  | The name of the achievement.                                                |
-| `achievement_description`| TEXT          | A detailed explanation of what the achievement represents.                  |
-| `achievement_type`       | VARCHAR(50)   | The category. Must be one of: `goal`, `quiz`, `challenge`, `transaction`, `milestone`, `misc`. |
-| `points_awarded`         | INT           | Number of gamified points awarded when earned. Must be ≥ 0.                 |
-| `badge_icon`             | BYTEA         | Binary image data for the badge icon.                                       |
-| `trigger_condition_json` | JSONB         | JSON rule that defines when the achievement is awarded.                     |
+The `achievements` table defines milestones that users can earn by completing actions such as goals, quizzes, transactions, budgets, or challenges.  
+Each achievement is linked to a `badge` for its visual representation and may also belong to a parent umbrella achievement.
 
-> Achievements are awarded by backend logic based on user behavior and system events.
+| Column Name               | Data Type     | Constraints / Default               | Description                                                                 |
+|---------------------------|--------------|-------------------------------------|-----------------------------------------------------------------------------|
+| `achievement_id`          | SERIAL       | **PK**                              | Unique identifier for each achievement.                                     |
+| `parent_id`               | INT          | FK → `achievements(achievement_id)`, `ON DELETE CASCADE` | Optional parent achievement (for umbrella achievements).                    |
+| `badge_id`                | INT          | **NOT NULL**, FK → `badges(badge_id)`, `ON DELETE RESTRICT` | Badge associated with this achievement.                                     |
+| `achievement_title`       | VARCHAR(100) | **NOT NULL**                        | Title of the achievement.                                                   |
+| `achievement_description` | TEXT         | **NOT NULL**                        | Detailed explanation of what the achievement represents.                     |
+| `achievement_type`        | VARCHAR(50)  | **NOT NULL**, CHECK constraint      | One of: `goal`, `quiz`, `challenge`, `transaction`, `milestone`, `tutorial`, `misc`, `budget`, `ar`. |
+| `points_awarded`          | INT          | **NOT NULL**, CHECK (≥ 0)           | Number of gamified points awarded when earned.                              |
+| `trigger_condition_json`  | JSONB        | **NOT NULL**                        | JSON rule defining when the achievement should be awarded.                  |
+| `is_umbrella`             | BOOLEAN      | DEFAULT `FALSE`, **NOT NULL**       | Marks if this is an umbrella achievement grouping other achievements.       |
+| `display_order`           | INT          | DEFAULT `0`                         | Controls display ordering in the UI.                                        |
+| `banner_image_path`       | VARCHAR(255) |                                     | Banner image (used only for umbrella achievements).                         |
+
+> Achievements are awarded automatically by backend logic in response to user actions and system events.  
+> Each achievement is visually represented through its associated `badge`.  
+> Umbrella achievements allow grouping of multiple sub-achievements under one larger milestone.
+
 
 ---
 
