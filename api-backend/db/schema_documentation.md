@@ -715,16 +715,20 @@ Each entry records the source of the points, the number earned, and when they we
 
 ---
 
-## 🧾 Table: `point_rules`
-Defines the system’s point-awarding rules for various gamified actions. Used to centrally manage how many points are given for each activity.
+## 34. Table: `point_rules`
 
-| Column Name    | Data Type     | Description                                                                 |
-|----------------|---------------|------------------------------------------------------------------------------|
-| `rule_id`      | SERIAL        | Primary key. Unique ID for the rule.                                        |
-| `action_type`  | VARCHAR(50)   | The type of user action. Must be one of: `transaction`, `goal_created`, `goal_completed`, `quiz_completed`, `achievement_unlocked`, `challenge_completed`. |
-| `base_points`  | INT           | Number of points to award for the action. Must be ≥ 0.                      |
+The `point_rules` table defines how many points are awarded for different user actions in the gamification system.  
+It centralizes the rules so point values can be adjusted dynamically without modifying application logic.
 
-> This table allows the backend to dynamically retrieve and apply point rules without hardcoding logic. It supports scalable and adjustable gamification systems.
+| Column Name   | Data Type     | Constraints / Default               | Description                                                                 |
+|---------------|--------------|-------------------------------------|-----------------------------------------------------------------------------|
+| `rule_id`     | SERIAL       | **PK**                              | Unique identifier for the rule.                                             |
+| `action_type` | VARCHAR(50)  | **NOT NULL**, **UNIQUE**, CHECK constraint | The type of user action. Must be one of: `transaction`, `goal_created`, `goal_completed`, `quiz_completed`, `achievement_unlocked`, `challenge_completed`. |
+| `base_points` | INT          | **NOT NULL**, CHECK (≥ 0)            | Number of points awarded when this action occurs.                           |
+
+> The backend queries this table to determine how many points to assign for each action type.  
+> Supports scalable gamification by allowing point values to be tuned without code changes.
+
 
 ---
 
