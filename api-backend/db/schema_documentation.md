@@ -661,16 +661,20 @@ Each achievement is linked to a `badge` for its visual representation and may al
 
 ---
 
-## 🧑‍🎓 Table: `user_achievements`
-Tracks which users have earned which achievements and when.
+## 31. Table: `user_achievements`
 
-| Column Name       | Data Type   | Description                                                                 |
-|-------------------|-------------|------------------------------------------------------------------------------|
-| `user_id`         | INT         | Foreign key to `users`. The user who earned the achievement.                |
-| `achievement_id`  | INT         | Foreign key to `achievements`. The earned achievement.                      |
-| `awarded_at`      | TIMESTAMP   | Timestamp when the achievement was granted. Defaults to current time.       |
+The `user_achievements` table tracks which achievements users have earned, their completion status, and progress toward partially completed achievements.
 
-> ✅ Composite primary key `(user_id, achievement_id)` ensures uniqueness.
+| Column Name          | Data Type   | Constraints / Default               | Description                                                                 |
+|----------------------|------------|-------------------------------------|-----------------------------------------------------------------------------|
+| `user_id`            | INT        | **NOT NULL**, FK → `users(user_id)`, `ON DELETE CASCADE` | The user linked to the achievement.                                         |
+| `achievement_id`     | INT        | **NOT NULL**, FK → `achievements(achievement_id)`, `ON DELETE CASCADE` | The achievement being tracked.                                              |
+| `awarded_at`         | TIMESTAMP  | DEFAULT `CURRENT_TIMESTAMP`         | Timestamp when the achievement was awarded.                                 |
+| `achievement_status` | VARCHAR(20)| DEFAULT `incomplete`, **NOT NULL**, CHECK constraint | Status of the achievement: either `incomplete` or `complete`.                |
+| `progress_value`     | INT        | DEFAULT `0`                         | Tracks incremental progress toward an achievement (e.g., 3/5 challenges completed). |
+
+> Composite primary key `(user_id, achievement_id)` ensures that each user has only one record per achievement.  
+> The `progress_value` supports partial achievements that unlock only once the goal is fully completed.
 
 ---
 
