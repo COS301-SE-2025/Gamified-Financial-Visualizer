@@ -577,16 +577,22 @@ Each record indicates that a specific user has completed a specific lesson.
 ---
 
 
-## 📝 Table: `quizzes`
-Defines quizzes associated with learning modules. Each quiz contains serialized questions and defines the maximum and passing scores.
+## 27. Table: `quizzes`
 
-| Column Name       | Data Type | Description                                                                 |
-|--------------------|----------|-----------------------------------------------------------------------------|
-| `quiz_id`          | SERIAL   | Primary key. Unique identifier for the quiz.                                |
-| `module_id`        | INT      | Foreign key to `learning_modules`. Identifies the module this quiz belongs to. |
-| `questions_jsonb`  | JSONB    | JSON-encoded structure containing quiz questions and options.               |
-| `max_score`        | INT      | The maximum number of points a user can earn from this quiz.               |
-| `pass_score`       | INT      | The minimum score required to pass. Must be less than or equal to `max_score`. |
+The `quizzes` table defines quizzes linked to learning modules.  
+Each quiz stores its questions in JSON format and sets the scoring thresholds for passing.
+
+| Column Name      | Data Type | Constraints / Default               | Description                                                                 |
+|------------------|----------|-------------------------------------|-----------------------------------------------------------------------------|
+| `quiz_id`        | SERIAL   | **PK**                              | Unique identifier for each quiz.                                            |
+| `module_id`      | INT      | **NOT NULL**, FK → `learning_modules(module_id)`, `ON DELETE CASCADE` | The learning module this quiz belongs to.                                   |
+| `questions_jsonb`| JSONB    | **NOT NULL**                        | JSON-encoded structure containing quiz questions, options, and answers.     |
+| `max_score`      | INT      | **NOT NULL**                        | Maximum number of points achievable for the quiz.                           |
+| `pass_score`     | INT      | **NOT NULL**, CHECK (`<= max_score`) | Minimum score required to pass the quiz.                                    |
+
+> Quizzes are used to test financial literacy after completing lessons.  
+> Passing a quiz may award points or achievements.
+
 
 ---
 
@@ -604,6 +610,11 @@ Logs individual user quiz attempts, scores, and timestamps. Also tracks pass/fai
 | `timestamp`       | TIMESTAMP | When the attempt occurred. Defaults to current timestamp.                   |
 
 > The `passed` field is a stored computed column that automatically evaluates quiz success based on score thresholds.
+
+---
+
+## Table: `badges`
+
 
 ---
 
