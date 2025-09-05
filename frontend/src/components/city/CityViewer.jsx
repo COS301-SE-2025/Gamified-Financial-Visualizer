@@ -5,7 +5,7 @@ import * as THREE from 'three'
 import { OrbitControls, Html, useGLTF, useProgress } from '@react-three/drei'
 
 import {
-  GiBank, GiHospitalCross, GiCoffeeCup, GiPoliceBadge, GiHouse, GiArchiveResearch, GiHotelBell
+  GiBank, GiHospitalCross, GiCoffeeCup, GiPoliceBadge, GiHouse, GiArchiveResearch,
 } from 'react-icons/gi'
 import {
   FaCoins, FaBolt, FaUsers, FaChartLine, FaHeartbeat, FaBook, FaUtensils,
@@ -35,6 +35,70 @@ const CITY_SCENES = {
   rainy_evening: { name: 'Rainy Evening', single: '/models/Rainy_Evening_City.glb' },
   sunset_pink: { name: 'Sunset Pink', single: '/models/Sunset_Pink_City.glb' },
 }
+
+// --- Add near the top, below CITY_SCENES ---
+const THEME_PRESETS = {
+  classic_day: { exposure: 1.15, bg: '#f2f5f8', fog: null },
+
+  // milky blue haze
+  foggy_morning: {
+    exposure: 0.92, bg: '#dfe5ea',
+    fog: { type: 'exp2', color: '#cfd8e3', density: 0.022 }
+  },
+
+  // deeper orange, light pink air
+  golden_hour: {
+    exposure: 1.05, bg: '#ffe1c6',
+    fog: { type: 'linear', color: '#ffd6b3', near: 140, far: 300 }
+  },
+
+  // dark navy, heavier night haze
+  neon_night: {
+    exposure: 0.85,
+    bg: '#0a1024',
+    fog: { type: 'exp2', color: '#0a1024', density: 0.018 }
+  },
+
+  // grey overcast, flatter contrast
+  rainy_evening: {
+    exposure: 0.98, bg: '#c7d0db',
+    fog: { type: 'linear', color: '#b8c3cf', near: 110, far: 240 }
+  },
+
+  // peach‑pink sky, very gentle haze
+  sunset_pink: {
+    exposure: 1.10, bg: '#ffe6ee',
+    fog: { type: 'linear', color: '#ffd6e8', near: 160, far: 360 }
+  },
+}
+
+
+// Applies bg + fog whenever theme changes
+function ThemeAtmosphere({ theme }) {
+  const { scene, gl } = useThree()
+  useEffect(() => {
+    const preset = THEME_PRESETS[theme] || THEME_PRESETS.classic_day
+    // Background
+    scene.background = new THREE.Color(preset.bg)
+
+    // Fog
+    if (preset.fog) {
+      const c = new THREE.Color(preset.fog.color)
+      if (preset.fog.type === 'exp2') {
+        scene.fog = new THREE.FogExp2(c, preset.fog.density)
+      } else {
+        scene.fog = new THREE.Fog(c, preset.fog.near, preset.fog.far)
+      }
+    } else {
+      scene.fog = null
+    }
+
+    // Also tint the canvas clear color for consistency
+    gl.setClearColor(scene.background, 1)
+  }, [theme, scene, gl])
+  return null
+}
+
 
 // Helper: pick a path from a theme + mode
 const getModelPath = (themeKey, mode) => {
@@ -520,7 +584,7 @@ function RendererTuning({ exposure = 1.0 }) {
 /* ===========================
    City model (loads the selected GLB)
 =========================== */
-function CityModel({ glbPath, onPick, hideBeacons, useGltfLights = true }) {
+function CityModel({ glbPath, onPick, hideBeacons, useGltfLights = true, theme }) {
   const gltf = useGLTF(glbPath)
   const scene = gltf?.scene
   const hasScene = !!scene && typeof scene.traverse === 'function'
@@ -529,34 +593,108 @@ function CityModel({ glbPath, onPick, hideBeacons, useGltfLights = true }) {
   // Materials + optional GLB lights adjustments (two-pass)
   useEffect(() => {
     if (!hasScene) return
-    const lightsToRemove = []
+    const neon = theme === 'neon_night'
+
+    // allow only these to glow in neon:
+    const ALLOW = [
+      /window/i, /glass/i, /emiss/i, /sign/i, /screen/i, /billboard/i,
+      /neon/i, /coffee/i, /market/i, /hospital/i, /(lamp|light)[ _-]?(head|bulb)/i, /strip/i
+    ]
+    // never glow (even if they contain the word "light"):
+    const DENY = [
+      /pole|post|pillar|frame|roof|road|street|ground|tree|cloud|bank/i
+    ]
+
+    // helper: save & restore original emissives
+    const saveOrig = (m) => {
+      if (!m.userData.__orig) {
+        m.userData.__orig = {
+          emissive: m.emissive ? m.emissive.clone() : new THREE.Color(0x000000),
+          intensity: m.emissiveIntensity ?? 1
+        }
+      }
+    }
+    const restoreOrig = (m) => {
+      if (m.userData.__orig) {
+        m.emissive.copy(m.userData.__orig.emissive)
+        m.emissiveIntensity = m.userData.__orig.intensity
+      }
+    }
+
     scene.traverse((o) => {
       if (o.isLight) {
-        if (useGltfLights) { o.intensity = Math.min(o.intensity ?? 1, 1.0); o.visible = true }
-        else { o.intensity = 0; o.visible = false; lightsToRemove.push(o) }
+        // We light from R3F, not GLB
+        o.visible = !!useGltfLights
+        o.intensity = useGltfLights ? Math.min(o.intensity ?? 1, 1.0) : 0
       }
-      if (o.isMesh) {
-        o.castShadow = true
-        o.receiveShadow = true
-        const mats = Array.isArray(o.material) ? o.material : [o.material]
-        mats.forEach((m) => {
-          if (!m) return
-          m.metalness = 0
-          m.roughness = 0.5
-          m.envMapIntensity = 0
-          if (o.name.startsWith('Cloud')) {
-            m.flatShading = false
-            o.geometry.computeVertexNormals()
-            m.roughness = 0.9    // softer highlight like Blender
+      if (!o.isMesh) return
+
+      o.castShadow = true
+      o.receiveShadow = true
+
+      const mats = Array.isArray(o.material) ? o.material : [o.material]
+      mats.forEach((m) => {
+        if (!m) return
+
+        // base look (keep your low‑poly feel)
+        m.metalness = 0
+        m.roughness = o.name.startsWith('Cloud') ? 0.9 : 0.5
+        m.envMapIntensity = 0
+        m.flatShading = !o.name.startsWith('Cloud')
+
+        const n = (m.name || o.name || '').toLowerCase()
+       // const isWindow = n.includes('window') || n.includes('emiss') || n.includes('light') || n.includes('screen') || n.includes('board')
+        const name = (m.name || o.name || '').toLowerCase()
+
+        // always save once
+        saveOrig(m)
+
+        if (!neon) {
+          // leaving neon => put the material back exactly
+          restoreOrig(m)
+          return
+        }
+
+        // Neon: start from no emissive for everyone
+        m.emissive = new THREE.Color(0x000000)
+        m.emissiveIntensity = 0
+
+        // check allow/deny
+        const isDenied  = DENY.some((re) => re.test(name))
+        const isAllowed = !isDenied && ALLOW.some((re) => re.test(name))
+        if (!isAllowed) return
+
+        // Pick a neon color by type
+        const isScreen  = /screen|billboard/i.test(name)
+        const isSign    = /sign|coffee|market|hospital/i.test(name)
+        const isWindow = n.includes('window') || n.includes('emiss') || n.includes('light') || n.includes('screen') || n.includes('board')
+        const isBulb    = /(lamp|light)[ _-]?(head|bulb)/i.test(name)
+
+        if (isScreen || isSign) {
+          m.emissive.set('#00e5ff')         // cyan for screens/signs
+          m.emissiveIntensity = 1.35
+        } else if (isWindow) {
+          if (neon) {
+            // pop for neon night
+            const isScreen = n.includes('screen') || n.includes('board')
+            m.emissive = new THREE.Color(isScreen ? '#00e5ff' : '#ff3bd4')
+            m.emissiveIntensity = isScreen ? 1.4 : 1.25
           } else {
-            m.flatShading = true // keep the low-poly look elsewhere
+            // clamp for every other theme
+            m.emissiveIntensity = Math.min(m.emissiveIntensity ?? 0.2, 0.35)
+            // tone the color to warm white so it doesn’t fight the sun color
+            m.emissive = new THREE.Color('#ffd9b3')
           }
-          m.needsUpdate = true
-        })
-      }
+        } else if (isBulb) {
+          m.emissive.set('#ffd066')         // warm small bulbs
+          m.emissiveIntensity = 0.9
+        }
+
+        m.needsUpdate = true
+      })
     })
-    if (!useGltfLights) lightsToRemove.forEach((l) => l.parent?.remove(l))
-  }, [hasScene, scene, useGltfLights])
+  }, [hasScene, scene, useGltfLights, theme])
+
 
   // Group meshes into buildings & compute beacon positions
   useEffect(() => {
@@ -622,6 +760,7 @@ function CityModel({ glbPath, onPick, hideBeacons, useGltfLights = true }) {
   )
 }
 
+// Classic Day Light Rig
 function BrightDayRig() {
   return (
     <>
@@ -661,6 +800,107 @@ function BrightDayRig() {
   )
 }
 
+// Golden Hour Light Rig
+function GoldenHourRig() {
+  return (
+    <>
+      <hemisphereLight skyColor={'#ffd6b3'} groundColor={'#c79b78'} intensity={0.6} />
+      {/* warmer, stronger key */}
+      <directionalLight
+        color={'#ff9a57'} position={[70, 80, 40]} intensity={2.6}
+        castShadow shadow-mapSize-width={4096} shadow-mapSize-height={4096}
+        shadow-camera-left={-120} shadow-camera-right={120} shadow-camera-top={120} shadow-camera-bottom={-120}
+        shadow-camera-near={1} shadow-camera-far={400} shadow-bias={-0.00055} shadow-normalBias={0.6}
+      />
+      {/* pink fill to match your Blender rim */}
+      <directionalLight color={'#ff6fa8'} position={[-48, 28, -32]} intensity={0.85} />
+      <ambientLight intensity={0.16} />
+    </>
+  )
+}
+
+// Neon Night Light Rig
+function NeonNightRig() {
+  return (
+    <>
+      {/* dark navy ambience, slight purple ground bounce */}
+      <hemisphereLight skyColor={'#0a1024'} groundColor={'#2a0031'} intensity={0.5} />
+
+      {/* cyan "moon" key from front-right */}
+      <directionalLight
+        color={'#79d0ff'} position={[44, 82, 22]} intensity={1.45}
+        castShadow
+        shadow-mapSize-width={2048} shadow-mapSize-height={2048}
+        shadow-camera-left={-120} shadow-camera-right={120}
+        shadow-camera-top={120} shadow-camera-bottom={-120}
+        shadow-camera-near={1} shadow-camera-far={320}
+        shadow-bias={-0.00075} shadow-normalBias={0.7}
+      />
+
+      {/* magenta rim from back-left */}
+      <directionalLight
+        color={'#ff3bd4'} position={[-36, 34, -30]} intensity={1.05}
+      />
+
+      {/* keep ambient tiny so neon does the work */}
+      <ambientLight intensity={0.08} />
+    </>
+  )
+}
+
+// Foggy Morning Light Rig
+function FoggyMorningRig() {
+  return (
+    <>
+      <hemisphereLight skyColor={'#e6eef5'} groundColor={'#c9d4dd'} intensity={1.0} />
+      {/* softer, cooler key */}
+      <directionalLight
+        color={'#cfe0ef'} position={[58, 88, 32]} intensity={1.15}
+        castShadow shadow-mapSize-width={2048} shadow-mapSize-height={2048}
+        shadow-camera-left={-100} shadow-camera-right={100} shadow-camera-top={100} shadow-camera-bottom={100}
+        shadow-bias={-0.0005} shadow-normalBias={0.6}
+      />
+      <directionalLight color={'#b3c3d1'} position={[-38, 36, -24]} intensity={0.55} />
+      <ambientLight intensity={0.24} />
+    </>
+  )
+}
+
+// Rainy Evening Light Rig
+function RainyEveningRig() {
+  return (
+    <>
+      <hemisphereLight skyColor={'#c7d0db'} groundColor={'#9aadbd'} intensity={0.9} />
+      {/* overcast = flatter key, less contrast */}
+      <directionalLight
+        color={'#c9d8e3'} position={[54, 72, 26]} intensity={1.25}
+        castShadow shadow-mapSize-width={2048} shadow-mapSize-height={2048}
+        shadow-camera-left={-110} shadow-camera-right={110} shadow-camera-top={110} shadow-camera-bottom={110}
+        shadow-bias={-0.00045} shadow-normalBias={0.6}
+      />
+      <directionalLight color={'#8aa3bd'} position={[-34, 26, -26]} intensity={0.75} />
+      <ambientLight intensity={0.24} />
+    </>
+  )
+}
+
+// Sunset Pink Light Rig
+function SunsetPinkRig() {
+  return (
+    <>
+      <hemisphereLight skyColor={'#ffd1e6'} groundColor={'#ffc2c9'} intensity={0.65} />
+      <directionalLight
+        color={'#ff8e62'} position={[82, 58, 28]} intensity={2.4}
+        castShadow shadow-mapSize-width={4096} shadow-mapSize-height={4096}
+        shadow-camera-left={-120} shadow-camera-right={120} shadow-camera-top={120} shadow-camera-bottom={120}
+        shadow-bias={-0.00055} shadow-normalBias={0.6}
+      />
+      <directionalLight color={'#ff79bf'} position={[-52, 24, -28]} intensity={0.9} />
+      <ambientLight intensity={0.15} />
+    </>
+  )
+}
+
 /* ===========================
    Viewer shell
 =========================== */
@@ -679,6 +919,18 @@ export default function CityViewer() {
     setSelected(binding)
     setOpen(true)
   }
+
+  // inside CityViewer() just before return:
+  const preset = THEME_PRESETS[theme] || THEME_PRESETS.classic_day
+
+  const Rig = {
+    classic_day: BrightDayRig,
+    golden_hour: GoldenHourRig,
+    neon_night: NeonNightRig,
+    foggy_morning: FoggyMorningRig,
+    rainy_evening: RainyEveningRig,
+    sunset_pink: SunsetPinkRig,
+  }[theme] ?? BrightDayRig
 
   return (
     <div className="w-full h-screen bg-[#f2f5f8] dark:bg-[#0E171F]">
@@ -702,26 +954,24 @@ export default function CityViewer() {
           gl.shadowMap.enabled = true
           gl.shadowMap.type = THREE.PCFSoftShadowMap
           gl.toneMapping = THREE.ACESFilmicToneMapping
-          gl.toneMappingExposure = 1.2   // a bit less than 1.3 to avoid washout with the new suns
+          gl.toneMappingExposure = preset.exposure
           if (gl.outputColorSpace !== undefined) gl.outputColorSpace = THREE.SRGBColorSpace
         }}
       >
-        <RendererTuning exposure={1.2} />
+        <RendererTuning exposure={preset.exposure} />
+        <ThemeAtmosphere theme={theme} />
 
         <Suspense fallback={<Loader />}>
           <CityModel
             glbPath={glbPath}
             hideBeacons={open}
             onPick={openModalFor}
-            useGltfLights={false}   // IMPORTANT: turn off embedded lights
+            useGltfLights={false}
+            theme={theme}            // <-- for optional neon tweaks
           />
         </Suspense>
 
-        {/* Daylight rig (2 suns + sky) */}
-        <BrightDayRig />
-
-        {/* small ambient to lift interiors without flattening */}
-        <ambientLight intensity={0.2} />
+        <Rig />
 
         <OrbitControls
           enableDamping
@@ -733,6 +983,7 @@ export default function CityViewer() {
           target={[0, 0, 0]}
         />
       </Canvas>
+
 
       {/* AR BUTTON */}
       <a
