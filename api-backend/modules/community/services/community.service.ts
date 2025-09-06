@@ -649,61 +649,96 @@ export async function getCommunityStats(user_id: number) {
       challenges,
       leaderboardRank,
       gamesPlayed,
-      friends
+      friends,
+      socialPosts
     ] = await Promise.all([
-      // 1. Communities joined
-      client.query(`
-        SELECT COUNT(*) FROM community_members
-        WHERE user_id = $1 AND membership_status = 'accepted'
-      `, [ user_id ]),
+      // 1) Communities joined
+      client.query(
+        `
+        SELECT COUNT(*) 
+        FROM community_members
+        WHERE user_id = $1
+          AND membership_status = 'accepted'
+        `,
+        [user_id]
+      ),
 
-      // 2. Challenges across user's communities
-      client.query(`
-        SELECT COUNT(*) FROM challenges c
+      // 2) Challenges across user's communities
+      client.query(
+        `
+        SELECT COUNT(*)
+        FROM challenges c
         WHERE c.community_id IN (
-          SELECT community_id FROM community_members
-          WHERE user_id = $1 AND membership_status = 'accepted'
+          SELECT community_id 
+          FROM community_members
+          WHERE user_id = $1
+            AND membership_status = 'accepted'
         )
-      `, [ user_id ]),
+        `,
+        [user_id]
+      ),
 
-      // 3. Leaderboard rank (assumes 1 row per user)
-      client.query(`
-        SELECT ranking FROM (
+      // 3) Leaderboard rank (assumes 1 row per user)
+      client.query(
+        `
+        SELECT ranking
+        FROM (
           SELECT user_id, RANK() OVER (ORDER BY total_points DESC) AS ranking
           FROM user_points
         ) ranked
         WHERE user_id = $1
-      `, [ user_id ]),
+        `,
+        [user_id]
+      ),
 
-      // 4. Games played — from quiz attempts
-      client.query(`
-        SELECT COUNT(*) FROM quiz_attempts
+      // 4) Games played — from quiz attempts
+      client.query(
+        `
+        SELECT COUNT(*)
+        FROM quiz_attempts
         WHERE user_id = $1
-      `, [ user_id ]),
+        `,
+        [user_id]
+      ),
 
-      // 5. Friends — accepted only
-      client.query(`
-        SELECT COUNT(*) FROM friendships
+      // 5) Friends — accepted only
+      client.query(
+        `
+        SELECT COUNT(*)
+        FROM friendships
         WHERE (user_id = $1 OR friend_id = $1)
-        AND relationship_status = 'accepted'
-      `, [ user_id ])
+          AND relationship_status = 'accepted'
+        `,
+        [user_id]
+      ),
+
+      // 6) Social posts authored by the user
+      client.query(
+        `
+        SELECT COUNT(*) 
+        FROM social_posts
+        WHERE user_id = $1
+        `,
+        [user_id]
+      )
     ]);
 
     client.release();
 
     return {
-      communities: parseInt(communities.rows[ 0 ].count),
-      challenges: parseInt(challenges.rows[ 0 ].count),
-      leaderboard: leaderboardRank.rows[ 0 ]?.ranking || null,
-      gamesPlayed: parseInt(gamesPlayed.rows[ 0 ].count),
-      friends: parseInt(friends.rows[ 0 ].count),
-      socialPosts: 7 // Mocked static value for now
+      communities: parseInt(communities.rows[0].count, 10),
+      challenges: parseInt(challenges.rows[0].count, 10),
+      leaderboard: leaderboardRank.rows[0]?.ranking ?? null,
+      gamesPlayed: parseInt(gamesPlayed.rows[0].count, 10),
+      friends: parseInt(friends.rows[0].count, 10),
+      socialPosts: parseInt(socialPosts.rows[0].count, 10)
     };
   } catch (err) {
     logger.error(`[CommunityService] Failed to fetch stats for user ${user_id}:`, err);
     throw err;
   }
 }
+
 
 async function getContributionScoresByCommunity(communityId: number) {
   try {
