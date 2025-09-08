@@ -112,7 +112,7 @@ export default function GameLobbyV3({
                     </div>
 
                     <div className="rounded-2xl overflow-hidden bg-gradient-to-b from-sky-100 to-indigo-100 h-72 mb-4 border border-white/30 shadow-inner">
-                        <CharacterSelectViewer focus={character?.key || 'Cowboy'} />
+                        <CharacterSelectViewer glbPath="/game/Monopoly_Characters.glb" focus={character?.key} />
                     </div>
 
                     <div className="text-sky-500 font-semibold mb-3 px-1">Available Characters</div>
@@ -265,16 +265,6 @@ export default function GameLobbyV3({
             </div>
 
             {countdown && <Countdown seconds={5} onDone={done} />}
-
-            <style jsx>{`
-        @keyframes pulse-slow {
-          0%, 100% { opacity: 0.2; }
-          50% { opacity: 0.3; }
-        }
-        .animate-pulse-slow {
-          animation: pulse-slow 6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-      `}</style>
         </div>
     )
 }
