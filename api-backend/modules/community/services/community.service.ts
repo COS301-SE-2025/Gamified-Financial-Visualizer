@@ -1525,3 +1525,93 @@ export async function getPostComments(postId: number) {
 
   return rows;
 }
+
+export async function deleteSocialPost(userId: number, postId: number) {
+  // Verify post exists & ownership
+  const { rows: postRows } = await pool.query(
+    `SELECT user_id FROM social_posts WHERE post_id = $1`,
+    [postId]
+  );
+  if (postRows.length === 0) {
+    throw new Error('Post not found');
+  }
+  if (postRows[0].user_id !== userId) {
+    throw new Error('You are not authorized to delete this post');
+  }
+
+  // Delete post
+  const { rowCount } = await pool.query(
+    `DELETE FROM social_posts WHERE post_id = $1 AND user_id = $2`,
+    [postId, userId]
+  );
+
+  if (rowCount === 0) {
+    // Extremely unlikely if the above check passed, but guards against races
+    throw new Error('Failed to delete post');
+  }
+
+  return { post_id: postId, message: 'Post deleted successfully' };
+}
+
+export async function deletePostComment(
+  userId: number,
+  postId: number,
+  commentId: number
+) {
+  // Pull comment + owning post user
+  const { rows: commentRows } = await pool.query(
+    `
+    SELECT 
+      pc.comment_id,
+      pc.user_id      AS comment_user_id,
+      pc.post_id,
+      sp.user_id      AS post_user_id
+    FROM post_comments pc
+    JOIN social_posts sp ON sp.post_id = pc.post_id
+    WHERE pc.comment_id = $1
+    `,
+    [commentId]
+  );
+
+  if (commentRows.length === 0) {
+    throw new Error('Comment not found');
+  }
+
+  const c = commentRows[0];
+
+  // Ensure this comment is on the expected post
+  if (Number(c.post_id) !== Number(postId)) {
+    throw new Error('Comment does not belong to the specified post');
+  }
+
+  // Authorization: comment author OR post owner can delete
+  const isCommentOwner = Number(c.comment_user_id) === Number(userId);
+  const isPostOwner = Number(c.post_user_id) === Number(userId);
+
+  if (!isCommentOwner && !isPostOwner) {
+    throw new Error('You are not authorized to delete this comment');
+  }
+
+  // Delete the comment
+  const { rowCount } = await pool.query(
+    `DELETE FROM post_comments WHERE comment_id = $1`,
+    [commentId]
+  );
+
+  if (rowCount === 0) {
+    throw new Error('Failed to delete comment');
+  }
+
+  // Return remaining comment count (handy for optimistic UI updates)
+  const { rows: countRows } = await pool.query(
+    `SELECT COUNT(*)::INT AS remaining FROM post_comments WHERE post_id = $1`,
+    [postId]
+  );
+
+  return {
+    comment_id: commentId,
+    post_id: postId,
+    remaining_comments: countRows[0]?.remaining ?? 0,
+    message: 'Comment deleted successfully',
+  };
+}
