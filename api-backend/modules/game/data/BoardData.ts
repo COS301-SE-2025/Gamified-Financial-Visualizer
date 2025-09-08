@@ -155,7 +155,7 @@ export const GAME_BOARD: Board = {
     {
       id: 6,
       type: 'business',
-      name: 'Local Coffee Shop',
+      name: 'Roast & Bean',
       description: 'A cozy neighborhood coffee shop',
       cost: 8000,
       asset: BUSINESS_ASSETS.find(a => a.id === 'coffee_shop')
@@ -175,20 +175,20 @@ export const GAME_BOARD: Board = {
     {
       id: 8,
       type: 'business',
-      name: 'Food Truck',
+      name: 'Fork & Flame',
       description: 'Mobile food business',
       cost: 12000,
-      asset: BUSINESS_ASSETS.find(a => a.id === 'food_truck')
+      asset: BUSINESS_ASSETS.find(a => a.id === 'fork_flame')
     },
 
     // Block 9 - Business Asset
     {
       id: 9,
       type: 'business',
-      name: 'Laundromat',
+      name: 'Loom & Label',
       description: 'Steady income from laundry services',
       cost: 15000,
-      asset: BUSINESS_ASSETS.find(a => a.id === 'laundromat')
+      asset: BUSINESS_ASSETS.find(a => a.id === 'loom_label')
     },
 
     // Block 10 - Bankruptcy Corner
@@ -248,10 +248,10 @@ export const GAME_BOARD: Board = {
     {
       id: 16,
       type: 'business',
-      name: 'Fitness Studio',
+      name: 'ProMotion Gear',
       description: 'Personal training and fitness classes',
       cost: 18000,
-      asset: BUSINESS_ASSETS.find(a => a.id === 'fitness_studio')
+      asset: BUSINESS_ASSETS.find(a => a.id === 'promotion_gear')
     },
 
     // Block 17 - Action Block
@@ -268,10 +268,10 @@ export const GAME_BOARD: Board = {
     {
       id: 18,
       type: 'business',
-      name: 'Independent Bookstore',
-      description: 'Community bookstore with cafe',
+      name: 'ModernKing Decor',
+      description: 'Home decor and furnishings',
       cost: 10000,
-      asset: BUSINESS_ASSETS.find(a => a.id === 'bookstore')
+      asset: BUSINESS_ASSETS.find(a => a.id === 'modern_king_decor')
     },
 
     // Block 19 - Action Block
@@ -340,10 +340,10 @@ export const GAME_BOARD: Board = {
     {
       id: 26,
       type: 'business',
-      name: 'Tech Startup',
+      name: 'Quantum Circuit',
       description: 'High-growth technology company',
       cost: 25000,
-      asset: BUSINESS_ASSETS.find(a => a.id === 'tech_startup')
+      asset: BUSINESS_ASSETS.find(a => a.id === 'quantum_circuit')
     },
 
     // Block 27 - Business Asset
@@ -369,10 +369,10 @@ export const GAME_BOARD: Board = {
     {
       id: 29,
       type: 'business',
-      name: 'Retail Store',
-      description: 'Brick-and-mortar retail business',
+      name: 'Aura & Co. Beauty',
+      description: 'Beauty and wellness services',
       cost: 22000,
-      asset: BUSINESS_ASSETS.find(a => a.id === 'retail_store')
+      asset: BUSINESS_ASSETS.find(a => a.id === 'aura_co_beauty')
     },
 
     // Block 30 - Go to Bankruptcy Corner
@@ -441,10 +441,10 @@ export const GAME_BOARD: Board = {
     {
       id: 37,
       type: 'business',
-      name: 'Real Estate Agency',
-      description: 'Property sales and management',
+      name: 'NextQuest Games',
+      description: 'Indie game development studio',
       cost: 35000,
-      asset: BUSINESS_ASSETS.find(a => a.id === 'real_estate')
+      asset: BUSINESS_ASSETS.find(a => a.id === 'nextquest_games')
     },
 
     // Block 38 - Action Block
@@ -460,10 +460,10 @@ export const GAME_BOARD: Board = {
     {
       id: 39,
       type: 'business',
-      name: 'Consulting Firm',
-      description: 'High-end business consulting',
+      name: 'The Robo Society',
+      description: 'Robotics and AI solutions ',
       cost: 40000,
-      asset: BUSINESS_ASSETS.find(a => a.id === 'consulting_firm')
+      asset: BUSINESS_ASSETS.find(a => a.id === 'the_robo_society')
     }
   ]
 };

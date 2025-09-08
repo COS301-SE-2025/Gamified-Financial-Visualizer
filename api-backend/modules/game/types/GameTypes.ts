@@ -11,6 +11,7 @@ export interface Player {
   salary: number;
   isActive: boolean;
   isBankrupt: boolean;
+  skipNextTurn?: boolean;
 }
 
 export interface GameState {
@@ -50,10 +51,11 @@ export interface Loan {
 }
 
 export interface Card {
-  id: string;
+  id: string;// primary  key
   type: 'community' | 'chance';
   title: string;
   description: string;
+  imagePath?: string;
   effect: CardEffect;
 }
 
@@ -67,10 +69,7 @@ export interface CardEffect {
 }
 
 export interface Board {
-  blocks: Block[
-
-    
-  ];
+  blocks: Block[];
   startSalary: number;
 }
 
@@ -79,6 +78,7 @@ export interface Block {
   type: 'start' | 'bankruptcy' | 'go_to_bankruptcy' | 'bank' | 'community' | 'chance' | 'business' | 'action';
   name: string;
   description?: string;
+  imagePath?: string;
   cost?: number;
   asset?: Asset;
   action?: string;
