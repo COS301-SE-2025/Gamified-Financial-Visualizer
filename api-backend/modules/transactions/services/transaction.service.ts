@@ -844,7 +844,8 @@ SELECT
 FROM budgets b
 LEFT JOIN budget_categories bc ON b.budget_id = bc.budget_id
 WHERE b.user_id = $1
-GROUP BY b.budget_id;
+GROUP BY b.budget_id
+ORDER BY b.created_at DESC;
   `;
   try {
 

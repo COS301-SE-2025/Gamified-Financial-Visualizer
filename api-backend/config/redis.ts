@@ -56,7 +56,6 @@ redisSubscriber.on('error', err => console.error('[Redis] Subscriber Error', err
   try {
     await redisClient.connect();
     await redisSubscriber.connect();
-    console.log('[Redis] Connected successfully');
   } catch (error) {
     console.error('[Redis] Connection failed:', error);
   }

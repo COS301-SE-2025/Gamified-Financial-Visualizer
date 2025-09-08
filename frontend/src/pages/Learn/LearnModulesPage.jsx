@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { FaSearch, FaFilter } from 'react-icons/fa';
+import React, { useEffect, useState, useRef, useLayoutEffect } from 'react';
+import { FaSearch, FaFilter, FaChevronDown } from 'react-icons/fa';
 import { motion } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import LearnLayout from '../../pages/Learn/LearnLayout';
 import CourseCard from '../../components/cards/CoursesCard';
-import banner1 from '../../assets/Images/banners/pixelAllyway.jpeg';
-import banner2 from '../../assets/Images/banners/pixelApartment.gif';
-import banner3 from '../../assets/Images/banners/pixelBalcony.gif';
-import banner4 from '../../assets/Images/banners/pixelCafe.gif';
-import banner5 from '../../assets/Images/banners/pixelCornerStore.gif';
+import banner1 from '../../assets/Images/learn_banners/Budget.png' ;
+import banner2 from '../../assets/Images/learn_banners/Investment.png';
+import banner3 from '../../assets/Images/learn_banners/credit.png';
+import banner4 from '../../assets/Images/learn_banners/Fomo.png';
+import banner5 from '../../assets/Images/learn_banners/retrenchment.png';
 import banner6 from '../../assets/Images/banners/pixelGirl.gif';
 
 const bannerImages = {
@@ -18,6 +19,177 @@ const bannerImages = {
   5: banner5,
   6: banner6
 };
+
+/* --------------------------- Reusable Dropdown --------------------------- */
+/** Achievements-style portaled dropdown (keyboard + outside click safe) */
+const CategoryDropdown = ({
+  name,
+  value,
+  onChange,
+  options,
+  placeholder = 'Select a topic...',
+  offsetY = 12,
+  placement = 'auto',
+}) => {
+  const [open, setOpen] = useState(false);
+  const [highlight, setHighlight] = useState(0);
+  const wrapRef = useRef(null);
+  const btnRef = useRef(null);
+  const menuRef = useRef(null);
+  const [menuStyle, setMenuStyle] = useState({});
+
+  const selectedIndex = options.findIndex(o => String(o.value) === String(value));
+  const selected = selectedIndex >= 0 ? options[selectedIndex] : null;
+
+  // Close on outside click (treat portaled menu as "inside")
+  useEffect(() => {
+    const onPointerDown = (e) => {
+      const inButton = wrapRef.current?.contains(e.target);
+      const inMenu = menuRef.current?.contains(e.target);
+      if (inButton || inMenu) return;
+      setOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown, true);
+    return () => document.removeEventListener('pointerdown', onPointerDown, true);
+  }, []);
+
+  // Position the portaled menu
+  useLayoutEffect(() => {
+    if (!open || !btnRef.current) return;
+
+    const calc = () => {
+      const rect = btnRef.current.getBoundingClientRect();
+      const viewportH = window.innerHeight;
+
+      const itemH = 36; // ~32px row + padding
+      const chrome = 8;
+      const wantedH = chrome + (options?.length || 0) * itemH;
+      const maxH = Math.min(320, Math.floor(viewportH * 0.4));
+
+      const gap = 8;
+      const availBelow = viewportH - rect.bottom - gap;
+      const availAbove = rect.top - gap;
+
+      let placeBelow;
+      if (placement === 'bottom') placeBelow = true;
+      else if (placement === 'top') placeBelow = false;
+      else {
+        // 'auto': prefer below unless space is clearly tight
+        placeBelow = availBelow >= Math.min(maxH, 160) || availBelow >= availAbove;
+      }
+
+      const menuH = Math.min(wantedH, maxH);
+      const top = placeBelow
+        ? rect.bottom + offsetY
+        : Math.max(gap, rect.top - offsetY - menuH);
+
+      const left = Math.min(rect.left, window.innerWidth - rect.width - gap);
+
+      setMenuStyle({
+        position: 'fixed',
+        top,
+        left,
+        width: rect.width,
+        maxHeight: maxH,
+        zIndex: 9999,
+      });
+    };
+
+    calc();
+    const onScrollOrResize = () => calc();
+    window.addEventListener('resize', onScrollOrResize);
+    window.addEventListener('scroll', onScrollOrResize, true);
+    return () => {
+      window.removeEventListener('resize', onScrollOrResize);
+      window.removeEventListener('scroll', onScrollOrResize, true);
+    };
+  }, [open, offsetY, placement, options?.length]);
+
+  // Reset keyboard highlight on open/selection change
+  useEffect(() => {
+    setHighlight(selectedIndex >= 0 ? selectedIndex : 0);
+  }, [open, selectedIndex]);
+
+  const commit = (idx) => {
+    const opt = options[idx];
+    if (!opt) return;
+    onChange(opt.value);
+    setOpen(false);
+  };
+
+  const onKey = (e) => {
+    if (!open && (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      setOpen(true);
+      return;
+    }
+    if (!open) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); setHighlight(h => Math.min(options.length - 1, h + 1)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setHighlight(h => Math.max(0, h - 1)); }
+    else if (e.key === 'Enter') { e.preventDefault(); commit(highlight); }
+    else if (e.key === 'Escape') { e.preventDefault(); setOpen(false); }
+  };
+
+  return (
+    <div className="relative" ref={wrapRef}>
+      <button
+        type="button"
+        ref={btnRef}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen(o => !o)}
+        onKeyDown={onKey}
+        className="w-full rounded-xl px-4 py-2 border dark:border-gray-600 shadow dark:shadow-none
+                   bg-white dark:bg-gray-800 text-left text-gray-900 dark:text-white flex items-center justify-between"
+      >
+        <span className={`${selected ? '' : 'text-gray-400 dark:text-gray-400'}`}>
+          {selected ? selected.label : placeholder}
+        </span>
+        <FaChevronDown className="ml-3 text-gray-400 dark:text-gray-500" />
+      </button>
+
+      {open && createPortal(
+        <ul
+          ref={menuRef}
+          role="listbox"
+          tabIndex={-1}
+          style={menuStyle}
+          onKeyDown={onKey}
+          onWheel={(e) => e.stopPropagation()}
+          className="rounded-xl border border-gray-200 dark:border-gray-600
+                     bg-white dark:bg-gray-800 shadow-lg overflow-y-auto"
+        >
+          <style>{`.dropdown-overscroll { overscroll-behavior: contain; }`}</style>
+          <div className="dropdown-overscroll">
+            {options.length === 0 && (
+              <li className="px-3 h-8 flex items-center text-sm text-gray-500 dark:text-gray-300">No options</li>
+            )}
+            {options.map((opt, idx) => (
+              <li
+                key={opt.value}
+                role="option"
+                aria-selected={String(opt.value) === String(value)}
+                onMouseEnter={() => setHighlight(idx)}
+                onClick={() => commit(idx)}
+                className={`px-3 h-8 flex items-center text-sm cursor-pointer
+                            ${idx === highlight ? 'bg-gray-100 dark:bg-gray-700' : ''}
+                            ${String(opt.value) === String(value)
+                              ? 'font-medium text-[#1b5e20]'
+                              : 'text-gray-800 dark:text-gray-100'}`}
+              >
+                {opt.label}
+              </li>
+            ))}
+          </div>
+        </ul>,
+        document.body
+      )}
+
+      <input type="hidden" name={name} value={value ?? ''} />
+    </div>
+  );
+};
+/* ------------------------- End Reusable Dropdown ------------------------- */
 
 const LearningPage = () => {
   const [modulesData, setModulesData] = useState([]);
@@ -43,13 +215,16 @@ const LearningPage = () => {
   }, []);
 
   const filteredModules = modulesData.filter(module => {
-    const matchesSearch = module.module_title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = (module.module_title || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDifficulty = difficultyFilter === 'all' || module.difficulty === difficultyFilter;
     const matchesTopic = topicFilter === 'all' || module.topic === topicFilter;
     return matchesSearch && matchesDifficulty && matchesTopic;
   });
 
-  const uniqueTopics = [...new Set(modulesData.map(module => module.topic))];
+  // Unique topics for the dropdown
+  const uniqueTopics = Array.from(new Set(modulesData.map(m => m.topic).filter(Boolean)));
+  const topicOptions = [{ value: 'all', label: 'All Topics' }]
+    .concat(uniqueTopics.map(t => ({ value: t, label: t })));
 
   return (
     <LearnLayout>
@@ -93,7 +268,7 @@ const LearningPage = () => {
               className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 mb-6"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Difficulty */}
+                {/* Difficulty pills */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Difficulty</label>
                   <div className="flex flex-wrap gap-2">
@@ -121,19 +296,17 @@ const LearningPage = () => {
                   </div>
                 </div>
 
-                {/* Topics */}
+                {/* Topic/Category dropdown (Achievements-style) */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Topic</label>
-                  <select
-                    className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-[#AAD977] dark:focus:ring-[#76B947] focus:border-transparent rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                  <CategoryDropdown
+                    name="topic"
                     value={topicFilter}
-                    onChange={(e) => setTopicFilter(e.target.value)}
-                  >
-                    <option value="all">All Topics</option>
-                    {uniqueTopics.map(topic => (
-                      <option key={topic} value={topic}>{topic}</option>
-                    ))}
-                  </select>
+                    onChange={(val) => setTopicFilter(val)}
+                    options={topicOptions}
+                    placeholder="Select topic..."
+                    offsetY={24}
+                  />
                 </div>
               </div>
             </motion.div>

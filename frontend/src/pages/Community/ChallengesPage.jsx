@@ -9,7 +9,8 @@ import {
   FaClock,
   FaCoins,
   FaUsers,
-  FaTrophy
+  FaTrophy,
+  FaHourglassEnd
 } from 'react-icons/fa';
 import defaultBanner from '../../assets/Images/banners/pixelStore.gif';
 
@@ -92,7 +93,7 @@ const ChallengesPage = () => {
 
   // filter with a seacrh in search bar
   const filterBySearch = (list) => {
-    return list.filter((c) =>
+    return list?.filter((c) =>
       c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.community.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -149,6 +150,12 @@ const ChallengesPage = () => {
                 Completed on <span className="font-semibold">{challenge.formattedEnd}</span>
               </p>
             )}
+
+            {challenge.status === 'expired' && (
+              <p className="text-sm text-[#6B7280] mt-1">
+                Expired on <span className="font-semibold">{challenge.formattedEnd}</span>
+              </p>
+            )}
           </div>
 
           <div className="flex flex-col items-end gap-2 ml-4">
@@ -156,7 +163,9 @@ const ChallengesPage = () => {
               {challenge.status === 'active'
                 ? 'Active'
                 : challenge.status === 'upcoming'
-                  ? 'Upcoming'
+                  ? 'Upcoming' 
+                  : challenge.status === 'expired'
+                  ? 'Expired'
                   : 'Completed'}
             </span>
             <span className="text-xs px-3 py-1 rounded-full bg-[#FFD18C] text-white font-medium capitalize">
@@ -206,7 +215,7 @@ const ChallengesPage = () => {
           {icon} {title}
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {filtered.length > 0 ? filtered.map(renderCard) : <p className="text-gray-400 italic">No matches</p>}
+          {filtered?.length > 0 ? filtered.map(renderCard) : <p className="text-gray-400 italic">No matches</p>}
         </div>
       </div>
     );
@@ -250,9 +259,10 @@ const ChallengesPage = () => {
           )}
         </div>
 
-        <Section title="Active" icon={<FaFire />} color="text-orange-500" data={challenges.active} />
-        <Section title="Upcoming" icon={<FaClock />} color="text-yellow-500" data={challenges.upcoming} />
-        <Section title="Completed" icon={<FaCheckCircle />} color="text-lime-500" data={challenges.completed} />
+        <Section title="Active" icon={<FaFire />} color="text-orange-500" data={challenges?.active} />
+        <Section title="Upcoming" icon={<FaClock />} color="text-yellow-500" data={challenges?.upcoming} />
+        <Section title="Completed" icon={<FaCheckCircle />} color="text-lime-500" data={challenges?.completed} />
+        <Section title="Expired" icon={<FaHourglassEnd />} color="text-gray-500" data={challenges?.expired} />
       </div>
     </CommunityLayout>
   );

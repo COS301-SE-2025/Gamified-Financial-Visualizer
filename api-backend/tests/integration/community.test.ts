@@ -1210,8 +1210,8 @@ describe('Community API Integration', () => {
          });
 
          expect(communityService.respondToFriendRequests).toHaveBeenCalledWith(
-            updateData.user_id,
             updateData.friend_id,
+            updateData.user_id,
             updateData.action
          );
       });

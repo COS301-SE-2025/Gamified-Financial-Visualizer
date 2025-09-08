@@ -403,16 +403,15 @@ export async function getUserCommunities(user_id: number) {
   const query = `
     SELECT
       c.community_id,
+      c.owner_id,
       c.community_name,
       b.banner_image_path AS banner,
       
       -- Total XP from challenge_progress for that community
       COALESCE((
-        SELECT SUM(cp.progress_amount)
+        SELECT SUM(GREATEST(10, FLOOR(ch.target_amount / 100)))
         FROM challenges ch
-        JOIN challenge_progress cp ON ch.challenge_id = cp.challenge_id
         WHERE ch.community_id = c.community_id
-          AND cp.participation_status = 'joined'
       ), 0) AS xp_total,
 
       -- Total accepted members
@@ -422,13 +421,10 @@ export async function getUserCommunities(user_id: number) {
           AND cm.membership_status = 'accepted'
       ) AS member_count,
 
-      -- Total goals (linked by user_id to community members)
+      -- Total challenges in the community
       (
-        SELECT COUNT(*) FROM goals g
-        WHERE g.user_id IN (
-          SELECT cm.user_id FROM community_members cm
-          WHERE cm.community_id = c.community_id AND cm.membership_status = 'accepted'
-        )
+        SELECT COUNT(*) FROM challenges ch
+        WHERE ch.community_id = c.community_id
       ) AS challenge_count,
 
       -- Preview avatars of up to 5 accepted members

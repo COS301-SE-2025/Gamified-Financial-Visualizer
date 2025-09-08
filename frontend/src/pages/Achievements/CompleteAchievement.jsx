@@ -396,19 +396,7 @@ const CompleteAchievement = () => {
     return arr;
   }, [completed, searchTerm, groupFilter, sortBy]);
 
-  if (isLoading) {
-    return (
-      <AchievementsLayout>
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading your achievements...</p>
-          </div>
-        </div>
-      </AchievementsLayout>
-    );
-  }
-
+  
   return (
     <AchievementsLayout>
       <div className="space-y-6 px-6 pt-10 pb-6 -mt-8">

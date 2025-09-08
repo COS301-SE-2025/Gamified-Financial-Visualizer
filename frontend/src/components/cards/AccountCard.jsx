@@ -1,23 +1,45 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { FaTrash, FaEdit } from 'react-icons/fa';
 
+const COLOR_COMBOS = [
+  { bg: 'bg-blue-300', overlay: 'bg-blue-500' },
+  { bg: 'bg-green-300', overlay: 'bg-green-500' },
+  { bg: 'bg-purple-300', overlay: 'bg-purple-500' },
+  { bg: 'bg-pink-300', overlay: 'bg-pink-500' },
+  { bg: 'bg-yellow-300', overlay: 'bg-yellow-500' },
+  { bg: 'bg-red-300', overlay: 'bg-red-500' },
+  { bg: 'bg-indigo-300', overlay: 'bg-indigo-500' },
+  { bg: 'bg-teal-300', overlay: 'bg-teal-500' },
+];
+
+// Simple deterministic string hash (djb2-ish)
+function hashString(str = '') {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 33) ^ str.charCodeAt(i);
+  }
+  // Force positive 32-bit
+  return (hash >>> 0);
+}
+
 const AccountCard = ({
+  accountId,          // <-- NEW (recommended to pass)
   bank,
   accountName,
   type,
   available,
   balance,
   currency,
-  bg,
-  overlay,
+  bg,                 
+  overlay,             
   isActive = false,
-  onDelete = () => {},  // Changed - now expects a promise
+  onDelete = () => {},
   onClick = () => {},
   onEdit = () => {},
 }) => {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isDeleted, setIsDeleted] = useState(false); // New state to track deletion
+  const [isDeleted, setIsDeleted] = useState(false);
 
   // Close on ESC
   useEffect(() => {
@@ -35,37 +57,62 @@ const AccountCard = ({
   };
   const symbol = currencySymbols[currency] || '';
 
-  const colorCombos = [
-    { bg: 'bg-blue-300', overlay: 'bg-blue-500' },
-    { bg: 'bg-green-300', overlay: 'bg-green-500' },
-    { bg: 'bg-purple-300', overlay: 'bg-purple-500' },
-    { bg: 'bg-pink-300', overlay: 'bg-pink-500' },
-    { bg: 'bg-yellow-300', overlay: 'bg-yellow-500' },
-    { bg: 'bg-red-300', overlay: 'bg-red-500' },
-    { bg: 'bg-indigo-300', overlay: 'bg-indigo-500' },
-    { bg: 'bg-teal-300', overlay: 'bg-teal-500' },
-  ];
-  const { bg: randomBg, overlay: randomOverlay } = useMemo(() => {
-    const idx = Math.floor(Math.random() * colorCombos.length);
-    return colorCombos[idx];
-  }, []);
+  
+  const { chosenBg, chosenOverlay, storageKey } = useMemo(() => {
+    
+    if (bg && overlay) {
+      return { chosenBg: bg, chosenOverlay: overlay, storageKey: null };
+    }
+
+    const keyBase = accountId != null ? String(accountId) : `${accountName || ''}::${bank || ''}`;
+    const key = `account-color:${keyBase}`;
+
+    
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed?.bg && parsed?.overlay) {
+          return { chosenBg: parsed.bg, chosenOverlay: parsed.overlay, storageKey: key };
+        }
+      }
+    } catch {
+      
+    }
+
+    // 3) Deterministic pick via hashing and persist
+    const idx = hashString(keyBase) % COLOR_COMBOS.length;
+    const combo = COLOR_COMBOS[idx];
+
+    try {
+      localStorage.setItem(key, JSON.stringify(combo));
+    } catch {
+     
+    }
+
+    return { chosenBg: combo.bg, chosenOverlay: combo.overlay, storageKey: key };
+  }, [accountId, accountName, bank, bg, overlay]);
 
   const openConfirm = (e) => {
     e.stopPropagation();
     setConfirmOpen(true);
   };
-  
+
   const closeConfirm = (e) => {
     e?.stopPropagation?.();
     setConfirmOpen(false);
   };
-  
+
   const handleDelete = async (e) => {
     e.stopPropagation();
     setIsDeleting(true);
     try {
-      await onDelete(); // Parent component should handle the actual deletion
-      setIsDeleted(true); // Mark as deleted to hide the card
+      await onDelete();
+      
+      if (storageKey) {
+        try { localStorage.removeItem(storageKey); } catch {}
+      }
+      setIsDeleted(true);
     } catch (error) {
       console.error('Delete failed:', error);
     } finally {
@@ -74,7 +121,6 @@ const AccountCard = ({
     }
   };
 
-  // Don't render if deleted
   if (isDeleted) return null;
 
   return (
@@ -115,10 +161,10 @@ const AccountCard = ({
               </p>
             </div>
 
-            <div className={`mt-3 w-[160px] h-[90px] ${bg || randomBg} rounded-xl relative overflow-hidden shadow`}>
+            <div className={`mt-3 w-[160px] h-[90px] ${chosenBg} rounded-xl relative overflow-hidden shadow`}>
               <div className="absolute top-2 left-3 text-xs font-bold text-white">VISA</div>
               <div className="absolute bottom-2 right-3 text-sm font-semibold text-white tracking-widest">•••• 5678</div>
-              <div className={`absolute top-0 right-0 w-1/2 h-full ${overlay || randomOverlay} opacity-50 rounded-r-xl`} />
+              <div className={`absolute top-0 right-0 w-1/2 h-full ${chosenOverlay} opacity-50 rounded-r-xl`} />
             </div>
           </div>
         </div>

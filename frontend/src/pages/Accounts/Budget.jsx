@@ -62,10 +62,10 @@ const categoryIcons = {
   default: { icon: <FaMoneyBillWave />, color: 'bg-gray-100 text-gray-500' }
 };
 
-const CategoryDropdown = ({ 
-  value, 
-  onChange, 
-  options, 
+const CategoryDropdown = ({
+  value,
+  onChange,
+  options,
   placeholder = 'Filter by categories',
   disabled = false,
   loading = false
@@ -74,20 +74,22 @@ const CategoryDropdown = ({
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
+  const menuRef = useRef(null);                 // NEW: ref for the portaled menu
   const [menuStyle, setMenuStyle] = useState({});
 
-  // Close when clicking outside
+  // Close when clicking outside (but ignore clicks inside menu/button)
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      const target = event.target;
+      const clickedInsideTrigger = dropdownRef.current?.contains(target);
+      const clickedInsideButton = buttonRef.current?.contains(target);
+      const clickedInsideMenu = menuRef.current?.contains(target);
+      if (!clickedInsideTrigger && !clickedInsideButton && !clickedInsideMenu) {
         setIsOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // Position the menu properly
@@ -97,21 +99,19 @@ const CategoryDropdown = ({
     const calculatePosition = () => {
       const buttonRect = buttonRef.current.getBoundingClientRect();
       const maxHeight = Math.min(320, window.innerHeight - buttonRect.bottom - 16);
-      
       setMenuStyle({
         position: 'fixed',
         top: buttonRect.bottom + 4,
         left: buttonRect.left,
         width: buttonRect.width,
         maxHeight: `${maxHeight}px`,
-        zIndex: 1000,
+        zIndex: 9999, // ensure above overlays
       });
     };
 
     calculatePosition();
     window.addEventListener('resize', calculatePosition);
     window.addEventListener('scroll', calculatePosition, true);
-
     return () => {
       window.removeEventListener('resize', calculatePosition);
       window.removeEventListener('scroll', calculatePosition, true);
@@ -127,7 +127,6 @@ const CategoryDropdown = ({
       }
       return;
     }
-
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
@@ -154,8 +153,8 @@ const CategoryDropdown = ({
     }
   };
 
-  const handleOptionClick = (value) => {
-    onChange(value);
+  const handleOptionClick = (val) => {
+    onChange(val);
     setIsOpen(false);
   };
 
@@ -167,7 +166,7 @@ const CategoryDropdown = ({
         ref={buttonRef}
         type="button"
         className={`flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-300 ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-        onClick={() => !disabled && !loading && setIsOpen(!isOpen)}
+        onClick={() => !disabled && !loading && setIsOpen(o => !o)}
         onKeyDown={handleKeyDown}
         disabled={disabled || loading}
         aria-haspopup="listbox"
@@ -183,9 +182,11 @@ const CategoryDropdown = ({
 
       {isOpen && createPortal(
         <div
+          ref={menuRef} // NEW: track the menu for outside-click logic
           className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-lg overflow-y-auto"
           style={menuStyle}
           role="listbox"
+          onMouseDown={(e) => e.stopPropagation()} // IMPORTANT: prevent bubbling to document
           onWheel={(e) => e.stopPropagation()}
         >
           <div style={{ overscrollBehavior: 'contain' }}>
@@ -235,10 +236,10 @@ const BudgetForm = ({
     }));
   };
 
-  const handleCategoryChange = (value) => {
+  const handleCategoryChange = (val) => {
     setFormData(prev => ({
       ...prev,
-      category_id: value === '' ? '' : Number(value)
+      category_id: val === '' ? '' : Number(val) // keep numbers for equality checks
     }));
   };
 
@@ -277,7 +278,7 @@ const BudgetForm = ({
                       value={formData.category_id}
                       onChange={handleCategoryChange}
                       options={categories.map(cat => ({
-                        value: cat.category_id,
+                        value: cat.category_id,       // ensure numbers
                         label: cat.category_name
                       }))}
                       placeholder="Select Category"
@@ -333,7 +334,6 @@ const BudgetCard = ({
   const targetAmount = Number(total_target) || 0;
   const usedAmount = Number(used) || 0;
   const remainingAmount = targetAmount - usedAmount;
-
   const percentageUsed = targetAmount > 0 ? Math.min((usedAmount / targetAmount) * 100, 100) : 0;
   const categoryName = budget_name?.toLowerCase() || '';
   const iconData = categoryIcons[categoryName] || categoryIcons.default;
@@ -352,7 +352,6 @@ const BudgetCard = ({
               <span className="text-sm text-gray-600 dark:text-gray-400">Used: <span className="font-medium dark:text-gray-300">R{usedAmount.toFixed(2)}</span></span>
               <span className="text-sm text-gray-600 dark:text-gray-400">Remaining: <span className="font-medium dark:text-gray-300">R{remainingAmount.toFixed(2)}</span></span>
             </div>
-
             <div className="mt-3 w-full">
               <div className="w-full h-2.5 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
                 <div
@@ -361,12 +360,11 @@ const BudgetCard = ({
                     width: `${percentageUsed}%`,
                     background: 'linear-gradient(90deg, #5FBFFF 0%, #91BE59 100%)'
                   }}
-                ></div>
+                />
               </div>
             </div>
           </div>
         </div>
-
         <div className="flex gap-2">
           <button
             onClick={onDelete}
@@ -402,12 +400,11 @@ const BudgetPage = () => {
       setLoading(true);
       const response = await fetch(`http://localhost:5000/api/budget/user/${userId}`);
       const result = await response.json();
-
       if (result.status === 'success') {
         const sortedBudgets = result.data.sort((a, b) => {
           const dateA = a?.created_at ? new Date(a.created_at) : new Date(0);
           const dateB = b?.created_at ? new Date(b.created_at) : new Date(0);
-          return dateB - dateA; // Newest first
+          return dateB - dateA;
         });
         setBudgets(sortedBudgets);
       } else {
@@ -431,7 +428,6 @@ const BudgetPage = () => {
     try {
       const response = await fetch('http://localhost:5000/api/budget/categories');
       const result = await response.json();
-
       if (result.status === 'success') {
         setCategories(result.data);
       } else {
@@ -442,15 +438,8 @@ const BudgetPage = () => {
     }
   };
 
-  const handleCreate = () => {
-    setIsCreating(true);
-    setEditingId(null);
-  };
-
-  const handleEdit = (id) => {
-    setEditingId(id);
-    setIsCreating(false);
-  };
+  const handleCreate = () => { setIsCreating(true); setEditingId(null); };
+  const handleEdit = (id) => { setEditingId(id); setIsCreating(false); };
 
   useEffect(() => {
     fetchBudgets();
@@ -458,38 +447,24 @@ const BudgetPage = () => {
   }, []);
 
   const handleDeleteClick = (budget_id, budget_name) => {
-    setDeleteConfirmation({
-      show: true,
-      budgetId: budget_id,
-      budgetName: budget_name
-    });
+    setDeleteConfirmation({ show: true, budgetId: budget_id, budgetName: budget_name });
   };
 
-  const cancelDelete = () => {
-    setDeleteConfirmation({
-      show: false,
-      budgetId: null,
-      budgetName: ''
-    });
-  };
+  const cancelDelete = () => setDeleteConfirmation({ show: false, budgetId: null, budgetName: '' });
 
   const confirmDelete = async () => {
     if (!deleteConfirmation.budgetId) return;
-    
     try {
       const response = await fetch(`http://localhost:5000/api/budget/${deleteConfirmation.budgetId}`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({
+            user_id: userId
+          }),
       });
-
       const result = await response.json();
-
       if (result.status === 'success') {
-        setBudgets(prevBudgets => 
-          prevBudgets.filter(budget => budget.budget_id !== deleteConfirmation.budgetId)
-        );
+        setBudgets(prev => prev.filter(b => b.budget_id !== deleteConfirmation.budgetId));
         toast.success('Budget deleted successfully');
       } else {
         setError(result.message || 'Failed to delete budget');
@@ -509,24 +484,16 @@ const BudgetPage = () => {
       if (editingId) {
         const response = await fetch(`http://localhost:5000/api/budget/${editingId}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             budget_name: formData.budget_name,
             user_id: userId
           }),
         });
-
         const result = await response.json();
-
         if (result.status === 'success') {
-          setBudgets(prevBudgets => 
-            prevBudgets.map(budget =>
-              budget.budget_id === editingId
-                ? { ...budget, budget_name: formData.budget_name }
-                : budget
-            )
+          setBudgets(prev =>
+            prev.map(b => b.budget_id === editingId ? { ...b, budget_name: formData.budget_name } : b)
           );
           setEditingId(null);
           toast.success('Budget updated successfully');
@@ -536,25 +503,19 @@ const BudgetPage = () => {
       } else {
         const response = await fetch('http://localhost:5000/api/budget', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             user_id: userId,
             category_id: formData.category_id,
-            allocations: [
-              {
-                category_id: formData.category_id,
-                target_amount: formData.target_amount
-              }
-            ]
+            allocations: [{
+              category_id: formData.category_id,
+              target_amount: formData.target_amount
+            }]
           }),
         });
-
         const result = await response.json();
-
         if (result.status === 'success') {
-          setBudgets(prevBudgets => [result.data, ...prevBudgets]);
+          setBudgets(prev => [result.data, ...prev]);
           setIsCreating(false);
           toast.success('Budget created successfully');
         } else {
@@ -567,23 +528,17 @@ const BudgetPage = () => {
     }
   };
 
-  const handleCancel = () => {
-    setEditingId(null);
-    setIsCreating(false);
-  };
+  const handleCancel = () => { setEditingId(null); setIsCreating(false); };
 
   return (
     <AccountsLayout>
       <div className="p-6 w-full">
         <Toaster position="top-center" />
-        
+
         {deleteConfirmation.show && (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <div 
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-              onClick={cancelDelete}
-            />
-            <div 
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={cancelDelete} />
+            <div
               className="relative z-10 w-[92%] max-w-md rounded-2xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 p-6"
               onClick={(e) => e.stopPropagation()}
             >
@@ -669,7 +624,7 @@ const BudgetPage = () => {
                 initialData={{ budget_name: budget.budget_name }}
                 onSave={handleSave}
                 onCancel={handleCancel}
-                categories={categories}
+                categories={categories.slice(0, 10)}
                 isEdit={true}
               />
             ) : (
@@ -684,7 +639,7 @@ const BudgetPage = () => {
               />
             )
           ))}
-          
+
           {budgets.length === 0 && !isCreating && (
             <div className="text-center py-12">
               <div className="mx-auto w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">

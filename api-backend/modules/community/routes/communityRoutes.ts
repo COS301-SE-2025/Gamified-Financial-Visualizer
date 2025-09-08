@@ -9,6 +9,152 @@ import { error } from 'console';
 
 const router = Router();
 
+// Post Feature Routes
+
+// POST community/api/social/posts
+router.post('/social/posts', async (req: Request, res: Response) => {
+  try {
+    const { userId, achievementId, caption, communityTagIds = [] } = req.body;
+
+    if (!userId || !achievementId) {
+      res.status(400).json({ status: 'error', message: 'userId and achievementId are required' });
+      return;
+    }
+
+    const post = await communityService.createSocialPost({
+      userId,
+      achievementId,
+      caption,
+      communityTagIds,
+    });
+
+    res.status(201).json({ status: 'success', data: post });
+    return;
+  } catch (err: any) {
+    console.error('Error creating social post:', err);
+    res.status(500).json({ status: 'error', message: err?.message ?? 'Failed to create post' });
+    return;
+  }
+});
+
+// GET completed umbrella achievements for user
+router.get('/social/achievements/:userId', async (req: Request, res: Response) => {
+  try {
+    const userId = parseInt(req.params.userId);
+    const banners = await communityService.getCompletedUmbrellaAchievements(userId);
+
+    const formatted = banners.map((row: any) => ({
+      achievementId: row.achievement_id,
+      title: row.achievement_title,
+      bannerPath: row.banner_image_path,
+    }));
+
+    res.status(200).json({ status: 'success', data: formatted });
+    return;
+  } catch (err) {
+    console.error('Error loading achievements:', err);
+    res.status(500).json({ status: 'error', message: 'Failed to load achievements' });
+    return;
+  }
+});
+
+// GET user communities
+router.get('/social/communities/:userId', async (req: Request, res: Response) => {
+  try {
+    const userId = parseInt(req.params.userId);
+    const communities = await communityService.getUserCommunities(userId);
+
+    res.status(200).json({ status: 'success', data: communities });
+    return;
+  } catch (err) {
+    res.status(500).json({ status: 'error', message: 'Failed to load communities' });
+    return;
+  }
+});
+
+// GET friend feed
+router.get('/social/feed/:userId', async (req: Request, res: Response) => {
+  try {
+    const userId = parseInt(req.params.userId);
+    const posts = await communityService.getFriendFeed(userId);
+
+    res.status(200).json({ status: 'success', data: posts });
+    return;
+  } catch (err) {
+    console.error('Error fetching feed:', err);
+    res.status(500).json({ status: 'error', message: 'Failed to fetch feed' });
+    return;
+  }
+});
+
+// POST like a post
+router.post('/social/posts/:postId/like', async (req: Request, res: Response) => {
+  try {
+    const userId = req.body.userId;
+    const postId = parseInt(req.params.postId);
+
+    const result = await communityService.likePost(userId, postId);
+
+    res.status(200).json({ status: 'success', message: 'Post liked successfully', likeCount: result.like_count });
+    return;
+  } catch (err: any) {
+    console.error('Error liking post:', err.message);
+    res.status(500).json({ status: 'error', message: err.message || 'Failed to like post' });
+    return;
+  }
+});
+
+// DELETE unlike a post
+router.delete('/social/posts/:postId/unlike', async (req: Request, res: Response) => {
+  try {
+    const userId = req.body.userId;
+    const postId = parseInt(req.params.postId);
+
+    const result = await communityService.unlikePost(userId, postId);
+
+    res.status(200).json({ status: 'success', message: 'Post unliked successfully', likeCount: result.like_count });
+    return;
+  } catch (err: any) {
+    console.error('Error unliking post:', err.message);
+    res.status(500).json({ status: 'error', message: 'Failed to unlike post' });
+    return;
+  }
+});
+
+// POST add comment
+router.post('/social/posts/:postId/comment', async (req: Request, res: Response) => {
+  try {
+    const userId = req.body.userId;
+    const postId = parseInt(req.params.postId);
+    const { comment } = req.body;
+
+    const newComment = await communityService.addPostComment(userId, postId, comment);
+
+    res.status(201).json({ status: 'success', message: 'Comment added successfully', comment: newComment });
+    return;
+  } catch (err: any) {
+    console.error('Error commenting on post:', err.message);
+    res.status(500).json({ status: 'error', message: err.message || 'Failed to comment on post' });
+    return;
+  }
+});
+
+// GET post comments
+router.get('/social/posts/:postId/comments', async (req: Request, res: Response) => {
+  try {
+    const postId = parseInt(req.params.postId);
+    const comments = await communityService.getPostComments(postId);
+
+    res.status(200).json({ status: 'success', data: comments });
+    return;
+  } catch (err: any) {
+    console.error('Error fetching comments:', err.message);
+    res.status(500).json({ status: 'error', message: err.message || 'Failed to fetch comments' });
+    return;
+  }
+});
+
+
 /**
  * @route GET /api/community/stats/:userId
  * @desc Returns statistics related to community interactions (e.g. communities joined, challenges, games played, leaderboard rank, friends)
@@ -199,29 +345,6 @@ router.post('/:communityId/members/:friendId', async (req: Request, res: Respons
 
 });
 
-router.get('/:title', async (req: Request, res: Response) => {
-  const communityId = req.params.title;
-  if (!communityId) {
-    res.status(400).json({ status: 'error', message: 'Community ID is required.' });
-    return;
-  }
-
-  try {
-    const community = await communityService.getCommunityByTitle(communityId);
-    if (!community) {
-      res.status(404).json({ status: 'error', message: 'Community not found.' });
-      return;
-    }
-    res.status(200).json({
-      status: 'success',
-      message: 'Community details retrieved successfully.',
-      data: community,
-    });
-  } catch (err) {
-    logger.error(`[Community] Failed to fetch community ID ${communityId}:`, err);
-    res.status(500).json({ status: 'error', message: 'Could not fetch community details.' });
-  }
-})
 
 /**
  * @route POST /api/community
@@ -560,7 +683,7 @@ router.patch('/friends/update', async (req: Request, res: Response) => {
   }
 
   try {
-    const request = await communityService.respondToFriendRequests(user_id, friend_id, action);
+    const request = await communityService.respondToFriendRequests( Number(friend_id), Number(user_id), action);
     res.status(200).json({ status: 'success', message: 'Friendship status updated successfully.', data: request });
 
     // get username
@@ -782,5 +905,29 @@ router.get('/categories/:userId', async (req, res) => {
     return;
   }
 });
+
+router.get('/:title', async (req: Request, res: Response) => {
+  const communityId = req.params.title;
+  if (!communityId) {
+    res.status(400).json({ status: 'error', message: 'Community ID is required.' });
+    return;
+  }
+
+  try {
+    const community = await communityService.getCommunityByTitle(communityId);
+    if (!community) {
+      res.status(404).json({ status: 'error', message: 'Community not found.' });
+      return;
+    }
+    res.status(200).json({
+      status: 'success',
+      message: 'Community details retrieved successfully.',
+      data: community,
+    });
+  } catch (err) {
+    logger.error(`[Community] Failed to fetch community ID ${communityId}:`, err);
+    res.status(500).json({ status: 'error', message: 'Could not fetch community details.' });
+  }
+})
 
 export default router;

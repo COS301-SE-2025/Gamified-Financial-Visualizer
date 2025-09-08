@@ -1,5 +1,5 @@
 // CityViewer.jsx — THEMED GLB SWAP (6 scenes) + beacons + rich modal + collapsible panel
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, use, useMemo } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { OrbitControls, Html, useGLTF, useProgress } from '@react-three/drei'
@@ -119,11 +119,10 @@ Object.values(CITY_SCENES).forEach((t) => {
    Small loader while a GLB streams
 =========================== */
 function Loader() {
-  const { progress } = useProgress()
   return (
     <Html center>
       <div className="px-3 py-2 rounded-lg bg-white/90 border text-sm text-gray-700 shadow">
-        Loading city… {Math.round(progress)}%
+        Loading city…
       </div>
     </Html>
   )
@@ -257,7 +256,7 @@ const FRIENDLY_LABELS = {
   BARRA_CAFE_AL_PASO: 'Café',
 }
 
-/* ========= Rich building bindings (modal content) ========= */
+/* ========= Rich building bindings (modal content) -- overriden by the API later ========= */
 const BUILDING_BINDINGS = {
   Building_E001: {
     image: foodMarket,   // <— add
@@ -914,9 +913,68 @@ export default function CityViewer() {
 
   const glbPath = getModelPath(theme, mode)
 
+  const [buildings, setBuildings] = useState([])
+  const user = JSON.parse(localStorage.getItem('user'));
+
+  // Map backend list -> lookup by id
+  const buildingsById = useMemo(() => {
+    const m = new Map();
+    (buildings || []).forEach(b => m.set(b.id, b));
+    return m;
+  }, [buildings]);
+
+  useEffect(() => {
+    // Fetch building data for the selected user
+    const fetchBuildingData = async () => {
+      const response = await fetch(`http://localhost:5000/api/city/buildings/${user.id}`);
+      const data = await response.json();
+      setBuildings(data);
+    };
+
+    fetchBuildingData();
+  }, [user]);
+
+  // Non-destructive merge: keep styling/icons; only swap values from server
+  function mergeBinding(staticBinding, server) {
+    if (!server) return staticBinding;
+
+    const merged = { ...staticBinding };
+
+    if (server.headline && typeof server.headline.value === 'string') {
+      merged.headline = { ...merged.headline, value: normalizeValue(server.headline.value) };
+    }
+
+    if (Array.isArray(merged.effects) && Array.isArray(server.effects)) {
+      const byLabel = new Map(server.effects.map(e => [e.label, e]));
+      merged.effects = merged.effects.map(e => {
+        const s = byLabel.get(e.label);
+        return s ? { ...e, value: normalizeValue(s.value) } : e;
+        // icons/classes untouched to respect styling
+      });
+    }
+
+    return merged;
+  }
+
+  // Tiny cleanup to avoid odd displays (no styling change)
+  function normalizeValue(v) {
+    if (typeof v !== 'string') return v;
+    if (/^-R0\b/.test(v)) return v.slice(1);           // "-R0" -> "R0"
+    if (/^-?\d+%$/.test(v)) {                           // clamp "267%" -> "100%"
+      const n = parseInt(v, 10);
+      const c = Math.max(0, Math.min(100, n));
+      return `${c}%`;
+    }
+    return v;
+  }
+
   const openModalFor = (target) => {
-    const binding = BUILDING_BINDINGS[target.key] || { label: target.label }
-    setSelected(binding)
+    // the static BUILDING_BINDINGS object is left as-is on purpose. 
+    // We don’t mutate it. Instead, we create a merged copy at click time that overrides just the values with what the API returns.
+    const staticBinding = BUILDING_BINDINGS[target.key] || { label: target.label }
+    const server = buildingsById.get(target.key) // e.g. "Building_E001"
+    const merged = mergeBinding(staticBinding, server) // only values swapped
+    setSelected(merged)
     setOpen(true)
   }
 

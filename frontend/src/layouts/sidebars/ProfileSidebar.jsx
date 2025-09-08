@@ -23,7 +23,7 @@ const AccountsPerformanceHeader = () => {
       .then(data => setSidebarStats(data.data))
       .catch(err => console.error('Sidebar stats error:', err));
 
-    fetch(`http://localhost:5000/api/auth/profile/performance-summary/${user?.id}`)
+    fetch(`http://localhost:5000/api/auth/profile/performance-summary/${user.id}`)
       .then(res => res.json())
       .then(data => setPerformanceSummary(data.data))
       .catch(err => console.error('Performance summary error:', err));

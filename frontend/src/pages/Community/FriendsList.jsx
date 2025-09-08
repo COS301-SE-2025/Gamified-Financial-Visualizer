@@ -123,6 +123,7 @@ const FriendsList = () => {
   const filteredFriends = yourFriends.filter(f =>
     f.username.toLowerCase().includes(search.toLowerCase())
   );
+  
   const currentUser = JSON.parse(localStorage.getItem('user'));
   const filteredMembers = members.filter(m =>
     m.username.toLowerCase().includes(search.toLowerCase()) &&
