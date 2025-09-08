@@ -3,8 +3,8 @@ import { Canvas, useThree } from '@react-three/fiber'
 import { Html, OrbitControls, useGLTF, useProgress } from '@react-three/drei'
 import * as THREE from 'three'
 
-const VALID = ['Cowboy','Green_girl','Kimono_girl','Lilac_girl','Mr_suit','Ninja.001']
-const norm = (s='') => s.toLowerCase().replace(/[\s_.-]+/g,'').trim()
+const VALID = ['Cowboy', 'Green_girl', 'Kimono_girl', 'Lilac_girl', 'Mr_suit', 'Ninja.001']
+const norm = (s = '') => s.toLowerCase().replace(/[\s_.-]+/g, '').trim()
 
 function Loader() {
   const { progress } = useProgress()
@@ -17,32 +17,41 @@ function Loader() {
   )
 }
 
-function hasMesh(o) {
+function hasMesh(obj) {
   let ok = false
-  o?.traverse?.((n) => { if (n.isMesh) ok = true })
+  obj?.traverse?.((n) => { if (n.isMesh) ok = true })
   return ok
 }
 
-function centerAndFit(object, three, margin = 1.35) {
+function centerAndFit(object, three, {
+  margin = 1.18,      // padding around the model (1.0 = tight)
+  polar = 1.25,      // vertical angle (radians) ~72° from +Y (nice eye-level)
+  azimuth = 0.35      // horizontal angle (radians) ~20° to the right
+} = {}) {
   if (!object) return
-  // center on origin
-  const box = new THREE.Box3().setFromObject(object)
-  const center = box.getCenter(new THREE.Vector3())
-  object.position.sub(center)
 
-  // fit camera
-  const size = box.getSize(new THREE.Vector3())
-  const maxDim = Math.max(size.x, size.y, size.z) || 1
   const { camera, controls } = three
-  const fov = (camera.fov * Math.PI) / 180
-  let dist = (maxDim * margin) / (2 * Math.tan(fov / 2))
-  dist = THREE.MathUtils.clamp(dist, 2.2, 6)
+  // 1) center the model on the origin
+  const box = new THREE.Box3().setFromObject(object)
+  const size = box.getSize(new THREE.Vector3())        // full extents
+  const center = box.getCenter(new THREE.Vector3())
+  object.position.sub(center)                          // origin at model center
 
-  camera.position.set(0, 0.9, dist)
-  camera.near = 0.1
-  camera.far = 50
+  // 2) choose target at the model center (ensures symmetric framing)
+  const target = new THREE.Vector3(0, 0, 0)
+  controls?.target.copy(target)
+
+  // 3) compute distance so the full HEIGHT fits the vertical FOV
+  const height = Math.max(size.y, 1e-3)
+  const fov = (camera.fov * Math.PI) / 180
+  const dist = (height * margin) / (2 * Math.tan(fov / 2))
+
+  // 4) place the camera at a consistent spherical angle
+  camera.position.setFromSphericalCoords(dist, polar, azimuth)
+  camera.near = Math.max(0.01, dist * 0.02)
+  camera.far = dist * 20
   camera.updateProjectionMatrix()
-  controls?.target.set(0, 0.6, 0)
+
   controls?.update()
 }
 
@@ -50,65 +59,94 @@ function CharacterScene({ src, focus }) {
   const { scene } = useGLTF(src)
   const three = useThree()
 
-  // enable shadows / neutralize materials
+  // enable shadows / neutralize materials a bit
   useEffect(() => {
     scene.traverse((o) => {
       if (o.isMesh) {
         o.castShadow = true
         o.receiveShadow = true
         const mats = Array.isArray(o.material) ? o.material : [o.material]
-        mats.forEach((m) => { if (m) { m.metalness = 0; m.roughness = 0.5; m.envMapIntensity = 0 } })
+        mats.forEach((m) => {
+          if (m) {
+            m.metalness = 0
+            m.roughness = 0.5
+            m.envMapIntensity = 0
+          }
+        })
       }
     })
   }, [scene])
 
-  // Step 1: prefer a wrapper with many children (e.g., "Collection"); else use scene
+  // Prefer a single top-level wrapper if present
   const container = useMemo(() => {
-    if (scene.children?.length === 1 && scene.children[0]?.children?.length) return scene.children[0]
-    return scene
+    const c =
+      scene?.children?.length === 1 && scene.children[0]?.children?.length
+        ? scene.children[0]
+        : scene
+    return c
   }, [scene])
 
-  // Step 2: collect character roots that contain meshes (children or grandchildren)
-  const candidates = useMemo(() => {
-    let kids = (container.children || []).filter(c => c.name && !/camera|light/i.test(c.name) && hasMesh(c))
-    if (kids.length === 0) {
-      const tmp = []
-      ;(container.children || []).forEach((c) => (c.children || []).forEach((g) => hasMesh(g) && tmp.push(g)))
-      kids = tmp
+  function findCandidates(node) {
+    const out = []
+    if (!node) return out
+
+    for (const child of node.children || []) {
+      if (!child?.name || /camera|light/i.test(child.name)) continue
+
+      if (hasMesh(child)) {
+        out.push(child)
+      } else {
+        // if any descendant has a mesh, keep this child as a candidate
+        let descendantHasMesh = false
+        child.traverse((n) => { if (n.isMesh) descendantHasMesh = true })
+        if (descendantHasMesh) out.push(child)
+      }
     }
-    console.log('[Characters GLB] container:', container?.name, 'candidates:', kids.map(k => k.name))
+    return out
+  }
+
+  const candidates = useMemo(() => {
+    let kids = findCandidates(container)
+    if (kids.length === 0 && hasMesh(container)) {
+      console.log('[Characters GLB] no children — using container itself')
+      return [container]
+    }
+    console.log('[Characters GLB] container:', container?.name, '| candidates:', kids.map((k) => k.name))
     return kids
   }, [container])
 
-  // Step 3: pick by fuzzy name; else first; else fall back to WHOLE SCENE
+
+  // Choose by fuzzy name; if only the container is present, just use it
   const chosen = useMemo(() => {
-    if (candidates.length === 0) return null
+    if (!candidates || candidates.length === 0) return null
+    if (candidates.length === 1) return candidates[0]
+
     const want = norm(typeof focus === 'string' && focus ? focus : VALID[0])
-    let match = candidates.find(c => norm(c.name) === want) || candidates.find(c => norm(c.name).includes(want))
-    if (!match) match = candidates[0]
-    console.log('[Characters GLB] chosen:', match?.name, 'for focus:', focus)
-    return match
+    return (
+      candidates.find((c) => norm(c.name) === want) ||
+      candidates.find((c) => norm(c.name).includes(want)) ||
+      candidates[0]
+    )
   }, [candidates, focus])
 
   useEffect(() => {
-    // If we found a character, hide its siblings; otherwise fit to the whole scene
     if (chosen) {
-      (container.children || []).forEach((c) => { if (hasMesh(c)) c.visible = (c === chosen) })
-      if (chosen.parent && chosen.parent !== container) {
-        (chosen.parent.children || []).forEach((s) => { if (hasMesh(s)) s.visible = (s === chosen) })
-      }
-      centerAndFit(chosen, three)
+      // show only the chosen root (children remain visible)
+      container?.children?.forEach((c) => { c.visible = c === chosen })
+      // full-body, consistent initial angle
+      centerAndFit(chosen, three, { margin: 1.18, polar: 1.25, azimuth: 0.35 })
     } else {
-      // last-resort: show entire scene
-      centerAndFit(scene, three)
+      container?.children?.forEach((c) => (c.visible = true))
+      centerAndFit(scene, three, { margin: 1.18, polar: 1.25, azimuth: 0.35 })
     }
   }, [chosen, container, scene, three])
 
-  return <primitive object={scene} rotation={[0, Math.PI / 10, 0]} />
+  // dispose={null} prevents GLTF from being auto-disposed on unmount/remount
+  return <primitive object={scene} rotation={[0, Math.PI / 10, 0]} dispose={null} />
 }
 
 export default function CharacterSelectViewer({
-  glbPath = '/game/Monopoly_Characters.glb',
+  glbPath = '/game/Monopoly_Game.glb',
   focus = 'Cowboy',
 }) {
   useGLTF.preload(glbPath)
@@ -121,7 +159,16 @@ export default function CharacterSelectViewer({
         <Suspense fallback={<Loader />}>
           <CharacterScene src={glbPath} focus={focus} />
         </Suspense>
-        <OrbitControls enablePan={false} minDistance={2.3} maxDistance={3.7} />
+        <OrbitControls
+          enablePan={false}
+          minDistance={1.0}            // these are soft; camera was positioned by centerAndFit
+          maxDistance={100}
+          minPolarAngle={0.8}          // stop the camera from going under the floor
+          maxPolarAngle={1.45}
+          enableDamping
+          dampingFactor={0.07}
+        />
+
       </Canvas>
     </div>
   )

@@ -1,8 +1,45 @@
-// src/components/game/hud/GameHUD.jsx
-import {
-  FaDice, FaShoppingCart, FaPiggyBank, FaMoneyBillWave, FaUndoAlt,
-  FaHandHoldingUsd, FaBoxOpen, FaChessBoard, FaCompass, FaCoins, FaClock, FaFlagCheckered
-} from 'react-icons/fa'
+import React from 'react'
+
+/* ----------------------------- Image imports ----------------------------- */
+import imgBusiness       from '../../../assets/hud/Business Card.png'
+import imgBuy        from '../../../assets/hud/Business Card.png'
+import imgLoan       from '../../../assets/hud/Business Card.png'
+import imgRepay      from '../../../assets/hud/Business Card.png'
+import imgDraw       from '../../../assets/hud/Business Card.png'
+import imgBank       from '../../../assets/hud/Business Card.png'
+import imgOverview   from '../../../assets/hud/Business Card.png'
+import imgExplore    from '../../../assets/hud/Business Card.png'
+
+import imgCash       from '../../../assets/hud/Business Card.png'
+import imgFlag       from '../../../assets/hud/Business Card.png'
+import imgAssets     from '../../../assets/hud/Business Card.png'
+import imgLoans      from '../../../assets/hud/Business Card.png'
+import imgClock      from '../../../assets/hud/Business Card.png'
+
+import imgInventory  from '../../../assets/hud/Business Card.png'
+
+// --- Card art (right panel + popup) ---
+import artBusiness   from '../../../assets/hud/Business Card.png'
+import artChance     from '../../../assets/hud/Chance Card.png'
+import artCommunity  from '../../../assets/hud/Community Card.png'
+
+
+/* Small helper for consistent icon images */
+function IconImg({ src, alt = '', className = 'w-5 h-5' }) {
+  return <img src={src} alt={alt} className={`inline-block object-contain ${className}`} aria-hidden="true" />
+}
+
+function getCardArt({ tile, card }) {
+  // Priority: explicit deck in popup, otherwise infer from tile type
+  if (card?.type === 'deck') {
+    if (card.deck === 'Chance') return artChance
+    return artCommunity // default deck art if not chance
+  }
+  if (tile?.type === 'business') return artBusiness
+  if (tile?.type === 'card') return artChance // generic when landing on a card tile
+  return null
+}
+
 
 export default function GameHUD({
   currency = 'R',
@@ -29,14 +66,13 @@ export default function GameHUD({
   // --- Card popup (shows when you draw or land on a tile that requires a resolution) ---
   showCard = false,
   card = {
-    // if card.type === 'deck', show deck card body; otherwise we mirror tile content
     type: 'deck',                  // deck | tile
     deck: 'Chance',                // Chance | Community (when type === 'deck')
     title: 'Big Recession',
     body: 'Salary payout reduced this round.',
-    delta: -3000,                  // optional: display a money change
+    delta: -3000,
   },
-  onResolveCard = (action) => {},  // 'ok' | 'buy' | 'pay' | 'loan' | 'repay' | 'close'
+  onResolveCard = () => {},
 
   // --- Actions (left rail) ---
   onAction = () => {},
@@ -60,14 +96,14 @@ export default function GameHUD({
       : `Goal: ${Number(mode?.target || 0)} Laps`
 
   const actions = [
-    { id: 'roll', label: 'Roll Dice', icon: <FaDice /> },
-    { id: 'buy', label: 'Buy Asset', icon: <FaShoppingCart />, accent: 'bg-emerald-600 text-white', disabled: disabled.buy || !(tile?.type === 'business') },
-    { id: 'loan', label: 'Take Loan', icon: <FaHandHoldingUsd />, disabled: disabled.loan },
-    { id: 'repay', label: 'Repay Loan', icon: <FaMoneyBillWave />, disabled: disabled.repay || (turn.loanBalance ?? 0) <= 0 },
-    { id: 'draw', label: 'Draw Card', icon: <FaBoxOpen />, disabled: disabled.draw || !(tile?.type === 'card') },
-    { id: 'bank', label: 'Visit Bank', icon: <FaPiggyBank />, disabled: disabled.bank || !(tile?.type === 'bank' || tile?.type === 'loan_shark') },
-    { id: 'overview', label: 'Board Overview', icon: <FaChessBoard /> },
-    { id: 'explore', label: 'Explore', icon: <FaCompass />, hotkey: 'C' },
+    { id: 'roll',    label: 'Roll Dice',  img: imgBusiness },
+    { id: 'buy',     label: 'Buy Asset',  img: imgBuy,    accent: 'bg-emerald-600 text-white', disabled: disabled.buy || !(tile?.type === 'business') },
+    { id: 'loan',    label: 'Take Loan',  img: imgLoan,   disabled: disabled.loan },
+    { id: 'repay',   label: 'Repay Loan', img: imgRepay,  disabled: disabled.repay || (turn.loanBalance ?? 0) <= 0 },
+    { id: 'draw',    label: 'Draw Card',  img: imgDraw,   disabled: disabled.draw || !(tile?.type === 'card') },
+    { id: 'bank',    label: 'Visit Bank', img: imgBank,   disabled: disabled.bank || !(tile?.type === 'bank' || tile?.type === 'loan_shark') },
+    { id: 'overview',label: 'Board Overview', img: imgOverview },
+    { id: 'explore', label: 'Explore',    img: imgExplore, hotkey: 'C' },
   ]
 
   const info = context || tile || {}
@@ -88,27 +124,28 @@ export default function GameHUD({
           <div className="font-bold">Turn: {turn.name}</div>
 
           <div className="flex items-center gap-2">
-            <FaCoins className="opacity-70" />
+            <IconImg src={imgCash} alt="Cash" />
             <span>Cash: {currency}{Number(turn.cash ?? 0).toLocaleString()}</span>
           </div>
 
           <div className="hidden sm:flex items-center gap-2">
-            <FaFlagCheckered className="opacity-70" />
+            <IconImg src={imgFlag} alt="Net Worth" />
             <span>Net Worth: {currency}{Number(_netWorth).toLocaleString()}</span>
           </div>
 
           <div className="hidden md:flex items-center gap-2">
-            <FaPiggyBank className="opacity-70" />
+            <IconImg src={imgAssets} alt="Assets" />
             <span>Assets: {currency}{Number(turn.assetValue ?? 0).toLocaleString()}</span>
           </div>
 
           <div className="hidden md:flex items-center gap-2">
-            <FaUndoAlt className="opacity-70" />
+            <IconImg src={imgLoans} alt="Loans" />
             <span>Loans: {currency}{Number(turn.loanBalance ?? 0).toLocaleString()}</span>
           </div>
 
           <div className="flex items-center gap-2">
-            <FaClock className="opacity-70" /> <span>{turn.timer}s</span>
+            <IconImg src={imgClock} alt="Timer" />
+            <span>{turn.timer}s</span>
           </div>
 
           <div className="ml-2 text-xs text-gray-600 dark:text-gray-300">{modeLabel}</div>
@@ -127,8 +164,8 @@ export default function GameHUD({
       <div className="pointer-events-auto fixed bottom-44 left-6 z-[1000]">
         <div className="space-y-2">
           {actions.map((a) => {
-            const base = 'flex items-center gap-3 px-4 py-2 rounded-2xl border shadow text-gray-800 dark:text-gray-100 bg-white/95 dark:bg-gray-900/90';
-            const state = a.disabled ? 'opacity-50 cursor-not-allowed' : 'border-black/10 hover:bg-black/5 dark:hover:bg-white/10';
+            const base = 'flex items-center gap-3 px-4 py-2 rounded-2xl border shadow text-gray-800 dark:text-gray-100 bg-white/95 dark:bg-gray-900/90'
+            const state = a.disabled ? 'opacity-50 cursor-not-allowed' : 'border-black/10 hover:bg-black/5 dark:hover:bg-white/10'
             return (
               <button
                 key={a.id}
@@ -136,7 +173,7 @@ export default function GameHUD({
                 onClick={() => !a.disabled && onAction(a.id)}
                 className={`${base} ${a.accent || ''} ${a.accent ? '' : state}`}
               >
-                <span className="text-lg">{a.icon}</span>
+                <IconImg src={a.img} alt="" />
                 <span className="font-semibold">{a.label}</span>
                 {a.hotkey && (
                   <span className="ml-auto text-[11px] bg-white/80 dark:bg-gray-800/80 border px-1.5 py-0.5 rounded">
@@ -187,7 +224,8 @@ export default function GameHUD({
                     className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl border shadow-sm bg-emerald-600 text-white"
                     onClick={() => onAction('buy')}
                   >
-                    <FaShoppingCart /> Buy for {currency}{Number(info.price || 0).toLocaleString()}
+                    <IconImg src={imgBuy} alt="" className="w-4 h-4" />
+                    Buy for {currency}{Number(info.price || 0).toLocaleString()}
                   </button>
                 </>
               )}
@@ -204,16 +242,20 @@ export default function GameHUD({
               {(info.type === 'bank' || info.type === 'loan_shark') && (
                 <div className="grid grid-cols-2 gap-2">
                   <button className="px-3 py-2 rounded-xl border hover:bg-black/5 inline-flex items-center justify-center gap-2"
-                          onClick={() => onAction('loan')}><FaHandHoldingUsd /> Loan</button>
+                          onClick={() => onAction('loan')}>
+                    <IconImg src={imgLoan} alt="" className="w-4 h-4" /> Loan
+                  </button>
                   <button className="px-3 py-2 rounded-xl border hover:bg-black/5 inline-flex items-center justify-center gap-2"
-                          onClick={() => onAction('repay')} disabled={(turn.loanBalance ?? 0) <= 0}><FaMoneyBillWave /> Repay</button>
+                          onClick={() => onAction('repay')} disabled={(turn.loanBalance ?? 0) <= 0}>
+                    <IconImg src={imgRepay} alt="" className="w-4 h-4" /> Repay
+                  </button>
                 </div>
               )}
 
               {info.type === 'card' && (
                 <button className="w-full px-3 py-2 rounded-xl border hover:bg-black/5 inline-flex items-center justify-center gap-2"
                         onClick={() => onAction('draw')}>
-                  <FaBoxOpen /> Draw a card
+                  <IconImg src={imgDraw} alt="" className="w-4 h-4" /> Draw a card
                 </button>
               )}
 
@@ -254,7 +296,8 @@ export default function GameHUD({
                 onClick={() => onAction('inventory')}
                 title="Open inventory">
           <span className="inline-flex items-center gap-2">
-            <FaBoxOpen /> Inventory
+            <IconImg src={imgInventory} alt="" />
+            Inventory
           </span>
           <span className="ml-2 text-xs text-gray-600">
             {inventorySummary.insurance ? '• Insurance' : ''}
