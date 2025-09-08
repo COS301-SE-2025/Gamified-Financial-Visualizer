@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   FaChevronRight, FaUser, FaCog, FaSignOutAlt, FaHome, FaWallet,
@@ -247,9 +247,24 @@ const Navbar = () => {
     return () => window.removeEventListener('userUpdated', updateListener);
   }, [user]);
 
+  const navRef = useRef(null);
+  useEffect(() => {
+    const el = navRef.current;
+    if (!el) return;
+    const set = () =>
+      document.documentElement.style.setProperty(
+        '--app-header-h',
+        `${Math.ceil(el.getBoundingClientRect().height)}px`
+      );
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   return (
     <>
-      <nav className="bg-white shadow px-6 py-2 flex items-center justify-between relative z-50 dark:bg-gray-800 z-[9999]">
+      <nav ref={navRef} className="bg-white shadow px-6 py-2 flex items-center justify-between relative z-[9999] dark:bg-gray-800">
         {/* Logo */}
         <div className="flex items-center gap-2">
           <img src={logo} alt="Logo" className="w-16 h-16" />
@@ -265,8 +280,7 @@ const Navbar = () => {
                   end
                   to={menu.items[0].to}
                   className={({ isActive }) =>
-                    `flex items-center gap-1 text-sm font-semibold transition-colors ${
-                      isActive ? 'text-[#83AB55]' : 'text-gray-700 hover:text-[#83AB55] dark:text-gray-200 dark:hover:text-[#83AB55]'
+                    `flex items-center gap-1 text-sm font-semibold transition-colors ${isActive ? 'text-[#83AB55]' : 'text-gray-700 hover:text-[#83AB55] dark:text-gray-200 dark:hover:text-[#83AB55]'
                     }`
                   }
                   onClick={closeAll}
@@ -278,17 +292,15 @@ const Navbar = () => {
                 <>
                   <button
                     onClick={() => toggleMenu(menu.label)}
-                    className={`flex items-center gap-1 text-sm font-semibold transition-colors ${
-                      menu.items.some(item => location.pathname.startsWith(item.to)) || activeMenu === menu.label
-                        ? 'text-[#83AB55]'
-                        : 'text-gray-700 hover:text-[#83AB55] dark:text-gray-200 dark:hover:text-[#83AB55]'
-                    }`}
+                    className={`flex items-center gap-1 text-sm font-semibold transition-colors ${menu.items.some(item => location.pathname.startsWith(item.to)) || activeMenu === menu.label
+                      ? 'text-[#83AB55]'
+                      : 'text-gray-700 hover:text-[#83AB55] dark:text-gray-200 dark:hover:text-[#83AB55]'
+                      }`}
                   >
                     {menu.icon}
                     <span>{menu.label}</span>
-                    <FaChevronDown className={`text-xs mt-0.5 transition-transform ${
-                      activeMenu === menu.label ? 'rotate-180' : ''
-                    }`} />
+                    <FaChevronDown className={`text-xs mt-0.5 transition-transform ${activeMenu === menu.label ? 'rotate-180' : ''
+                      }`} />
                   </button>
 
                   {activeMenu === menu.label && (
@@ -303,10 +315,9 @@ const Navbar = () => {
                             onClick={closeAll}
                             className={({ isActive }) => `
                               flex items-center justify-between px-3 py-2 rounded-lg transition-colors
-                              ${
-                                isActive 
-                                  ? 'bg-green-50 text-[#83AB55] dark:bg-gray-700' 
-                                  : 'hover:bg-gray-50 text-gray-700 dark:text-gray-200 dark:hover:bg-gray-700'
+                              ${isActive
+                                ? 'bg-green-50 text-[#83AB55] dark:bg-gray-700'
+                                : 'hover:bg-gray-50 text-gray-700 dark:text-gray-200 dark:hover:bg-gray-700'
                               }
                             `}
                           >
@@ -363,9 +374,8 @@ const Navbar = () => {
                 alt="avatar"
                 className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
               />
-              <FaChevronDown className={`text-xs text-gray-500 transition-transform ${
-                profileOpen ? 'rotate-180' : ''
-              }`} />
+              <FaChevronDown className={`text-xs text-gray-500 transition-transform ${profileOpen ? 'rotate-180' : ''
+                }`} />
             </button>
 
             {profileOpen && (
@@ -376,10 +386,9 @@ const Navbar = () => {
                   onClick={closeAll}
                   className={({ isActive }) => `
                     flex items-center gap-2 px-3 py-2 rounded-lg transition-colors
-                    ${
-                      isActive 
-                        ? 'bg-green-50 text-[#83AB55] dark:bg-gray-700' 
-                        : 'hover:bg-gray-50 text-gray-700 dark:text-gray-200 dark:hover:bg-gray-700'
+                    ${isActive
+                      ? 'bg-green-50 text-[#83AB55] dark:bg-gray-700'
+                      : 'hover:bg-gray-50 text-gray-700 dark:text-gray-200 dark:hover:bg-gray-700'
                     }
                   `}
                 >
@@ -392,10 +401,9 @@ const Navbar = () => {
                   onClick={closeAll}
                   className={({ isActive }) => `
                     flex items-center gap-2 px-3 py-2 rounded-lg transition-colors
-                    ${
-                      isActive 
-                        ? 'bg-green-50 text-[#83AB55] dark:bg-gray-700' 
-                        : 'hover:bg-gray-50 text-gray-700 dark:text-gray-200 dark:hover:bg-gray-700'
+                    ${isActive
+                      ? 'bg-green-50 text-[#83AB55] dark:bg-gray-700'
+                      : 'hover:bg-gray-50 text-gray-700 dark:text-gray-200 dark:hover:bg-gray-700'
                     }
                   `}
                 >
@@ -422,6 +430,13 @@ const Navbar = () => {
           />
         )}
       </nav>
+
+      {/* HUD layer lives right under the navbar */}
+      <div
+        id="hud-root"
+        className="fixed left-0 right-0 z-40"
+        style={{ top: 'var(--app-header-h, 88px)' }}  // fallback 88px
+      />
 
       {/* Notifications Panel */}
       {showNotifications && (
