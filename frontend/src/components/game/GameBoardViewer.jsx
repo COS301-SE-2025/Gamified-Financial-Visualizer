@@ -1,22 +1,30 @@
-// src/components/game/GameBoardViewer.jsx
-import { Suspense, useEffect } from 'react'
+// src/components/game/EnhancedGameBoardViewer.jsx
+import { Suspense, useEffect, useState } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
-import { OrbitControls, Html, useGLTF, useProgress } from '@react-three/drei'
+import { OrbitControls, Html, useGLTF, useProgress, AdaptiveDpr, Preload } from '@react-three/drei'
 import * as THREE from 'three'
+import { motion } from 'framer-motion'
 
-// ---------- Loader ----------
+// Preload early
+useGLTF.preload('/game/Monopoly_Game.glb')
+
+// Loader
 function Loader() {
   const { progress } = useProgress()
   return (
     <Html center>
-      <div className="px-3 py-2 rounded-lg bg-white/90 border text-sm text-gray-700 shadow">
+      <motion.div 
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="px-4 py-3 rounded-xl bg-white/95 border border-gray-200 text-sm text-gray-700 shadow-lg backdrop-blur-sm"
+      >
         Loading board… {Math.round(progress)}%
-      </div>
+      </motion.div>
     </Html>
   )
 }
 
-// ---------- Renderer tuning (same pattern as CityViewer) ----------
+// Renderer tuning
 function RendererTuning({ exposure = 1.1 }) {
   const { gl } = useThree()
   useEffect(() => {
@@ -29,61 +37,56 @@ function RendererTuning({ exposure = 1.1 }) {
   return null
 }
 
-// ---------- A neutral bright rig (mirrors BrightDayRig idea) ----------
-function BrightBoardRig() {
+// Improved lighting
+function EnhancedBoardRig() {
   return (
     <>
-      <hemisphereLight skyColor={'#fff4e6'} groundColor={'#d9c3a8'} intensity={0.55} />
+      <hemisphereLight skyColor={'#fff4e6'} groundColor={'#d9c3a8'} intensity={0.6} />
       <directionalLight
         color={'#FFD4B8'}
-        position={[60, 120, 60]}
+        position={[50, 100, 50]}
         intensity={2.2}
         castShadow
-        shadow-mapSize-width={4096}
-        shadow-mapSize-height={4096}
-        shadow-camera-left={-150}
-        shadow-camera-right={150}
-        shadow-camera-top={150}
-        shadow-camera-bottom={-150}
-        shadow-bias={-0.0006}
-        shadow-normalBias={0.6}
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        shadow-camera-left={-120}
+        shadow-camera-right={120}
+        shadow-camera-top={120}
+        shadow-camera-bottom={-120}
+        shadow-bias={-0.0005}
+        shadow-normalBias={0.5}
       />
-      <directionalLight color={'#BFD8FF'} position={[-60, 40, -40]} intensity={0.9} />
-      <ambientLight intensity={0.12} />
+      <directionalLight color={'#BFD8FF'} position={[-50, 30, -30]} intensity={0.9} />
+      <ambientLight intensity={0.15} />
     </>
   )
 }
 
-// ---------- Board model ----------
-function BoardModel({ src, scale = 1, rotationY = Math.PI / 4 }) {
+// Board model
+function BoardModel({ src, scale = 1, rotationY = Math.PI / 4.5 }) { // Slightly adjusted angle
   const gltf = useGLTF(src)
 
-  // Center the scene so the camera target is (0,0,0)
   useEffect(() => {
     const scene = gltf.scene
     if (!scene) return
-    // enable shadows + neutral materials
     scene.traverse((o) => {
-      if (o.isMesh) {
-        o.castShadow = true
-        o.receiveShadow = true
-        const mats = Array.isArray(o.material) ? o.material : [o.material]
-        mats.forEach((m) => {
-          if (!m) return
-          m.metalness = 0
-          m.roughness = 0.5
-          m.envMapIntensity = 0
-        })
-      }
+      if (!o.isMesh) return
+      o.castShadow = true
+      o.receiveShadow = true
+      const mats = Array.isArray(o.material) ? o.material : [o.material]
+      mats.forEach((m) => {
+        if (!m) return
+        m.metalness = 0
+        m.roughness = 0.5
+        m.envMapIntensity = 0
+      })
     })
-    // auto-center
     const box = new THREE.Box3().setFromObject(scene)
     const center = new THREE.Vector3()
     box.getCenter(center)
-    scene.position.sub(center) // shift so center sits at origin
+    scene.position.sub(center)
   }, [gltf])
 
-  // Rotate the *group*, not the GLB contents
   return (
     <group rotation={[0, rotationY, 0]} scale={scale}>
       <primitive object={gltf.scene} />
@@ -91,18 +94,45 @@ function BoardModel({ src, scale = 1, rotationY = Math.PI / 4 }) {
   )
 }
 
-// ---------- Public API ----------
-export default function GameBoardViewer({
+// Camera controls with better default angle
+function EnhancedOrbitControls() {
+  return (
+    <OrbitControls
+      enableDamping
+      enablePan={true}
+      panSpeed={0.5}
+      target={[0, 0, 0]}
+      minDistance={10}
+      maxDistance={30}
+      minPolarAngle={0.8}  // Better viewing angle
+      maxPolarAngle={1.4}   // Better viewing angle
+      minAzimuthAngle={-Math.PI / 3}
+      maxAzimuthAngle={Math.PI / 3}
+    />
+  )
+}
+
+// Public API
+export default function EnhancedGameBoardViewer({
   glbPath = '/game/Monopoly_Game.glb',
-  // Shallow look: lower Y, longer Z; narrower FOV keeps scale believable
-  camera = { position: [72, 22, 42], fov: 40 },
-  exposure = 1.05,
+  camera = { position: [65, 20, 38], fov: 38 }, // Better starting position
+  exposure = 1.1,
 }) {
   useGLTF.preload(glbPath)
+  const [isLoaded, setIsLoaded] = useState(false)
 
   return (
-    <div className="relative w-full h-[calc(100vh-5rem)] bg-[#f2f5f8] dark:bg-[#0E171F] rounded-2xl overflow-hidden">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="relative w-full h-[calc(100vh-5rem)] bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl overflow-hidden shadow-inner"
+    >
       <Canvas
+        dpr={[0.8, 1.2]} // Slightly higher quality
+        gl={{ 
+          powerPreference: 'high-performance',
+          antialias: true
+        }}
         shadows
         camera={camera}
         onCreated={({ gl }) => {
@@ -111,32 +141,33 @@ export default function GameBoardViewer({
           gl.toneMapping = THREE.ACESFilmicToneMapping
           gl.toneMappingExposure = exposure
           if (gl.outputColorSpace !== undefined) gl.outputColorSpace = THREE.SRGBColorSpace
+          setIsLoaded(true)
         }}
       >
         <color attach="background" args={['#f2f5f8']} />
         <RendererTuning exposure={exposure} />
 
-        {/* Lights (kept consistent with your city rig feel) */}
-        <BrightBoardRig />
+        <EnhancedBoardRig />
 
         <Suspense fallback={<Loader />}>
-          {/* 45° yaw for that diagonal board edge look */}
-          <BoardModel src={glbPath} rotationY={Math.PI / 4} />
+          <BoardModel src={glbPath} rotationY={Math.PI / 4.5} />
+          <Preload all />
         </Suspense>
 
-        {/* Orbit: shallow angle range + a bit of zoom room */}
-        <OrbitControls
-          enableDamping
-          enablePan={false}
-          target={[0, 0, 0]}
-          minDistance={8}
-          maxDistance={26}
-          // Polar angle measured from +Y axis. For a low, table-level view,
-          // allow ~50°–75° (radians ~0.87–1.31).
-          minPolarAngle={0.9}
-          maxPolarAngle={1.28}
-        />
+        <AdaptiveDpr pixelated />
+        <EnhancedOrbitControls />
       </Canvas>
-    </div>
+
+      {isLoaded && (
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="absolute bottom-4 left-4 px-3 py-2 rounded-lg bg-white/80 backdrop-blur-sm border border-gray-200 text-xs text-gray-600 shadow"
+        >
+          Drag to rotate • Scroll to zoom
+        </motion.div>
+      )}
+    </motion.div>
   )
 }

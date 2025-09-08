@@ -1,5 +1,7 @@
 // src/pages/Community/CommunityGameRoom.jsx
 import React, { useState, useEffect, useRef } from 'react';
+import GameHUD from '../../components/game/hud/GameHUD'
+import HUDPortal from '../../components/game/hud/HUDPortal'
 import CommunityLayout from '../../pages/Community/CommunityLayout';
 import GameBoardViewer from '../../components/game/GameBoardViewer';
 import GameLobby from '../../components/game/lobby/GameLobby';
@@ -8,9 +10,11 @@ import CharacterSelectViewer from '../../components/game/CharacterSelectViewer'
 import { FaClock, FaBolt, FaChartBar } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
+import { useGLTF } from '@react-three/drei'
 
 // Connect to Socket.IO server (adjust URL as needed)
 const socket = io('http://localhost:3000', { autoConnect: false });
+useGLTF.preload('/game/Monopoly_Game.glb')
 
 const QUESTION_TYPES = {
     MULTIPLE_CHOICE: 'multiple_choice',
@@ -184,6 +188,8 @@ const CommunityGameRoom = () => {
     const [username, setUsername] = useState('Player' + Math.floor(Math.random() * 1000));
     const [gameState, setGameState] = useState('waiting');
     const [leaderboard, setLeaderboard] = useState([]);
+    const [headerHeight, setHeaderHeight] = useState(0);
+    const [gameAreaHeight, setGameAreaHeight] = useState(0);
 
     // Power up related work 
     const [powerUps, setPowerUps] = useState([]);
@@ -212,6 +218,37 @@ const CommunityGameRoom = () => {
     ]);
     const timerRef = useRef(null);
     const navigate = useNavigate();
+    const gameContainerRef = useRef(null);
+
+    useEffect(() => {
+        // Function to calculate header height
+        const calculateHeaderHeight = () => {
+            const header = document.querySelector('header');
+            if (header) {
+                setHeaderHeight(header.offsetHeight);
+            } else {
+                // Fallback if no header is found
+                setHeaderHeight(80); // Default header height
+            }
+        };
+        
+        // Calculate initially
+        calculateHeaderHeight();
+        
+        // Recalculate on window resize
+        window.addEventListener('resize', calculateHeaderHeight);
+        
+        return () => {
+            window.removeEventListener('resize', calculateHeaderHeight);
+        };
+    }, []);
+
+    useEffect(() => {
+        // Calculate game area height when step changes to playing
+        if (step === 'playing' && gameContainerRef.current) {
+            setGameAreaHeight(gameContainerRef.current.offsetHeight);
+        }
+    }, [step]);
 
     // Regular function to get a power-up
     const acquirePowerUp = () => {
@@ -463,43 +500,59 @@ const CommunityGameRoom = () => {
     };
 
     return (
-  <CommunityLayout>
-    {step === 'mode' || step === 'lobby' ? (
-      <GameLobby
-        defaultMode="multiplayer"
-        defaultPlayers={4}
-        defaultLaps={4}
-        onQuickJoin={() => {
-          // use your existing joinRoom mock
-          joinRoom()
-          setStep('lobby')
-        }}
-        onCreateRoom={() => {
-          createRoom()
-          setStep('lobby')
-        }}
-        onJoinWithCode={(code) => {
-          setRoomCode(code || roomCode)
-          joinRoom()
-          setStep('lobby')
-        }}
-        onWatchTutorial={() => console.log('open tutorial modal')}
-        onReadRules={() => console.log('open rules modal')}
-        onStart={(settings, character) => {
-          // persist chosen settings/character as needed, then start
-          console.log('START with:', settings, character)
-          setStep('playing')          // next: render the board + HUD here
-          socket.emit('startGame')    // triggers your existing mock flow
-        }}
-      />
-    ) : step === 'playing' ? (
-      <div className="relative">
-        {/* Next step: show GameBoardViewer + HUD (we already drafted these) */}
-        <GameBoardViewer glbPath="/game/Monopoly_Game.glb" />
-      </div>
-    ) : null}
-  </CommunityLayout>
-)
+        <CommunityLayout>
+            {step === 'mode' || step === 'lobby' ? (
+                <GameLobby
+                    defaultMode="multiplayer"
+                    defaultPlayers={4}
+                    defaultLaps={4}
+                    onQuickJoin={() => {
+                        // use your existing joinRoom mock
+                        joinRoom()
+                        setStep('lobby')
+                    }}
+                    onCreateRoom={() => {
+                        createRoom()
+                        setStep('lobby')
+                    }}
+                    onJoinWithCode={(code) => {
+                        setRoomCode(code || roomCode)
+                        joinRoom()
+                        setStep('lobby')
+                    }}
+                    onWatchTutorial={() => console.log('open tutorial modal')}
+                    onReadRules={() => console.log('open rules modal')}
+                    onStart={(settings, character) => {
+                        // persist chosen settings/character as needed, then start
+                        console.log('START with:', settings, character)
+                        setStep('playing')          // next: render the board + HUD here
+                        socket.emit('startGame')    // triggers your existing mock flow
+                    }}
+                />
+            ) : step === 'playing' ? (
+                <div 
+                    ref={gameContainerRef}
+                    className="relative overflow-hidden"
+                    style={{ 
+                        height: `calc(100vh - ${headerHeight}px)`,
+                        marginTop: `${headerHeight}px`
+                    }}
+                >
+                    <GameBoardViewer glbPath="/game/Monopoly_Game.glb" />
+                    <HUDPortal>
+                        <GameHUD
+                            currency="R"
+                            turn={{ name: username, cash: 5000, assetValue: 0, loanBalance: 0, laps: 0, timer: 30 }}
+                            tile={{ type: 'start', title: 'Start / Salary', subtitle: 'Collect on pass' }}
+                            onAction={(id) => console.log('HUD action:', id)}
+                            headerHeight={headerHeight}
+                            gameAreaHeight={gameAreaHeight}
+                        />
+                    </HUDPortal>
+                </div>
+            ) : null}
+        </CommunityLayout>
+    );
 };
 
 export default CommunityGameRoom;
