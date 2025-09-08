@@ -1,5 +1,5 @@
 // src/pages/Community/CommunityDashboard.jsx
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -16,10 +16,12 @@ import {
   FaHeart,
   FaPaperPlane,
   FaPen,
-  FaShare,
   FaTrophy,
   FaChevronDown,
-  FaCheck
+  FaCheck,
+  FaTrash,
+  FaTimes,
+  FaExclamationTriangle
 } from 'react-icons/fa';
 
 // Avatars & banners (fallbacks)
@@ -86,11 +88,10 @@ const CommunityDashboard = () => {
     return posts.slice(start, start + POSTS_PER_PAGE);
   }, [posts, postPage]);
 
-  // Pagination for the banner dropdown: in create a post 
+  // Banner dropdown pagination
   const [bannerPage, setBannerPage] = useState(1);
   const BANNERS_PER_PAGE = 6;
   const totalBannerPages = Math.max(1, Math.ceil(recentBanners.length / BANNERS_PER_PAGE));
-
   const paginatedBanners = useMemo(() => {
     const start = (bannerPage - 1) * BANNERS_PER_PAGE;
     return recentBanners.slice(start, start + BANNERS_PER_PAGE);
@@ -100,10 +101,9 @@ const CommunityDashboard = () => {
     if (bannerPage > totalBannerPages) setBannerPage(totalBannerPages);
   }, [bannerPage, totalBannerPages, recentBanners.length]);
 
-
   // --- Fetch recent achievements (mocked fallback) ---
   useEffect(() => {
-    // TODO wire real API: /api/auth/profile/recent-achievements/:userId
+    // TODO: wire real API: /api/auth/profile/recent-achievements/:userId
     setRecentBanners([banner1, banner2, banner3, banner4]);
   }, []);
 
@@ -123,7 +123,6 @@ const CommunityDashboard = () => {
   }, [location.state]);
 
   // --- Actions ---
-  // handle the like feature 
   const handleLike = (postId) => {
     setPosts(prev =>
       prev.map(p => (p.id === postId ? { ...p, likes: likedPosts.includes(postId) ? p.likes - 1 : p.likes + 1 } : p))
@@ -131,7 +130,6 @@ const CommunityDashboard = () => {
     setLikedPosts(prev => (prev.includes(postId) ? prev.filter(id => id !== postId) : [...prev, postId]));
   };
 
-  // hanlde the comment count 
   const handleComment = (postId) => {
     const text = (commentInputs[postId] || '').trim();
     if (!text) return;
@@ -141,7 +139,6 @@ const CommunityDashboard = () => {
     setCommentInputs(prev => ({ ...prev, [postId]: '' }));
   };
 
-  // communnity tag toggles
   const toggleTag = (tag) => {
     setSelectedTags(prev =>
       prev.includes(tag) ? prev.filter(t => t !== tag) : prev.length < 3 ? [...prev, tag] : prev
@@ -192,6 +189,63 @@ const CommunityDashboard = () => {
     });
   };
 
+  // ----- Deletion handlers (actual state updates) -----
+  const handleDeletePost = async (postId) => {
+    try {
+      // TODO: call backend DELETE /api/community/posts/:postId
+      setPosts(prev => prev.filter(p => p.id !== postId));
+      toast.success('Post deleted');
+    } catch (err) {
+      console.error('Delete post failed', err);
+      toast.error('Could not delete post');
+    }
+  };
+
+  const handleDeleteComment = async (postId, commentId) => {
+    try {
+      // TODO: call backend DELETE /api/community/posts/:postId/comments/:commentId
+      setPosts(prev =>
+        prev.map(p =>
+          p.id === postId ? { ...p, comments: p.comments.filter(c => c.id !== commentId) } : p
+        )
+      );
+      toast.success('Comment deleted');
+    } catch (err) {
+      console.error('Delete comment failed', err);
+      toast.error('Could not delete comment');
+    }
+  };
+
+  // ----- Confirm modal state -----
+  const [confirm, setConfirm] = useState({
+    open: false,
+    type: null,          // 'post' | 'comment'
+    postId: null,
+    commentId: null
+  });
+
+  const openConfirmDeletePost = (postId) => {
+    setConfirm({ open: true, type: 'post', postId, commentId: null });
+  };
+
+  const openConfirmDeleteComment = (postId, commentId) => {
+    setConfirm({ open: true, type: 'comment', postId, commentId });
+  };
+
+  const closeConfirm = useCallback(() => {
+    setConfirm({ open: false, type: null, postId: null, commentId: null });
+  }, []);
+
+  const confirmDelete = async () => {
+    const { type, postId, commentId } = confirm;
+    if (type === 'post' && postId) {
+      await handleDeletePost(postId);
+    } else if (type === 'comment' && postId && commentId) {
+      await handleDeleteComment(postId, commentId);
+    }
+    closeConfirm();
+  };
+
   // keep page index valid when posts change
   useEffect(() => {
     if (postPage > totalPostPages) setPostPage(totalPostPages);
@@ -218,7 +272,6 @@ const CommunityDashboard = () => {
 
             {/* Buttons group */}
             <div className="flex items-center gap-3">
-              {/* Play game button (brought back) */}
               <Link
                 to="/community/game"
                 className="flex items-center gap-2 bg-white text-[#5FBFFF] px-6 py-3 rounded-full text-sm font-bold shadow-lg hover:bg-[#5FBFFF] hover:text-white transition transform hover:scale-105 dark:bg-gray-800 dark:text-gray-200"
@@ -226,7 +279,6 @@ const CommunityDashboard = () => {
                 <FaGamepad /> Play Now
               </Link>
 
-              {/* Create post stays separate */}
               <button
                 onClick={() => {
                   setPostType('Achievement');
@@ -256,7 +308,7 @@ const CommunityDashboard = () => {
                 {/* Header */}
                 <div className="flex items-center gap-3">
                   <img src={post.user.avatar} alt="avatar" className="w-12 h-12 rounded-full border-2 border-white shadow object-cover" />
-                  <div>
+                  <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <Link
                         to={`/community/member/${post.user.name}`}
@@ -279,6 +331,18 @@ const CommunityDashboard = () => {
                       ))}
                     </div>
                   </div>
+
+                  {/* Delete Post (owner only; demo assumes 'you') */}
+                  {post.user.name === 'you' && (
+                    <button
+                      onClick={() => openConfirmDeletePost(post.id)}
+                      className="p-2 rounded-full border border-red-200 text-red-500 hover:bg-red-50 transition dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/30"
+                      title="Delete post"
+                      aria-label="Delete post"
+                    >
+                      <FaTrash size={14} />
+                    </button>
+                  )}
                 </div>
 
                 {/* Body */}
@@ -322,7 +386,19 @@ const CommunityDashboard = () => {
                         {c.user === 'you' ? 'Y' : c.user.charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1 bg-gray-50 rounded-lg p-2 dark:bg-gray-700">
-                        <div className="font-medium text-sm text-gray-700 dark:text-gray-200">{c.user}</div>
+                        <div className="flex items-center justify-between">
+                          <div className="font-medium text-sm text-gray-700 dark:text-gray-200">{c.user}</div>
+                          {c.user === 'you' && (
+                            <button
+                              onClick={() => openConfirmDeleteComment(post.id, c.id)}
+                              className="p-1.5 rounded-full border border-red-200 text-red-500 hover:bg-red-50 transition dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/30"
+                              title="Delete comment"
+                              aria-label="Delete comment"
+                            >
+                              <FaTrash size={12} />
+                            </button>
+                          )}
+                        </div>
                         <p className="text-sm text-gray-600 dark:text-gray-300">{c.text}</p>
                       </div>
                     </div>
@@ -376,13 +452,13 @@ const CommunityDashboard = () => {
 
       {/* Create Post Modal */}
       {showCreatePost && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 dark:bg-opacity-60">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 dark:bg-black/60">
           <div className="bg-white w-full max-w-2xl p-6 rounded-3xl shadow-xl border border-gray-100 relative space-y-4 dark:bg-gray-800 dark:border-gray-700">
-            
             {/* Close */}
             <button
               onClick={() => setShowCreatePost(false)}
               className="absolute top-4 right-5 text-gray-400 hover:text-red-500 text-xl font-bold dark:hover:text-red-400"
+              aria-label="Close create post"
             >
               &times;
             </button>
@@ -419,7 +495,7 @@ const CommunityDashboard = () => {
               </div>
             </div>
 
-            {/* Achievement Banner picker (image dropdown/gallery) */}
+            {/* Achievement Banner picker */}
             {postType === 'Achievement' && (
               <div className="space-y-2">
                 <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Select achievement banner</div>
@@ -434,7 +510,6 @@ const CommunityDashboard = () => {
 
                 {showBannerDropdown && (
                   <div className="mt-2 rounded-2xl border bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
-                    {/* Scrollable grid */}
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3 max-h-[45vh] overflow-y-auto">
                       {paginatedBanners.map((src, idx) => (
                         <button
@@ -459,7 +534,6 @@ const CommunityDashboard = () => {
                       ))}
                     </div>
 
-                    {/* Pagination controls */}
                     {totalBannerPages > 1 && (
                       <div className="flex items-center justify-between px-3 py-2 border-t border-gray-200 dark:border-gray-600">
                         <button
@@ -506,6 +580,59 @@ const CommunityDashboard = () => {
                 className="bg-gradient-to-r from-[#88BC46] to-[#AAD977] text-white font-semibold px-6 py-2 rounded-full hover:opacity-90 transition shadow dark:from-[#4D7C0F] dark:to-[#3F6212]"
               >
                 Post
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Styled Confirm Dialog (for post/comment deletes) */}
+      {confirm.open && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4"
+          role="dialog"
+          aria-modal="true"
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') closeConfirm();
+            if (e.key === 'Enter') confirmDelete();
+          }}
+        >
+          <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
+            <div className="flex items-start gap-3">
+              <div className="shrink-0">
+                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-600 dark:bg-red-900/30 dark:text-red-300">
+                  <FaExclamationTriangle />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100">
+                  {confirm.type === 'post' ? 'Delete this post?' : 'Delete this comment?'}
+                </h3>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                  This action can’t be undone.
+                </p>
+              </div>
+              <button
+                onClick={closeConfirm}
+                className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+                aria-label="Close confirm"
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                onClick={closeConfirm}
+                className="px-4 py-2 text-sm rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 text-sm rounded-full bg-red-600 text-white hover:bg-red-700 shadow"
+              >
+                Delete
               </button>
             </div>
           </div>
