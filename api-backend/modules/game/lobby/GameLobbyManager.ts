@@ -1,8 +1,9 @@
 import { EventEmitter } from 'events';
 import { GameEngine } from '../engine/GameEngine';
-import { Player } from '../types/GameTypes';
+import { Player, Character } from '../types/GameTypes';
 import { logger } from '../../../config/logger';
 import { redisClient } from '../../../config/redis';
+  import { randomBytes } from 'crypto';
 
 export interface Lobby {
   id: string;
@@ -14,6 +15,7 @@ export interface Lobby {
   gameId?: string; // Set when game starts
   createdAt: Date;
   lastActivity: Date;
+  availableCharacters: string[];
 }
 
 export interface LobbyPlayer {
@@ -23,6 +25,7 @@ export interface LobbyPlayer {
   isHost: boolean;
   isReady: boolean;
   joinedAt: Date;
+  character?: Character;
 }
 
 export interface LobbySettings {
@@ -30,21 +33,24 @@ export interface LobbySettings {
   maxLaps?: number;
   targetNetWorth?: number;
   maxPlayers: number;
-  isPrivate: boolean;
-  allowSpectators: boolean;
+  isPrivate: boolean
 }
 
 export class GameLobbyManager extends EventEmitter {
   private lobbies = new Map<string, Lobby>();
   private playerToLobby = new Map<number, string>(); // Track which lobby each player is in
   private lobbyCodes = new Map<string, string>(); // code -> lobbyId mapping
-  private gameEngine: GameEngine;
 
-  constructor() {
+  private readonly ALL_CHARACTERS = [
+    'Cowboy', 'Green_girl', 'Kimono_girl', 'Lilac_girl', 'Mr_suit', 'Ninja.001'
+  ];
+
+  constructor(private gameEngine: GameEngine) {
     super();
-    this.gameEngine = new GameEngine();
     this.startLobbyCleanup();
   }
+
+
 
   /**
    * Create a new lobby
@@ -63,7 +69,6 @@ export class GameLobbyManager extends EventEmitter {
       maxLaps: 10,
       maxPlayers: 6,
       isPrivate: false,
-      allowSpectators: true,
       ...settings
     };
 
@@ -80,11 +85,12 @@ export class GameLobbyManager extends EventEmitter {
       id: lobbyId,
       code: joinCode,
       hostId,
-      players: new Map([[hostId, host]]),
+      players: new Map([ [ hostId, host ] ]),
       settings: defaultSettings,
       status: 'waiting',
       createdAt: new Date(),
-      lastActivity: new Date()
+      lastActivity: new Date(),
+      availableCharacters: [ ...this.ALL_CHARACTERS ]
     };
 
     this.lobbies.set(lobbyId, lobby);
@@ -96,6 +102,7 @@ export class GameLobbyManager extends EventEmitter {
 
     return lobby;
   }
+
 
   /**
    * Join lobby by code or ID
@@ -145,6 +152,60 @@ export class GameLobbyManager extends EventEmitter {
     return lobby;
   }
 
+
+  /**
+   * Select character for player
+   */
+  selectCharacter(playerId: number, characterId: string): boolean {
+    const lobbyId = this.playerToLobby.get(playerId);
+    if (!lobbyId) return false;
+
+    const lobby = this.lobbies.get(lobbyId);
+    if (!lobby || lobby.status !== 'waiting') return false;
+
+
+    const player = lobby.players.get(playerId);
+    if (!player) return false;
+
+    // Validate character exists
+    const character = this.getCharacterById(characterId);
+    if (!character) return false;
+
+    // Check if character is already taken by another player
+    const isCharacterTaken = Array.from(lobby.players.values())
+      .some(p => p.id !== playerId && p.character?.id === characterId);
+
+    if (isCharacterTaken) {
+      throw new Error('Character already selected by another player');
+    }
+
+    // Set character for player
+    player.character = character;
+    lobby.lastActivity = new Date();
+
+    logger.info(`Player ${playerId} selected character ${characterId} in lobby ${lobbyId}`);
+    this.emit('player-character-selected', { lobby, playerId, character });
+
+    return true;
+  }
+
+  /**
+   * Get available characters for lobby (not taken by other players)
+   */
+  getAvailableCharacters(lobbyId: string, excludePlayerId?: number): Character[] {
+    const lobby = this.lobbies.get(lobbyId);
+    if (!lobby) return [];
+
+    const takenCharacterIds = Array.from(lobby.players.values())
+      .filter(p => p.id !== excludePlayerId && p.character)
+      .map(p => p.character!.id);
+
+    // Assuming Character type has at least id and name
+    return this.ALL_CHARACTERS
+      .filter(charId => !takenCharacterIds.includes(charId))
+      .map(charId => ({ id: charId, name: charId } as Character));
+  }
+
   /**
    * Leave lobby
    */
@@ -166,12 +227,12 @@ export class GameLobbyManager extends EventEmitter {
       if (lobby.players.size > 0) {
         // Promote oldest member to host
         const newHost = Array.from(lobby.players.values())
-          .sort((a, b) => a.joinedAt.getTime() - b.joinedAt.getTime())[0];
-        
+          .sort((a, b) => a.joinedAt.getTime() - b.joinedAt.getTime())[ 0 ];
+
         newHost.isHost = true;
         newHost.isReady = true;
         lobby.hostId = newHost.id;
-        
+
         logger.info(`User ${newHost.id} promoted to host of lobby ${lobbyId}`);
         this.emit('host-changed', { lobby, newHost });
       } else {
@@ -230,65 +291,75 @@ export class GameLobbyManager extends EventEmitter {
   /**
    * Start the game (host only)
    */
+
+  private lobbyLocks = new Set<string>();
+
   startGame(playerId: number): string | null {
     const lobbyId = this.playerToLobby.get(playerId);
     if (!lobbyId) return null;
+    if (!lobbyId || this.lobbyLocks.has(lobbyId)) return null;
+    this.lobbyLocks.add(lobbyId);
+    let gameId: string | null = null;
+    try {
+      const lobby = this.lobbies.get(lobbyId);
+      if (!lobby || lobby.hostId !== playerId || lobby.status !== 'waiting') {
+        return null;
+      }
 
-    const lobby = this.lobbies.get(lobbyId);
-    if (!lobby || lobby.hostId !== playerId || lobby.status !== 'waiting') {
-      return null;
+      // Check minimum players
+      if (lobby.players.size < 2) {
+        throw new Error('Need at least 2 players to start');
+      }
+
+      // Check if all players are ready
+      const allReady = Array.from(lobby.players.values())
+        .every(player => player.isReady);
+
+      if (!allReady) {
+        throw new Error('All players must be ready');
+      }
+
+      // Create game
+      gameId = this.generateGameId();
+      const gameState = this.gameEngine.createGame(gameId, playerId, lobby.settings.gameMode);
+
+      // Add all players to the game
+      for (const lobbyPlayer of lobby.players.values()) {
+        const gamePlayer: Player = {
+          id: lobbyPlayer.id,
+          username: lobbyPlayer.username,
+          socketId: lobbyPlayer.socketId,
+          position: 0,
+          cash: 5000,
+          assets: [],
+          loans: [],
+          cards: [],
+          lapsCompleted: 0,
+          salary: 2000,
+          isActive: true,
+          isBankrupt: false,
+          character: lobbyPlayer.character, // Include character
+          statusEffects: [] // Add default empty statusEffects
+        };
+
+        this.gameEngine.addPlayer(gameId, gamePlayer);
+      }
+
+      // Start the actual game
+      this.gameEngine.startGame(gameId);
+
+      // Update lobby status
+      lobby.status = 'in_game';
+      lobby.gameId = gameId;
+      lobby.lastActivity = new Date();
+
+      logger.info(`Game ${gameId} started from lobby ${lobbyId}`);
+      this.emit('game-started-from-lobby', { lobby, gameId });
+
+    } finally {
+      this.lobbyLocks.delete(lobbyId);
+      return gameId;
     }
-
-    // Check minimum players
-    if (lobby.players.size < 2) {
-      throw new Error('Need at least 2 players to start');
-    }
-
-    // Check if all players are ready
-    const allReady = Array.from(lobby.players.values())
-      .every(player => player.isReady);
-    
-    if (!allReady) {
-      throw new Error('All players must be ready');
-    }
-
-    // Create game
-    const gameId = this.generateGameId();
-    const gameState = this.gameEngine.createGame(gameId, playerId, lobby.settings.gameMode);
-
-    // Add all players to the game
-    for (const lobbyPlayer of lobby.players.values()) {
-      const gamePlayer: Player = {
-        id: lobbyPlayer.id,
-        username: lobbyPlayer.username,
-        socketId: lobbyPlayer.socketId,
-        position: 0,
-        cash: 5000,
-        assets: [],
-        loans: [],
-        cards: [],
-        lapsCompleted: 0,
-        salary: 2000,
-        isActive: true,
-        isBankrupt: false,
-        xp: 0
-      };
-      
-      this.gameEngine.addPlayer(gameId, gamePlayer);
-    }
-
-    // Start the actual game
-    this.gameEngine.startGame(gameId);
-
-    // Update lobby status
-    lobby.status = 'in_game';
-    lobby.gameId = gameId;
-    lobby.lastActivity = new Date();
-
-    logger.info(`Game ${gameId} started from lobby ${lobbyId}`);
-    this.emit('game-started-from-lobby', { lobby, gameId });
-
-    return gameId;
   }
 
   /**
@@ -311,8 +382,8 @@ export class GameLobbyManager extends EventEmitter {
    */
   getPublicLobbies(): Lobby[] {
     return Array.from(this.lobbies.values())
-      .filter(lobby => 
-        !lobby.settings.isPrivate && 
+      .filter(lobby =>
+        !lobby.settings.isPrivate &&
         lobby.status === 'waiting' &&
         lobby.players.size < lobby.settings.maxPlayers
       )
@@ -334,7 +405,7 @@ export class GameLobbyManager extends EventEmitter {
 
     player.socketId = newSocketId;
     lobby.lastActivity = new Date();
-    
+
     logger.info(`Updated socket for user ${playerId} in lobby ${lobbyId}`);
     return true;
   }
@@ -353,7 +424,7 @@ export class GameLobbyManager extends EventEmitter {
 
     // Remove lobby code mapping
     this.lobbyCodes.delete(lobby.code);
-    
+
     // Remove lobby
     this.lobbies.delete(lobbyId);
 
@@ -369,9 +440,9 @@ export class GameLobbyManager extends EventEmitter {
       const now = new Date();
       const INACTIVE_THRESHOLD = 30 * 60 * 1000; // 30 minutes
 
-      for (const [lobbyId, lobby] of this.lobbies) {
+      for (const [ lobbyId, lobby ] of this.lobbies) {
         const inactive = now.getTime() - lobby.lastActivity.getTime() > INACTIVE_THRESHOLD;
-        
+
         if (inactive && lobby.status === 'waiting') {
           logger.info(`Cleaning up inactive lobby ${lobbyId}`);
           this.closeLobby(lobbyId);
@@ -388,53 +459,29 @@ export class GameLobbyManager extends EventEmitter {
     return `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  private generateJoinCode(): string {
-    let code: string;
-    do {
-      code = Math.random().toString(36).substr(2, 6).toUpperCase();
-    } while (this.lobbyCodes.has(code));
-    
-    return code;
-  }
+private generateJoinCode(): string {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I
+  let code = '';
+  const bytes = randomBytes(6);
+  for (let i=0;i<6;i++) code += alphabet[bytes[i]%alphabet.length];
+  if (this.lobbyCodes.has(code)) return this.generateJoinCode();
+  return code;
+}
 
   // Get game engine for other modules
   getGameEngine(): GameEngine {
     return this.gameEngine;
   }
-}
-
-// 📁 /modules/game/lobby/MatchmakingService.ts
-export class MatchmakingService {
-  constructor(private lobbyManager: GameLobbyManager) {}
 
   /**
-   * Find or create a suitable lobby for quick match
+   * Helper to get character by ID
    */
-  findMatch(playerId: number, playerUsername: string, socketId: string, preferredSettings?: Partial<LobbySettings>): Lobby {
-    // Look for existing public lobbies that match preferences
-    const publicLobbies = this.lobbyManager.getPublicLobbies();
-    
-    const suitableLobby = publicLobbies.find(lobby => {
-      if (!preferredSettings) return true;
-      
-      return (
-        (!preferredSettings.gameMode || lobby.settings.gameMode === preferredSettings.gameMode) &&
-        (!preferredSettings.maxLaps || lobby.settings.maxLaps === preferredSettings.maxLaps) &&
-        lobby.players.size < lobby.settings.maxPlayers
-      );
-    });
-
-    if (suitableLobby) {
-      // Join existing lobby
-      return this.lobbyManager.joinLobby(suitableLobby.id, playerId, playerUsername, socketId);
-    } else {
-      // Create new lobby
-      const settings: Partial<LobbySettings> = {
-        isPrivate: false,
-        ...preferredSettings
-      };
-      
-      return this.lobbyManager.createLobby(playerId, playerUsername, socketId, settings);
+  private getCharacterById(characterId: string): Character | undefined {
+    // Assuming Character type has at least id and name
+    if (this.ALL_CHARACTERS.includes(characterId)) {
+      return { id: characterId, name: characterId } as Character;
     }
+    return undefined;
   }
 }
+

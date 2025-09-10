@@ -1,1115 +1,15 @@
-import { GameState, Player, Card, Block, Board } from '../types/GameTypes';
+import { GameState, Player, Card, Block, Board, Asset } from '../types/GameTypes';
 import * as BoardData from '../data/BoardData';
 import { EventEmitter } from 'events';
+import pool from "../../../config/db";
+import { logger } from "../../../config/logger";
+
 
 export class GameEngine extends EventEmitter {
   private games = new Map<string, GameState>();
 
-  private chanceCards: Card[] = [
-    // Gains (20 cards)
-    {
-      id: 'chance_gain_1',
-      type: 'chance',
-      title: 'Found Wallet',
-      description: 'You found a lost wallet with cash inside.',
-      effect: {
-        type: 'cash',
-        amount: 1000,
-        message: 'Found wallet! Gain R1,000'
-      }
-    },
-    {
-      id: 'chance_gain_2',
-      type: 'chance',
-      title: 'Won Lucky Draw',
-      description: 'You won a lucky draw prize!',
-      effect: {
-        type: 'cash',
-        amount: 2500,
-        message: 'Won lucky draw! Gain R2,500'
-      }
-    },
-    {
-      id: 'chance_gain_3',
-      type: 'chance',
-      title: 'Scratch Card Win',
-      description: 'Your scratch card turned out to be a winner!',
-      effect: {
-        type: 'cash',
-        amount: 500,
-        message: 'Scratch card win! Gain R500'
-      }
-    },
-    {
-      id: 'chance_gain_4',
-      type: 'chance',
-      title: 'Gambling Payout',
-      description: 'Your bet paid off handsomely!',
-      effect: {
-        type: 'cash',
-        amount: 2000,
-        message: 'Gambling payout! Gain R2,000'
-      }
-    },
-    {
-      id: 'chance_gain_5',
-      type: 'chance',
-      title: 'Investment Return',
-      description: 'One of your investments yielded great returns.',
-      effect: {
-        type: 'cash',
-        amount: 1500,
-        message: 'Investment return! Gain R1,500'
-      }
-    },
-    {
-      id: 'chance_gain_6',
-      type: 'chance',
-      title: 'Bonus Commission',
-      description: 'You earned an unexpected commission bonus.',
-      effect: {
-        type: 'cash',
-        amount: 1800,
-        message: 'Bonus commission! Gain R1,800'
-      }
-    },
-    {
-      id: 'chance_gain_7',
-      type: 'chance',
-      title: 'Sold Crypto at Peak',
-      description: 'Perfect timing! You sold your crypto at its peak value.',
-      effect: {
-        type: 'cash',
-        amount: 4000,
-        message: 'Sold crypto at peak! Gain R4,000'
-      }
-    },
-    {
-      id: 'chance_gain_8',
-      type: 'chance',
-      title: 'Lucky Stock Spike',
-      description: 'Your stocks suddenly spiked in value.',
-      effect: {
-        type: 'cash',
-        amount: 3500,
-        message: 'Lucky stock spike! Gain R3,500'
-      }
-    },
-    {
-      id: 'chance_gain_9',
-      type: 'chance',
-      title: 'Business Cash Influx',
-      description: 'Your business received an unexpected cash injection.',
-      effect: {
-        type: 'cash',
-        amount: 2500,
-        message: 'Business cash influx! Gain R2,500'
-      }
-    },
-    {
-      id: 'chance_gain_10',
-      type: 'chance',
-      title: 'Inheritance',
-      description: 'You received a small inheritance from a distant relative.',
-      effect: {
-        type: 'cash',
-        amount: 3000,
-        message: 'Inheritance received! Gain R3,000'
-      }
-    },
-    {
-      id: 'chance_gain_11',
-      type: 'chance',
-      title: 'Lottery Jackpot',
-      description: 'You won a small lottery jackpot!',
-      effect: {
-        type: 'cash',
-        amount: 5000,
-        message: 'Lottery jackpot! Gain R5,000'
-      }
-    },
-    {
-      id: 'chance_gain_12',
-      type: 'chance',
-      title: 'Royalty Payment',
-      description: 'You received royalty payments for your creative work.',
-      effect: {
-        type: 'cash',
-        amount: 1200,
-        message: 'Royalty payment! Gain R1,200'
-      }
-    },
-    {
-      id: 'chance_gain_13',
-      type: 'chance',
-      title: 'Freelance Project',
-      description: 'A freelance project paid better than expected.',
-      effect: {
-        type: 'cash',
-        amount: 2200,
-        message: 'Freelance project bonus! Gain R2,200'
-      }
-    },
-    {
-      id: 'chance_gain_14',
-      type: 'chance',
-      title: 'Rare Collectible Sale',
-      description: 'You sold a rare collectible for a great price.',
-      effect: {
-        type: 'cash',
-        amount: 2500,
-        message: 'Rare collectible sale! Gain R2,500'
-      }
-    },
-    {
-      id: 'chance_gain_15',
-      type: 'chance',
-      title: 'Consulting Fee',
-      description: 'You earned a consulting fee for your expertise.',
-      effect: {
-        type: 'cash',
-        amount: 1700,
-        message: 'Consulting fee! Gain R1,700'
-      }
-    },
-    {
-      id: 'chance_gain_16',
-      type: 'chance',
-      title: 'Found Gold Chain',
-      description: 'You found a gold chain on the street.',
-      effect: {
-        type: 'cash',
-        amount: 750,
-        message: 'Found gold chain! Gain R750'
-      }
-    },
-    {
-      id: 'chance_gain_17',
-      type: 'chance',
-      title: 'Crowdfunding Success',
-      description: 'Your crowdfunding campaign was a success!',
-      effect: {
-        type: 'cash',
-        amount: 1250,
-        message: 'Crowdfunding success! Gain R1,250'
-      }
-    },
-    {
-      id: 'chance_gain_18',
-      type: 'chance',
-      title: 'Gift from a Stranger',
-      description: 'A stranger gave you an unexpected gift of cash.',
-      effect: {
-        type: 'cash',
-        amount: 500,
-        message: 'Gift from a stranger! Gain R500'
-      }
-    },
-    {
-      id: 'chance_gain_19',
-      type: 'chance',
-      title: 'Venture Capital Injection',
-      description: 'Your startup received venture capital funding.',
-      effect: {
-        type: 'cash',
-        amount: 3500,
-        message: 'Venture capital injection! Gain R3,500'
-      }
-    },
-    {
-      id: 'chance_gain_20',
-      type: 'chance',
-      title: 'Unexpected Bonus at Work',
-      description: 'You received an unexpected bonus from your employer.',
-      effect: {
-        type: 'cash',
-        amount: 2000,
-        message: 'Unexpected bonus! Gain R2,000'
-      }
-    },
-
-    // Losses (20 cards)
-    {
-      id: 'chance_loss_1',
-      type: 'chance',
-      title: 'Car Accident',
-      description: 'You were in a car accident. Insurance may help.',
-      effect: {
-        type: 'cash',
-        amount: -2500,
-        message: 'Car accident! Pay R2,500 (insurance may reduce this)'
-      }
-    },
-    {
-      id: 'chance_loss_2',
-      type: 'chance',
-      title: 'House Fire',
-      description: 'Your house caught fire. Insurance may help.',
-      effect: {
-        type: 'cash',
-        amount: -3000,
-        message: 'House fire! Pay R3,000 (insurance may reduce this)'
-      }
-    },
-    {
-      id: 'chance_loss_3',
-      type: 'chance',
-      title: 'Medical Emergency',
-      description: 'Unexpected medical bills arrived.',
-      effect: {
-        type: 'cash',
-        amount: -1500,
-        message: 'Medical emergency! Pay R1,500'
-      }
-    },
-    {
-      id: 'chance_loss_4',
-      type: 'chance',
-      title: 'Mugged in an Alley',
-      description: 'You were mugged and lost some cash.',
-      effect: {
-        type: 'cash',
-        amount: -200,
-        message: 'Mugged! Lose R200'
-      }
-    },
-    {
-      id: 'chance_loss_5',
-      type: 'chance',
-      title: 'Lost Your Wallet',
-      description: 'You lost your wallet with all your cash.',
-      effect: {
-        type: 'cash',
-        amount: -1000,
-        message: 'Lost wallet! Lose R1,000'
-      }
-    },
-    {
-      id: 'chance_loss_6',
-      type: 'chance',
-      title: 'Bad Stock Crash',
-      description: 'Your stocks crashed dramatically.',
-      effect: {
-        type: 'cash',
-        amount: -2500,
-        message: 'Bad stock crash! Lose R2,500'
-      }
-    },
-    {
-      id: 'chance_loss_7',
-      type: 'chance',
-      title: 'Crypto Rug Pull',
-      description: 'Your cryptocurrency investment was a scam.',
-      effect: {
-        type: 'cash',
-        amount: -4000,
-        message: 'Crypto rug pull! Lose R4,000'
-      }
-    },
-    {
-      id: 'chance_loss_8',
-      type: 'chance',
-      title: 'Loan Shark Demands Payment',
-      description: 'Big Mike wants his money back... with interest.',
-      effect: {
-        type: 'cash',
-        amount: -5500,
-        message: 'Loan shark demands payment! Pay R5,500'
-      }
-    },
-    {
-      id: 'chance_loss_9',
-      type: 'chance',
-      title: 'Identity Theft',
-      description: 'Someone stole your identity and drained your accounts.',
-      effect: {
-        type: 'cash',
-        amount: -1000,
-        message: 'Identity theft! Lose R1,000'
-      }
-    },
-    {
-      id: 'chance_loss_10',
-      type: 'chance',
-      title: 'Gambling Addiction',
-      description: 'Your gambling habit cost you dearly.',
-      effect: {
-        type: 'cash',
-        amount: -2500,
-        message: 'Gambling addiction! Pay R2,500'
-      }
-    },
-    {
-      id: 'chance_loss_11',
-      type: 'chance',
-      title: 'Natural Disaster',
-      description: 'A natural disaster damaged your property.',
-      effect: {
-        type: 'cash',
-        amount: -3000,
-        message: 'Natural disaster! Pay R3,000'
-      }
-    },
-    {
-      id: 'chance_loss_12',
-      type: 'chance',
-      title: 'Legal Fees',
-      description: 'Unexpected legal fees have arisen.',
-      effect: {
-        type: 'cash',
-        amount: -2000,
-        message: 'Legal fees! Pay R2,000'
-      }
-    },
-    {
-      id: 'chance_loss_13',
-      type: 'chance',
-      title: 'Bank Fraud',
-      description: 'Your bank account was compromised.',
-      effect: {
-        type: 'cash',
-        amount: -1500,
-        message: 'Bank fraud! Lose R1,500'
-      }
-    },
-    {
-      id: 'chance_loss_14',
-      type: 'chance',
-      title: 'Credit Card Fraud',
-      description: 'Someone made unauthorized purchases on your card.',
-      effect: {
-        type: 'cash',
-        amount: -1250,
-        message: 'Credit card fraud! Lose R1,250'
-      }
-    },
-    {
-      id: 'chance_loss_15',
-      type: 'chance',
-      title: 'Bad Business Deal',
-      description: 'A business deal went sour and cost you money.',
-      effect: {
-        type: 'cash',
-        amount: -2500,
-        message: 'Bad business deal! Lose R2,500'
-      }
-    },
-    {
-      id: 'chance_loss_16',
-      type: 'chance',
-      title: 'Failed Startup',
-      description: 'Your startup venture failed.',
-      effect: {
-        type: 'cash',
-        amount: -3000,
-        message: 'Failed startup! Lose R3,000'
-      }
-    },
-    {
-      id: 'chance_loss_17',
-      type: 'chance',
-      title: 'Unpaid Taxes Discovered',
-      description: 'The tax authorities found unpaid taxes from previous years.',
-      effect: {
-        type: 'cash',
-        amount: -2000,
-        message: 'Unpaid taxes discovered! Pay R2,000'
-      }
-    },
-    {
-      id: 'chance_loss_18',
-      type: 'chance',
-      title: 'Family Emergency',
-      description: 'A family emergency requires financial assistance.',
-      effect: {
-        type: 'cash',
-        amount: -1800,
-        message: 'Family emergency! Pay R1,800'
-      }
-    },
-    {
-      id: 'chance_loss_19',
-      type: 'chance',
-      title: 'Car Impounded',
-      description: 'Your car was impounded and you need to pay fines.',
-      effect: {
-        type: 'cash',
-        amount: -1500,
-        message: 'Car impounded! Pay R1,500'
-      }
-    },
-    {
-      id: 'chance_loss_20',
-      type: 'chance',
-      title: 'Unexpected Repair Bill',
-      description: 'Major unexpected repairs needed on your property.',
-      effect: {
-        type: 'cash',
-        amount: -2200,
-        message: 'Unexpected repair bill! Pay R2,200'
-      }
-    },
-
-    // Movement / Player Interaction (10 cards)
-    {
-      id: 'chance_move_1',
-      type: 'chance',
-      title: 'Advance to Start',
-      description: 'Go directly to Start and collect your salary.',
-      effect: {
-        type: 'move',
-        targetPosition: 0, // Assuming position 0 is Start
-        message: 'Advance to Start and collect salary!'
-      }
-    },
-    {
-      id: 'chance_move_2',
-      type: 'chance',
-      title: 'Go to Bankruptcy',
-      description: 'Go directly to Bankruptcy. Do not collect salary.',
-      effect: {
-        type: 'move',
-        targetPosition: -1, // You'll need to set the actual bankruptcy position
-        message: 'Go directly to Bankruptcy! Do not collect salary.'
-      }
-    },
-    {
-      id: 'chance_move_3',
-      type: 'chance',
-      title: 'Swap Positions',
-      description: 'Swap positions with the player in front of you.',
-      effect: {
-        type: 'special',
-        message: 'Swap positions with the player in front of you!'
-      }
-    },
-    {
-      id: 'chance_move_4',
-      type: 'chance',
-      title: 'Swap Wallets',
-      description: 'Swap cash with the player in front of you.',
-      effect: {
-        type: 'special',
-        message: 'Swap wallets (cash only) with the player in front of you!'
-      }
-    },
-    {
-      id: 'chance_move_5',
-      type: 'chance',
-      title: 'Move Forward',
-      description: 'Move 3 steps forward.',
-      effect: {
-        type: 'move',
-        relativeMoves: 3,
-        message: 'Move 3 steps forward!'
-      }
-    },
-    {
-      id: 'chance_move_6',
-      type: 'chance',
-      title: 'Move Backward',
-      description: 'Move 2 steps back.',
-      effect: {
-        type: 'move',
-        relativeMoves: -2,
-        message: 'Move 2 steps back!'
-      }
-    },
-    {
-      id: 'chance_move_7',
-      type: 'chance',
-      title: 'Teleport to Bank',
-      description: 'Teleport to the nearest Bank tile.',
-      effect: {
-        type: 'special',
-        message: 'Teleport to the nearest Bank tile!'
-      }
-    },
-    {
-      id: 'chance_move_8',
-      type: 'chance',
-      title: 'Teleport to Business',
-      description: 'Teleport to the nearest Business tile.',
-      effect: {
-        type: 'special',
-        message: 'Teleport to the nearest Business tile!'
-      }
-    },
-    {
-      id: 'chance_move_9',
-      type: 'chance',
-      title: 'Skip Turn',
-      description: 'Skip your next turn.',
-      effect: {
-        type: 'special',
-        message: 'Skip your next turn!'
-      }
-    },
-    {
-      id: 'chance_move_10',
-      type: 'chance',
-      title: 'Play Again',
-      description: 'Play again immediately.',
-      effect: {
-        type: 'special',
-        message: 'Play again immediately!'
-      }
-    }
-  ];
-
-  private communityCards: Card[] = [
-    // Income & Positive Events (25 cards)
-    {
-      id: 'community_income_1',
-      type: 'community',
-      title: 'Insurance Payout',
-      description: 'Your insurance policy pays out.',
-      effect: {
-        type: 'cash',
-        amount: 2000,
-        message: 'Insurance payout! Collect R2,000'
-      }
-    },
-    {
-      id: 'community_income_2',
-      type: 'community',
-      title: 'Salary Increase',
-      description: 'You got a permanent salary raise!',
-      effect: {
-        type: 'salary',
-        salaryChange: 500,
-        message: 'Salary increase! +R500 to your base salary each lap'
-      }
-    },
-    {
-      id: 'community_income_3',
-      type: 'community',
-      title: 'Bonus Payout',
-      description: 'You received a performance bonus.',
-      effect: {
-        type: 'cash',
-        amount: 1500,
-        message: 'Bonus payout! Collect R1,500'
-      }
-    },
-    {
-      id: 'community_income_4',
-      type: 'community',
-      title: 'Dividend Payment',
-      description: 'Your investments paid dividends.',
-      effect: {
-        type: 'cash',
-        amount: 1000,
-        message: 'Dividend! Collect R1,000'
-      }
-    },
-    {
-      id: 'community_income_5',
-      type: 'community',
-      title: 'Tax Rebate',
-      description: 'You received a tax refund.',
-      effect: {
-        type: 'cash',
-        amount: 2500,
-        message: 'Tax rebate! Collect R2,500'
-      }
-    },
-    {
-      id: 'community_income_6',
-      type: 'community',
-      title: 'Sold Old Furniture',
-      description: 'You made money selling unused items.',
-      effect: {
-        type: 'cash',
-        amount: 750,
-        message: 'Sold old furniture! Collect R750'
-      }
-    },
-    {
-      id: 'community_income_7',
-      type: 'community',
-      title: 'Parents Helped Out',
-      description: 'Your parents gave you some financial help.',
-      effect: {
-        type: 'cash',
-        amount: 1000,
-        message: 'Parents helped out! Collect R1,000'
-      }
-    },
-    {
-      id: 'community_income_8',
-      type: 'community',
-      title: 'Won Small Lottery',
-      description: 'You won a small lottery prize.',
-      effect: {
-        type: 'cash',
-        amount: 1250,
-        message: 'Won small lottery! Collect R1,250'
-      }
-    },
-    {
-      id: 'community_income_9',
-      type: 'community',
-      title: 'Side Hustle Profit',
-      description: 'Your side business made a profit.',
-      effect: {
-        type: 'cash',
-        amount: 500,
-        message: 'Side hustle profit! Collect R500'
-      }
-    },
-    {
-      id: 'community_income_10',
-      type: 'community',
-      title: 'Loan Repayment',
-      description: 'A friend repaid their loan to you.',
-      effect: {
-        type: 'cash',
-        amount: 700,
-        message: 'Loan repayment from friend! Collect R700'
-      }
-    },
-    {
-      id: 'community_income_11',
-      type: 'community',
-      title: 'Salary Increase',
-      description: 'Another permanent salary raise!',
-      effect: {
-        type: 'salary',
-        salaryChange: 500,
-        message: 'Salary increase! +R500 to your base salary each lap'
-      }
-    },
-    {
-      id: 'community_income_12',
-      type: 'community',
-      title: 'Parents Support',
-      description: 'Your parents helped you out again.',
-      effect: {
-        type: 'cash',
-        amount: 1000,
-        message: 'Parents helped out! Collect R1,000'
-      }
-    },
-    {
-      id: 'community_income_13',
-      type: 'community',
-      title: 'Received Bursary',
-      description: 'You were awarded a bursary.',
-      effect: {
-        type: 'cash',
-        amount: 1000,
-        message: 'Received bursary! Collect R1,000'
-      }
-    },
-    {
-      id: 'community_income_14',
-      type: 'community',
-      title: 'Side Hustle Success',
-      description: 'Your side business did well this month.',
-      effect: {
-        type: 'cash',
-        amount: 500,
-        message: 'Side hustle profit! Collect R500'
-      }
-    },
-    {
-      id: 'community_income_15',
-      type: 'community',
-      title: 'Freelance Work',
-      description: 'You completed a freelance project.',
-      effect: {
-        type: 'cash',
-        amount: 1200,
-        message: 'Freelance work completed! Collect R1,200'
-      }
-    },
-    {
-      id: 'community_income_16',
-      type: 'community',
-      title: 'Annual Bonus',
-      description: 'You received your annual performance bonus.',
-      effect: {
-        type: 'special',
-        message: 'Annual bonus! Collect R2,000 after certain number of laps'
-      }
-    },
-    {
-      id: 'community_income_17',
-      type: 'community',
-      title: 'Consulting Fee',
-      description: 'You earned a consulting fee.',
-      effect: {
-        type: 'cash',
-        amount: 1500,
-        message: 'Consulting fee! Collect R1,500'
-      }
-    },
-    {
-      id: 'community_income_18',
-      type: 'community',
-      title: 'Savings Interest',
-      description: 'Your savings account earned interest.',
-      effect: {
-        type: 'cash',
-        amount: 1000,
-        message: 'Savings interest payout! Collect R1,000'
-      }
-    },
-    {
-      id: 'community_income_19',
-      type: 'community',
-      title: 'Hackathon Prize',
-      description: 'You won a hackathon competition.',
-      effect: {
-        type: 'cash',
-        amount: 1500,
-        message: 'Won hackathon prize! Collect R1,500'
-      }
-    },
-    {
-      id: 'community_income_20',
-      type: 'community',
-      title: 'Family Inheritance',
-      description: 'You received a family inheritance.',
-      effect: {
-        type: 'cash',
-        amount: 2500,
-        message: 'Family inheritance! Collect R2,500'
-      }
-    },
-    {
-      id: 'community_income_21',
-      type: 'community',
-      title: 'Scholarship Refund',
-      description: 'Your scholarship paid out a refund.',
-      effect: {
-        type: 'cash',
-        amount: 1000,
-        message: 'Scholarship refund! Collect R1,000'
-      }
-    },
-    {
-      id: 'community_income_22',
-      type: 'community',
-      title: 'Investment Matured',
-      description: 'Your long-term investment matured.',
-      effect: {
-        type: 'asset',
-        message: 'Investment matured! Collect R2,500 if you have investments'
-      }
-    },
-    {
-      id: 'community_income_23',
-      type: 'community',
-      title: 'Rental Income',
-      description: 'You received rental income from property.',
-      effect: {
-        type: 'cash',
-        amount: 1800,
-        message: 'Rental income! Collect R1,800'
-      }
-    },
-    {
-      id: 'community_income_24',
-      type: 'community',
-      title: 'Commission Payment',
-      description: 'You earned a sales commission.',
-      effect: {
-        type: 'cash',
-        amount: 900,
-        message: 'Commission payment! Collect R900'
-      }
-    },
-    {
-      id: 'community_income_25',
-      type: 'community',
-      title: 'Tax Return',
-      description: 'You received an unexpected tax return.',
-      effect: {
-        type: 'cash',
-        amount: 1300,
-        message: 'Tax return! Collect R1,300'
-      }
-    },
-
-    // Expenses & Negative Events (25 cards)
-    {
-      id: 'community_expense_1',
-      type: 'community',
-      title: 'Insurance Premium',
-      description: 'Your insurance premium is due.',
-      effect: {
-        type: 'cash',
-        amount: -500,
-        message: 'Insurance premium due! Pay R500'
-      }
-    },
-    {
-      id: 'community_expense_2',
-      type: 'community',
-      title: 'Medical Bill',
-      description: 'Unexpected medical expenses.',
-      effect: {
-        type: 'cash',
-        amount: -1000,
-        message: 'Medical bill! Pay R1,000'
-      }
-    },
-    {
-      id: 'community_expense_3',
-      type: 'community',
-      title: 'Car Repairs',
-      description: 'Your car needs urgent repairs.',
-      effect: {
-        type: 'cash',
-        amount: -1500,
-        message: 'Car repairs! Pay R1,500'
-      }
-    },
-    {
-      id: 'community_expense_4',
-      type: 'community',
-      title: 'Business Income Reduction',
-      description: 'Your business income has decreased.',
-      effect: {
-        type: 'salary',
-        salaryChange: -750,
-        message: 'Business income reduces! Pay R750 less per lap'
-      }
-    },
-    {
-      id: 'community_expense_5',
-      type: 'community',
-      title: 'Business Maintenance',
-      description: 'Business maintenance costs are due.',
-      effect: {
-        type: 'cash',
-        amount: -1250,
-        message: 'Business maintenance! Pay R1,250'
-      }
-    },
-    {
-      id: 'community_expense_6',
-      type: 'community',
-      title: 'School Fees',
-      description: 'School fees are due for payment.',
-      effect: {
-        type: 'cash',
-        amount: -1500,
-        message: 'School fees! Pay R1,500'
-      }
-    },
-    {
-      id: 'community_expense_7',
-      type: 'community',
-      title: 'Home Repairs',
-      description: 'Unexpected home maintenance costs.',
-      effect: {
-        type: 'cash',
-        amount: -1200,
-        message: 'Home repairs! Pay R1,200'
-      }
-    },
-    {
-      id: 'community_expense_8',
-      type: 'community',
-      title: 'Tax Filing Cost',
-      description: 'Professional tax filing services cost.',
-      effect: {
-        type: 'cash',
-        amount: -1000,
-        message: 'Tax filing cost! Pay R1,000'
-      }
-    },
-    {
-      id: 'community_expense_9',
-      type: 'community',
-      title: 'Grocery Overspend',
-      description: 'You overspent on groceries this month.',
-      effect: {
-        type: 'cash',
-        amount: -500,
-        message: 'Grocery overspend! Pay R500'
-      }
-    },
-    {
-      id: 'community_expense_10',
-      type: 'community',
-      title: 'Phone Upgrade',
-      description: 'You upgraded your phone plan.',
-      effect: {
-        type: 'cash',
-        amount: -1000,
-        message: 'Phone upgrade! Pay R1,000'
-      }
-    },
-    {
-      id: 'community_expense_11',
-      type: 'community',
-      title: 'Clothing Purchase',
-      description: 'You bought new clothes.',
-      effect: {
-        type: 'cash',
-        amount: -800,
-        message: 'Clothing purchase! Pay R800'
-      }
-    },
-    {
-      id: 'community_expense_12',
-      type: 'community',
-      title: 'Electricity Bill',
-      description: 'Your electricity bill is higher than expected.',
-      effect: {
-        type: 'cash',
-        amount: -600,
-        message: 'Electricity bill! Pay R600'
-      }
-    },
-    {
-      id: 'community_expense_13',
-      type: 'community',
-      title: 'Water Bill',
-      description: 'Unexpected high water bill.',
-      effect: {
-        type: 'cash',
-        amount: -450,
-        message: 'Water bill! Pay R450'
-      }
-    },
-    {
-      id: 'community_expense_14',
-      type: 'community',
-      title: 'Rent Increase',
-      description: 'Your rent has been increased.',
-      effect: {
-        type: 'cash',
-        amount: -700,
-        message: 'Rent increase! Pay R700'
-      }
-    },
-    {
-      id: 'community_expense_15',
-      type: 'community',
-      title: 'Holiday Trip',
-      description: 'You took a holiday trip.',
-      effect: {
-        type: 'cash',
-        amount: -1200,
-        message: 'Holiday trip! Pay R1,200'
-      }
-    },
-    {
-      id: 'community_expense_16',
-      type: 'community',
-      title: 'Gym Membership',
-      description: 'Your gym membership renewed.',
-      effect: {
-        type: 'cash',
-        amount: -600,
-        message: 'Gym membership renewal! Pay R600'
-      }
-    },
-    {
-      id: 'community_expense_17',
-      type: 'community',
-      title: 'Car Service',
-      description: 'Regular car service required.',
-      effect: {
-        type: 'cash',
-        amount: -800,
-        message: 'Car service! Pay R800'
-      }
-    },
-    {
-      id: 'community_expense_18',
-      type: 'community',
-      title: 'Parking Fine',
-      description: 'You received a parking ticket.',
-      effect: {
-        type: 'cash',
-        amount: -500,
-        message: 'Parking fine! Pay R500'
-      }
-    },
-    {
-      id: 'community_expense_19',
-      type: 'community',
-      title: 'Dentist Bill',
-      description: 'Dental work needed.',
-      effect: {
-        type: 'cash',
-        amount: -850,
-        message: 'Dentist bill! Pay R850'
-      }
-    },
-    {
-      id: 'community_expense_20',
-      type: 'community',
-      title: 'Car License Renewal',
-      description: 'Your car license needs renewal.',
-      effect: {
-        type: 'cash',
-        amount: -1000,
-        message: 'Car license renewal! Pay R1,000'
-      }
-    },
-    {
-      id: 'community_expense_21',
-      type: 'community',
-      title: 'Medical Aid Increase',
-      description: 'Your medical aid premiums increased.',
-      effect: {
-        type: 'cash',
-        amount: -750,
-        message: 'Medical aid increase! Pay R750'
-      }
-    },
-    {
-      id: 'community_expense_22',
-      type: 'community',
-      title: 'Pet Expenses',
-      description: 'Unexpected pet medical expenses.',
-      effect: {
-        type: 'cash',
-        amount: -600,
-        message: 'Pet expenses! Pay R600'
-      }
-    },
-    {
-      id: 'community_expense_23',
-      type: 'community',
-      title: 'Internet Subscription',
-      description: 'Your internet subscription is due.',
-      effect: {
-        type: 'cash',
-        amount: -500,
-        message: 'Internet subscription! Pay R500'
-      }
-    },
-    {
-      id: 'community_expense_24',
-      type: 'community',
-      title: 'Online Scam',
-      description: 'You fell victim to an online scam.',
-      effect: {
-        type: 'cash',
-        amount: -1000,
-        message: 'Scammed online! Lose R1,000'
-      }
-    },
-    {
-      id: 'community_expense_25',
-      type: 'community',
-      title: 'Credit Card Bill',
-      description: 'Your credit card bill is due.',
-      effect: {
-        type: 'cash',
-        amount: -1250,
-        message: 'Credit card bill! Pay R1,250'
-      }
-    }
-  ];
+  private chanceCards = BoardData.CHANCE_CARDS;
+  private communityCards = BoardData.COMMUNITY_CARDS;
 
   createGame(gameId: string, hostPlayerId: number, gameMode: 'laps' | 'elimination'): GameState {
     const gameState: GameState = {
@@ -1124,7 +24,9 @@ export class GameEngine extends EventEmitter {
       chanceDiscard: [],
       gameMode,
       maxLaps: gameMode === 'laps' ? 10 : undefined,
-      createdAt: new Date()
+      createdAt: new Date(),
+      turnCounter: 0,
+      turnOrder: [],
     };
 
     this.games.set(gameId, gameState);
@@ -1191,6 +93,9 @@ export class GameEngine extends EventEmitter {
     // Check if player passed START
     if (newPosition < oldPosition || (oldPosition + spaces >= game.board.blocks.length)) {
       player.lapsCompleted++;
+      // check business credit
+      const state = this.games.get(gameId)!;
+      creditBusinessIncome(state, player);
       player.cash += player.salary;
       this.emit('player-passed-start', { gameId, playerId, salary: player.salary });
     }
@@ -1262,52 +167,168 @@ export class GameEngine extends EventEmitter {
       case 'salary':
         player.salary += card.effect.salaryChange || 0;
         break;
-    }
+      case 'special':
+        // add to user's hand
+        switch (card.title) {
+          case 'Swap Positions': {
+            // Swap Positions with player in front
+            const order = game.turnOrder;
+            const idx = order.indexOf(playerId);
+            if (idx > 0) {
+              const frontPlayerId = order[ idx - 1 ];
+              const frontPlayer = game.players.get(frontPlayerId);
+              if (frontPlayer) {
+                const tempPos = player.position;
+                player.position = frontPlayer.position;
+                frontPlayer.position = tempPos;
+                this.emit('card-swap-positions', { gameId, playerId, frontPlayerId });
+              }
+            }
+            break;
+          }
+          case 'Swap Wallets': { // Swap Wallets with player in front
+            const order = game.turnOrder;
+            const idx = order.indexOf(playerId);
+            if (idx > 0) {
+              const frontPlayerId = order[ idx - 1 ];
+              const frontPlayer = game.players.get(frontPlayerId);
+              if (frontPlayer) {
+                const tempCash = player.cash;
+                player.cash = frontPlayer.cash;
+                frontPlayer.cash = tempCash;
+                this.emit('card-swap-wallets', { gameId, playerId, frontPlayerId });
+              }
+            }
+            break;
+          }
+          case 'Teleport to Bank': { // Teleport to Bank
+            const dest = this.findNextBlockOfType(game, player.position, 'bank');
+            if (dest !== null) {
+              this.teleportTo(game, player, dest);
+              const block = game.board.blocks[ dest ];
+              this.emit('card-teleport', { gameId, playerId, to: 'bank', index: dest });
+              // Resolve the bank block immediately
+              this.handleBankBlock(gameId, playerId);
+            }
+            break;
+          }
+          case 'Teleport to Business': { // Teleport to Business
+            const dest = this.findNextBlockOfType(game, player.position, 'business');
+            if (dest !== null) {
+              this.teleportTo(game, player, dest);
+              const block = game.board.blocks[ dest ];
+              this.emit('card-teleport', { gameId, playerId, to: 'business', index: dest });
+              // Resolve business landing (toll/opportunity)
+              this.handleBusinessBlock(gameId, playerId, block);
+            }
+            break;
+          }
+          case 'Skip Turn': { // Skip Turn (one round)
+            const expiresTurn = game.turnCounter + 1;
+            player.statusEffects = player.statusEffects ?? [];
+            player.statusEffects.push({ type: 'skip_turn', expiresTurn });
+            this.emit('card-skip-turn', { gameId, playerId, expiresTurn });
+            break;
+          }
+          case 'Play Again': { // Play Again (extra immediate turn)
+            // call player to roll again
 
-    this.emit('card-effect-applied', { gameId, playerId, card, newPlayerState: player });
+            this.emit('card-play-again', { gameId, playerId });
+            player.cards.push(card);
+
+            break;
+          }
+          default:
+            // No effect or unhandled type
+            break;
+        }
+
+        this.emit('card-effect-applied', { gameId, playerId, card, newPlayerState: player });
+    }
+  };
+
+
+  private findNextBlockOfType(game: GameState, fromPos: number, type: Block[ 'type' ]): number | null {
+    const n = game.board.blocks.length;
+    for (let i = 1; i <= n; i++) {
+      const idx = (fromPos + i) % n;
+      if (game.board.blocks[ idx ].type === type) return idx;
+    }
+    return null;
+  }
+
+  // Teleport without awarding salary for crossing start (teleport ≠ movement)
+  private teleportTo(game: GameState, player: Player, destIndex: number) {
+    player.position = destIndex;
   }
 
   nextTurn(gameId: string): void {
-const game = this.games.get(gameId)!;
-    const playerIds = Array.from(game.players.keys()).filter(id =>
-      !game.players.get(id)!.isBankrupt
-    );
+    const game = this.games.get(gameId)!;
+    const currentId = game.currentPlayerId;
+    const current = game.players.get(currentId)!;
 
-    if (playerIds.length <= 1) {
-      this.endGame(gameId, 'elimination');
-      return;
+    // If an extra turn is queued for current player, consume it and keep turn
+    if (game.extraTurnForPlayerId === currentId) {
+      game.extraTurnForPlayerId = undefined;
+      this.emit('turn-retained', { gameId, playerId: currentId, reason: 'play_again' });
+      return; // same current player keeps playing
     }
 
-    let currentIndex = playerIds.indexOf(game.currentPlayerId);
-    let nextPlayerId: number;
-    let attempts = 0;
-    
-    do {
-      currentIndex = (currentIndex + 1) % playerIds.length;
-      nextPlayerId = playerIds[currentIndex];
-      attempts++;
-      
-      // Prevent infinite loop
-      if (attempts > playerIds.length) {
-        break;
+    // Advance pointer to next active (non-bankrupt) player
+    const order = game.turnOrder; // e.g., array of playerIds
+    const startIdx = order.indexOf(currentId);
+    let nextIdx = (startIdx + 1) % order.length;
+
+    // Find next active player
+    let nextId = order[ nextIdx ];
+    while (game.players.get(nextId)?.isBankrupt) {
+      nextIdx = (nextIdx + 1) % order.length;
+      nextId = order[ nextIdx ];
+      if (nextId === currentId) break; // all bankrupt? edge case
+    }
+
+    // Check if next player must skip
+    const nextPlayer = game.players.get(nextId)!;
+    const now = game.turnCounter;
+
+    const effects = nextPlayer.statusEffects ?? [];
+    const skipIdx = effects.findIndex(e => e.type === 'skip_turn' && now <= e.expiresTurn);
+    if (skipIdx >= 0) {
+      // Consume skip and jump again
+      effects.splice(skipIdx, 1);
+      this.emit('turn-skipped', { gameId, playerId: nextId, reason: 'skip_turn' });
+
+      // Move to the following player
+      let altIdx = (nextIdx + 1) % order.length;
+      let altId = order[ altIdx ];
+      while (game.players.get(altId)?.isBankrupt) {
+        altIdx = (altIdx + 1) % order.length;
+        altId = order[ altIdx ];
+        if (altId === currentId) break;
       }
-    } while (game.players.get(nextPlayerId)?.skipNextTurn);
-    
-    // Reset skip flag for the player who had it set
-    const currentPlayer = game.players.get(game.currentPlayerId);
-    if (currentPlayer?.skipNextTurn) {
-      currentPlayer.skipNextTurn = false;
+      game.currentPlayerId = altId;
+    } else {
+      game.currentPlayerId = nextId;
     }
-    
-    game.currentPlayerId = nextPlayerId;
 
-    this.emit('turn-changed', { gameId, currentPlayerId: game.currentPlayerId });
+    // Increment global turn counter after assigning next player (or at your preferred spot)
+    game.turnCounter += 1;
+
+    this.emit('game:turn-changed', { gameId, playerId: game.currentPlayerId, turnCounter: game.turnCounter });
   }
 
   private handleBankruptcy(gameId: string, playerId: number): void {
     const game = this.games.get(gameId)!;
     const player = game.players.get(playerId)!;
 
+    // check if they have insurance card
+    const insuranceCardIndex = player.cards.findIndex(card => card.effect.type === 'special' && card.title === 'insurance');
+    if (insuranceCardIndex !== -1) {
+      // use insurance card to avoid bankruptcy
+      const usedCard = player.cards.splice(insuranceCardIndex, 1)[ 0 ];
+      this.emit('insurance-used', { gameId, playerId, card: usedCard });
+      return;
+    }
     player.isBankrupt = true;
     player.isActive = false;
 
@@ -1316,29 +337,99 @@ const game = this.games.get(gameId)!;
       player.cash += Math.floor(asset.purchasePrice * asset.sellbackMultiplier);
     });
 
+    player.cash = 0;
     player.assets = [];
-    player.cards = [];
 
+    // skip a third of laps left if in laps mode
+    if (game.gameMode === 'laps' && game.maxLaps) {
+      const lapsLeft = game.maxLaps - player.lapsCompleted;
+      const lapsToSkip = Math.ceil(lapsLeft / 3);
+      player.lapsCompleted += lapsToSkip;
+    }
     this.emit('player-bankrupt', { gameId, playerId });
   }
 
-  private endGame(gameId: string, reason: 'laps' | 'elimination'): void {
+
+  private async endGame(gameId: string, reason: 'laps' | 'elimination'): Promise<void> {
     const game = this.games.get(gameId)!;
     game.gamePhase = 'finished';
     game.finishedAt = new Date();
 
-    const winners = this.calculateWinners(game);
-    this.emit('game-ended', { gameId, winners, reason });
+    const winners = await this.calculateWinners(game);
+
+    try {
+      await awardXpForGame(gameId, winners.map(w => ({ userId: w.userId, rank: w.rank })));
+    } catch (e) {
+      logger.error(`endGame: XP awarding failed for ${gameId}`, e);
+    }
+
+    const xpRewards = [ 100, 75, 50, 25, 10, 5 ];
+    this.emit('game-ended', { gameId, winners, reason, xpRewards });
   }
 
-  private calculateWinners(game: GameState): Player[] {
+  private async calculateWinners(game: GameState): Promise<RankedWinner[]> {
     const activePlayers = Array.from(game.players.values()).filter(p => !p.isBankrupt);
 
-    return activePlayers.sort((a, b) => {
-      const netWorthA = this.calculateNetWorth(a);
-      const netWorthB = this.calculateNetWorth(b);
-      return netWorthB - netWorthA;
+    // 1) Compute net worths first so we can sort deterministically
+    const withWorth = activePlayers.map(p => ({
+      player: p,
+      username: p.username,
+      netWorth: this.calculateNetWorth(p), // your existing function
+    }));
+
+    // 2) Sort: netWorth DESC, lapsCompleted DESC, cash DESC, username ASC
+    withWorth.sort((a, b) => {
+      if (b.netWorth !== a.netWorth) return b.netWorth - a.netWorth;
+      if (b.player.lapsCompleted !== a.player.lapsCompleted) return b.player.lapsCompleted - a.player.lapsCompleted;
+      if (b.player.cash !== a.player.cash) return b.player.cash - a.player.cash;
+      return a.username.localeCompare(b.username);
     });
+
+    // 3) Resolve user_ids for all usernames in one DB call
+    const usernames = Array.from(new Set(withWorth.map(w => w.username)));
+    const client = await pool.connect();
+    try {
+      const res = await client.query<{ user_id: number; username: string }>(
+        `select user_id, username
+       from public.users
+       where username = any($1)`,
+        [ usernames ]
+      );
+
+      const nameToId = new Map(res.rows.map(r => [ r.username, r.user_id ] as const));
+
+      // 4) Build ranked winners list; if a username is missing, skip with a warn
+      const ranked: RankedWinner[] = [];
+      let currentRank = 0;
+      let lastWorth: number | null = null;
+
+      for (let i = 0; i < withWorth.length; i++) {
+        const w = withWorth[ i ];
+        const userId = nameToId.get(w.username);
+        if (!userId) {
+          logger.warn(`calculateWinners: no user_id for username="${w.username}", skipping for XP award.`);
+          continue;
+        }
+
+        // Dense ranking (1,2,2,4) or competition style? We'll use competition style:
+        if (lastWorth === null || w.netWorth !== lastWorth) {
+          currentRank = i + 1; // position index +1
+          lastWorth = w.netWorth;
+        }
+
+        ranked.push({
+          userId,
+          username: w.username,
+          rank: currentRank,
+          netWorth: w.netWorth,
+          player: w.player,
+        });
+      }
+
+      return ranked;
+    } finally {
+      client.release();
+    }
   }
 
   private calculateNetWorth(player: Player): number {
@@ -1381,36 +472,244 @@ const game = this.games.get(gameId)!;
 
   private handleBusinessBlock(gameId: string, playerId: number, block: Block): void {
     // Handle buying/selling business assets
+    // if not owner, pay business income to owner
+    const game = this.games.get(gameId)!;
+    const player = game.players.get(playerId)!;
+
+    player.statusEffects = player.statusEffects ?? [];
+    const skipBusiness = player.statusEffects.find(se => se.type === 'vacation' && se.skipBusinessPayments && se.expiresTurn === game.turnCounter);
+    if (skipBusiness) {
+      this.emit('business-income-skipped', { gameId, playerId, block });
+      return;
+    }
+
+    if (block.asset && block.asset.ownerId !== undefined && block.asset.ownerId !== playerId) {
+      const owner = game.players.get(block.asset.ownerId);
+      if (owner) {
+        const income = block.asset.incomePerLap || 0;
+        if (player.cash >= income) {
+          player.cash -= income;
+          owner.cash += income;
+          this.emit('business-income-paid', { gameId, fromPlayerId: playerId, toPlayerId: owner.id, amount: income });
+        } else {
+          // Player can't afford to pay business income
+          this.emit('business-income-cannot-afford', { gameId, fromPlayerId: playerId, toPlayerId: owner.id, amount: income });
+        }
+      }
+    }
     this.emit('business-opportunity', { gameId, playerId, block });
   }
 
   private handleActionBlock(gameId: string, playerId: number, block: Block): void {
     // Handle lifestyle costs, investments, etc.
+    if (block.type !== 'action') return;
+
+    switch (block.action) {
+      case 'pay_rent':
+        this.handleLifestyleBlock(gameId, playerId, block);
+        break;
+      case 'roll_dice':
+        // Player gets to roll again
+        this.emit('action-roll-dice', { gameId, playerId });
+        break;
+      case 'pay_transport':
+        this.handleLifestyleBlock(gameId, playerId, block);
+        break;
+      case 'give_to_charity':
+        this.handleLifestyleBlock(gameId, playerId, block);
+        break;
+      case 'big_recession':
+        this.handleLifestyleBlock(gameId, playerId, block);
+        break;
+      case 'freelance_gig':
+        this.handleLifestyleBlock(gameId, playerId, block);
+        break;
+      case 'demoted':
+        // lose half salary
+        const game = this.games.get(gameId)!;
+        const player = game.players.get(playerId)!;
+        player.salary = Math.floor(player.salary / 2);
+        this.emit('action-demoted', { gameId, playerId, newSalary: player.salary });
+        break;
+      case 'gamble':
+        const game1 = this.games.get(gameId)!;
+        const player1 = game1.players.get(playerId)!;
+        player1.cash += block.cost || 0; // cost can be negative or positive
+        this.emit('action-gamble', { gameId, playerId, amount: block.cost || 0 });
+        break;
+      case 'business_upgrade':
+        // upgrade owned business
+        const game2 = this.games.get(gameId)!;
+        const player2 = game2.players.get(playerId)!;
+        const owned = getOwnedBusinesses(player2);
+        if (owned.length === 0) {
+          this.emit('game:action-error', { gameId, playerId, message: 'You do not own any businesses to upgrade.' });
+          break;
+        }
+
+        for (const biz of owned) {
+          biz.incomePerLap = (biz.incomePerLap || 0) + 500; // increase income by 500 per lap
+        }
+        break;
+      case 'allowance':
+        this.handleLifestyleBlock(gameId, playerId, block);
+        break;
+      case 'investment':
+        this.handleInvestmentBlock(gameId, playerId);
+        break;
+      case 'tax_collector':
+        // pay percentage of salary
+        const game3 = this.games.get(gameId)!;
+        const player3 = game3.players.get(playerId)!;
+        const tax = calculateTax(player3.salary);
+        if (player3.cash >= tax) {
+          player3.cash -= tax;
+          this.emit('action-tax-collected', { gameId, playerId, amount: tax });
+        } else {
+          this.emit('action-tax-cannot-afford', { gameId, playerId, amount: tax });
+        }
+        break;
+      case 'slow_paced':
+        // recent business losses
+        const state = this.getGameState(gameId);
+        if (!state) break;
+        const player4 = state.players.get(playerId);
+        if (!player4) break;
+
+        // Effect: halve business income for next lap only
+        const expiresTurn = state.turnCounter + 1;
+
+        const effect: StatusEffect = {
+          type: 'slow_paced',
+          expiresTurn,
+          multiplier: 0.5
+        };
+
+        player4.statusEffects = player4.statusEffects ?? [];
+        player4.statusEffects.push(effect);
+
+        this.emit('game:status-effect', {
+          gameId,
+          playerId,
+          effect: 'slow_paced',
+          expiresTurn,
+          multiplier: 0.5
+        });
+        break;
+      case 'the_scammer':
+        // lose cash
+        this.handleLifestyleBlock(gameId, playerId, block);
+        break;
+      case 'take_vacation':
+        // don't pay lifestyle or business costs next lap
+        const state1 = this.getGameState(gameId);
+        if (!state1) break;
+        const player5 = state1.players.get(playerId);
+        if (!player5) break;
+
+        // Effect: skip lifestyle and business costs for next lap
+        const expiresTurn1 = state1.turnCounter + 1;
+
+        const effect1: StatusEffect = {
+          type: 'vacation',
+          expiresTurn: expiresTurn1,
+          skipLifestyle: true,
+          skipBusinessPayments: true
+        };
+
+        player5.statusEffects = player5.statusEffects ?? [];
+        player5.statusEffects.push(effect1);
+
+        this.emit('game:status-effect', {
+          gameId,
+          playerId,
+          effect: 'vacation',
+          expiresTurn: expiresTurn1,
+          skipLifestyle: true,
+          skipBusinessPayments: true
+        });
+        break;
+      case 'tax_refunds':
+        // get cash
+        this.handleLifestyleBlock(gameId, playerId, block);
+        break;
+      case 'upsurance':
+        // get insurance card
+        // pick up community card
+        this.drawCard(gameId, playerId, 'community');
+        this.emit('action-upsurance', { gameId, playerId });
+        break;
+      case 'volunteer_day':
+        // skip a turn
+        const game4 = this.games.get(gameId)!;
+        const player6 = game4.players.get(playerId)!;
+        player6.skipNextTurn = true;
+        this.emit('action-volunteer-day', { gameId, playerId });
+        break;
+
+      default:
+        break;
+    }
     this.emit('action-required', { gameId, playerId, block });
   }
 
   // HUD updates and other utility methods would go here
-  private updateHUD(gameId: string): void {
+  public updateHUD(gameId: string): void {
     const game = this.games.get(gameId)!;
     this.emit('hud-update', { gameId, players: Array.from(game.players.values()) });
   }
 
 
-  private handleBankBlock(gameId: string, playerId: number): void {
-    // Handle bank-related actions (loans, etc.)
+  public handleBankBlock(gameId: string, playerId: number): void {
+    // Handle bank-related actions
+    // take out loans, pay loans
+
+
+    // user can take out loan or pay existing loan
+
     this.emit('bank-action', { gameId, playerId });
   }
 
-  private handleInvestmentBlock(gameId: string, playerId: number): void {
+  public handleInvestmentBlock(gameId: string, playerId: number): void {
     // Handle investment opportunities
+
+    // check that user has investment card
+    const game = this.games.get(gameId)!;
+    const player = game.players.get(playerId)!;
+    const hasInvestmentCard = player.cards.some(card => card.effect.type === 'asset');
+
+    if (!hasInvestmentCard) {
+      this.emit('investment-no-card', { gameId, playerId });
+      return;
+    } else {
+      // fetch investment block details
+      const investmentBlock = game.board.blocks.find(b => b.type === 'action' && b.name === 'Investment');
+      if (!investmentBlock) {
+        this.emit('investment-no-block', { gameId, playerId });
+        return;
+      } else {
+        // add amount to player
+        const investmentReturn = investmentBlock.cost || 2500; // default return if not specified
+        player.cash += investmentReturn;
+        this.emit('investment-return', { gameId, playerId, amount: investmentReturn });
+      }
+    }
     this.emit('investment-opportunity', { gameId, playerId });
   }
 
-  private handleLifestyleBlock(gameId: string, playerId: number, block: Block): void {
+  public handleLifestyleBlock(gameId: string, playerId: number, block: Block): void {
     // Handle lifestyle expenses
     const player = this.games.get(gameId)!.players.get(playerId)!;
     const cost = block.cost || 500; // Default cost if not specified
-    
+
+    if (!player || player.isBankrupt) return;
+
+    if (player.statusEffects?.some(e => e.type === 'vacation')) {
+      // Player is on vacation, skip lifestyle expense
+      this.emit('lifestyle-skipped', { gameId, playerId });
+      return;
+    }
+
     if (player.cash >= cost) {
       player.cash -= cost;
       this.emit('lifestyle-expense', { gameId, playerId, amount: cost });
@@ -1424,9 +723,9 @@ const game = this.games.get(gameId)!;
   takeLoan(gameId: string, playerId: number, amount: number): boolean {
     const game = this.games.get(gameId);
     const player = game?.players.get(playerId);
-    
+
     if (!game || !player || player.isBankrupt) return false;
-    
+
     player.cash += amount;
     player.loans.push({
       id: `loan_${Date.now()}`,
@@ -1435,7 +734,7 @@ const game = this.games.get(gameId)!;
       source: 'bank',
       lapsRemaining: 5 // 5 turns to repay
     });
-    
+
     this.emit('loan-taken', { gameId, playerId, amount });
     return true;
   }
@@ -1443,22 +742,22 @@ const game = this.games.get(gameId)!;
   repayLoan(gameId: string, playerId: number, loanId: string): boolean {
     const game = this.games.get(gameId);
     const player = game?.players.get(playerId);
-    
+
     if (!game || !player || player.isBankrupt) return false;
-    
+
     const loanIndex = player.loans.findIndex(loan => loan.id === loanId);
     if (loanIndex === -1) return false;
-    
-    const loan = player.loans[loanIndex];
+
+    const loan = player.loans[ loanIndex ];
     const repaymentAmount = loan.amount * (1 + loan.interestRate);
-    
+
     if (player.cash >= repaymentAmount) {
       player.cash -= repaymentAmount;
       player.loans.splice(loanIndex, 1);
       this.emit('loan-repaid', { gameId, playerId, amount: repaymentAmount });
       return true;
     }
-    
+
     return false;
   }
 
@@ -1466,9 +765,9 @@ const game = this.games.get(gameId)!;
     const game = this.games.get(gameId);
     const player = game?.players.get(playerId);
     const asset = game?.board.blocks.find(b => b.id.toString() === assetId && b.type === 'business');
-    
+
     if (!game || !player || !asset || player.isBankrupt) return false;
-    
+
     if (player.cash >= asset.cost!) {
       player.cash -= asset.cost!;
       player.assets.push({
@@ -1480,29 +779,29 @@ const game = this.games.get(gameId)!;
         blockPosition: asset.asset?.blockPosition || 0,
         incomePerLap: asset.asset?.incomePerLap || 0
       });
-      
+
       this.emit('asset-purchased', { gameId, playerId, asset });
       return true;
     }
-    
+
     return false;
   }
 
   sellAsset(gameId: string, playerId: number, assetId: string): boolean {
     const game = this.games.get(gameId);
     const player = game?.players.get(playerId);
-    
+
     if (!game || !player || player.isBankrupt) return false;
-    
+
     const assetIndex = player.assets.findIndex(a => a.id === assetId);
     if (assetIndex === -1) return false;
-    
-    const asset = player.assets[assetIndex];
+
+    const asset = player.assets[ assetIndex ];
     const sellbackValue = Math.floor(asset.purchasePrice * asset.sellbackMultiplier);
-    
+
     player.cash += sellbackValue;
     player.assets.splice(assetIndex, 1);
-    
+
     this.emit('asset-sold', { gameId, playerId, asset, amount: sellbackValue });
     return true;
   }
@@ -1511,15 +810,15 @@ const game = this.games.get(gameId)!;
   public getPlayerBalanceSheet(gameId: string, playerId: number) {
     const game = this.games.get(gameId);
     const player = game?.players.get(playerId);
-    
+
     if (!game || !player) return null;
-    
+
     const assetValue = player.assets.reduce((sum, asset) =>
       sum + (asset.purchasePrice * asset.sellbackMultiplier), 0
     );
     const debtValue = player.loans.reduce((sum, loan) => sum + loan.amount, 0);
     const netWorth = player.cash + assetValue - debtValue;
-    
+
     return {
       cash: player.cash,
       assetValue,
@@ -1534,7 +833,7 @@ const game = this.games.get(gameId)!;
   public getBoardOverview(gameId: string) {
     const game = this.games.get(gameId);
     if (!game) return null;
-    
+
     return {
       blocks: game.board.blocks.map((block, index) => ({
         id: block.id,
@@ -1555,9 +854,9 @@ const game = this.games.get(gameId)!;
   public getPlayerStats(gameId: string, playerId: number) {
     const game = this.games.get(gameId);
     const player = game?.players.get(playerId);
-    
+
     if (!game || !player) return null;
-    
+
     return {
       id: player.id,
       name: player.username,
@@ -1572,4 +871,109 @@ const game = this.games.get(gameId)!;
       isBankrupt: player.isBankrupt
     };
   }
+
+
+}
+
+type StatusEffect =
+  | { type: 'slow_paced'; expiresTurn: number; multiplier: number }
+  | { type: 'vacation'; expiresTurn: number; skipLifestyle: boolean; skipBusinessPayments: boolean }
+  | { type: 'skip_turn'; expiresTurn: number };
+
+// Type alias must be outside the class
+type Winner = { userId: number; rank: number }; // rank: 1-based
+type RankedWinner = {
+  userId: number;
+  username: string;
+  rank: number;       // 1-based
+  netWorth: number;
+  player: Player;     // original player object (if you need more later)
+};
+
+const XP_REWARDS = [ 100, 75, 50, 25, 10, 5 ]; // index 0 = 1st place
+
+async function awardXpForGame(gameId: string, winners: Winner[]) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+
+    // Upsert/Increment points for each winner
+    for (const w of winners) {
+      const idx = Math.max(1, Math.min(w.rank, XP_REWARDS.length)) - 1;
+      const points = XP_REWARDS[ idx ];
+
+      await client.query(
+        `
+        insert into user_points (user_id, total_points, tier_status)
+        values ($1, $2, 'Wood')  -- tier will be recalculated by trigger
+        on conflict (user_id) do update
+          set total_points = user_points.total_points + EXCLUDED.total_points,
+              last_updated = now()
+        `,
+        [ w.userId, points ]
+      );
+    }
+
+    await client.query('COMMIT');
+    logger.info(`Awarded XP for game ${gameId} to ${winners.length} players.`);
+  } catch (err) {
+    await client.query('ROLLBACK');
+    logger.error('Failed to award XP:', err);
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+function getOwnedBusinesses(player: Player): Asset[] {
+  return (player.assets ?? []).filter(a => a.type === 'business' && a.ownerId === player.id);
+}
+
+function calculateTax(income: number): number {
+  const brackets = [
+    { threshold: 1817000, base: 644489, rate: 0.45 },
+    { threshold: 857900, base: 251258, rate: 0.41 },
+    { threshold: 673000, base: 179147, rate: 0.39 },
+    { threshold: 512800, base: 121475, rate: 0.36 },
+    { threshold: 370500, base: 77362, rate: 0.31 },
+    { threshold: 237100, base: 42678, rate: 0.26 },
+    { threshold: 0, base: 0, rate: 0.18 }
+  ];
+
+  for (const bracket of brackets) {
+    if (income > bracket.threshold) {
+      return Math.floor(bracket.base + (income - bracket.threshold) * bracket.rate);
+    }
+  }
+
+  return 0;
+}
+
+function creditBusinessIncome(state: GameState, player: Player) {
+  const businesses = player.assets.filter(a => a.type === 'business');
+  let total = 0;
+
+  for (const b of businesses) {
+    let income = b.incomePerLap;
+
+    // check if slow_paced is active
+    const effects = player.statusEffects ?? [];
+    for (const eff of effects) {
+      if (eff.type === 'slow_paced' && state.turnCounter <= eff.expiresTurn) {
+        income = Math.floor(income * (eff.multiplier ?? 1));
+      }
+    }
+    total += income;
+  }
+
+  player.cash += total;
+  pruneExpiredEffects(state, player);
+}
+
+
+
+function pruneExpiredEffects(state: GameState, player: Player) {
+  const now = state.turnCounter;
+  player.statusEffects = (player.statusEffects ?? []).filter(e => now <= e.expiresTurn);
 }
