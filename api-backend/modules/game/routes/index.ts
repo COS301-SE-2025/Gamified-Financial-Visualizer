@@ -30,8 +30,7 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
         gameMode: gameMode || 'laps',
         maxLaps: maxLaps || 10,
         maxPlayers: Math.min(maxPlayers || 6, 6),
-        isPrivate: Boolean(isPrivate),
-        allowSpectators: true
+        isPrivate: Boolean(isPrivate)
       };
 
       // Note: socketId will be empty here, updated when player connects via Socket.IO
@@ -266,10 +265,6 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
       const lobby = Array.from(lobbyManager['lobbies'].values())
         .find(l => l.gameId === gameId);
 
-      if (!isPlayer && (!lobby?.settings.allowSpectators)) {
-         res.status(403).json({ error: 'Not authorized to view this game' });
-         return;
-      }
 
       // Return sanitized game state
       const publicGameState = {

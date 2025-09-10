@@ -12,8 +12,17 @@ export interface Player {
   isActive: boolean;
   isBankrupt: boolean;
   skipNextTurn?: boolean;
+  character?: Character;
+  statusEffects: StatusEffect[];
 }
 
+export interface StatusEffect {
+  type: 'slow_paced' | 'vacation';
+  expiresTurn: number; // absolute turn index when it ends
+  multiplier?: number;  // income multiplier
+  skipLifestyle?: boolean;
+  skipBusinessPayments?: boolean;
+}
 export interface GameState {
   id: string;
   players: Map<number, Player>;
@@ -27,9 +36,12 @@ export interface GameState {
   gameMode: 'laps' | 'elimination';
   maxLaps?: number;
   targetNetWorth?: number;
+  turnOrder: number[]; // playerIds in turn order
   createdAt: Date;
   startedAt?: Date;
   finishedAt?: Date;
+  turnCounter: number;
+  extraTurnForPlayerId?: number; // if a player earns an extra turn
 }
 
 export interface Asset {
@@ -40,6 +52,7 @@ export interface Asset {
   incomePerLap: number;
   sellbackMultiplier: number;
   blockPosition: number;
+  ownerId?: number; // playerId
 }
 
 export interface Loan {
@@ -66,6 +79,15 @@ export interface CardEffect {
   relativeMoves?: number;
   salaryChange?: number;
   message?: string;
+}
+
+// Add new Character interface
+export interface Character {
+  id: string;
+  name: string;
+  modelName: string; // matches the GLTF model name
+  description: string;
+  color: string; // hex color for UI
 }
 
 export interface Board {

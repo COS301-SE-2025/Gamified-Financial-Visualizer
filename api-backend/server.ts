@@ -13,6 +13,8 @@ import { Server } from 'socket.io';
 import http from 'http';
 import { V3 } from 'paseto';
 import './jobs/resetBudgets'; // auto-schedules your budget reset job
+// (Optional but recommended for horizontal scale)
+import { createAdapter } from '@socket.io/redis-adapter';
 
 // 🔌 module registrars
 import { registerAuthModule } from './modules/auth';
@@ -25,7 +27,7 @@ import { registerCommunityModule } from './modules/community';
 import { registerAchievementModule } from './modules/achievements';
 import { registerNotificationsModule } from './modules/notifications';
 import { registerCityModule } from './modules/city';
-import { registerGameModule } from 'modules/game';
+import { registerGameModule } from './modules/game';
 
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
@@ -111,7 +113,7 @@ async function bootstrap() {
     io.to(sockId).emit('notification', note);
     logger.info(`Sent notification to user ${userId} via socket ${sockId}`);
   });
-logger.info('Redis ping:', await redisClient.ping());
+  logger.info('Redis ping:', await redisClient.ping());
 
   // Dispatch incoming Redis messages to the right socket
   sub.on('pmessage', (_pattern, channel, message) => {

@@ -350,65 +350,6 @@ export function registerGameSocketHandlers(
       }
     });
 
-    // 💬 CHAT HANDLERS
-
-    /**
-     * Send lobby chat message
-     */
-    socket.on('lobby:chat', async (data: { message: string }) => {
-      try {
-        const lobby = lobbyManager.getLobbyByPlayer(userId);
-        if (!lobby) return;
-
-        const player = lobby.players.get(userId);
-        if (!player) return;
-
-        const chatMessage = {
-          id: Date.now().toString(),
-          playerId: userId,
-          username: player.username,
-          message: data.message,
-          timestamp: new Date()
-        };
-
-        // Broadcast to all players in lobby
-        io.to(`lobby:${lobby.id}`).emit('lobby:chat-message', chatMessage);
-        
-      } catch (error: any) {
-        logger.error('Error sending lobby chat:', error);
-      }
-    });
-
-    /**
-     * Send game chat message
-     */
-    socket.on('game:chat', async (data: { gameId: string; message: string }) => {
-      try {
-        const { gameId, message } = data;
-        const gameState = gameEngine.getGameState(gameId);
-        
-        if (!gameState || !gameState.players.has(userId)) return;
-
-        const player = gameState.players.get(userId)!;
-        
-        const chatMessage = {
-          id: Date.now().toString(),
-          playerId: userId,
-          username: player.username,
-          message,
-          timestamp: new Date()
-        };
-
-        // Broadcast to all players in game
-        io.to(`game:${gameId}`).emit('game:chat-message', chatMessage);
-        
-      } catch (error: any) {
-        logger.error('Error sending game chat:', error);
-      }
-    });
-
-    // 🔌 DISCONNECT HANDLER
-    
     socket.on('disconnect', (reason) => {
       logger.info(`Game socket disconnected for user ${userId}: ${reason}`);
       
@@ -430,7 +371,7 @@ export function registerGameSocketHandlers(
     });
   });
 
-  // 🎧 LISTEN TO GAME ENGINE EVENTS
+  // LISTEN TO GAME ENGINE EVENTS
   
   gameEngine.on('player-moved', (data) => {
     io.to(`game:${data.gameId}`).emit('game:player-moved', data);

@@ -193,8 +193,7 @@ export class MatchmakingService extends EventEmitter {
         gameMode,
         maxLaps: avgLaps,
         maxPlayers: 6,
-        isPrivate: false,
-        allowSpectators: true
+        isPrivate: false
       };
       
       const lobby = this.lobbyManager.createLobby(
