@@ -3,6 +3,7 @@ import * as BoardData from '../data/BoardData';
 import { EventEmitter } from 'events';
 import pool from "../../../config/db";
 import { logger } from "../../../config/logger";
+import { Server } from "socket.io";
 
 
 export class GameEngine extends EventEmitter {
@@ -76,6 +77,25 @@ export class GameEngine extends EventEmitter {
     return true;
   }
 
+   startTurn(gameId: string, io: Server) {
+    const game = this.games.get(gameId);
+    if (!game) return;
+
+    // Clear existing timer if any
+    if (game.turnTimeout) clearTimeout(game.turnTimeout);
+
+    // Start new turn timer (10s)
+    game.turnTimeout = setTimeout(() => {
+      this.nextTurn(gameId);
+      io.to(`game:${gameId}`).emit('game:turn-changed', {
+        gameState: this.getGameState(gameId)
+      });
+
+      // Automatically start the next turn
+      this.startTurn(gameId, io);
+    }, 10000);
+  }
+  
   rollDice(): number {
     return Math.floor(Math.random() * 6) + 1;
   }

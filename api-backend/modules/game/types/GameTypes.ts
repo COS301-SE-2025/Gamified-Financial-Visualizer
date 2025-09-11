@@ -17,7 +17,7 @@ export interface Player {
 }
 
 export interface StatusEffect {
-  type: 'slow_paced' | 'vacation';
+  type: 'slow_paced' | 'vacation' |'skip_turn';
   expiresTurn: number; // absolute turn index when it ends
   multiplier?: number;  // income multiplier
   skipLifestyle?: boolean;
@@ -42,6 +42,7 @@ export interface GameState {
   finishedAt?: Date;
   turnCounter: number;
   extraTurnForPlayerId?: number; // if a player earns an extra turn
+  turnTimeout?: NodeJS.Timeout;
 }
 
 export interface Asset {

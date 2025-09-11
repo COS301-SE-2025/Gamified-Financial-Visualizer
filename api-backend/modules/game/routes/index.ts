@@ -1,4 +1,4 @@
-// 📁 /modules/game/routes/index.ts
+//  /modules/game/routes/index.ts
 import { Router, Application, Request, Response } from 'express';
 import { GameLobbyManager } from '../lobby/GameLobbyManager';
 import { MatchmakingService } from '../lobby/MatchmakingService';
@@ -17,8 +17,7 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
    */
   router.post('/lobby/create', async (req: Request, res: Response) => {
     try {
-      const { user_id, username } = req.user as any;
-      const { gameMode, maxLaps, maxPlayers, isPrivate } = req.body;
+      const { user_id, username, gameMode, maxLaps, maxPlayers, isPrivate } = req.body;
 
       // Validate input
       if (gameMode && !['laps', 'elimination'].includes(gameMode)) {
@@ -72,8 +71,7 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
    */
   router.post('/lobby/join', async (req: Request, res: Response) => {
     try {
-      const { user_id, username } = req.user as any;
-      const { code } = req.body;
+      const {user_id, username, code } = req.body;
 
       if (!code) {
          res.status(400).json({ error: 'Lobby code required' });
@@ -305,6 +303,198 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
       res.status(500).json({ error: 'Internal server error' });
     }
   });
+
+  /**
+ * POST /api/game/turn
+ * Processes the current player's action and transitions to the next turn
+ */
+router.post('/turn', async (req: Request, res: Response) => {
+  try {
+    const { gameId } = req.body; // Get the game ID from request body
+    const { user_id } = req.user as any; // Get user ID from authentication
+
+    // Fetch the game state
+    
+      const gameEngine = lobbyManager.getGameEngine();
+    const gameState = gameEngine.getGameState(gameId);
+
+    if (!gameState) {
+      res.status(404).json({ error: 'Game not found' });
+      return;
+    }
+
+    const currentPlayer = gameState.players.get(gameState.currentPlayerId);
+
+    if (!currentPlayer || currentPlayer.id !== user_id) {
+      res.status(400).json({ error: 'Not your turn' });
+      return;
+    }
+
+    // Handle the player's action (e.g., moving on the board, interacting with a business)
+    gameEngine.nextTurn(gameId);
+
+    // Respond with the updated game state
+    const updatedGameState = gameEngine.getGameState(gameId);
+    res.json({
+      success: true,
+      gameState: updatedGameState,
+    });
+
+  } catch (error: any) {
+    logger.error('Error processing turn:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+/**
+ * POST /api/game/roll-dice
+ * Rolls the dice for the current player and updates their position
+ */
+router.post('/roll-dice', async (req: Request, res: Response) => {
+  try {
+    const { gameId } = req.body; // Get the game ID from request body
+    const { user_id } = req.user as any; // Get user ID from authentication
+
+        
+      const gameEngine = lobbyManager.getGameEngine();
+    const gameState = gameEngine.getGameState(gameId);
+
+
+    if (!gameState) {
+      res.status(404).json({ error: 'Game not found' });
+      return;
+    }
+
+    const currentPlayer = gameState.players.get(gameState.currentPlayerId);
+
+    if (!currentPlayer || currentPlayer.id !== user_id) {
+      res.status(400).json({ error: 'Not your turn' });
+      return;
+    }
+
+    // Roll the dice
+    const diceRoll = gameEngine.rollDice();
+    const moveSuccess = gameEngine.movePlayer(gameId, user_id, diceRoll);
+
+    if (!moveSuccess) {
+      res.status(400).json({ error: 'Unable to move player' });
+      return;
+    }
+
+    const updatedGameState = gameEngine.getGameState(gameId);
+
+    res.json({
+      success: true,
+      diceRoll,
+      gameState: updatedGameState,
+    });
+
+  } catch (error: any) {
+    logger.error('Error rolling dice:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * POST /api/game/purchase-asset
+ * Allows the player to purchase an asset (e.g., business or investment)
+ */
+router.post('/purchase-asset', async (req: Request, res: Response) => {
+  try {
+    const { gameId, assetId } = req.body; // Get the game ID and asset ID from request body
+    const { user_id } = req.user as any; // Get user ID from authentication
+
+          const gameEngine = lobbyManager.getGameEngine();
+
+    // Fetch the game state
+    const gameState = gameEngine.getGameState(gameId);
+
+    if (!gameState) {
+      res.status(404).json({ error: 'Game not found' });
+      return;
+    }
+
+    const player = gameState.players.get(user_id);
+    if (!player) {
+      res.status(404).json({ error: 'Player not found in game' });
+      return;
+    }
+
+    // Check if the player can afford the asset
+    const asset = gameState.board.blocks.find(b => b.id.toString() === assetId && b.type === 'business')?.asset;
+
+    if (!asset) {
+      res.status(400).json({ error: 'Asset not found' });
+      return;
+    }
+
+    if (player.cash < asset.purchasePrice) {
+      res.status(400).json({ error: 'Not enough cash to purchase asset' });
+      return;
+    }
+
+    // Purchase the asset
+    const success = gameEngine.buyAsset(gameId, user_id, assetId);
+
+    if (!success) {
+      res.status(400).json({ error: 'Unable to purchase asset' });
+      return;
+    }
+
+    const updatedGameState = gameEngine.getGameState(gameId);
+
+    res.json({
+      success: true,
+      gameState: updatedGameState,
+    });
+
+  } catch (error: any) {
+    logger.error('Error purchasing asset:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * POST /api/game/end-turn
+ * Signals the end of the current turn and prepares for the next turn
+ */
+router.post('/end-turn', async (req: Request, res: Response) => {
+  try {
+    const { gameId } = req.body; // Get the game ID from request body
+    const { user_id } = req.user as any; // Get user ID from authentication
+
+      const gameEngine = lobbyManager.getGameEngine();
+    // Fetch the game state
+    const gameState = gameEngine.getGameState(gameId);
+
+    if (!gameState) {
+      res.status(404).json({ error: 'Game not found' });
+      return;
+    }
+
+    const currentPlayer = gameState.players.get(gameState.currentPlayerId);
+
+    if (!currentPlayer || currentPlayer.id !== user_id) {
+      res.status(400).json({ error: 'Not your turn' });
+      return;
+    }
+
+    // End the current turn and move to the next player
+    gameEngine.nextTurn(gameId);
+
+    const updatedGameState = gameEngine.getGameState(gameId);
+
+    res.json({
+      success: true,
+      gameState: updatedGameState,
+    });
+
+  } catch (error: any) {
+    logger.error('Error ending turn:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
   // 📊 GAME STATS ROUTES
 

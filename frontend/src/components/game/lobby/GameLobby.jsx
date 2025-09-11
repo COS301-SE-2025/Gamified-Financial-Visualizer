@@ -1,10 +1,8 @@
-// GameLobby.jsx (inline panels version)
-import { useEffect, useMemo, useState } from 'react'
-import {
-  FaPlay, FaRandom, FaUserPlus, FaLink, FaInfoCircle, FaBookOpen, FaCrown, FaCoins,
-  FaUsers, FaUser, FaLock, FaDoorOpen, FaSignOutAlt, FaSyncAlt, FaKey
-} from 'react-icons/fa'
+import { useMemo, useState } from 'react'
+import { FaPlay, FaRandom, FaUserPlus, FaLink, FaInfoCircle, FaBookOpen, FaCrown, FaCoins, FaClipboard, FaClipboardCheck } from 'react-icons/fa'
 import CharacterSelectViewer from '../CharacterSelectViewer'
+import { io } from 'socket.io-client';
+import { CopyToClipboard } from "react-copy-to-clipboard";
 
 const ALL_CHARACTERS = [
   { label: 'Green girl', key: 'Green_girl' },
@@ -68,61 +66,180 @@ export default function GameLobby({
   onSaveCharacter,
   onStart,
 }) {
-  // global settings (left cards at top)
-  const [mode, setMode] = useState(defaultMode)
-  const [players, setPlayers] = useState(defaultPlayers)
-  const [laps, setLaps] = useState(defaultLaps)
+    const [mode, setMode] = useState(defaultMode)
+    const [players, setPlayers] = useState(defaultPlayers)
+    const [laps, setLaps] = useState(defaultLaps)
+    const [roomCode, setRoomCode] = useState('')
+    const [character, setCharacter] = useState(CHARACTERS[3]) // Cowboy
+    const [countdown, setCountdown] = useState(false)
+    const [saving, setSaving] = useState(false)
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState('')
+    const [copied, setCopied] = useState(false);
+    const user = JSON.parse(localStorage.getItem('user'));
+    const token = localStorage.getItem('token');
+    const canStart = useMemo(() => (mode === 'solo' ? true : players >= 2 && players <= 6), [mode, players])
+    const lapOptions = [5, 10, 15, 20]
 
-  // character picker
-  const [character, setCharacter] = useState(ALL_CHARACTERS[3]) // Cowboy
-  const [saving, setSaving] = useState(false)
 
-  // inline panels
-  const [showQuick, setShowQuick] = useState(false)
-  const [showCreate, setShowCreate] = useState(false)
+    const socket = io('http://localhost:5000', {
+        auth: {
+            token,   // optional if backend verifies JWT
+            userId: user.id   // attach userId to socket.data
+        }
+    });
 
-  // quick join data
-  const [rooms, setRooms] = useState(availableGames || [])
-  const [roomsRefreshing, setRoomsRefreshing] = useState(false)
-  const [joinCode, setJoinCode] = useState('')
+    // API Functions
+    const apiCall = async (endpoint, options = {}) => {
+        console.log('API Call:', endpoint, options);
+        const response = await fetch(`http://localhost:5000/api/game${endpoint}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            ...options,
+        });
 
-  // create room data
-  const [roomName, setRoomName] = useState('My Room')
-  const [roomMaxPlayers, setRoomMaxPlayers] = useState(4)
-  const [roomLaps, setRoomLaps] = useState(10)
-  const [roomCode, setRoomCode] = useState(() => genCode())
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'API call failed');
+        }
 
-  const lapOptions = [5, 10, 15, 20]
-  const playersInLobby = currentPlayers ?? [
-    { id: 'u1', name: 'lily_rose', ready: true,  characterKey: 'Green_girl' },
-    { id: 'u2', name: 'big_bucks', ready: false,  characterKey: 'Mr_suit' },
-  ]
-  const takenKeys = new Set(playersInLobby.map(p => p.characterKey).filter(Boolean))
-  const canStart = useMemo(() => (mode === 'solo' ? true : players >= 2 && players <= 6), [mode, players])
+        return response.json();
+    };
 
-  useEffect(() => { if (Array.isArray(availableGames)) setRooms(availableGames) }, [availableGames])
+    const handleCreateLobby = async () => {
+        try {
+            setLoading(true);
+            setError('');
 
-  const handleSaveCharacter = () => {
-    setSaving(true)
-    setTimeout(() => { setSaving(false); onSaveCharacter?.(character.key) }, 400)
-  }
+            const response = await apiCall('/lobby/create', {
+                method: 'POST',
+                body: JSON.stringify({
+                    user_id: user?.id,
+                    username: user?.username,
+                    gameMode: 'laps',
+                    maxLaps: laps,
+                    maxPlayers: players,
+                    isPrivate: false
+                })
+            });
 
-  const handleRefreshRooms = async () => {
-    try {
-      setRoomsRefreshing(true)
-      const res = await (onRefreshGames?.() ?? new Promise(res => setTimeout(() => {
-        res([
-          { id: 'r1', code: 'ABCD', name: 'Public Room', players: 2, maxPlayers: 6, laps: 10 },
-          { id: 'r2', code: 'PQRS', name: 'Speed Run',  players: 4, maxPlayers: 4, laps: 5  },
-        ])
-      }, 600)))
-      if (Array.isArray(res)) setRooms(res)
-    } finally {
-      setRoomsRefreshing(false)
+            if (response.success) {
+                console.log('Lobby created:', response.lobby);
+                setRoomCode(response.lobby.code);
+                onCreateRoom?.(response.lobby);
+            }
+        } catch (err) {
+            setError(err.message);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleJoinLobby = async (code) => {
+        try {
+            setLoading(true);
+            setError('');
+
+            const response = await apiCall('/lobby/join', {
+                method: 'POST',
+                body: JSON.stringify({ code }),
+                user: JSON.stringify({ user_id: user.id, username: user.username })
+            });
+
+            if (response.success) {
+                console.log('Joined lobby:', response.lobby);
+                onJoinWithCode?.(response.lobby);
+            }
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleQuickMatch = async () => {
+        try {
+            setLoading(true);
+            setError('');
+
+            const response = await apiCall('/matchmaking/quick-match', {
+                method: 'POST',
+                body: JSON.stringify({
+                    gameMode: 'laps',
+                    maxLaps: laps,
+                }),
+            });
+
+            if (response.success) {
+                console.log('Quick match found:', response.lobby);
+                onQuickJoin?.(response.lobby);
+            }
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleGetMyLobby = async () => {
+        try {
+            const response = await apiCall('/lobby/my-lobby');
+
+            if (response.success && response.lobby) {
+                console.log('Current lobby:', response.lobby);
+                return response.lobby;
+            }
+            return null;
+        } catch (err) {
+            console.error('Error getting current lobby:', err);
+            return null;
+        }
+    };
+
+    const handleLeaveLobby = async () => {
+        try {
+            const response = await apiCall('/lobby/leave', {
+                method: 'POST',
+            });
+
+            if (response.success) {
+                console.log('Left lobby successfully');
+            }
+        } catch (err) {
+            setError(err.message);
+        }
+    };
+
+    const handleUpdateLobbySettings = async (newSettings) => {
+        try {
+            const response = await apiCall('/lobby/settings', {
+                method: 'PUT',
+                body: JSON.stringify(newSettings),
+            });
+
+            if (response.success) {
+                console.log('Lobby settings updated');
+            }
+        } catch (err) {
+            setError(err.message);
+        }
+    };
+
+    // const start = () => setCountdown(true)
+    const start = () => {
+        socket.emit('lobby:start-game');  // backend will pick up userId from socket.data
+        setCountdown(true);
+    };
+
+    const done = () => onStart?.({ mode, players, laps }, character.key)
+
+    const handleSaveCharacter = () => {
+        setSaving(true)
+        setTimeout(() => setSaving(false), 800)
     }
-  }
-
-  const start = () => onStart?.({ mode, players, laps }, character.key)
 
   return (
     <div className="relative p-4 md:p-6 space-y-6 min-h-screen">
@@ -370,30 +487,158 @@ export default function GameLobby({
             })}
           </div>
 
-          <div className="mt-5 flex items-center justify-between">
-            <button
-              onClick={onLeaveLobby}
-              className="px-4 py-2.5 rounded-2xl border border-sky-200 bg-white/90 hover:bg-white shadow-sm transition-all hover:shadow-md flex items-center gap-2"
-            >
-              <FaDoorOpen /> Leave
-            </button>
-            <button
-              onClick={handleSaveCharacter}
-              disabled={saving}
-              className="px-4 py-2.5 rounded-2xl bg-[#AAD977] text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 disabled:opacity-70 disabled:hover:translate-y-0 flex items-center gap-2"
-            >
-              {saving ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  Saving...
-                </>
-              ) : (
-                'Save Character'
-              )}
-            </button>
-          </div>
+                    <div className="mt-5 flex items-center justify-between">
+                        <button className="px-4 py-2.5 rounded-2xl border border-sky-200 bg-white/90 hover:bg-white shadow-sm transition-all hover:shadow-md">
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleSaveCharacter}
+                            disabled={saving}
+                            className="px-4 py-2.5 rounded-2xl bg-[#AAD977] text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 disabled:opacity-70 disabled:hover:translate-y-0 flex items-center gap-2"
+                        >
+                            {saving ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                    Saving...
+                                </>
+                            ) : (
+                                'Save Character'
+                            )}
+                        </button>
+                    </div>
+                </div>
+
+                {/* RIGHT: options */}
+                <div className="rounded-3xl border border-white/20 bg-white/80 backdrop-blur-lg shadow-lg p-5">
+                    <div className="text-center mb-5">
+                        <h2 className="text-xl font-bold text-sky-500">Game Settings</h2>
+                        <p className="text-sky-500/80 text-sm">Configure your gameplay options</p>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-5">
+                        {/* Game Mode */}
+                        <div className="bg-sky-50/70 p-4 rounded-2xl border border-sky-100">
+                            <div className="text-sky-400 font-semibold mb-3">Game Mode</div>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setMode('multiplayer')}
+                                    className={`flex-1 px-4 py-3 rounded-2xl border transition-all
+                    ${mode === 'multiplayer'
+                                            ? 'bg-[#8dcced] text-white transform -translate-y-1'
+                                            : 'bg-white/90 hover:bg-sky-50 border-sky-100 hover:shadow-md hover:-translate-y-0.5'}`}
+                                >Multiplayer</button>
+                            </div>
+                        </div>
+
+                        {/* Players */}
+                        <div className="bg-sky-50/70 p-4 rounded-2xl border border-sky-100">
+                            <label className="text-sky-400 font-semibold block mb-3">Players: {players}</label>
+                            <div className="flex items-center gap-4">
+                                <input
+                                    type="range"
+                                    min={mode === 'solo' ? 1 : 2}
+                                    max={6}
+                                    value={players}
+                                    onChange={(e) => setPlayers(Number(e.target.value))}
+                                    className="flex-1 accent-sky-500 h-2 rounded-full bg-white"
+                                />
+                                <div className="w-10 h-10 rounded-full bg-[#8dcced] text-white flex items-center justify-center font-bold shadow-sm">
+                                    {players}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Play with others */}
+                        <div className="bg-sky-50/70 p-4 rounded-2xl border border-sky-100">
+                            <div className="text-sky-400 font-semibold mb-3">Play with others</div>
+                            <div className="grid grid-cols-2 gap-3 mb-3">
+                                <button
+                                    onClick={handleQuickMatch}
+                                    className="px-4 py-3 rounded-2xl border border-sky-200 bg-white/90 hover:bg-white shadow-sm flex items-center justify-center gap-2 transition-all hover:shadow-md hover:-translate-y-0.5"
+                                >
+                                    <FaRandom className="text-sky-600" /> Quick Join
+                                </button>
+                                <button
+                                    onClick={handleCreateLobby}
+                                    className="px-4 py-3 rounded-2xl border border-sky-200 bg-white/90 hover:bg-white shadow-sm flex items-center justify-center gap-2 transition-all hover:shadow-md hover:-translate-y-0.5"
+                                >
+                                    <FaUserPlus className="text-sky-600" /> Create room
+                                </button>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="flex-1 relative">
+                                    <input
+                                        value={roomCode}
+                                        onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+                                        placeholder="Enter room code"
+                                        className="w-full px-4 py-3 rounded-2xl border border-sky-200 bg-white/90 focus:ring-2 focus:ring-sky-300 focus:border-sky-400 outline-none transition-all"
+                                    />
+                                </div>
+                                <button
+                                    onClick={() => handleJoinLobby(roomCode)}
+                                    disabled={!roomCode.trim()}
+                                    className="px-4 py-3 rounded-2xl border border-sky-200 bg-white/90 hover:bg-white shadow-sm flex items-center gap-2 transition-all hover:shadow-md hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
+                                >
+                                    <FaLink className="text-sky-600" /> Join
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Laps */}
+                        <div className="bg-sky-50/70 p-4 rounded-2xl border border-sky-100">
+                            <div className="text-sky-700 font-semibold mb-3">Game Laps</div>
+                            <div className="flex flex-wrap gap-3">
+                                {lapOptions.map((n) => (
+                                    <button
+                                        key={n}
+                                        onClick={() => setLaps(n)}
+                                        className={`px-4 py-2.5 rounded-2xl border transition-all
+                      ${laps === n
+                                                ? 'bg-[#FFCE51] text-white shadow-lg border-amber-200 transform -translate-y-1'
+                                                : 'bg-white hover:bg-sky-50 border-sky-100 hover:shadow-md hover:-translate-y-0.5'}`}
+                                    >
+                                        {n} {n === 1 ? 'lap' : 'laps'}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* PLAY button */}
+                    <div className="mt-10 flex flex-col items-center justify-center">
+                        {/*SHOW CODE TO JOIN */}
+                        <div>
+                            {roomCode && (
+                                <>
+                                    <div className="mb-4 text-center text-sky-700 font-semibold text-lg">
+                                        Room Code: <span className="bg-white/90 px-3 py-1 rounded-lg border border-sky-200 shadow-sm tracking-widest">{roomCode}</span>
+                                    </div>
+                                    <CopyToClipboard text={roomCode} onCopy={() => setCopied(true)}>
+                                        <button>+{!copied ? <FaClipboardCheck className="text-sky-600" /> : <FaClipboard className="text-sky-600" />}</button>
+                                    </CopyToClipboard>
+                                </>
+                            )}
+                            {error && (
+                                <div className="mb-4 text-center text-red-600 font-semibold text-lg">
+                                    {error}
+                                </div>
+                            )}
+                        </div>
+                        <button
+                            disabled={!canStart}
+                            onClick={start}
+                            className="px-12 py-5 rounded-3xl text-white shadow-2xl transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100
+                         bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-emerald-400 hover:to-lime-400 hover:shadow-2xl
+                         flex items-center gap-4 text-2xl font-extrabold tracking-wide relative overflow-hidden group"
+                        >
+                            <span className="absolute inset-0 bg-white/10 group-hover:bg-white/0 transition-all transform group-hover:scale-150"></span>
+                            <FaPlay className="text-2xl" /> START GAME
+                        </button>
+                    </div>                
+                </div>
+            </div>
+
+            {countdown && <Countdown seconds={5} onDone={done} />}
         </div>
-      </div>
-    </div>
-  )
+    )
 }
