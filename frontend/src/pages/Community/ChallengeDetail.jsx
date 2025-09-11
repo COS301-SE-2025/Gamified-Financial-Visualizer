@@ -46,9 +46,7 @@ const ChallengeDetail = () => {
     if (!challengeData) {
         return (
             <CommunityLayout>
-                <div className="max-w-6xl mx-auto p-6 text-center text-gray-500 dark:text-gray-400">
-                    Loading challenge…
-                </div>
+                
             </CommunityLayout>
         );
     }

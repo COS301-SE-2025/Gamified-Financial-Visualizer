@@ -72,7 +72,7 @@ const AccountsPerformanceHeader = () => {
           {/* Progress Bar */}
           <div className="w-full">
             <p className="text-sm font-medium text-[#7FBCE9] mb-1">Overall Performance</p>
-            <div className="relative h-4 w-full rounded-full bg-[#f5f5f5] overflow-hidden">
+            <div className="relative h-4 w-full rounded-full bg-[#f5f5f5] overflow-hidden dark:bg-gray-700" >
               <div
                 className="h-full rounded-full"
                 style={{

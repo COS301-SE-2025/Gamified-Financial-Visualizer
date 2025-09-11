@@ -232,7 +232,7 @@ const CommunityDashboard = () => {
                   setPostType('Achievement');
                   setShowCreatePost(true);
                 }}
-                className="flex items-center gap-2 bg-white text-[#AAD977] px-6 py-3 rounded-full text-sm font-bold shadow-lg hover:bg-[#83AB55] hover:text-white transition transform hover:scale-105 dark:bg-[#A1E358] dark:hover:bg-[#88BC46]"
+                className="flex items-center gap-2 bg-white text-[#AAD977] px-6 py-3 rounded-full text-sm font-bold shadow-lg hover:bg-[#83AB55] hover:text-white transition transform hover:scale-105 dark:bg-[#A1E358] dark:hover:bg-[#88BC46] dark:text-gray-200"
               >
                 <FaPen /> Create Post
               </button>
