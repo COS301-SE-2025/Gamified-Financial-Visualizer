@@ -3,11 +3,11 @@ import { motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import LearnLayout from '../../pages/Learn/LearnLayout';
 import CourseCard from '../../components/cards/CoursesCard';
-import banner1 from '../../assets/Images/learn_banners/credit.png';
-import banner2 from '../../assets/Images/banners/pixelApartment.gif';
-import banner3 from '../../assets/Images/banners/pixelBalcony.gif';
-import banner4 from '../../assets/Images/banners/pixelCafe.gif';
-import banner5 from '../../assets/Images/banners/pixelCornerStore.gif';
+import banner1 from '../../assets/Images/learn_banners/Adulting.png';
+import banner2 from '../../assets/Images/learn_banners/Budget.png';
+import banner3 from '../../assets/Images/learn_banners/credit.png';
+import banner4 from '../../assets/Images/learn_banners/Insurance.png';
+import banner5 from '../../assets/Images/learn_banners/retrenchment.png';
 import banner6 from '../../assets/Images/banners/pixelGirl.gif';
 import { FaFilter, FaSearch, FaClock, FaChevronDown } from 'react-icons/fa';
 
