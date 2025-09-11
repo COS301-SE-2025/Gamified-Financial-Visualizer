@@ -279,13 +279,13 @@ const LearningPage = () => {
                         className={`px-3 py-1 rounded-full text-sm ${
                           difficultyFilter === level
                             ? level === 'beginner'
-                              ? 'bg-[#B1E1FF] dark:bg-[#5FBFFF] text-white'
+                              ? 'bg-[#B1E1FF] dark:bg-[#5FBFFF] text-white dark:text-[#618A54]'
                               : level === 'intermediate'
                               ? 'bg-[#FFD18C] dark:bg-[#FFC541] text-white'
                               : level === 'advanced'
                               ? 'bg-[#FE9B90] dark:bg-[#F97156] text-white'
                               : 'bg-[#AAD977] dark:bg-[#76B947] text-white'
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                         }`}
                       >
                         {level === 'all'
