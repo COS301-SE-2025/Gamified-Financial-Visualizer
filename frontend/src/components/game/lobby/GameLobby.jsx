@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
-import { FaPlay, FaRandom, FaUserPlus, FaLink, FaInfoCircle, FaBookOpen, FaCrown, FaCoins } from 'react-icons/fa'
+import { FaPlay, FaRandom, FaUserPlus, FaLink, FaInfoCircle, FaBookOpen, FaCrown, FaCoins, FaClipboard, FaClipboardCheck } from 'react-icons/fa'
 import CharacterSelectViewer from '../CharacterSelectViewer'
+import { io } from 'socket.io-client';
+import { CopyToClipboard } from "react-copy-to-clipboard";
 
 const CHARACTERS = [
     { label: 'Green girl', key: 'Green_girl' },
@@ -54,16 +56,171 @@ export default function GameLobbyV3({
     const [character, setCharacter] = useState(CHARACTERS[3]) // Cowboy
     const [countdown, setCountdown] = useState(false)
     const [saving, setSaving] = useState(false)
-
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState('')
+    const [copied, setCopied] = useState(false);
+    const user = JSON.parse(localStorage.getItem('user'));
+    const token = localStorage.getItem('token');
     const canStart = useMemo(() => (mode === 'solo' ? true : players >= 2 && players <= 6), [mode, players])
     const lapOptions = [5, 10, 15, 20]
 
-    const start = () => setCountdown(true)
+
+    const socket = io('http://localhost:5000', {
+        auth: {
+            token,   // optional if backend verifies JWT
+            userId: user.id   // attach userId to socket.data
+        }
+    });
+
+    // API Functions
+    const apiCall = async (endpoint, options = {}) => {
+        console.log('API Call:', endpoint, options);
+        const response = await fetch(`http://localhost:5000/api/game${endpoint}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            ...options,
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'API call failed');
+        }
+
+        return response.json();
+    };
+
+    const handleCreateLobby = async () => {
+        try {
+            setLoading(true);
+            setError('');
+
+            const response = await apiCall('/lobby/create', {
+                method: 'POST',
+                body: JSON.stringify({
+                    user_id: user?.id,
+                    username: user?.username,
+                    gameMode: 'laps',
+                    maxLaps: laps,
+                    maxPlayers: players,
+                    isPrivate: false
+                })
+            });
+
+            if (response.success) {
+                console.log('Lobby created:', response.lobby);
+                setRoomCode(response.lobby.code);
+                onCreateRoom?.(response.lobby);
+            }
+        } catch (err) {
+            setError(err.message);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleJoinLobby = async (code) => {
+        try {
+            setLoading(true);
+            setError('');
+
+            const response = await apiCall('/lobby/join', {
+                method: 'POST',
+                body: JSON.stringify({ code }),
+                user: JSON.stringify({ user_id: user.id, username: user.username })
+            });
+
+            if (response.success) {
+                console.log('Joined lobby:', response.lobby);
+                onJoinWithCode?.(response.lobby);
+            }
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleQuickMatch = async () => {
+        try {
+            setLoading(true);
+            setError('');
+
+            const response = await apiCall('/matchmaking/quick-match', {
+                method: 'POST',
+                body: JSON.stringify({
+                    gameMode: 'laps',
+                    maxLaps: laps,
+                }),
+            });
+
+            if (response.success) {
+                console.log('Quick match found:', response.lobby);
+                onQuickJoin?.(response.lobby);
+            }
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleGetMyLobby = async () => {
+        try {
+            const response = await apiCall('/lobby/my-lobby');
+
+            if (response.success && response.lobby) {
+                console.log('Current lobby:', response.lobby);
+                return response.lobby;
+            }
+            return null;
+        } catch (err) {
+            console.error('Error getting current lobby:', err);
+            return null;
+        }
+    };
+
+    const handleLeaveLobby = async () => {
+        try {
+            const response = await apiCall('/lobby/leave', {
+                method: 'POST',
+            });
+
+            if (response.success) {
+                console.log('Left lobby successfully');
+            }
+        } catch (err) {
+            setError(err.message);
+        }
+    };
+
+    const handleUpdateLobbySettings = async (newSettings) => {
+        try {
+            const response = await apiCall('/lobby/settings', {
+                method: 'PUT',
+                body: JSON.stringify(newSettings),
+            });
+
+            if (response.success) {
+                console.log('Lobby settings updated');
+            }
+        } catch (err) {
+            setError(err.message);
+        }
+    };
+
+    // const start = () => setCountdown(true)
+    const start = () => {
+        socket.emit('lobby:start-game');  // backend will pick up userId from socket.data
+        setCountdown(true);
+    };
+
     const done = () => onStart?.({ mode, players, laps }, character.key)
 
     const handleSaveCharacter = () => {
         setSaving(true)
-        // Simulate saving process
         setTimeout(() => setSaving(false), 800)
     }
 
@@ -197,13 +354,13 @@ export default function GameLobbyV3({
                             <div className="text-sky-400 font-semibold mb-3">Play with others</div>
                             <div className="grid grid-cols-2 gap-3 mb-3">
                                 <button
-                                    onClick={onQuickJoin}
+                                    onClick={handleQuickMatch}
                                     className="px-4 py-3 rounded-2xl border border-sky-200 bg-white/90 hover:bg-white shadow-sm flex items-center justify-center gap-2 transition-all hover:shadow-md hover:-translate-y-0.5"
                                 >
                                     <FaRandom className="text-sky-600" /> Quick Join
                                 </button>
                                 <button
-                                    onClick={onCreateRoom}
+                                    onClick={handleCreateLobby}
                                     className="px-4 py-3 rounded-2xl border border-sky-200 bg-white/90 hover:bg-white shadow-sm flex items-center justify-center gap-2 transition-all hover:shadow-md hover:-translate-y-0.5"
                                 >
                                     <FaUserPlus className="text-sky-600" /> Create room
@@ -219,7 +376,7 @@ export default function GameLobbyV3({
                                     />
                                 </div>
                                 <button
-                                    onClick={() => onJoinWithCode?.(roomCode)}
+                                    onClick={() => handleJoinLobby(roomCode)}
                                     disabled={!roomCode.trim()}
                                     className="px-4 py-3 rounded-2xl border border-sky-200 bg-white/90 hover:bg-white shadow-sm flex items-center gap-2 transition-all hover:shadow-md hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
                                 >
@@ -249,18 +406,36 @@ export default function GameLobbyV3({
                     </div>
 
                     {/* PLAY button */}
-                    <div className="mt-8 flex items-center justify-center">
+                    <div className="mt-10 flex flex-col items-center justify-center">
+                        {/*SHOW CODE TO JOIN */}
+                        <div>
+                            {roomCode && (
+                                <>
+                                    <div className="mb-4 text-center text-sky-700 font-semibold text-lg">
+                                        Room Code: <span className="bg-white/90 px-3 py-1 rounded-lg border border-sky-200 shadow-sm tracking-widest">{roomCode}</span>
+                                    </div>
+                                    <CopyToClipboard text={roomCode} onCopy={() => setCopied(true)}>
+                                        <button>+{!copied ? <FaClipboardCheck className="text-sky-600" /> : <FaClipboard className="text-sky-600" />}</button>
+                                    </CopyToClipboard>
+                                </>
+                            )}
+                            {error && (
+                                <div className="mb-4 text-center text-red-600 font-semibold text-lg">
+                                    {error}
+                                </div>
+                            )}
+                        </div>
                         <button
                             disabled={!canStart}
                             onClick={start}
-                            className="px-10 py-4 rounded-3xl text-white shadow-xl transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100
-                         bg-gradient-to-r from-[#AAD977] to-lime-300 hover:from-lime-300 hover:to-[#AAD977] hover:shadow-2xl
-                         flex items-center gap-3 text-xl font-extrabold tracking-wide relative overflow-hidden group"
+                            className="px-12 py-5 rounded-3xl text-white shadow-2xl transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100
+                         bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-emerald-400 hover:to-lime-400 hover:shadow-2xl
+                         flex items-center gap-4 text-2xl font-extrabold tracking-wide relative overflow-hidden group"
                         >
                             <span className="absolute inset-0 bg-white/10 group-hover:bg-white/0 transition-all transform group-hover:scale-150"></span>
-                            <FaPlay className="text-lg" /> START GAME
+                            <FaPlay className="text-2xl" /> START GAME
                         </button>
-                    </div>
+                    </div>                
                 </div>
             </div>
 
