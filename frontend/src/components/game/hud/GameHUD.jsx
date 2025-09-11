@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { FaDollarSign, FaBuilding, FaClock, FaTrophy, FaMoneyBill, FaIdCard, FaBusinessTime, FaBalanceScale, FaGlasses, FaMoneyBillWave, FaCreditCard, FaHandHoldingUsd, FaPiggyBank, FaTruck, FaSignOutAlt, FaDice } from 'react-icons/fa';
+import {
+  FaDollarSign, FaBuilding, FaClock, FaChevronLeft, FaChevronRight, FaSignOutAlt,
+  FaMoneyBillWave, FaCreditCard, FaHandHoldingUsd, FaPiggyBank, FaTruck, FaDice, FaBox
+} from 'react-icons/fa';
 
 /* ----------------------------- Image imports ----------------------------- */
 import imgBusiness from '../../../assets/hud/Business Card.png';
@@ -8,16 +11,7 @@ import imgLoan from '../../../assets/hud/Business Card.png';
 import imgRepay from '../../../assets/hud/Business Card.png';
 import imgDraw from '../../../assets/hud/Business Card.png';
 import imgBank from '../../../assets/hud/Business Card.png';
-import imgOverview from '../../../assets/hud/Business Card.png';
-import imgExplore from '../../../assets/hud/Business Card.png';
 
-import imgCash from '../../../assets/hud/Business Card.png';
-import imgFlag from '../../../assets/hud/Business Card.png';
-import imgAssets from '../../../assets/hud/Business Card.png';
-import imgLoans from '../../../assets/hud/Business Card.png';
-import imgClock from '../../../assets/hud/Business Card.png';
-
-import imgInventory from '../../../assets/hud/Business Card.png';
 import playerIcon from '../../../assets/Images/avatars/panda.png';
 import playerIcon2 from '../../../assets/Images/avatars/CityBuilding.png';
 import playerIcon3 from '../../../assets/Images/avatars/koiFish.png';
@@ -34,6 +28,7 @@ function IconImg({ src, alt = '', className = 'w-5 h-5' }) {
 }
 
 export default function GameHUD({
+  /* existing props */
   playerName = "kevin_park",
   playerNumber = 2,
   netWorth = 5000,
@@ -48,7 +43,12 @@ export default function GameHUD({
   loanBalance = 3000,
   assetsValue = 3500,
   currentBusiness = "ProMotion Gear",
-  currency = 'R'
+  currency = 'R',
+
+  /* NEW props from GameBoardViewer (fixes ESLint errors) */
+  currentTileLabel = '—',   // label of the tile the piece is on
+  onRoll = () => { },        // function to roll dice
+  isMoving = false          // whether the piece is currently animating
 }) {
   const [showInventory, setShowInventory] = useState(false);
   const [showCard, setShowCard] = useState(false);
@@ -64,16 +64,6 @@ export default function GameHUD({
     'p3': playerIcon3,
     'p4': playerIcon4
   };
-
-  // side bar action that sjould pop-up when on specific tiles 
-  const actions = [
-    { id: 'roll', label: 'Roll Dice', img: imgBusiness, accent: 'bg-red-600 text-white' },
-    { id: 'buy', label: 'Buy Asset', img: imgBuy, accent: 'bg-emerald-600 text-white' },
-    { id: 'loan', label: 'Take Loan', img: imgLoan },
-    { id: 'repay', label: 'Repay Loan', img: imgRepay },
-    { id: 'draw', label: 'Draw Card', img: imgDraw },
-    { id: 'bank', label: 'Visit Bank', img: imgBank },
-  ];
 
   // player postion information at the bottom of the HUD
   const players = [
@@ -135,30 +125,19 @@ export default function GameHUD({
         </div>
       </div>
 
-      {/* Player Info */}
-      <div className="top-8 right-12 rounded-xl ">
-        <div className="flex items-center gap-3">
-          {/* Player Icon */}
-          <div className="rounded-full w-12 h-12 flex items-center justify-center text-white font-bold">
-            <img src={playerIcon} alt="Player" className="w-10 h-10 rounded-full" />
+      {/* ===== HUD: top-left ===== */}
+      <div className="fixed top-36 left-4 z-[1050] pointer-events-auto">
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Player chip */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/95 border shadow">
+            <img src={playerIcon} alt="" className="w-12 h-12 rounded-full" />
+            <span className="text-sm text-gray-700">
+              <span className="text-gray-500">Playing:</span> <b>{playerName}</b>
+            </span>
           </div>
-
-          {/* Player Name Section */}
-          <div className="flex flex-col items-start">
-            <span className="text-sm text-gray-500">Playing:</span>
-            <div className="font-bold text-xl">{playerName}</div>
-            <div className="text-sm text-gray-500">No. 2</div>
-          </div>
-        </div>
-
-        {/* Top Right: Role Dice Button */}
-        <div className="absolute top-20 left-6 pointer-events-auto">
-          <button className="flex items-center gap-2 bg-amber-300 hover:bg-amber-500 text-white font-bold py-2 px-4 rounded-xl shadow-md">
-            <FaDice className="text-lg" />
-            Roll Dice
-          </button>
         </div>
       </div>
+
 
       {/* ===== Left action rail ===== */}
       <div className="pointer-events-auto fixed bottom-32 left-6 z-[1000]">
@@ -202,7 +181,7 @@ export default function GameHUD({
         </div>
       </div>
 
-      {/* Top Right: Leave Game Button */}
+      {/* ===== Top Right: Leave Game Button ===== */}
       <div className="absolute top-2 right-12 pointer-events-auto">
         <button className="flex items-center gap-2 bg-red-400 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-xl shadow-md">
           <FaSignOutAlt className="text-lg" />
@@ -210,10 +189,8 @@ export default function GameHUD({
         </button>
       </div>
 
-      {/* ===== Right stack: Balance Sheet + Context ===== */}
+      {/* ===== Right stack: Current Business ===== */}
       <div className="pointer-events-auto fixed bottom-42 right-6 z-[1000] w-[360px] space-y-3">
-
-        {/* Current Business Panel */}
         <div className="rounded-2xl overflow-hidden shadow-2xl border bg-white">
           <div className="px-4 py-2 bg-sky-300 border-b text-white">
             <div className="text-sm font-extrabold tracking-wide">Current Business</div>
@@ -245,7 +222,7 @@ export default function GameHUD({
             return (
               <div
                 key={p.id}
-                className={`px-4 py-2 rounded-2xl border shadow bg-white/95 ${p.active ? 'ring-4 ring-indigo-400' : ''}`}
+                className={`px-4 py-2 rounded-2xl border shadow bg-white/95 ${p.active ? 'ring-4 ring-sky-400' : ''}`}
               >
                 <div className="flex items-center gap-3">
                   <img
@@ -268,11 +245,14 @@ export default function GameHUD({
 
       {/* ===== Inventory pill ===== */}
       <div className="pointer-events-auto fixed bottom-4 right-16 z-[1000]">
-        <button className="px-3 py-2 rounded-xl border bg-white/95 shadow text-sm hover:bg-black/5"
+        <button
+          className="px-3 py-2 rounded-xl border bg-white/95 shadow text-sm hover:bg-black/5"
           onClick={() => setShowInventory(!showInventory)}
-          title="Open inventory">
+          title="Open inventory"
+        >
           <span className="inline-flex items-center gap-2">
-            📦 Inventory
+            <FaBox className="text-sky-300" />
+            Inventory
           </span>
           <span className="ml-2 text-xs text-gray-600">
             {inventorySummary.insurance ? '• Insurance' : ''}
@@ -282,32 +262,47 @@ export default function GameHUD({
         </button>
       </div>
 
-      {/* ===== Inventory Popup ===== */}
+      {/* ===== Inventory Side Popup ===== */}
       {showInventory && (
-        <div className="pointer-events-auto fixed bottom-10 right-16 z-[1100] w-72">
-          <div className="rounded-2xl overflow-hidden shadow-2xl border bg-white">
-            <div className="px-4 py-2 bg-purple-50 border-b text-gray-800">
+        <div className="pointer-events-auto fixed right-16 bottom-16 z-[1100]">
+          <div className="relative w-80 rounded-2xl overflow-hidden shadow-2xl border bg-white">
+            {/* header */}
+            <div className="px-4 py-2 bg-sky-300 border-b text-white flex justify-between items-center">
               <div className="text-sm font-extrabold tracking-wide">Inventory</div>
-            </div>
-            <div className="p-4 bg-[#f6f7f8]">
-              <div className="grid grid-cols-2 gap-2">
-                <div className="bg-gray-100 p-3 rounded text-center border">Card 1</div>
-                <div className="bg-gray-100 p-3 rounded text-center border">Card 2</div>
-                <div className="bg-gray-100 p-3 rounded text-center border">Card 3</div>
-                <div className="bg-gray-100 p-3 rounded text-center border">Card 4</div>
-              </div>
               <button
-                className="w-full mt-3 px-3 py-2 rounded-lg border hover:bg-black/5"
+                className="text-xs text-white hover:text-sky-700"
                 onClick={() => setShowInventory(false)}
               >
                 Close
               </button>
             </div>
+
+            {/* body (example card layout) */}
+            <div className="p-2 bg-[#f6f7f8] text-center space-y-1">
+              <div className="font-bold text-lg text-gray-800">Big Recession</div>
+              <p className="text-gray-700 text-sm">Salary payout reduced this round.</p>
+              <div className="text-md font-semibold text-rose-500">-R3,000</div>
+              <div className="mx-auto w-14 h-14 flex items-center justify-center">
+                <img src={artChance} alt="Card" />
+              </div>
+              <button className="w-full mt-3 px-3 py-2 rounded-lg bg-lime-500 text-white hover:bg-lime-600 shadow">
+                Use Card
+              </button>
+              <div className="flex justify-between items-center mt-2">
+                <button className="p-2 rounded-full bg-gray-100 hover:bg-gray-200">
+                  <FaChevronLeft className="text-gray-600" />
+                </button>
+                <span className="text-xs text-gray-500">1 / 4</span>
+                <button className="p-2 rounded-full bg-gray-100 hover:bg-gray-200">
+                  <FaChevronRight className="text-gray-600" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* ===== Card Popup ===== */}
+      {/* ===== Card Popup (keep this as modal) ===== */}
       {showCard && (
         <div className="fixed inset-0 z-[1100] grid place-items-center bg-black/50">
           <div className="w-[420px] rounded-2xl overflow-hidden shadow-2xl border bg-white">
@@ -363,7 +358,6 @@ export default function GameHUD({
           </div>
         </div>
       )}
-
     </>
   );
 }
