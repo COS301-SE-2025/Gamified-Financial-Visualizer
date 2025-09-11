@@ -153,12 +153,6 @@ const menuItems = [
     icon: <FaQuestionCircle className="mr-1" />,
     items: [
       {
-        label: 'Help Center',
-        sub: 'Guides & FAQs',
-        to: '/support',
-        icon: <FaQuestionCircle className="text-[#B4CB98]" />
-      },
-      {
         label: 'Overview',
         sub: 'Page help sections',
         to: '/support/overview',

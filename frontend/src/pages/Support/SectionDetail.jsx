@@ -591,23 +591,7 @@ const SectionDetail = () => {
                 </div>
             </div>
 
-            {info.upcomingFeatures.length > 0 && (
-                <div className="mt-10">
-                    <h3 className="font-bold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
-                        <FaMagic className="text-purple-500" /> Coming Soon
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                        {info.upcomingFeatures.map((feature, index) => (
-                            <span
-                                key={index}
-                                className="text-xs px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-200 border border-gray-200 dark:border-gray-500"
-                            >
-                                {feature}
-                            </span>
-                        ))}
-                    </div>
-                </div>
-            )}
+            
         </motion.div>
     </div>
 );

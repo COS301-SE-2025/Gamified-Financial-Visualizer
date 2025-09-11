@@ -120,13 +120,9 @@ const OverviewLanding = () => {
             <p className="text-gray-600 dark:text-gray-300 mb-4">Explore different areas of your financial journey</p>
             
             <div className="flex gap-3">
-              <div className="bg-[#fff7ed] dark:bg-gray-800 border border-[#fed7aa] dark:border-gray-700 rounded-lg px-3 py-2 flex items-center gap-2">
-                <FaFire className="text-[#fb923c]" />
-                <span className="text-[#9a3412] dark:text-orange-300 text-sm">{userStats.streakDays} day streak</span>
-              </div>
               <div className="bg-[#fffbeb] dark:bg-gray-800 border border-[#fde68a] dark:border-gray-700 rounded-lg px-3 py-2 flex items-center gap-2">
                 <FaTrophy className="text-[#fbbf24]" />
-                <span className="text-[#92400e] dark:text-yellow-300 text-sm">7 areas to explore</span>
+                <span className="text-[#92400e] dark:text-yellow-300 text-sm">9 areas to explore</span>
               </div>
             </div>
           </div>
