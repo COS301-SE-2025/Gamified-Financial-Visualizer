@@ -77,15 +77,15 @@ export default function GameLobby({
     const [error, setError] = useState('')
     const [copied, setCopied] = useState(false);
     const user = JSON.parse(localStorage.getItem('user'));
-    const token = localStorage.getItem('token');
+    const token = user.token;
     const canStart = useMemo(() => (mode === 'solo' ? true : players >= 2 && players <= 6), [mode, players])
     const lapOptions = [5, 10, 15, 20]
 
 
     const socket = io('http://localhost:5000', {
         auth: {
-            token,   // optional if backend verifies JWT
-            userId: user.id   // attach userId to socket.data
+            token: token,
+            userId: user.id
         }
     });
 
@@ -132,7 +132,6 @@ export default function GameLobby({
             }
         } catch (err) {
             setError(err.message);
-            setError(err.message);
         } finally {
             setLoading(false);
         }
@@ -146,7 +145,7 @@ export default function GameLobby({
             const response = await apiCall('/lobby/join', {
                 method: 'POST',
                 body: JSON.stringify({ code }),
-                user: JSON.stringify({ user_id: user.id, username: user.username })
+                user: JSON.stringify({ user_id: user?.id, username: user?.username })
             });
 
             if (response.success) {
@@ -170,6 +169,8 @@ export default function GameLobby({
                 body: JSON.stringify({
                     gameMode: 'laps',
                     maxLaps: laps,
+                    user: JSON.stringify({ user_id: user?.id, username: user?.username })
+
                 }),
             });
 
@@ -228,8 +229,8 @@ export default function GameLobby({
         }
     };
 
-    // const start = () => setCountdown(true)
     const start = () => {
+        if (!canStart) return;
         socket.emit('lobby:start-game');  // backend will pick up userId from socket.data
         setCountdown(true);
     };
