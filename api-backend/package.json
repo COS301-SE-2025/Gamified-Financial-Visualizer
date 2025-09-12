@@ -6,6 +6,7 @@
     "dev": "concurrently \"redis-server\" \"npx ts-node server.ts\""
   },
   "dependencies": {
+    "@socket.io/redis-adapter": "^8.3.0",
     "@types/axios": "^0.9.36",
     "@types/winston": "^2.4.4",
     "argon2": "^0.43.0",
