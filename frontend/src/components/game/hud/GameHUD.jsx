@@ -1,302 +1,256 @@
-import React from 'react'
+import React, { useState } from 'react';
+import {
+  FaDollarSign, FaBuilding, FaClock, FaChevronLeft, FaChevronRight, FaSignOutAlt,
+  FaMoneyBillWave, FaCreditCard, FaHandHoldingUsd, FaPiggyBank, FaTruck, FaDice, FaBox
+} from 'react-icons/fa';
 
 /* ----------------------------- Image imports ----------------------------- */
-import imgBusiness       from '../../../assets/hud/Business Card.png'
-import imgBuy        from '../../../assets/hud/Business Card.png'
-import imgLoan       from '../../../assets/hud/Business Card.png'
-import imgRepay      from '../../../assets/hud/Business Card.png'
-import imgDraw       from '../../../assets/hud/Business Card.png'
-import imgBank       from '../../../assets/hud/Business Card.png'
-import imgOverview   from '../../../assets/hud/Business Card.png'
-import imgExplore    from '../../../assets/hud/Business Card.png'
+import imgBusiness from '../../../assets/hud/Business Card.png';
+import imgBuy from '../../../assets/hud/Business Card.png';
+import imgLoan from '../../../assets/hud/Business Card.png';
+import imgRepay from '../../../assets/hud/Business Card.png';
+import imgDraw from '../../../assets/hud/Business Card.png';
+import imgBank from '../../../assets/hud/Business Card.png';
 
-import imgCash       from '../../../assets/hud/Business Card.png'
-import imgFlag       from '../../../assets/hud/Business Card.png'
-import imgAssets     from '../../../assets/hud/Business Card.png'
-import imgLoans      from '../../../assets/hud/Business Card.png'
-import imgClock      from '../../../assets/hud/Business Card.png'
+import playerIcon from '../../../assets/Images/avatars/panda.png';
+import playerIcon2 from '../../../assets/Images/avatars/CityBuilding.png';
+import playerIcon3 from '../../../assets/Images/avatars/koiFish.png';
+import playerIcon4 from '../../../assets/Images/avatars/Ramen.png';
 
-import imgInventory  from '../../../assets/hud/Business Card.png'
-
-// --- Card art (right panel + popup) ---
-import artBusiness   from '../../../assets/hud/Business Card.png'
-import artChance     from '../../../assets/hud/Chance Card.png'
-import artCommunity  from '../../../assets/hud/Community Card.png'
-
+// --- Card art ---
+import artBusiness from '../../../assets/hud/Business Card.png';
+import artChance from '../../../assets/hud/Chance Card.png';
+import artCommunity from '../../../assets/hud/Community Card.png';
 
 /* Small helper for consistent icon images */
 function IconImg({ src, alt = '', className = 'w-5 h-5' }) {
-  return <img src={src} alt={alt} className={`inline-block object-contain ${className}`} aria-hidden="true" />
+  return <img src={src} alt={alt} className={`inline-block object-contain ${className}`} aria-hidden="true" />;
 }
-
-function getCardArt({ tile, card }) {
-  // Priority: explicit deck in popup, otherwise infer from tile type
-  if (card?.type === 'deck') {
-    if (card.deck === 'Chance') return artChance
-    return artCommunity // default deck art if not chance
-  }
-  if (tile?.type === 'business') return artBusiness
-  if (tile?.type === 'card') return artChance // generic when landing on a card tile
-  return null
-}
-
 
 export default function GameHUD({
+  /* existing props */
+  playerName = "kevin_park",
+  playerNumber = 2,
+  netWorth = 5000,
+  businesses = 4,
+  totalBusinesses = 10,
+  timePlaying = "10 min",
+  goalLaps = 10,
+  totalLaps = 15,
+  salary = 2000,
+  cardsCount = 4,
+  businessWorth = 6000,
+  loanBalance = 3000,
+  assetsValue = 3500,
+  currentBusiness = "ProMotion Gear",
   currency = 'R',
 
-  // --- Turn / totals ---
-  turn = { name: 'Sam', cash: 5200, assetValue: 6300, loanBalance: 1500, laps: 2, timer: 20 },
-  netWorth,
-  mode = { type: 'laps', target: 12 }, // or { type:'networth', target: 50000 }
+  /* NEW props from GameBoardViewer (fixes ESLint errors) */
+  currentTileLabel = '—',   // label of the tile the piece is on
+  onRoll = () => { },        // function to roll dice
+  isMoving = false          // whether the piece is currently animating
+}) {
+  const [showInventory, setShowInventory] = useState(false);
+  const [showCard, setShowCard] = useState(false);
+  const [activeTab, setActiveTab] = useState('net-worth');
 
-  // --- Current tile (always visible as a badge) ---
-  tile = {
-    id: 'Quantum_Business',
-    type: 'business',              // business | fee | bank | loan_shark | card | start
-    title: 'Quantum Circuit',
-    subtitle: 'Business — Software',
-    price: 3000,
-    incomePerLap: 300,
-    fee: null,
-  },
+  const computedNetWorth = netWorth;
+  const availableCash = netWorth - assetsValue + loanBalance;
 
-  // --- Context panel on right (optional extra info/actions) ---
-  context = null, // if null we’ll mirror "tile"
+  // Map avatar imports to player IDs
+  const playerAvatars = {
+    'p1': playerIcon2,
+    'p2': playerIcon,
+    'p3': playerIcon3,
+    'p4': playerIcon4
+  };
 
-  // --- Card popup (shows when you draw or land on a tile that requires a resolution) ---
-  showCard = false,
-  card = {
-    type: 'deck',                  // deck | tile
-    deck: 'Chance',                // Chance | Community (when type === 'deck')
+  // player postion information at the bottom of the HUD
+  const players = [
+    { id: 'p1', name: 'lily_rose', position: 5 },
+    { id: 'p2', name: playerName, position: 10, active: true },
+    { id: 'p3', name: 'nile_waters', position: 15 },
+    { id: 'p4', name: 'man_person', position: 20 },
+  ];
+
+  // Mock inventory data
+  const inventorySummary = {
+    insurance: true,
+    getOutOfBankruptcy: false,
+    cards: cardsCount
+  };
+
+  // Mock card data
+  const card = {
+    type: 'deck',
+    deck: 'Chance',
     title: 'Big Recession',
     body: 'Salary payout reduced this round.',
     delta: -3000,
-  },
-  onResolveCard = () => {},
-
-  // --- Actions (left rail) ---
-  onAction = () => {},
-  disabled = {},
-
-  // --- Players ribbon ---
-  players = [
-    { id: 'p1', name: 'Alex', cash: 4200, assetValue: 3000, loanBalance: 0, piece: '🚗' },
-    { id: 'p2', name: 'Sam', cash: 5200, assetValue: 6300, loanBalance: 1500, piece: '🐶', active: true },
-    { id: 'p3', name: 'Charlie', cash: 1900, assetValue: 800, loanBalance: 500, piece: '🛶' },
-  ],
-
-  // --- Inventory pill ---
-  inventorySummary = { insurance: true, getOutOfBankruptcy: false, cards: 1 },
-}) {
-  const computedNetWorth = (turn.cash ?? 0) + (turn.assetValue ?? 0) - (turn.loanBalance ?? 0)
-  const _netWorth = typeof netWorth === 'number' ? netWorth : computedNetWorth
-  const modeLabel =
-    mode?.type === 'networth'
-      ? `Goal: Net Worth ≥ ${currency}${Number(mode.target || 0).toLocaleString()}`
-      : `Goal: ${Number(mode?.target || 0)} Laps`
-
-  const actions = [
-    { id: 'roll',    label: 'Roll Dice',  img: imgBusiness },
-    { id: 'buy',     label: 'Buy Asset',  img: imgBuy,    accent: 'bg-emerald-600 text-white', disabled: disabled.buy || !(tile?.type === 'business') },
-    { id: 'loan',    label: 'Take Loan',  img: imgLoan,   disabled: disabled.loan },
-    { id: 'repay',   label: 'Repay Loan', img: imgRepay,  disabled: disabled.repay || (turn.loanBalance ?? 0) <= 0 },
-    { id: 'draw',    label: 'Draw Card',  img: imgDraw,   disabled: disabled.draw || !(tile?.type === 'card') },
-    { id: 'bank',    label: 'Visit Bank', img: imgBank,   disabled: disabled.bank || !(tile?.type === 'bank' || tile?.type === 'loan_shark') },
-    { id: 'overview',label: 'Board Overview', img: imgOverview },
-    { id: 'explore', label: 'Explore',    img: imgExplore, hotkey: 'C' },
-  ]
-
-  const info = context || tile || {}
-  const tileHeaderColor = {
-    business: 'bg-sky-50',
-    bank: 'bg-amber-50',
-    loan_shark: 'bg-rose-50',
-    fee: 'bg-lime-50',
-    start: 'bg-emerald-50',
-    card: 'bg-indigo-50',
-  }[info.type || 'business']
+  };
 
   return (
     <>
-      {/* ===== Top strip + tiny tile badge ===== */}
-      <div className="pointer-events-auto fixed top-4 left-1/2 -translate-x-1/2 z-[1000]">
-        <div className="flex items-center gap-6 px-5 py-2 rounded-2xl bg-white/95 dark:bg-gray-900/90 border shadow">
-          <div className="font-bold">Turn: {turn.name}</div>
-
+      {/* ===== Top Strip ===== */}
+      <div className="pointer-events-auto fixed top-22 left-1/2 -translate-x-1/2 z-[1000]">
+        <div className="flex items-center gap-6 px-5 py-2 rounded-2xl bg-white/95 border shadow">
+          {/* Net Worth */}
           <div className="flex items-center gap-2">
-            <IconImg src={imgCash} alt="Cash" />
-            <span>Cash: {currency}{Number(turn.cash ?? 0).toLocaleString()}</span>
+            <FaDollarSign className="text-lg text-lime-500" />
+            <span>Net Worth: {currency}{computedNetWorth.toLocaleString()}</span>
           </div>
 
-          <div className="hidden sm:flex items-center gap-2">
-            <IconImg src={imgFlag} alt="Net Worth" />
-            <span>Net Worth: {currency}{Number(_netWorth).toLocaleString()}</span>
-          </div>
-
-          <div className="hidden md:flex items-center gap-2">
-            <IconImg src={imgAssets} alt="Assets" />
-            <span>Assets: {currency}{Number(turn.assetValue ?? 0).toLocaleString()}</span>
-          </div>
-
-          <div className="hidden md:flex items-center gap-2">
-            <IconImg src={imgLoans} alt="Loans" />
-            <span>Loans: {currency}{Number(turn.loanBalance ?? 0).toLocaleString()}</span>
-          </div>
-
+          {/* Businesses */}
           <div className="flex items-center gap-2">
-            <IconImg src={imgClock} alt="Timer" />
-            <span>{turn.timer}s</span>
+            <FaBuilding className="text-lg text-sky-500" />
+            <span>{businesses} Businesses Left</span>
           </div>
 
-          <div className="ml-2 text-xs text-gray-600 dark:text-gray-300">{modeLabel}</div>
+          {/* Time Played */}
+          <div className="flex items-center gap-2">
+            <FaClock className="text-lg text-yellow-500" />
+            <span>{timePlaying} min</span>
+          </div>
+
+          {/* Player Icon */}
+          <div className="flex items-center gap-2">
+            <img src={playerIcon} alt="Player" className="w-8 h-8 rounded-full" />
+            <span>Playing: {playerName}</span>
+          </div>
+
+          {/* Goal Laps */}
+          <div className="ml-2 text-xs text-gray-600">
+            Goal Laps: {goalLaps}/{totalLaps} Laps
+          </div>
         </div>
+      </div>
 
-        {/* Tile badge */}
-        {tile?.title && (
-          <div className="mt-2 mx-auto w-max px-3 py-1 rounded-xl border bg-white/95 dark:bg-gray-900/90 shadow text-xs text-gray-700 dark:text-gray-200">
-            <span className="font-semibold">{tile.title}</span>
-            {tile.subtitle ? <span className="opacity-70"> — {tile.subtitle}</span> : null}
+      {/* ===== HUD: top-left ===== */}
+      <div className="fixed top-36 left-4 z-[1050] pointer-events-auto">
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Player chip */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/95 border shadow">
+            <img src={playerIcon} alt="" className="w-12 h-12 rounded-full" />
+            <span className="text-sm text-gray-700">
+              <span className="text-gray-500">Playing:</span> <b>{playerName}</b>
+            </span>
           </div>
-        )}
+        </div>
       </div>
 
       {/* ===== Left action rail ===== */}
-      <div className="pointer-events-auto fixed bottom-44 left-6 z-[1000]">
-        <div className="space-y-2">
-          {actions.map((a) => {
-            const base = 'flex items-center gap-3 px-4 py-2 rounded-2xl border shadow text-gray-800 dark:text-gray-100 bg-white/95 dark:bg-gray-900/90'
-            const state = a.disabled ? 'opacity-50 cursor-not-allowed' : 'border-black/10 hover:bg-black/5 dark:hover:bg-white/10'
-            return (
-              <button
-                key={a.id}
-                disabled={a.disabled}
-                onClick={() => !a.disabled && onAction(a.id)}
-                className={`${base} ${a.accent || ''} ${a.accent ? '' : state}`}
-              >
-                <IconImg src={a.img} alt="" />
-                <span className="font-semibold">{a.label}</span>
-                {a.hotkey && (
-                  <span className="ml-auto text-[11px] bg-white/80 dark:bg-gray-800/80 border px-1.5 py-0.5 rounded">
-                    {a.hotkey}
-                  </span>
-                )}
-              </button>
-            )
-          })}
+      <div className="pointer-events-auto fixed bottom-32 left-6 z-[1000]">
+        {/* Balance Sheet */}
+        <div className="w-72 rounded-2xl overflow-hidden shadow-2xl border bg-white">
+          <div className="px-4 py-2 bg-sky-300 border-b text-white">
+            <div className="text-sm font-extrabold tracking-wide just">Balance Sheet</div>
+          </div>
+          <div className="p-4 bg-[#f6f7f8]">
+            <div className="flex justify-between py-1.5 text-sm">
+              <FaDollarSign className="text-base text-gray-600" />
+              <span className="text-gray-600">Net Worth</span>
+              <span className="font-semibold text-gray-800">R {netWorth.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between py-1.5 text-sm">
+              <FaMoneyBillWave className="text-base text-gray-600" />
+              <span className="text-gray-600">Salary</span>
+              <span className="font-semibold text-gray-800">R {salary.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between py-1.5 text-sm">
+              <FaCreditCard className="text-base text-gray-600" />
+              <span className="text-gray-600">Cards</span>
+              <span className="font-semibold text-gray-800">{cardsCount} Cards</span>
+            </div>
+            <div className="flex justify-between py-1.5 text-sm">
+              <FaBuilding className="text-base text-gray-600" />
+              <span className="text-gray-600">Business Worth</span>
+              <span className="font-semibold text-gray-800">R {businessWorth.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between py-1.5 text-sm">
+              <FaHandHoldingUsd className="text-base text-gray-600" />
+              <span className="text-gray-600">Loan Balance</span>
+              <span className="font-semibold text-red-600">R {loanBalance.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between py-1.5 text-sm">
+              <FaPiggyBank className="text-base text-gray-600" />
+              <span className="text-gray-600">Assets Value</span>
+              <span className="font-semibold text-gray-800">R {assetsValue.toLocaleString()}</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* ===== Right stack: Balance Sheet + Tile/Context ===== */}
-      <div className="pointer-events-auto fixed bottom-32 right-6 z-[1000] w-[360px] space-y-3">
-        {/* Balance Sheet */}
+      {/* ===== Top Right: Leave Game Button ===== */}
+      <div className="absolute top-2 right-12 pointer-events-auto">
+        <button className="flex items-center gap-2 bg-red-400 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-xl shadow-md">
+          <FaSignOutAlt className="text-lg" />
+          Leave Game
+        </button>
+      </div>
+
+      {/* ===== Right stack: Current Business ===== */}
+      <div className="pointer-events-auto fixed top-40 right-6 z-[1000] w-[360px] space-y-3">
         <div className="rounded-2xl overflow-hidden shadow-2xl border bg-white">
-          <div className="px-4 py-2 bg-emerald-50 border-b text-gray-800">
-            <div className="text-sm font-extrabold tracking-wide">Balance Sheet</div>
+          <div className="px-4 py-2 bg-sky-300 border-b text-white">
+            <div className="text-sm font-extrabold tracking-wide">Current Business</div>
           </div>
-          <div className="p-4 bg-[#f6f7f8]">
-            <Row k="Cash" v={`${currency}${Number(turn.cash ?? 0).toLocaleString()}`} />
-            <Row k="Assets Value" v={`${currency}${Number(turn.assetValue ?? 0).toLocaleString()}`} />
-            <Row k="Loan Balance" v={`${currency}${Number(turn.loanBalance ?? 0).toLocaleString()}`} />
-            <div className="mt-3 border-t pt-2 flex items-center justify-between text-sm">
-              <span className="text-gray-500">Net Worth</span>
-              <span className="font-extrabold">{currency}{Number(_netWorth).toLocaleString()}</span>
+          <div className="p-4 bg-sky-50 text-sm space-y-2">
+            <div className="text-center py-2 bg-white rounded font-semibold">
+              {currentBusiness}
             </div>
-            <div className="mt-2 text-xs text-gray-600 flex items-center justify-between">
-              <span>Laps: {Number(turn.laps ?? 0)}</span>
-              <span>{modeLabel}</span>
+            <div className="flex justify-between py-1.5">
+              <span className="text-gray-600">Business Worth</span>
+              <span className="font-semibold text-gray-800">{currency}{businessWorth.toLocaleString()}</span>
             </div>
+            <img src={artBusiness} alt="Player" className="w-16 h-18 left-12" />
+            <button
+              className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl border shadow-sm bg-lime-600 text-white"
+            >
+              <FaTruck className="text-lg text-white" />
+              Manage Business
+            </button>
           </div>
         </div>
-
-        {/* Tile/Context Panel */}
-        {info?.type && (
-          <div className="rounded-2xl overflow-hidden shadow-2xl border bg-white">
-            <div className={`px-4 py-2 ${tileHeaderColor} border-b text-gray-800`}>
-              <div className="text-sm font-extrabold tracking-wide">{info.title}</div>
-              {info.subtitle && <div className="text-[11px] text-gray-600">{info.subtitle}</div>}
-            </div>
-            <div className="p-4 bg-[#f6f3ea] text-sm space-y-2">
-              {info.type === 'business' && (
-                <>
-                  <Row k="Price" v={`${currency}${Number(info.price || 0).toLocaleString()}`} />
-                  <Row k="Income / Lap" v={`${currency}${Number(info.incomePerLap || 0).toLocaleString()}`} />
-                  <button
-                    className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl border shadow-sm bg-emerald-600 text-white"
-                    onClick={() => onAction('buy')}
-                  >
-                    <IconImg src={imgBuy} alt="" className="w-4 h-4" />
-                    Buy for {currency}{Number(info.price || 0).toLocaleString()}
-                  </button>
-                </>
-              )}
-
-              {info.type === 'fee' && (
-                <>
-                  <Row k="Fee Due" v={`${currency}${Number(info.fee || 0).toLocaleString()}`} />
-                  <button className="w-full px-3 py-2 rounded-xl border hover:bg-black/5" onClick={() => onAction('pay')}>
-                    Pay Now
-                  </button>
-                </>
-              )}
-
-              {(info.type === 'bank' || info.type === 'loan_shark') && (
-                <div className="grid grid-cols-2 gap-2">
-                  <button className="px-3 py-2 rounded-xl border hover:bg-black/5 inline-flex items-center justify-center gap-2"
-                          onClick={() => onAction('loan')}>
-                    <IconImg src={imgLoan} alt="" className="w-4 h-4" /> Loan
-                  </button>
-                  <button className="px-3 py-2 rounded-xl border hover:bg-black/5 inline-flex items-center justify-center gap-2"
-                          onClick={() => onAction('repay')} disabled={(turn.loanBalance ?? 0) <= 0}>
-                    <IconImg src={imgRepay} alt="" className="w-4 h-4" /> Repay
-                  </button>
-                </div>
-              )}
-
-              {info.type === 'card' && (
-                <button className="w-full px-3 py-2 rounded-xl border hover:bg-black/5 inline-flex items-center justify-center gap-2"
-                        onClick={() => onAction('draw')}>
-                  <IconImg src={imgDraw} alt="" className="w-4 h-4" /> Draw a card
-                </button>
-              )}
-
-              {info.type === 'start' && (
-                <div className="text-gray-700">Collect salary when passing this tile.</div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* ===== Bottom player ribbon ===== */}
       <div className="pointer-events-auto fixed bottom-3 left-1/2 -translate-x-1/2 z-[1000]">
         <div className="flex items-end gap-4">
           {players.map((p) => {
-            const pNet = (p.cash ?? 0) + (p.assetValue ?? 0) - (p.loanBalance ?? 0)
+            const pNet = (p.cash ?? 0) + (p.assetValue ?? 0) - (p.loanBalance ?? 0);
             return (
-              <div key={p.id}
-                   className={`px-4 py-2 rounded-2xl border shadow bg-white/95 dark:bg-gray-900/90 ${p.active ? 'ring-4 ring-indigo-400' : ''}`}>
+              <div
+                key={p.id}
+                className={`px-4 py-2 rounded-2xl border shadow bg-white/95 ${p.active ? 'ring-4 ring-sky-400' : ''}`}
+              >
                 <div className="flex items-center gap-3">
-                  <div className="text-2xl leading-none">{p.piece}</div>
+                  <img
+                    src={playerAvatars[p.id]}
+                    alt={p.name}
+                    className="w-8 h-8 rounded-full object-cover border-2 border-gray-200"
+                  />
                   <div>
-                    <div className={`font-extrabold ${p.active ? 'text-indigo-700 dark:text-indigo-300' : ''}`}>{p.name}</div>
-                    <div className="text-[13px] text-gray-600 dark:text-gray-300">
-                      Cash {currency}{Number(p.cash ?? 0).toLocaleString()} · Net {currency}{Number(pNet).toLocaleString()}
+                    <div className="text-lg font-bold">{p.name}</div>
+                    <div className="text-[13px] text-gray-600">
+                      Pos: {p.position} · Net {currency}{Number(pNet).toLocaleString()}
                     </div>
                   </div>
                 </div>
               </div>
-            )
+            );
           })}
         </div>
       </div>
 
       {/* ===== Inventory pill ===== */}
-      <div className="pointer-events-auto fixed top-4 right-6 z-[1000]">
-        <button className="px-3 py-2 rounded-xl border bg-white/95 dark:bg-gray-900/90 shadow text-sm hover:bg-black/5"
-                onClick={() => onAction('inventory')}
-                title="Open inventory">
+      <div className="pointer-events-auto fixed bottom-4 right-16 z-[1000]">
+        <button
+          className="px-3 py-2 rounded-xl border bg-white/95 shadow text-sm hover:bg-black/5"
+          onClick={() => setShowInventory(!showInventory)}
+          title="Open inventory"
+        >
           <span className="inline-flex items-center gap-2">
-            <IconImg src={imgInventory} alt="" />
+            <FaBox className="text-sky-300" />
             Inventory
           </span>
           <span className="ml-2 text-xs text-gray-600">
@@ -307,20 +261,57 @@ export default function GameHUD({
         </button>
       </div>
 
-      {/* ===== Card Popup (deck or tile mirror) ===== */}
+      {/* ===== Inventory Side Popup ===== */}
+      {showInventory && (
+        <div className="pointer-events-auto fixed right-16 bottom-16 z-[1100]">
+          <div className="relative w-80 rounded-2xl overflow-hidden shadow-2xl border bg-white">
+            {/* header */}
+            <div className="px-4 py-2 bg-sky-300 border-b text-white flex justify-between items-center">
+              <div className="text-sm font-extrabold tracking-wide">Inventory</div>
+              <button
+                className="text-xs text-white hover:text-sky-700"
+                onClick={() => setShowInventory(false)}
+              >
+                Close
+              </button>
+            </div>
+
+            {/* body (example card layout) */}
+            <div className="p-2 bg-[#f6f7f8] text-center space-y-1">
+              <div className="font-bold text-lg text-gray-800">Big Recession</div>
+              <p className="text-gray-700 text-sm">Salary payout reduced this round.</p>
+              <div className="text-md font-semibold text-rose-500">-R3,000</div>
+              <div className="mx-auto w-14 h-14 flex items-center justify-center">
+                <img src={artChance} alt="Card" />
+              </div>
+              <button className="w-full mt-3 px-3 py-2 rounded-lg bg-lime-500 text-white hover:bg-lime-600 shadow">
+                Use Card
+              </button>
+              <div className="flex justify-between items-center mt-2">
+                <button className="p-2 rounded-full bg-gray-100 hover:bg-gray-200">
+                  <FaChevronLeft className="text-gray-600" />
+                </button>
+                <span className="text-xs text-gray-500">1 / 4</span>
+                <button className="p-2 rounded-full bg-gray-100 hover:bg-gray-200">
+                  <FaChevronRight className="text-gray-600" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== Card Popup (keep this as modal) ===== */}
       {showCard && (
         <div className="fixed inset-0 z-[1100] grid place-items-center bg-black/50">
           <div className="w-[420px] rounded-2xl overflow-hidden shadow-2xl border bg-white">
             {/* header */}
             <div className={`px-4 py-2 ${card.type === 'deck'
               ? (card.deck === 'Chance' ? 'bg-amber-50' : 'bg-rose-50')
-              : tileHeaderColor} border-b`}>
+              : 'bg-sky-50'} border-b`}>
               <div className="text-sm font-extrabold tracking-wide">
-                {card.type === 'deck' ? `${card.deck} Card` : `${tile?.title || 'Tile'}`}
+                {card.type === 'deck' ? `${card.deck} Card` : 'Tile'}
               </div>
-              {card.type !== 'deck' && tile?.subtitle && (
-                <div className="text-[11px] text-gray-600">{tile.subtitle}</div>
-              )}
             </div>
 
             {/* body */}
@@ -336,47 +327,30 @@ export default function GameHUD({
                   )}
                 </>
               ) : (
-                <>
-                  {tile?.type === 'business' && (
-                    <>
-                      <Row k="Price" v={`${currency}${Number(tile.price || 0).toLocaleString()}`} />
-                      <Row k="Income / Lap" v={`${currency}${Number(tile.incomePerLap || 0).toLocaleString()}`} />
-                    </>
-                  )}
-                  {tile?.type === 'fee' && <Row k="Fee" v={`${currency}${Number(tile.fee || 0).toLocaleString()}`} />}
-                  {tile?.type === 'start' && <div>Collect salary when passing.</div>}
-                  {(tile?.type === 'bank' || tile?.type === 'loan_shark') && <div>Banking actions available.</div>}
-                </>
+                <div>Tile information would appear here.</div>
               )}
             </div>
 
             {/* footer buttons */}
             <div className="p-3 bg-white border-t flex gap-2 justify-end">
               {card.type === 'deck' ? (
-                <button className="px-3 py-2 rounded-lg border hover:bg-black/5" onClick={() => onResolveCard('ok')}>OK</button>
+                <button
+                  className="px-3 py-2 rounded-lg border hover:bg-black/5"
+                  onClick={() => setShowCard(false)}
+                >
+                  OK
+                </button>
               ) : (
                 <>
-                  {tile?.type === 'business' && (
-                    <button className="px-3 py-2 rounded-lg border bg-emerald-600 text-white"
-                            onClick={() => onResolveCard('buy')}>
-                      Buy
-                    </button>
-                  )}
-                  {tile?.type === 'fee' && (
-                    <button className="px-3 py-2 rounded-lg border"
-                            onClick={() => onResolveCard('pay')}>
-                      Pay
-                    </button>
-                  )}
-                  {(tile?.type === 'bank' || tile?.type === 'loan_shark') && (
-                    <>
-                      <button className="px-3 py-2 rounded-lg border"
-                              onClick={() => onResolveCard('loan')}>Loan</button>
-                      <button className="px-3 py-2 rounded-lg border"
-                              onClick={() => onResolveCard('repay')}>Repay</button>
-                    </>
-                  )}
-                  <button className="px-3 py-2 rounded-lg border hover:bg-black/5" onClick={() => onResolveCard('close')}>Close</button>
+                  <button className="px-3 py-2 rounded-lg border bg-emerald-600 text-white">
+                    Buy
+                  </button>
+                  <button
+                    className="px-3 py-2 rounded-lg border hover:bg-black/5"
+                    onClick={() => setShowCard(false)}
+                  >
+                    Close
+                  </button>
                 </>
               )}
             </div>
@@ -384,15 +358,5 @@ export default function GameHUD({
         </div>
       )}
     </>
-  )
-}
-
-/* tiny helper */
-function Row({ k, v }) {
-  return (
-    <div className="flex justify-between py-1.5 text-sm">
-      <span className="text-gray-600">{k}</span>
-      <span className="font-semibold text-gray-800">{v}</span>
-    </div>
-  )
+  );
 }
