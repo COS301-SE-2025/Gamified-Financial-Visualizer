@@ -138,7 +138,6 @@ export default function GameHUD({
         </div>
       </div>
 
-
       {/* ===== Left action rail ===== */}
       <div className="pointer-events-auto fixed bottom-32 left-6 z-[1000]">
         {/* Balance Sheet */}
@@ -190,7 +189,7 @@ export default function GameHUD({
       </div>
 
       {/* ===== Right stack: Current Business ===== */}
-      <div className="pointer-events-auto fixed bottom-42 right-6 z-[1000] w-[360px] space-y-3">
+      <div className="pointer-events-auto fixed top-40 right-6 z-[1000] w-[360px] space-y-3">
         <div className="rounded-2xl overflow-hidden shadow-2xl border bg-white">
           <div className="px-4 py-2 bg-sky-300 border-b text-white">
             <div className="text-sm font-extrabold tracking-wide">Current Business</div>
