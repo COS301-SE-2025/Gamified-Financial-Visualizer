@@ -208,8 +208,7 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
    */
   router.post('/matchmaking/quick-match', async (req: Request, res: Response) => {
     try {
-      const { user_id, username } = req.user as any;
-      const { gameMode, maxLaps } = req.body;
+      const { gameMode, maxLaps, user_id, username } = req.body;
 
       const preferences = {
         gameMode: gameMode || 'laps',
