@@ -41,8 +41,6 @@ function getUser() {
   }
 }
 
-const AVAILABLE_TAGS = ['Cash Cows', 'Goal Setters', 'Deal Hunters', 'AR Explorers', 'Debt Slayers'];
-
 // Optional tiny utility
 const clamp = (n, min, max) => Math.min(Math.max(n, min), max);
 
@@ -60,7 +58,12 @@ export default function CommunityDashboard() {
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [postType, setPostType] = useState(''); // 'Achievement' | 'Goal' | 'General'
   const [description, setDescription] = useState('');
-  const [selectedTags, setSelectedTags] = useState([]);
+
+  // Community tags (from API)
+  const [communityOptions, setCommunityOptions] = useState([]); // [{community_id, community_name}]
+  const [selectedCommunityIds, setSelectedCommunityIds] = useState([]); // number[]
+
+  // Achievement picker
   const [selectedAchievementId, setSelectedAchievementId] = useState(null); // what you send to backend
   const [recentBanners, setRecentBanners] = useState([]); // [{achievementId, title, bannerPath}]
   const [showBannerDropdown, setShowBannerDropdown] = useState(false);
@@ -95,7 +98,7 @@ export default function CommunityDashboard() {
   useEffect(() => {
     if (!userId) return;
     fetch(`${API_BASE}/social/achievements/${userId}`)
-      .then(r => r.ok ? r.json() : Promise.reject(r))
+      .then(r => (r.ok ? r.json() : Promise.reject(r)))
       .then(json => {
         const list = Array.isArray(json?.data) ? json.data : [];
         setRecentBanners(list); // [{achievementId, title, bannerPath}]
@@ -106,12 +109,34 @@ export default function CommunityDashboard() {
       });
   }, [userId]);
 
+  // ----------- API: Load communities for tag chips -----------
+  useEffect(() => {
+    if (!userId) return;
+    fetch(`${API_BASE}/social/communities/${userId}`)
+      .then(r => (r.ok ? r.json() : Promise.reject(r)))
+      .then(json => {
+        const list = Array.isArray(json?.data) ? json.data : [];
+        setCommunityOptions(list); // [{community_id, community_name}]
+        // If you previously stored tag names in router handoff, try to map them here:
+        if (location.state?.shareAchievement?.tags?.length) {
+          const names = location.state.shareAchievement.tags.slice(0, 3);
+          const mappedIds = list
+            .filter(c => names.includes(c.community_name))
+            .map(c => c.community_id);
+          if (mappedIds.length) setSelectedCommunityIds(mappedIds);
+        }
+      })
+      .catch(() => {
+        setCommunityOptions([]); // gracefully degrade
+      });
+  }, [userId, location.state]);
+
   // ----------- API: Load feed -----------
   const loadFeed = useCallback(() => {
     if (!userId) return;
     setLoadingFeed(true);
     fetch(`${API_BASE}/social/feed/${userId}`)
-      .then(r => r.ok ? r.json() : Promise.reject(r))
+      .then(r => (r.ok ? r.json() : Promise.reject(r)))
       .then(json => {
         const data = Array.isArray(json?.data) ? json.data : [];
         // map into UI shape
@@ -161,7 +186,6 @@ export default function CommunityDashboard() {
       setPostType('Achievement');
       setSelectedAchievementId(handoff.achievementId || null);
       setSelectedBannerPreview(handoff.bannerUrl || null);
-      setSelectedTags(Array.isArray(handoff.tags) ? handoff.tags.slice(0, 3) : []);
       setDescription(handoff.title ? `🏆 ${handoff.title}` : 'Just unlocked a new achievement!');
       window.history.replaceState({}, document.title);
     }
@@ -261,7 +285,7 @@ export default function CommunityDashboard() {
         userId,
         achievementId: selectedAchievementId,
         caption: description,
-        communityTagIds: [] // if you map tag names -> ids, pass them here
+        communityTagIds: selectedCommunityIds // <-- send IDs from API
       })
     })
       .then(r => (r.ok ? r.json() : Promise.reject(r)))
@@ -270,7 +294,7 @@ export default function CommunityDashboard() {
         setShowCreatePost(false);
         setPostType('');
         setDescription('');
-        setSelectedTags([]);
+        setSelectedCommunityIds([]);
         setSelectedAchievementId(null);
         setSelectedBannerPreview(null);
         setShowBannerDropdown(false);
@@ -577,27 +601,32 @@ export default function CommunityDashboard() {
             <div>
               <div className="text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">Add community tags (max 3)</div>
               <div className="flex flex-wrap gap-2">
-                {AVAILABLE_TAGS.map(tag => (
-                  <button
-                    key={tag}
-                    onClick={() => {
-                      setSelectedTags(prev =>
-                        prev.includes(tag)
-                          ? prev.filter(t => t !== tag)
-                          : prev.length < 3
-                          ? [...prev, tag]
-                          : prev
-                      );
-                    }}
-                    className={`px-3 py-1 rounded-full text-sm border transition ${
-                      selectedTags.includes(tag)
-                        ? 'bg-[#E0F2FE] text-[#065989] border-[#93C5FD]'
-                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
-                    }`}
-                  >
-                    {selectedTags.includes(tag) && <FaCheck className="inline mr-1" />} {tag}
-                  </button>
-                ))}
+                {communityOptions.length === 0 && (
+                  <span className="text-xs text-gray-500">No communities.</span>
+                )}
+
+                {communityOptions.map(c => {
+                  const selected = selectedCommunityIds.includes(c.community_id);
+                  return (
+                    <button
+                      key={c.community_id}
+                      onClick={() => {
+                        setSelectedCommunityIds(prev => {
+                          if (selected) return prev.filter(id => id !== c.community_id);
+                          if (prev.length >= 3) return prev; // cap 3
+                          return [...prev, c.community_id];
+                        });
+                      }}
+                      className={`px-3 py-1 rounded-full text-sm border transition ${
+                        selected
+                          ? 'bg-[#E0F2FE] text-[#065989] border-[#93C5FD]'
+                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
+                      }`}
+                    >
+                      {selected && <FaCheck className="inline mr-1" />} {c.community_name}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
