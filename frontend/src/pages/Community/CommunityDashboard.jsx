@@ -11,7 +11,7 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaComment,
-  FaEye,
+  FaEye as EyeIcon,
   FaGamepad,
   FaHeart,
   FaPaperPlane,
@@ -24,62 +24,52 @@ import {
   FaExclamationTriangle
 } from 'react-icons/fa';
 
-// Avatars & banners (fallbacks)
+// Fallbacks (only used if you want to keep dummy posts visible before API returns)
 import avatar1 from '../../assets/Images/avatars/Totoro.png';
-import avatar2 from '../../assets/Images/avatars/BlueSky.png';
 import banner1 from '../../assets/Images/achievements banners/1.png';
-import banner2 from '../../assets/Images/achievements banners/17.png';
-import banner3 from '../../assets/Images/achievements banners/25.png';
-import banner4 from '../../assets/Images/achievements banners/14.png';
 
-const initialPosts = [
-  {
-    id: 1,
-    user: { name: 'satoshi_nak', level: 'Silver', avatar: avatar1 },
-    banner: banner1,
-    content: 'Just unlocked the Avid Scholar achievment!! 💰',
-    communities: ['Cash Cows', 'Goal Setters'],
-    likes: 42,
-    comments: [
-      { id: 11, user: 'finance_wiz', text: 'Congrats! That badge is tough to get!' },
-      { id: 12, user: 'money_master', text: 'Welcome to the Cash Cows club!' }
-    ]
-  },
-  {
-    id: 2,
-    user: { name: 'snow', level: 'Platinum', avatar: avatar2 },
-    banner: banner2,
-    content: 'Won another achievement today 🎯 #CashCows',
-    communities: ['Cash Cows'],
-    likes: 31,
-    comments: [{ id: 21, user: 'budget_boss', text: 'Great job! Keep it up!' }]
+// ---------- Config ----------
+const API_BASE = 'http://localhost:5000/api/community';
+
+// Helper to read user once
+function getUser() {
+  try {
+    const u = JSON.parse(localStorage.getItem('user'));
+    return u || null;
+  } catch {
+    return null;
   }
-];
+}
 
-// Available tags user can add to a post (max 3)
 const AVAILABLE_TAGS = ['Cash Cows', 'Goal Setters', 'Deal Hunters', 'AR Explorers', 'Debt Slayers'];
 
-const CommunityDashboard = () => {
+// Optional tiny utility
+const clamp = (n, min, max) => Math.min(Math.max(n, min), max);
+
+export default function CommunityDashboard() {
   const location = useLocation();
+  const user = getUser();
+  const userId = user?.id ?? null;
 
-  // Feed state
-  const [posts, setPosts] = useState(initialPosts);
-  const [likedPosts, setLikedPosts] = useState([]);
-  const [commentInputs, setCommentInputs] = useState({});
+  // Feed state (from backend)
+  const [posts, setPosts] = useState([]); // array of posts from /social/feed/:userId
+  const [likedPosts, setLikedPosts] = useState([]); // local highlight
+  const [loadingFeed, setLoadingFeed] = useState(false);
 
-  // Create-post modal state
+  // Create-post modal
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [postType, setPostType] = useState(''); // 'Achievement' | 'Goal' | 'General'
   const [description, setDescription] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
-  const [uploadImageFile, setUploadImageFile] = useState(null);
-
-  // Recent achievement banners (image dropdown/gallery source)
-  const [recentBanners, setRecentBanners] = useState([]);
+  const [selectedAchievementId, setSelectedAchievementId] = useState(null); // what you send to backend
+  const [recentBanners, setRecentBanners] = useState([]); // [{achievementId, title, bannerPath}]
   const [showBannerDropdown, setShowBannerDropdown] = useState(false);
-  const [selectedBanner, setSelectedBanner] = useState(null);
+  const [selectedBannerPreview, setSelectedBannerPreview] = useState(null);
 
-  // Pagination
+  // Comments input
+  const [commentInputs, setCommentInputs] = useState({}); // { [postId]: "text" }
+
+  // Pagination (feed – client-side; backend already limits to 50 per your service)
   const POSTS_PER_PAGE = 2;
   const [postPage, setPostPage] = useState(1);
   const totalPostPages = Math.max(1, Math.ceil(posts.length / POSTS_PER_PAGE));
@@ -89,8 +79,8 @@ const CommunityDashboard = () => {
   }, [posts, postPage]);
 
   // Banner dropdown pagination
-  const [bannerPage, setBannerPage] = useState(1);
   const BANNERS_PER_PAGE = 6;
+  const [bannerPage, setBannerPage] = useState(1);
   const totalBannerPages = Math.max(1, Math.ceil(recentBanners.length / BANNERS_PER_PAGE));
   const paginatedBanners = useMemo(() => {
     const start = (bannerPage - 1) * BANNERS_PER_PAGE;
@@ -101,140 +91,245 @@ const CommunityDashboard = () => {
     if (bannerPage > totalBannerPages) setBannerPage(totalBannerPages);
   }, [bannerPage, totalBannerPages, recentBanners.length]);
 
-  // --- Fetch recent achievements (mocked fallback) ---
+  // ----------- API: Load achievements for picker -----------
   useEffect(() => {
-    // TODO: wire real API: /api/auth/profile/recent-achievements/:userId
-    setRecentBanners([banner1, banner2, banner3, banner4]);
-  }, []);
+    if (!userId) return;
+    fetch(`${API_BASE}/social/achievements/${userId}`)
+      .then(r => r.ok ? r.json() : Promise.reject(r))
+      .then(json => {
+        const list = Array.isArray(json?.data) ? json.data : [];
+        setRecentBanners(list); // [{achievementId, title, bannerPath}]
+      })
+      .catch(() => {
+        // fallback: keep at least one item to demo UI
+        setRecentBanners([{ achievementId: 1, title: 'Sample', bannerPath: 'achievements banners/1.png' }]);
+      });
+  }, [userId]);
 
-  // --- Prefill from Achievements page handoff (optional) ---
+  // ----------- API: Load feed -----------
+  const loadFeed = useCallback(() => {
+    if (!userId) return;
+    setLoadingFeed(true);
+    fetch(`${API_BASE}/social/feed/${userId}`)
+      .then(r => r.ok ? r.json() : Promise.reject(r))
+      .then(json => {
+        const data = Array.isArray(json?.data) ? json.data : [];
+        // map into UI shape
+        const mapped = data.map(row => ({
+          id: row.post_id,
+          createdAt: row.created_at,
+          user: {
+            id: row.user_id,
+            name: row.username,
+            avatar: row.avatar_id ? `/assets/Images/avatars/${row.avatar_id}` : avatar1,
+            level: row.tier_status || '—',
+          },
+          banner: row.banner_image_path ? `/assets/Images/${row.banner_image_path}` : banner1,
+          content: row.caption,
+          communities: Array.isArray(row.community_tags) ? row.community_tags : [],
+          likes: Number(row.like_count || 0),
+          comments: Array.isArray(row.comments)
+            ? row.comments.map(c => ({
+                id: c.comment_id,
+                userId: c.user_id,
+                user: c.username,
+                avatar: c.avatar_id ? `/assets/Images/avatars/${c.avatar_id}` : null,
+                text: c.comment,
+                createdAt: c.created_at
+              }))
+            : []
+        }));
+        setPosts(mapped);
+      })
+      .catch(err => {
+        console.error('Feed error', err);
+        toast.error('Failed to load feed');
+      })
+      .finally(() => setLoadingFeed(false));
+  }, [userId]);
+
+  useEffect(() => {
+    loadFeed();
+  }, [loadFeed]);
+
+  // ----------- Prefill from Achievements page handoff -----------
   useEffect(() => {
     const state = location.state || {};
     const handoff = state.shareAchievement;
     if (handoff) {
       setShowCreatePost(true);
       setPostType('Achievement');
-      setSelectedBanner(handoff.bannerUrl || null);
+      setSelectedAchievementId(handoff.achievementId || null);
+      setSelectedBannerPreview(handoff.bannerUrl || null);
       setSelectedTags(Array.isArray(handoff.tags) ? handoff.tags.slice(0, 3) : []);
       setDescription(handoff.title ? `🏆 ${handoff.title}` : 'Just unlocked a new achievement!');
-      // clear router state so it doesn't trigger again
       window.history.replaceState({}, document.title);
     }
   }, [location.state]);
 
-  // --- Actions ---
+  // ----------- UI actions (like/unlike, comment, post) -----------
   const handleLike = (postId) => {
-    setPosts(prev =>
-      prev.map(p => (p.id === postId ? { ...p, likes: likedPosts.includes(postId) ? p.likes - 1 : p.likes + 1 } : p))
-    );
-    setLikedPosts(prev => (prev.includes(postId) ? prev.filter(id => id !== postId) : [...prev, postId]));
+    if (!userId) return;
+    const liked = likedPosts.includes(postId);
+
+    // optimistic update
+    setPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: p.likes + (liked ? -1 : 1) } : p));
+    setLikedPosts(prev => liked ? prev.filter(id => id !== postId) : [...prev, postId]);
+
+    const url = `${API_BASE}/social/posts/${postId}/${liked ? 'unlike' : 'like'}`;
+    const method = liked ? 'DELETE' : 'POST';
+
+    fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId })
+    })
+      .then(r => (r.ok ? r.json() : Promise.reject(r)))
+      .then(() => {})
+      .catch(() => {
+        // revert
+        setPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: p.likes + (liked ? 1 : -1) } : p));
+        setLikedPosts(prev => liked ? [...prev, postId] : prev.filter(id => id !== postId));
+        toast.error('Failed to update like');
+      });
   };
 
-  const handleComment = (postId) => {
+  const handleAddComment = (postId) => {
+    if (!userId) return;
     const text = (commentInputs[postId] || '').trim();
     if (!text) return;
+
+    // optimistic
+    const tempId = `temp-${Date.now()}`;
     setPosts(prev =>
-      prev.map(p => (p.id === postId ? { ...p, comments: [...p.comments, { id: Date.now(), user: 'you', text }] } : p))
+      prev.map(p =>
+        p.id === postId
+          ? { ...p, comments: [...p.comments, { id: tempId, userId, user: 'you', text, createdAt: new Date().toISOString() }] }
+          : p
+      )
     );
     setCommentInputs(prev => ({ ...prev, [postId]: '' }));
+
+    fetch(`${API_BASE}/social/posts/${postId}/comment`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, comment: text })
+    })
+      .then(r => (r.ok ? r.json() : Promise.reject(r)))
+      .then(json => {
+        const newComment = json?.comment;
+        setPosts(prev =>
+          prev.map(p =>
+            p.id === postId
+              ? {
+                  ...p,
+                  comments: p.comments.map(c => (c.id === tempId ? { ...c, id: newComment.comment_id, createdAt: newComment.created_at } : c))
+                }
+              : p
+          )
+        );
+      })
+      .catch(() => {
+        // revert
+        setPosts(prev =>
+          prev.map(p =>
+            p.id === postId ? { ...p, comments: p.comments.filter(c => c.id !== tempId) } : p
+          )
+        );
+        toast.error('Failed to comment');
+      });
   };
 
-  const toggleTag = (tag) => {
-    setSelectedTags(prev =>
-      prev.includes(tag) ? prev.filter(t => t !== tag) : prev.length < 3 ? [...prev, tag] : prev
-    );
-  };
-
-  const bannerPreview = useMemo(() => {
-    if (selectedBanner) return selectedBanner;
-    if (uploadImageFile) return URL.createObjectURL(uploadImageFile);
-    return null;
-  }, [selectedBanner, uploadImageFile]);
-
-  const handlePost = () => {
+  const handleCreatePost = () => {
+    if (!userId) {
+      toast.error('Please log in.');
+      return;
+    }
     if (!description.trim()) {
       toast.error('Add a short description.');
       return;
     }
-    if (postType === 'Achievement' && !bannerPreview) {
-      toast.error('Select an achievement banner to share.');
+    if (postType === 'Achievement' && !selectedAchievementId) {
+      toast.error('Select an achievement to share.');
       return;
     }
 
-    const newPost = {
-      id: Date.now(),
-      user: { name: 'you', level: 'Gold', avatar: avatar1 },
-      banner: bannerPreview,
-      content: description,
-      communities: selectedTags.length ? selectedTags : ['General'],
-      likes: 0,
-      comments: []
-    };
-
-    setPosts(prev => [newPost, ...prev]);
-    setShowCreatePost(false);
-    setPostPage(1);
-
-    // reset form
-    setPostType('');
-    setDescription('');
-    setSelectedTags([]);
-    setUploadImageFile(null);
-    setSelectedBanner(null);
-    setShowBannerDropdown(false);
-
-    toast.success(`Post shared${postType ? ` as ${postType}` : ''}!`, {
-      icon: postType === 'Achievement' ? <FaTrophy /> : postType === 'Goal' ? <FaBullseye /> : '✅',
-      style: { borderRadius: '9999px', background: '#fff', color: '#1f2937' }
-    });
+    fetch(`${API_BASE}/social/posts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId,
+        achievementId: selectedAchievementId,
+        caption: description,
+        communityTagIds: [] // if you map tag names -> ids, pass them here
+      })
+    })
+      .then(r => (r.ok ? r.json() : Promise.reject(r)))
+      .then(() => {
+        toast.success(`Post shared${postType ? ` as ${postType}` : ''}!`);
+        setShowCreatePost(false);
+        setPostType('');
+        setDescription('');
+        setSelectedTags([]);
+        setSelectedAchievementId(null);
+        setSelectedBannerPreview(null);
+        setShowBannerDropdown(false);
+        setPostPage(1);
+        loadFeed();
+      })
+      .catch(() => toast.error('Failed to create post'));
   };
 
-  // ----- Deletion handlers (actual state updates) -----
+  // ----------- Deletes + confirm modal -----------
+  const [confirm, setConfirm] = useState({ open: false, type: null, postId: null, commentId: null });
+
+  const openConfirmDeletePost = (postId) => setConfirm({ open: true, type: 'post', postId, commentId: null });
+  const openConfirmDeleteComment = (postId, commentId) => setConfirm({ open: true, type: 'comment', postId, commentId });
+  const closeConfirm = useCallback(() => setConfirm({ open: false, type: null, postId: null, commentId: null }), []);
+
   const handleDeletePost = async (postId) => {
+    if (!userId) return;
+    // optimistic
+    const prev = posts;
+    setPosts(prev.filter(p => p.id !== postId));
+
     try {
-      // TODO: call backend DELETE /api/community/posts/:postId
-      setPosts(prev => prev.filter(p => p.id !== postId));
+      const r = await fetch(`${API_BASE}/social/posts/${postId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      });
+      if (!r.ok) throw new Error('Failed');
       toast.success('Post deleted');
-    } catch (err) {
-      console.error('Delete post failed', err);
+    } catch {
+      setPosts(prev); // revert
       toast.error('Could not delete post');
     }
   };
 
   const handleDeleteComment = async (postId, commentId) => {
+    if (!userId) return;
+    // optimistic
+    const prev = posts;
+    setPosts(prev =>
+      prev.map(p =>
+        p.id === postId ? { ...p, comments: p.comments.filter(c => c.id !== commentId) } : p
+      )
+    );
+
     try {
-      // TODO: call backend DELETE /api/community/posts/:postId/comments/:commentId
-      setPosts(prev =>
-        prev.map(p =>
-          p.id === postId ? { ...p, comments: p.comments.filter(c => c.id !== commentId) } : p
-        )
-      );
+      const r = await fetch(`${API_BASE}/social/posts/${postId}/comments/${commentId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      });
+      if (!r.ok) throw new Error('Failed');
       toast.success('Comment deleted');
-    } catch (err) {
-      console.error('Delete comment failed', err);
+    } catch {
+      setPosts(prev); // revert
       toast.error('Could not delete comment');
     }
   };
-
-  // ----- Confirm modal state -----
-  const [confirm, setConfirm] = useState({
-    open: false,
-    type: null,          // 'post' | 'comment'
-    postId: null,
-    commentId: null
-  });
-
-  const openConfirmDeletePost = (postId) => {
-    setConfirm({ open: true, type: 'post', postId, commentId: null });
-  };
-
-  const openConfirmDeleteComment = (postId, commentId) => {
-    setConfirm({ open: true, type: 'comment', postId, commentId });
-  };
-
-  const closeConfirm = useCallback(() => {
-    setConfirm({ open: false, type: null, postId: null, commentId: null });
-  }, []);
 
   const confirmDelete = async () => {
     const { type, postId, commentId } = confirm;
@@ -251,6 +346,7 @@ const CommunityDashboard = () => {
     if (postPage > totalPostPages) setPostPage(totalPostPages);
   }, [postPage, totalPostPages, posts.length]);
 
+  // --------------- Render ---------------
   return (
     <CommunityLayout>
       <div className="p-6 max-w-8xl mx-auto space-y-6 dark:bg-gray-900">
@@ -270,7 +366,6 @@ const CommunityDashboard = () => {
               </p>
             </div>
 
-            {/* Buttons group */}
             <div className="flex items-center gap-3">
               <Link
                 to="/community/game"
@@ -280,11 +375,8 @@ const CommunityDashboard = () => {
               </Link>
 
               <button
-                onClick={() => {
-                  setPostType('Achievement');
-                  setShowCreatePost(true);
-                }}
-                className="flex items-center gap-2 bg-white text-[#AAD977] px-6 py-3 rounded-full text-sm font-bold shadow-lg hover:bg-[#83AB55] hover:text-white transition transform hover:scale-105 dark:bg-[#A1E358] dark:hover:bg-[#88BC46]"
+                onClick={() => { setPostType('Achievement'); setShowCreatePost(true); }}
+                className="flex items-center gap-2 bg-white text-[#AAD977] px-6 py-3 rounded-full text-sm font-bold shadow-lg hover:bg-[#83AB55] hover:text-white transition transform hover:scale-105 dark:bg-gray-800 dark:text-gray-200"
               >
                 <FaPen /> Create Post
               </button>
@@ -299,6 +391,10 @@ const CommunityDashboard = () => {
           </div>
 
           <div className="md:col-span-2 space-y-6">
+            {loadingFeed && (
+              <div className="text-sm text-gray-500 dark:text-gray-400">Loading feed…</div>
+            )}
+
             {/* Feed */}
             {visiblePosts.map(post => (
               <div
@@ -332,8 +428,8 @@ const CommunityDashboard = () => {
                     </div>
                   </div>
 
-                  {/* Delete Post (owner only; demo assumes 'you') */}
-                  {post.user.name === 'you' && (
+                  {/* Delete Post (owner only) */}
+                  {post.user.id === userId && (
                     <button
                       onClick={() => openConfirmDeletePost(post.id)}
                       className="p-2 rounded-full border border-red-200 text-red-500 hover:bg-red-50 transition dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/30"
@@ -374,7 +470,7 @@ const CommunityDashboard = () => {
                     to={`/community/member/${post.user.name}`}
                     className="text-xs bg-[#E0F2FE] text-[#72C1F5] px-3 py-1.5 rounded-full font-medium hover:bg-[#B1E1FF] flex items-center gap-1 dark:bg-[#88D1FF] dark:text-[#065989] dark:hover:bg-[#6BB7F5]"
                   >
-                    <FaEye size={12} /> Profile
+                    <EyeIcon size={12} /> Profile
                   </Link>
                 </div>
 
@@ -383,12 +479,12 @@ const CommunityDashboard = () => {
                   {post.comments.map(c => (
                     <div key={c.id} className="flex items-start gap-2">
                       <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                        {c.user === 'you' ? 'Y' : c.user.charAt(0).toUpperCase()}
+                        {c.user ? c.user.charAt(0).toUpperCase() : '?'}
                       </div>
                       <div className="flex-1 bg-gray-50 rounded-lg p-2 dark:bg-gray-700">
                         <div className="flex items-center justify-between">
                           <div className="font-medium text-sm text-gray-700 dark:text-gray-200">{c.user}</div>
-                          {c.user === 'you' && (
+                          {c.userId === userId && (
                             <button
                               onClick={() => openConfirmDeleteComment(post.id, c.id)}
                               className="p-1.5 rounded-full border border-red-200 text-red-500 hover:bg-red-50 transition dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/30"
@@ -403,6 +499,7 @@ const CommunityDashboard = () => {
                       </div>
                     </div>
                   ))}
+
                   <div className="flex items-center gap-2 mt-2">
                     <input
                       type="text"
@@ -412,7 +509,7 @@ const CommunityDashboard = () => {
                       className="flex-1 text-sm p-2 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#72C1F5] dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400 dark:focus:ring-[#5FBFFF]"
                     />
                     <button
-                      onClick={() => handleComment(post.id)}
+                      onClick={() => handleAddComment(post.id)}
                       className="w-8 h-8 rounded-full bg-[#72C1F5] text-white flex items-center justify-center hover:bg-[#5CA8D8] dark:bg-[#88D1FF] dark:hover:bg-[#1E3A8A]"
                     >
                       <FaPaperPlane size={12} />
@@ -426,7 +523,7 @@ const CommunityDashboard = () => {
             {posts.length > POSTS_PER_PAGE && (
               <div className="flex items-center justify-between">
                 <button
-                  onClick={() => setPostPage(p => Math.max(1, p - 1))}
+                  onClick={() => setPostPage(p => clamp(p - 1, 1, totalPostPages))}
                   disabled={postPage === 1}
                   className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border dark:border-gray-600 ${postPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                 >
@@ -438,7 +535,7 @@ const CommunityDashboard = () => {
                 </span>
 
                 <button
-                  onClick={() => setPostPage(p => Math.min(totalPostPages, p + 1))}
+                  onClick={() => setPostPage(p => clamp(p + 1, 1, totalPostPages))}
                   disabled={postPage === totalPostPages}
                   className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border dark:border-gray-600 ${postPage === totalPostPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                 >
@@ -483,11 +580,20 @@ const CommunityDashboard = () => {
                 {AVAILABLE_TAGS.map(tag => (
                   <button
                     key={tag}
-                    onClick={() => toggleTag(tag)}
-                    className={`px-3 py-1 rounded-full text-sm border transition ${selectedTags.includes(tag)
-                      ? 'bg-[#E0F2FE] text-[#065989] border-[#93C5FD]'
-                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
-                      }`}
+                    onClick={() => {
+                      setSelectedTags(prev =>
+                        prev.includes(tag)
+                          ? prev.filter(t => t !== tag)
+                          : prev.length < 3
+                          ? [...prev, tag]
+                          : prev
+                      );
+                    }}
+                    className={`px-3 py-1 rounded-full text-sm border transition ${
+                      selectedTags.includes(tag)
+                        ? 'bg-[#E0F2FE] text-[#065989] border-[#93C5FD]'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
+                    }`}
                   >
                     {selectedTags.includes(tag) && <FaCheck className="inline mr-1" />} {tag}
                   </button>
@@ -504,28 +610,33 @@ const CommunityDashboard = () => {
                   onClick={() => setShowBannerDropdown(!showBannerDropdown)}
                   className="w-full flex items-center justify-between px-4 py-2 rounded-xl border bg-white text-left text-sm dark:bg-gray-700 dark:border-gray-600"
                 >
-                  <span>{selectedBanner ? 'Change banner' : 'Choose from recent achievements'}</span>
+                  <span>{selectedBannerPreview ? 'Change banner' : 'Choose from recent achievements'}</span>
                   <FaChevronDown className={`transition ${showBannerDropdown ? 'rotate-180' : ''}`} />
                 </button>
 
                 {showBannerDropdown && (
                   <div className="mt-2 rounded-2xl border bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3 max-h-[45vh] overflow-y-auto">
-                      {paginatedBanners.map((src, idx) => (
+                      {paginatedBanners.map((b, idx) => (
                         <button
-                          key={`rb-${(bannerPage - 1) * BANNERS_PER_PAGE + idx}`}
+                          key={`ach-${(bannerPage - 1) * BANNERS_PER_PAGE + idx}`}
                           onClick={() => {
-                            setSelectedBanner(src);
+                            setSelectedAchievementId(b.achievementId);
+                            setSelectedBannerPreview(b.bannerPath ? `/assets/Images/${b.bannerPath}` : null);
                             setShowBannerDropdown(false);
-                            setUploadImageFile(null);
                           }}
-                          className={`relative rounded-xl overflow-hidden border transition focus:outline-none ${selectedBanner === src
+                          className={`relative rounded-xl overflow-hidden border transition focus:outline-none ${
+                            selectedAchievementId === b.achievementId
                               ? 'ring-2 ring-[#5FBFFF] border-[#5FBFFF]'
                               : 'border-gray-200 dark:border-gray-600 hover:opacity-90'
-                            }`}
+                          }`}
                         >
-                          <img src={src} alt={`banner-${idx}`} className="w-full h-28 object-cover" />
-                          {selectedBanner === src && (
+                          <img
+                            src={b.bannerPath ? `/assets/Images/${b.bannerPath}` : banner1}
+                            alt={b.title || 'achievement'}
+                            className="w-full h-28 object-cover"
+                          />
+                          {selectedAchievementId === b.achievementId && (
                             <div className="absolute top-2 right-2 bg-white text-[#065989] rounded-full p-1 shadow">
                               <FaCheck />
                             </div>
@@ -537,10 +648,11 @@ const CommunityDashboard = () => {
                     {totalBannerPages > 1 && (
                       <div className="flex items-center justify-between px-3 py-2 border-t border-gray-200 dark:border-gray-600">
                         <button
-                          onClick={() => setBannerPage(p => Math.max(1, p - 1))}
+                          onClick={() => setBannerPage(p => clamp(p - 1, 1, totalBannerPages))}
                           disabled={bannerPage === 1}
-                          className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border dark:border-gray-600 ${bannerPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-600'
-                            }`}
+                          className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border dark:border-gray-600 ${
+                            bannerPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-600'
+                          }`}
                         >
                           <FaChevronLeft /> Prev
                         </button>
@@ -550,12 +662,11 @@ const CommunityDashboard = () => {
                         </span>
 
                         <button
-                          onClick={() => setBannerPage(p => Math.min(totalBannerPages, p + 1))}
+                          onClick={() => setBannerPage(p => clamp(p + 1, 1, totalBannerPages))}
                           disabled={bannerPage === totalBannerPages}
-                          className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border dark:border-gray-600 ${bannerPage === totalBannerPages
-                              ? 'opacity-40 cursor-not-allowed'
-                              : 'hover:bg-gray-100 dark:hover:bg-gray-600'
-                            }`}
+                          className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border dark:border-gray-600 ${
+                            bannerPage === totalBannerPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-600'
+                          }`}
                         >
                           Next <FaChevronRight />
                         </button>
@@ -564,19 +675,17 @@ const CommunityDashboard = () => {
                   </div>
                 )}
 
-                {/* Preview */}
-                {bannerPreview && (
+                {selectedBannerPreview && (
                   <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-600">
-                    <img src={bannerPreview} alt="preview" className="w-full h-40 object-cover" />
+                    <img src={selectedBannerPreview} alt="preview" className="w-full h-40 object-cover" />
                   </div>
                 )}
               </div>
             )}
 
-            {/* Submit */}
             <div className="flex justify-end pt-2">
               <button
-                onClick={handlePost}
+                onClick={handleCreatePost}
                 className="bg-gradient-to-r from-[#88BC46] to-[#AAD977] text-white font-semibold px-6 py-2 rounded-full hover:opacity-90 transition shadow dark:from-[#4D7C0F] dark:to-[#3F6212]"
               >
                 Post
@@ -586,7 +695,7 @@ const CommunityDashboard = () => {
         </div>
       )}
 
-      {/* Styled Confirm Dialog (for post/comment deletes) */}
+      {/* Styled Confirm Dialog */}
       {confirm.open && (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4"
@@ -640,6 +749,4 @@ const CommunityDashboard = () => {
       )}
     </CommunityLayout>
   );
-};
-
-export default CommunityDashboard;
+}
