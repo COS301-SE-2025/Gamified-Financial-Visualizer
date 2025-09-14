@@ -1,32 +1,152 @@
 // src/components/navigation/Sidebar.jsx
-import React from "react";
-import { View, Text, Pressable, StyleSheet, Dimensions, Image } from "react-native";
+import React, { useState, useMemo } from "react";
+import { View, Text, Pressable, StyleSheet, Dimensions, Image, ScrollView } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
 import Logo from "../../../assets/Logo1.png";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
-export default function Sidebar({ visible, onClose, activeTab, navigate, username = "satoshi_nak", tier = "Silver" }) {
-  if (!visible) return null;
+export default function Sidebar({
+  visible,
+  onClose,
+  activeTab,
+  navigate,
+  username = "satoshi_nak",
+  tier = "Silver",
+  avatarSource = Logo,
+}) {
+  const [openKeys, setOpenKeys] = useState({
+    accounts: false,
+    goals: false,
+    learn: false,
+    community: false,
+    achievements: false,
+    support: false,
+  });
 
-  const mainItems = [
-    { key: "home", label: "Home", icon: "home" },
-    { key: "accounts", label: "Accounts", icon: "credit-card" },
-    { key: "goals", label: "Goals", icon: "target" },
-    { key: "community", label: "Community", icon: "users" },
-  ];
+  const toggle = (key) => setOpenKeys((s) => ({ ...s, [key]: !s[key] }));
 
-  const otherItems = [
-    { key: "learn", label: "Learn", icon: "book" },
-    { key: "achievements", label: "Achievements", icon: "award" },
-    { key: "support", label: "Support", icon: "help-circle" },
-    { key: "settings", label: "Settings", icon: "settings" },
-  ];
+  const sections = useMemo(
+    () => [
+      {
+        items: [{ key: "home", label: "Home", icon: "home", route: "home" }],
+      },
+      {
+        items: [
+          {
+            key: "accounts",
+            label: "Accounts",
+            icon: "credit-card",
+            expandable: true,
+            children: [
+              { key: "transactions", label: "Transactions", icon: "shuffle", route: "transactions" },
+              { key: "budget", label: "Budget", icon: "pie-chart", route: "budget" },
+              { key: "insights", label: "Insights", icon: "bar-chart-2", route: "insights" },
+              { key: "imports", label: "Imports", icon: "download-cloud", route: "imports" },
+            ],
+          },
+        ],
+      },
+      {
+        items: [
+          {
+            key: "goals",
+            label: "Goals",
+            icon: "target",
+            expandable: true,
+            children: [
+              { key: "all-goals", label: "All Goals", icon: "list", route: "goals" },
+              { key: "create-goal", label: "Create a Goal", icon: "plus-circle", route: "create-goal" },
+            ],
+          },
+        ],
+      },
+      {
+        items: [
+          {
+            key: "learn",
+            label: "Learn",
+            icon: "book",
+            expandable: true,
+            children: [
+              { key: "all-modules", label: "All Modules", icon: "layers", route: "learn-all" },
+              { key: "complete", label: "Completed", icon: "check-circle", route: "learn-complete" },
+              { key: "incomplete", label: "Incomplete", icon: "circle", route: "learn-incomplete" },
+            ],
+          },
+        ],
+      },
+      {
+        items: [
+          {
+            key: "community",
+            label: "Community",
+            icon: "users",
+            expandable: true,
+            children: [
+              { key: "social", label: "Social", icon: "message-circle", route: "social" },
+              { key: "friends", label: "Friends", icon: "user-check", route: "friends" },
+              { key: "communities", label: "Communities", icon: "grid", route: "communities" },
+              { key: "challenges", label: "Challenges", icon: "flag", route: "challenges" },
+            ],
+          },
+        ],
+      },
+      {
+        items: [
+          {
+            key: "achievements",
+            label: "Achievements",
+            icon: "award",
+            expandable: true,
+            children: [
+              { key: "ach-all", label: "All", icon: "star", route: "achievements" },
+              { key: "ach-completed", label: "Completed", icon: "check", route: "achievements-completed" },
+              { key: "ach-incomplete", label: "Incomplete", icon: "clock", route: "achievements-incomplete" },
+            ],
+          },
+        ],
+      },
+      {
+        items: [
+          {
+            key: "support",
+            label: "Support",
+            icon: "help-circle",
+            expandable: true,
+            children: [
+              { key: "tutorials", label: "Tutorials", icon: "play-circle", route: "support-tutorials" },
+              { key: "faq", label: "FAQ", icon: "help-circle", route: "support-faq" },
+              { key: "overview", label: "Overview", icon: "book-open", route: "support-overview" },
+            ],
+          },
+        ],
+      },
+       {
+         items: [
+            {
+               key: "profile",
+               label: "Profile",
+               icon: "",
+               expandable: true,
+               children: [
+                   { key:"settings", label: "Settings", icon: "settings", route: "Profile-settings"},
+                   { key:"profile", label: "Profile", icon: "profile", route: "Profile-profile"},
 
-  const handleItemPress = (key) => {
-    navigate?.(key);
-    onClose();
+               ]
+            }
+         ]
+      }
+    ],
+    []
+  );
+
+  const go = (route) => {
+    navigate?.(route);
+    onClose?.();
   };
+
+  if (!visible) return null;
 
   return (
     <>
@@ -34,83 +154,77 @@ export default function Sidebar({ visible, onClose, activeTab, navigate, usernam
       <View style={styles.sidebar}>
         {/* Header */}
         <View style={styles.header}>
-          <Image source={Logo} style={styles.logo} resizeMode="contain" />
-          <View style={styles.headerText}>
-            <Text style={styles.brandText}>Gamified Finance</Text>
-            <View style={styles.userInfo}>
-              <Text style={styles.username}>@{username}</Text>
-              <View style={[styles.tierBadge, 
-                tier === "Gold" ? styles.goldBadge : 
-                tier === "Silver" ? styles.silverBadge : 
-                styles.bronzeBadge
-              ]}>
-                <Text style={styles.tierText}>{tier}</Text>
-              </View>
+          {/* Profile strip */}
+          <View style={styles.profileRow}>
+            <Image source={avatarSource} style={styles.avatar} />
+            <View style={styles.profileInfo}>
+              <Text style={styles.username} numberOfLines={1}>
+                {username}
+              </Text>
+              <Text style={styles.tierPlain}>{tier}</Text>
             </View>
           </View>
-          <Pressable onPress={onClose} style={styles.closeButton}>
-            <Icon name="x" size={24} color="#64748b" />
-          </Pressable>
         </View>
 
-        {/* Navigation Items */}
-        <View style={styles.menuSection}>
-          <Text style={styles.sectionTitle}>MAIN</Text>
-          {mainItems.map((item) => {
-            const active = activeTab === item.key;
-            return (
-              <Pressable
-                key={item.key}
-                style={[styles.menuItem, active && styles.activeMenuItem]}
-                onPress={() => handleItemPress(item.key)}
-              >
-                <Icon 
-                  name={item.icon} 
-                  size={20} 
-                  color={active ? "#6aa84f" : "#64748b"} 
-                  style={styles.menuIcon} 
-                />
-                <Text style={[styles.menuText, active && styles.activeMenuText]}>
-                  {item.label}
-                </Text>
-                {active && <View style={styles.activeIndicator} />}
-              </Pressable>
-            );
-          })}
-        </View>
+        {/* Menu */}
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          {sections.map((section, index) => (
+            <View key={index} style={styles.menuSection}>
+              {section.items.map((item) => {
+                const active = activeTab === item.key;
+                const isOpen = item.expandable ? openKeys[item.key] : false;
 
-        <View style={styles.menuSection}>
-          <Text style={styles.sectionTitle}>MORE</Text>
-          {otherItems.map((item) => {
-            const active = activeTab === item.key;
-            return (
-              <Pressable
-                key={item.key}
-                style={[styles.menuItem, active && styles.activeMenuItem]}
-                onPress={() => handleItemPress(item.key)}
-              >
-                <Icon 
-                  name={item.icon} 
-                  size={20} 
-                  color={active ? "#6aa84f" : "#64748b"} 
-                  style={styles.menuIcon} 
-                />
-                <Text style={[styles.menuText, active && styles.activeMenuText]}>
-                  {item.label}
-                </Text>
-                {active && <View style={styles.activeIndicator} />}
-              </Pressable>
-            );
-          })}
-        </View>
+                return (
+                  <View key={item.key}>
+                    <Pressable
+                      style={[styles.menuItem, active && styles.activeMenuItem]}
+                      onPress={item.expandable ? () => toggle(item.key) : () => go(item.route)}
+                    >
+                      <Icon
+                        name={item.icon}
+                        size={20}
+                        color={active ? "#6aa84f" : "#64748b"}
+                        style={styles.menuIcon}
+                      />
+                      <Text style={[styles.menuText, active && styles.activeMenuText]}>{item.label}</Text>
+
+                      {item.expandable ? (
+                        <Icon
+                          name={isOpen ? "chevron-up" : "chevron-down"}
+                          size={18}
+                          color="#94a3b8"
+                          style={styles.expandIcon}
+                        />
+                      ) : null}
+
+                      {active && <View style={styles.activeIndicator} />}
+                    </Pressable>
+
+                    {/* Children */}
+                    {item.expandable && isOpen && (
+                      <View style={styles.childrenWrap}>
+                        {item.children.map((c) => (
+                          <Pressable key={c.key} style={styles.childItem} onPress={() => go(c.route)}>
+                            <Icon name={c.icon} size={18} color="#6b7280" style={styles.childIcon} />
+                            <Text style={styles.childText}>{c.label}</Text>
+                          </Pressable>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
+            </View>
+          ))}
+        </ScrollView>
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Pressable 
+          <Pressable
             style={styles.logoutButton}
             onPress={() => {
-              onClose();
-              // Handle logout
+              onClose?.();
+              // TODO: handle logout
             }}
           >
             <Icon name="log-out" size={18} color="#ef4444" />
@@ -125,11 +239,8 @@ export default function Sidebar({ visible, onClose, activeTab, navigate, usernam
 const styles = StyleSheet.create({
   backdrop: {
     position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    inset: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
     zIndex: 999,
   },
   sidebar: {
@@ -137,11 +248,11 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     bottom: 0,
-    width: width * 0.8,
-    maxWidth: 320,
-    backgroundColor: "#ffffff",
+    width: width * 0.82,
+    maxWidth: 340,
+    backgroundColor: "#fff",
     zIndex: 1000,
-    paddingVertical: 20,
+    paddingVertical: 16,
     paddingHorizontal: 16,
     shadowColor: "#000",
     shadowOffset: { width: 2, height: 0 },
@@ -150,94 +261,49 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   header: {
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eef5ee",
+    marginBottom: 8,
+  },
+  headerTop: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 30,
-    paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f1f5f9",
+    marginBottom: 16,
   },
-  logo: {
-    width: 40,
-    height: 40,
-    marginRight: 12,
-  },
-  headerText: {
-    flex: 1,
-  },
+  logo: { width: 36, height: 36, marginRight: 10 },
   brandText: {
     fontSize: 18,
     fontWeight: "800",
     color: "#6aa84f",
-    marginBottom: 4,
+    flex: 1,
   },
-  userInfo: {
+  closeButton: { padding: 4 },
+  profileRow: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 12,
   },
-  username: {
-    fontSize: 14,
-    color: "#64748b",
-    marginRight: 8,
-  },
-  tierBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-  },
-  goldBadge: {
-    backgroundColor: '#FFD700',
-  },
-  silverBadge: {
-    backgroundColor: '#C0C0C0',
-  },
-  bronzeBadge: {
-    backgroundColor: '#CD7F32',
-  },
-  tierText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-  closeButton: {
-    padding: 4,
-  },
-  menuSection: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: "#94a3b8",
-    marginBottom: 12,
-    paddingLeft: 16,
-    letterSpacing: 1,
-  },
+  avatar: { width: 40, height: 40, borderRadius: 20 },
+  profileInfo: { flex: 1 },
+  username: { fontSize: 16, fontWeight: "700", color: "#111827" },
+  tierPlain: { fontSize: 14, color: "#6b7280", marginTop: 2 },
+  scrollContent: { paddingBottom: 24 },
+  menuSection: { marginTop: 8 },
   menuItem: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
+    paddingHorizontal: 12,
+    borderRadius: 8,
     marginBottom: 4,
     position: "relative",
   },
-  activeMenuItem: {
-    backgroundColor: "#f0f9eb",
-  },
-  menuIcon: {
-    width: 24,
-    marginRight: 12,
-  },
-  menuText: {
-    fontSize: 16,
-    color: "#334155",
-    fontWeight: "500",
-  },
-  activeMenuText: {
-    color: "#6aa84f",
-    fontWeight: "600",
-  },
+  activeMenuItem: { backgroundColor: "#f0f9eb" },
+  menuIcon: { width: 24, marginRight: 12 },
+  menuText: { fontSize: 16, color: "#334155", fontWeight: "500", flex: 1 },
+  activeMenuText: { color: "#6aa84f", fontWeight: "600" },
+  expandIcon: { marginLeft: "auto" },
   activeIndicator: {
     position: "absolute",
     left: 0,
@@ -248,23 +314,30 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 4,
     borderBottomRightRadius: 4,
   },
+  childrenWrap: {
+    marginLeft: 36,
+    marginBottom: 4,
+  },
+  childItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingLeft: 4,
+  },
+  childIcon: { width: 20, marginRight: 10 },
+  childText: { fontSize: 14, color: "#374151" },
   footer: {
     marginTop: "auto",
-    paddingTop: 20,
+    paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: "#f1f5f9",
+    borderTopColor: "#eef5ee",
   },
   logoutButton: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
+    paddingHorizontal: 12,
+    borderRadius: 8,
   },
-  logoutText: {
-    fontSize: 16,
-    color: "#ef4444",
-    fontWeight: "500",
-    marginLeft: 12,
-  },
+  logoutText: { fontSize: 16, color: "#ef4444", fontWeight: "500", marginLeft: 12 },
 });

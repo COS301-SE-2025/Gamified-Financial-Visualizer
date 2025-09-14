@@ -1,215 +1,157 @@
 // src/components/navigation/TopBar.jsx
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { View, Text, Image, Pressable, StyleSheet, Animated } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
 import Logo from "../../../assets/Logo1.png";
-import AvatarMenu from "./AvatarMenu";
 
-export default function TopBar({ 
-  onBellPress, 
+export default function TopBar({
+  onBellPress,
   onMenuPress,
-  username = "satoshi_nak", 
+  username = "satoshi_nak",
   tier = "Silver",
-  coins = 420
+  notifications = 5,
+  avatarSource = Logo,
 }) {
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
-  const scaleAnim = React.useRef(new Animated.Value(1)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
-  const handleAvatarPress = () => {
+  const bump = () => {
     Animated.sequence([
-      Animated.timing(scaleAnim, {
-        toValue: 0.9,
-        duration: 100,
-        useNativeDriver: true
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true
-      })
+      Animated.timing(scaleAnim, { toValue: 0.9, duration: 80, useNativeDriver: true }),
+      Animated.timing(scaleAnim, { toValue: 1, duration: 80, useNativeDriver: true }),
     ]).start();
-    
-    setShowAvatarMenu(!showAvatarMenu);
   };
 
   return (
     <View style={styles.wrapper}>
       <View style={styles.container}>
-        {/* Left: menu button and brand */}
-        <View style={styles.brandRow}>
-          <Pressable onPress={onMenuPress} style={styles.menuButton}>
-            <Icon name="menu" size={24} color="#0f172a" />
-          </Pressable>
+        {/* Left: hamburger */}
+        <Pressable onPress={onMenuPress} style={styles.hamburger}>
+          <Icon name="menu" size={26} color="#111827" />
+        </Pressable>
+
+        {/* Center: brand logo */}
+        <View style={styles.brandCenter}>
           <Image source={Logo} style={styles.logo} resizeMode="contain" />
-          <View>
-            <Text style={styles.brandText}>Gamified Finance</Text>
-            <View style={styles.coinContainer}>
-              <Icon name="award" size={12} color="#F59E0B" />
-              <Text style={styles.coinText}>{coins} coins</Text>
-            </View>
-          </View>
         </View>
 
-        {/* Right: actions */}
-        <View style={styles.actionsRow}>
-          <Pressable onPress={onBellPress} style={styles.iconWrap}>
-            <Icon name="bell" size={22} color="#0f172a" />
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>4</Text>
-            </View>
+        {/* Right: notification bell and user info */}
+        <View style={styles.rightRow}>
+          <Pressable onPress={onBellPress} style={styles.bellWrap}>
+            <Icon name="bell" size={22} color="#111827" />
+            {notifications > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{notifications}</Text>
+              </View>
+            )}
           </Pressable>
 
           <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-            <Pressable 
-              onPress={handleAvatarPress} 
-              style={styles.avatarWrap}
+            <Pressable
+              onPress={() => {
+                bump();
+                setShowAvatarMenu((v) => !v);
+              }}
+              style={styles.userChip}
             >
-              <View style={styles.avatarContainer}>
-                <Image source={Logo} style={styles.avatar} />
-                <View style={[styles.tierBadge, 
-                  tier === "Gold" ? styles.goldBadge : 
-                  tier === "Silver" ? styles.silverBadge : 
-                  styles.bronzeBadge
-                ]}>
-                  <Text style={styles.tierText}>{tier.charAt(0)}</Text>
-                </View>
+              <Image source={avatarSource} style={styles.avatar} />
+              <View style={styles.userInfo}>
+                <Text style={styles.handle} numberOfLines={1}>
+                  {username}
+                </Text>
+                <Text style={styles.tier}>{tier}</Text>
               </View>
             </Pressable>
           </Animated.View>
         </View>
       </View>
-      
-      {/* Avatar Dropdown Menu - positioned relative to the wrapper */}
-      <AvatarMenu 
-        visible={showAvatarMenu} 
-        onClose={() => setShowAvatarMenu(false)}
-        username={username}
-        tier={tier}
-        coins={coins}
-      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
+  wrapper: { 
     zIndex: 100,
+    backgroundColor: "#fff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#e5e7eb",
   },
   container: {
-    height: 70, 
-    backgroundColor: "#ffffff", 
+    height: 60,
     paddingHorizontal: 16,
-    flexDirection: "row", 
-    alignItems: "center", 
+    flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
-    borderBottomWidth: 1, 
-    borderBottomColor: "#E5F1E5",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
   },
-  brandRow: { 
-    flexDirection: "row", 
-    alignItems: "center" 
-  },
-  menuButton: {
+  hamburger: { 
     padding: 8,
     marginRight: 8,
   },
+  brandCenter: { 
+    position: "absolute",
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    pointerEvents: "none",
+  },
   logo: { 
     width: 32, 
-    height: 32, 
-    marginRight: 10 
+    height: 32,
   },
-  brandText: { 
-    fontSize: 18, 
-    fontWeight: "800", 
-    color: "#6aa84f",
-    letterSpacing: -0.5
-  },
-  coinContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 2
-  },
-  coinText: {
-    fontSize: 12,
-    color: "#F59E0B",
-    fontWeight: "600",
-    marginLeft: 4
-  },
-  actionsRow: { 
+  rightRow: { 
     flexDirection: "row", 
-    alignItems: "center" 
+    alignItems: "center",
+    marginLeft: "auto",
   },
-  iconWrap: { 
+  bellWrap: { 
     marginRight: 16, 
-    padding: 6,
-    position: 'relative',
+    padding: 6, 
+    position: "relative" 
   },
   badge: {
-    position: "absolute", 
-    top: 2, 
+    position: "absolute",
+    top: 2,
     right: 2,
-    backgroundColor: "#60a5fa", 
-    borderRadius: 8, 
-    paddingHorizontal: 4, 
-    minWidth: 16, 
-    height: 16,
+    backgroundColor: "#ef4444",
+    borderRadius: 9,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 4,
     alignItems: "center",
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   badgeText: { 
     color: "#fff", 
     fontSize: 10, 
     fontWeight: "800" 
   },
-  avatarWrap: { 
-    width: 42, 
-    height: 42, 
-    borderRadius: 21, 
-    overflow: "hidden", 
-    borderWidth: 2, 
+  userChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f9fafb",
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 20,
+    borderWidth: 1,
     borderColor: "#e5e7eb",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  avatarContainer: {
-    position: 'relative',
   },
   avatar: { 
-    width: "100%", 
-    height: "100%" 
+    width: 32, 
+    height: 32, 
+    borderRadius: 16 
   },
-  tierBadge: {
-    position: 'absolute',
-    bottom: -2,
-    right: -2,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#fff',
+  userInfo: {
+    marginLeft: 8,
   },
-  goldBadge: {
-    backgroundColor: '#FFD700',
+  handle: { 
+    fontSize: 14, 
+    fontWeight: "600", 
+    color: "#111827" 
   },
-  silverBadge: {
-    backgroundColor: '#C0C0C0',
-  },
-  bronzeBadge: {
-    backgroundColor: '#CD7F32',
-  },
-  tierText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: 'bold',
+  tier: { 
+    fontSize: 12, 
+    color: "#6b7280", 
+    marginTop: 2 
   },
 });
