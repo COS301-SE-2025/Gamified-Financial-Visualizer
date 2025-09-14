@@ -179,6 +179,28 @@ if (!user_id || !username) {
     }
   });
 
+  router.post('/lobby/character', async (req: Request, res: Response) => {
+    try {
+      const { user_id, character } = req.body;
+      if (!character) {
+         res.status(400).json({ error: 'Character data required' });
+         return;
+      }
+
+      const success = lobbyManager.selectCharacter(Number(user_id), character);
+      if (!success) {
+         res.status(404).json({ error: 'Not in any lobby' });
+         return;
+      }
+
+      res.json({ success: true, message: 'Character set successfully' });
+
+    } catch (error: any) {
+      logger.error('Error setting player character:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   /**
    * PUT /api/game/lobby/settings
    * Update lobby settings (host only)

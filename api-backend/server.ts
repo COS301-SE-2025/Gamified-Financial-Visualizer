@@ -28,6 +28,7 @@ import { registerAchievementModule } from './modules/achievements';
 import { registerNotificationsModule } from './modules/notifications';
 import { registerCityModule } from './modules/city';
 import { registerGameModule } from './modules/game';
+import { registerGameSocketHandlers } from './modules/game/socket-handlers';
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
 
@@ -75,7 +76,7 @@ io.use(async (socket, next) => {
 const { gameEngine, lobbyManager } = registerGameModule(app, io);
 
 // When a client connects, remember their socket.id
-/*
+
 io.on('connection', socket => {
   const userId = socket.data.userId as number;
   if (!userId) {
@@ -93,7 +94,7 @@ io.on('connection', socket => {
     connectedUsers.delete(userId);
   });
 });
-*/
+
 
 // Bootstrap async work (no top‐level await!)
 async function bootstrap() {
@@ -178,7 +179,4 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 httpServer.listen(PORT, () => {
   logger.info(`Monolith listening on port ${PORT} (with Socket.IO)`);
 });
-function registerGameSocketHandlers(io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>, socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>, lobbyManager: any, gameEngine: any) {
-  throw new Error('Function not implemented.');
-}
 
