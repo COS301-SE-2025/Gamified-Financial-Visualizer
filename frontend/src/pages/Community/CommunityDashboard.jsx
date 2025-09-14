@@ -82,8 +82,23 @@ export default function CommunityDashboard() {
 
   // Feed state (from backend)
   const [posts, setPosts] = useState([]); // array of posts from /social/feed/:userId
-  const [likedPosts, setLikedPosts] = useState([]); // local highlight
+  const [likedPosts, setLikedPosts] = useState(() => {
+    // local fallback so the heart can persist even if liked-by-me fetch isn't implemented yet
+    try {
+      const raw = localStorage.getItem('likedPosts');
+      return Array.isArray(JSON.parse(raw)) ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
   const [loadingFeed, setLoadingFeed] = useState(false);
+
+  // Persist liked ids locally as a graceful fallback
+  useEffect(() => {
+    try {
+      localStorage.setItem('likedPosts', JSON.stringify(likedPosts));
+    } catch {}
+  }, [likedPosts]);
 
   // Create-post modal
   const [showCreatePost, setShowCreatePost] = useState(false);
@@ -160,15 +175,25 @@ export default function CommunityDashboard() {
       .catch(() => setCommunityOptions([]));
   }, [userId, location.state]);
 
+  // Helper: apply liked-by-me flags from feed if present
+  const deriveLikedIdsFromFeed = (rows) => {
+    // If your feed already returns a boolean like "liked_by_me", use it here.
+    const hasFlag = rows.some(r => typeof r.liked_by_me === 'boolean');
+    if (!hasFlag) return null;
+    return rows.filter(r => r.liked_by_me).map(r => r.post_id);
+  };
+
   // ----------- API: Load feed -----------
   const loadFeed = useCallback(() => {
     if (!userId) return;
     setLoadingFeed(true);
     fetch(`${API_BASE}/social/feed/${userId}`)
       .then(r => (r.ok ? r.json() : Promise.reject(r)))
-      .then(json => {
-        const data = Array.isArray(json?.data) ? json.data : [];
-        const mapped = data.map(row => ({
+      .then(async json => {
+        const raw = Array.isArray(json?.data) ? json.data : [];
+
+        // Build posts
+        const mapped = raw.map(row => ({
           id: row.post_id,
           createdAt: row.created_at,
           user: {
@@ -195,6 +220,28 @@ export default function CommunityDashboard() {
           )
         }));
         setPosts(mapped);
+
+        // 1) If feed carries liked_by_me flags, use them
+        const likedFromFeed = deriveLikedIdsFromFeed(raw);
+        if (likedFromFeed) {
+          setLikedPosts(likedFromFeed);
+          return;
+        }
+
+        // 2) Otherwise, try a dedicated endpoint of liked post IDs
+        try {
+          const likedRes = await fetch(`${API_BASE}/social/liked-posts/${userId}`);
+          if (likedRes.ok) {
+            const likedJson = await likedRes.json();
+            const ids = Array.isArray(likedJson?.data) ? likedJson.data : [];
+            setLikedPosts(ids);
+            return;
+          }
+        } catch {
+          // fall through to localStorage
+        }
+
+        // 3) Final fallback: keep whatever is in localStorage (already set in state)
       })
       .catch(err => {
         console.error('Feed error', err);
@@ -224,14 +271,20 @@ export default function CommunityDashboard() {
   // ----------- UI actions (like/unlike, comment, post) -----------
   const handleLike = (postId) => {
     if (!userId) return;
-    const liked = likedPosts.includes(postId);
+    const alreadyLiked = likedPosts.includes(postId);
 
     // optimistic update
-    setPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: p.likes + (liked ? -1 : 1) } : p));
-    setLikedPosts(prev => liked ? prev.filter(id => id !== postId) : [...prev, postId]);
+    setPosts(prev =>
+      prev.map(p =>
+        p.id === postId ? { ...p, likes: p.likes + (alreadyLiked ? -1 : 1) } : p
+      )
+    );
+    setLikedPosts(prev =>
+      alreadyLiked ? prev.filter(id => id !== postId) : [...prev, postId]
+    );
 
-    const url = `${API_BASE}/social/posts/${postId}/${liked ? 'unlike' : 'like'}`;
-    const method = liked ? 'DELETE' : 'POST';
+    const url = `${API_BASE}/social/posts/${postId}/${alreadyLiked ? 'unlike' : 'like'}`;
+    const method = alreadyLiked ? 'DELETE' : 'POST';
 
     fetch(url, {
       method,
@@ -239,10 +292,23 @@ export default function CommunityDashboard() {
       body: JSON.stringify({ userId })
     })
       .then(r => (r.ok ? r.json() : Promise.reject(r)))
+      .then(json => {
+        // If API returns the updated likeCount, sync it to avoid drift
+        const serverCount = Number(json?.likeCount);
+        if (!Number.isNaN(serverCount)) {
+          setPosts(prev => prev.map(p => (p.id === postId ? { ...p, likes: serverCount } : p)));
+        }
+      })
       .catch(() => {
-        // revert
-        setPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: p.likes + (liked ? 1 : -1) } : p));
-        setLikedPosts(prev => liked ? [...prev, postId] : prev.filter(id => id !== postId));
+        // revert on failure
+        setPosts(prev =>
+          prev.map(p =>
+            p.id === postId ? { ...p, likes: p.likes + (alreadyLiked ? 1 : -1) } : p
+          )
+        );
+        setLikedPosts(prev =>
+          alreadyLiked ? [...prev, postId] : prev.filter(id => id !== postId)
+        );
         toast.error('Failed to update like');
       });
   };
@@ -252,7 +318,7 @@ export default function CommunityDashboard() {
     const text = (commentInputs[postId] || '').trim();
     if (!text) return;
 
-    // --- optimistic comment uses REAL username/avatar immediately ---
+    // optimistic comment with real username/avatar
     const tempId = `temp-${Date.now()}`;
     const displayName = me.username || 'You';
     const avatarUrl = me.avatarUrl || avatarFallback;
@@ -265,14 +331,7 @@ export default function CommunityDashboard() {
               ...p,
               comments: sortCommentsAsc([
                 ...p.comments,
-                {
-                  id: tempId,
-                  userId,
-                  user: displayName,
-                  avatar: avatarUrl,
-                  text,
-                  createdAt: createdAtISO
-                }
+                { id: tempId, userId, user: displayName, avatar: avatarUrl, text, createdAt: createdAtISO }
               ])
             }
           : p
@@ -288,7 +347,6 @@ export default function CommunityDashboard() {
       .then(r => (r.ok ? r.json() : Promise.reject(r)))
       .then(json => {
         const newComment = json?.comment;
-        // Swap temp id for real id/timestamp (keep username/avatar already correct)
         setPosts(prev =>
           prev.map(p =>
             p.id === postId
@@ -296,9 +354,7 @@ export default function CommunityDashboard() {
                   ...p,
                   comments: sortCommentsAsc(
                     p.comments.map(c =>
-                      c.id === tempId
-                        ? { ...c, id: newComment.comment_id, createdAt: newComment.created_at }
-                        : c
+                      c.id === tempId ? { ...c, id: newComment.comment_id, createdAt: newComment.created_at } : c
                     )
                   )
                 }
@@ -309,9 +365,7 @@ export default function CommunityDashboard() {
       .catch(() => {
         // revert on failure
         setPosts(prev =>
-          prev.map(p =>
-            p.id === postId ? { ...p, comments: p.comments.filter(c => c.id !== tempId) } : p
-          )
+          prev.map(p => (p.id === postId ? { ...p, comments: p.comments.filter(c => c.id !== tempId) } : p))
         );
         toast.error('Failed to comment');
       });
@@ -471,128 +525,134 @@ export default function CommunityDashboard() {
             )}
 
             {/* Feed */}
-            {visiblePosts.map(post => (
-              <div
-                key={post.id}
-                className="bg-white rounded-3xl shadow-md p-6 space-y-4 border border-gray-100 hover:shadow-xl transition-all dark:bg-gray-800 dark:border-gray-700"
-              >
-                {/* Header */}
-                <div className="flex items-center gap-3">
-                  <img src={post.user.avatar} alt="avatar" className="w-12 h-12 rounded-full border-2 border-white shadow object-cover" />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <Link
-                        to={`/community/member/${post.user.name}`}
-                        className="font-semibold text-gray-800 hover:text-[#72C1F5] dark:text-gray-200 dark:hover:text-[#5FBFFF]"
-                      >
-                        {post.user.name}
-                      </Link>
-                      <span className="text-xs bg-[#fef9c3] text-[#92400e] px-2 py-0.5 rounded-full dark:bg-[#FFD18C] dark:text-[#FD8524]">
-                        Lv {post.user.level}
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {post.communities.map((name, i) => (
-                        <span
-                          key={`${name}-${i}`}
-                          className="text-xs bg-[#E0F2FE] text-[#72C1F5] px-2 py-0.5 rounded-full dark:bg-[#88D1FF] dark:text-[#065989]"
+            {visiblePosts.map(post => {
+              const isLiked = likedPosts.includes(post.id);
+              return (
+                <div
+                  key={post.id}
+                  className="bg-white rounded-3xl shadow-md p-6 space-y-4 border border-gray-100 hover:shadow-xl transition-all dark:bg-gray-800 dark:border-gray-700"
+                >
+                  {/* Header */}
+                  <div className="flex items-center gap-3">
+                    <img src={post.user.avatar} alt="avatar" className="w-12 h-12 rounded-full border-2 border-white shadow object-cover" />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <Link
+                          to={`/community/member/${post.user.name}`}
+                          className="font-semibold text-gray-800 hover:text-[#72C1F5] dark:text-gray-200 dark:hover:text-[#5FBFFF]"
                         >
-                          {name}
+                          {post.user.name}
+                        </Link>
+                        <span className="text-xs bg-[#fef9c3] text-[#92400e] px-2 py-0.5 rounded-full dark:bg-[#FFD18C] dark:text-[#FD8524]">
+                          Lv {post.user.level}
                         </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Delete Post (owner only) */}
-                  {post.user.id === userId && (
-                    <button
-                      onClick={() => openConfirmDeletePost(post.id)}
-                      className="p-2 rounded-full border border-red-200 text-red-500 hover:bg-red-50 transition dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/30"
-                      title="Delete post"
-                      aria-label="Delete post"
-                    >
-                      <FaTrash size={14} />
-                    </button>
-                  )}
-                </div>
-
-                {/* Body */}
-                <div className="space-y-3">
-                  <p className="text-gray-700 text-sm leading-relaxed dark:text-gray-300">{post.content}</p>
-                  {post.banner && (
-                    <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-600">
-                      <img src={post.banner} alt="post banner" className="w-full h-52 object-cover" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Footer */}
-                <div className="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-gray-700">
-                  <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                    <button
-                      onClick={() => handleLike(post.id)}
-                      className={`flex items-center gap-1 transition ${likedPosts.includes(post.id) ? 'text-red-500' : 'hover:text-red-500 dark:hover:text-red-400'}`}
-                    >
-                      <FaHeart />
-                      <span>{post.likes}</span>
-                    </button>
-                    <div className="flex items-center gap-1">
-                      <FaComment />
-                      <span>{post.comments.length}</span>
-                    </div>
-                  </div>
-                  <Link
-                    to={`/community/member/${post.user.name}`}
-                    className="text-xs bg-[#E0F2FE] text-[#72C1F5] px-3 py-1.5 rounded-full font-medium hover:bg-[#B1E1FF] flex items-center gap-1 dark:bg-[#88D1FF] dark:text-[#065989] dark:hover:bg-[#6BB7F5]"
-                  >
-                    <EyeIcon size={12} /> Profile
-                  </Link>
-                </div>
-
-                {/* Comments */}
-                <div className="space-y-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-                  {post.comments.map(c => (
-                    <div key={c.id} className="flex items-start gap-2">
-                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                        {c.user ? c.user.charAt(0).toUpperCase() : '?'}
                       </div>
-                      <div className="flex-1 bg-gray-50 rounded-lg p-2 dark:bg-gray-700">
-                        <div className="flex items-center justify-between">
-                          <div className="font-medium text-sm text-gray-700 dark:text-gray-200">{c.user}</div>
-                          {c.userId === userId && (
-                            <button
-                              onClick={() => openConfirmDeleteComment(post.id, c.id)}
-                              className="p-1.5 rounded-full border border-red-200 text-red-500 hover:bg-red-50 transition dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/30"
-                              title="Delete comment"
-                              aria-label="Delete comment"
-                            >
-                              <FaTrash size={12} />
-                            </button>
-                          )}
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {post.communities.map((name, i) => (
+                          <span
+                            key={`${name}-${i}`}
+                            className="text-xs bg-[#E0F2FE] text-[#72C1F5] px-2 py-0.5 rounded-full dark:bg-[#88D1FF] dark:text-[#065989]"
+                          >
+                            {name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Delete Post (owner only) */}
+                    {post.user.id === userId && (
+                      <button
+                        onClick={() => openConfirmDeletePost(post.id)}
+                        className="p-2 rounded-full border border-red-200 text-red-500 hover:bg-red-50 transition dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/30"
+                        title="Delete post"
+                        aria-label="Delete post"
+                      >
+                        <FaTrash size={14} />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Body */}
+                  <div className="space-y-3">
+                    <p className="text-gray-700 text-sm leading-relaxed dark:text-gray-300">{post.content}</p>
+                    {post.banner && (
+                      <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-600">
+                        <img src={post.banner} alt="post banner" className="w-full h-52 object-cover" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Footer */}
+                  <div className="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-gray-700">
+                    <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                      <button
+                        onClick={() => handleLike(post.id)}
+                        className={`flex items-center gap-1 transition ${isLiked ? 'text-red-500' : 'hover:text-red-500 dark:hover:text-red-400'}`}
+                        title={isLiked ? 'Unlike' : 'Like'}
+                        aria-pressed={isLiked}
+                        aria-label={isLiked ? 'Unlike post' : 'Like post'}
+                      >
+                        <FaHeart />
+                        <span>{post.likes}</span>
+                      </button>
+                      <div className="flex items-center gap-1">
+                        <FaComment />
+                        <span>{post.comments.length}</span>
+                      </div>
+                    </div>
+                    <Link
+                      to={`/community/member/${post.user.name}`}
+                      className="text-xs bg-[#E0F2FE] text-[#72C1F5] px-3 py-1.5 rounded-full font-medium hover:bg-[#B1E1FF] flex items-center gap-1 dark:bg-[#88D1FF] dark:text-[#065989] dark:hover:bg-[#6BB7F5]"
+                    >
+                      <EyeIcon size={12} /> Profile
+                    </Link>
+                  </div>
+
+                  {/* Comments */}
+                  <div className="space-y-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                    {post.comments.map(c => (
+                      <div key={c.id} className="flex items-start gap-2">
+                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                          {c.user ? c.user.charAt(0).toUpperCase() : '?'}
                         </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">{c.text}</p>
+                        <div className="flex-1 bg-gray-50 rounded-lg p-2 dark:bg-gray-700">
+                          <div className="flex items-center justify-between">
+                            <div className="font-medium text-sm text-gray-700 dark:text-gray-200">{c.user}</div>
+                            {c.userId === userId && (
+                              <button
+                                onClick={() => openConfirmDeleteComment(post.id, c.id)}
+                                className="p-1.5 rounded-full border border-red-200 text-red-500 hover:bg-red-50 transition dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/30"
+                                title="Delete comment"
+                                aria-label="Delete comment"
+                              >
+                                <FaTrash size={12} />
+                              </button>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">{c.text}</p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
 
-                  <div className="flex items-center gap-2 mt-2">
-                    <input
-                      type="text"
-                      value={commentInputs[post.id] || ''}
-                      onChange={(e) => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })}
-                      placeholder="Add a comment..."
-                      className="flex-1 text-sm p-2 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#72C1F5] dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400 dark:focus:ring-[#5FBFFF]"
-                    />
-                    <button
-                      onClick={() => handleAddComment(post.id)}
-                      className="w-8 h-8 rounded-full bg-[#72C1F5] text-white flex items-center justify-center hover:bg-[#5CA8D8] dark:bg-[#88D1FF] dark:hover:bg-[#1E3A8A]"
-                    >
-                      <FaPaperPlane size={12} />
-                    </button>
+                    <div className="flex items-center gap-2 mt-2">
+                      <input
+                        type="text"
+                        value={commentInputs[post.id] || ''}
+                        onChange={(e) => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })}
+                        placeholder="Add a comment..."
+                        className="flex-1 text-sm p-2 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#72C1F5] dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400 dark:focus:ring-[#5FBFFF]"
+                      />
+                      <button
+                        onClick={() => handleAddComment(post.id)}
+                        className="w-8 h-8 rounded-full bg-[#72C1F5] text-white flex items-center justify-center hover:bg-[#5CA8D8] dark:bg-[#88D1FF] dark:hover:bg-[#1E3A8A]"
+                      >
+                        <FaPaperPlane size={12} />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {/* Pagination */}
             {posts.length > POSTS_PER_PAGE && (
