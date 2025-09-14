@@ -76,16 +76,16 @@ export default function GameLobby({
 }) {
 
     useEffect(() => {
-  const socket = io('http://localhost:5000', {
-    auth: { token, userId: user.id }
-  });
+        const socket = io('http://localhost:5000', {
+            auth: { token, userId: user.id }
+        });
 
-  socket.on('connect_error', (err) => {
-    console.error('Socket connection failed:', err.message);
-  });
+        socket.on('connect_error', (err) => {
+            console.error('Socket connection failed:', err.message);
+        });
 
-  return () => socket.disconnect();
-}, []);
+        return () => socket.disconnect();
+    }, []);
 
 
     // global settings (left cards at top)
@@ -130,20 +130,40 @@ export default function GameLobby({
    ]
        */
 
-    const takenKeys = new Set(playersInLobby.map(p => p.characterKey).filter(Boolean))
-    const canStart = useMemo(() => (mode === 'solo' ? true : players >= 2 && players <= 6), [mode, players])
+const takenKeys = new Set(
+  playersInLobby
+    .map(p => p.character?.id) // extract string ID
+    .filter(Boolean)
+)
+   const canStart = useMemo(() => (mode === 'solo' ? true : players >= 2 && players <= 6), [mode, players])
 
     useEffect(() => { if (Array.isArray(availableGames)) setRooms(availableGames) }, [availableGames])
 
-    const handleSaveCharacter = () => {
-        setSaving(true)
-        setTimeout(() => { setSaving(false); onSaveCharacter?.(character.key) }, 400)
+    const handleSaveCharacter = async () => {
+        if (!character?.key) return;
+        try {
+            setSaving(true);
+            const res = await apiCall('/lobby/character', {
+                method: 'POST',
+                body: JSON.stringify({
+                    user_id: user?.id,
+                    character: character.key
+                }),
+            });
+            if (res.success) {
+              //  onSaveCharacter?.(character.key);
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setSaving(false);
+        }
     }
 
     const handleRefreshRooms = async () => {
         try {
             setRoomsRefreshing(true)
-            getPublicLobbies();
+            // getPublicLobbies();
             const res = await (onRefreshGames?.() ?? new Promise(res => setTimeout(() => {
                 res([
                     { id: 'r1', code: 'ABCD', name: 'Public Room', players: 2, maxPlayers: 6, laps: 10 },
@@ -199,7 +219,7 @@ export default function GameLobby({
                 console.log('Lobby created:', response.lobby);
                 setRoomCode(response.lobby.code);
                 onCreateRoom?.(response.lobby);
-                setShowCreate(false);   
+                setShowCreate(false);
             }
         } catch (err) {
             setError(err.message);
@@ -305,7 +325,7 @@ export default function GameLobby({
                         id: p.id,
                         name: p.username,
                         ready: p.isReady,
-                        characterKey: p.character
+                        characterKey: p.character?.name ?? null,
                     }));
 
                     setPlayersInLobby(mappedPlayers);
@@ -324,6 +344,7 @@ export default function GameLobby({
         try {
             const response = await apiCall('/lobby/leave', {
                 method: 'POST',
+                body: JSON.stringify({ user_id: user?.id }),
             });
 
             if (response.success) {
@@ -351,7 +372,7 @@ export default function GameLobby({
 
     const start = () => {
         if (!canStart) return;
-      //  socket.emit('lobby:start-game');  // backend will pick up userId from socket.data
+        //  socket.emit('lobby:start-game');  // backend will pick up userId from socket.data
         onStart?.({ mode, players, laps }, character.key);
         setCountdown(true);
     };
@@ -454,7 +475,7 @@ export default function GameLobby({
                                             />
                                         </div>
                                         <button
-                                            onClick={handleQuickMatch}
+                                            onClick={handleJoinLobby.bind(null, joinCode.trim())}
                                             disabled={!joinCode.trim()}
                                             className="px-4 py-2 rounded-xl bg-lime-500 text-white hover:bg-lime-600 disabled:opacity-60"
                                         >
@@ -537,7 +558,7 @@ export default function GameLobby({
                                         <button
                                             onClick={async () => {
                                                 await handleCreateLobby();   // call your async lobby creation function
-                                                    // close the create room panel after successful creation
+                                                // close the create room panel after successful creation
                                             }}
                                             className="px-4 py-2 rounded-xl bg-lime-500 text-white hover:bg-lime-600"
                                         >
@@ -559,6 +580,18 @@ export default function GameLobby({
 
                     {/* Start game */}
                     <div className="mt-2 flex items-center justify-center">
+                        {/*Room code */}
+                        {roomCode && (
+                            <div className="absolute top-6 right-6 flex items-center gap-2 px-3 py-1.5 rounded-xl border bg-gray-50">
+                                <FaClipboard className="text-gray-500" />
+                                <div className="font-mono">{roomCode}</div>
+                                <CopyToClipboard text={roomCode} onCopy={() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }}>
+                                    <button className="px-2 py-1 rounded-lg bg-sky-500 text-white text-xs hover:bg-sky-600">
+                                        {copied ? 'Copied!' : <FaClipboardCheck />}
+                                    </button>
+                                </CopyToClipboard>
+                            </div>
+                        )}
                         <button
                             disabled={!canStart}
                             onClick={start}
@@ -581,20 +614,30 @@ export default function GameLobby({
                     <div className="text-sky-500 font-semibold mb-3 px-1">Available Characters</div>
                     <div className="grid grid-cols-2 gap-3">
                         {ALL_CHARACTERS.map((c) => {
-                            const isTaken = takenKeys.has(c.key) && c.key !== character.key
+                            // Check if this character is taken by someone else
+                           const isTaken = takenKeys.has(c.key) && c.key !== character?.key
                             return (
                                 <button
                                     key={c.key}
-                                    onClick={() => !isTaken && setCharacter(c)}
-                                    disabled={isTaken}
+                                    onClick={() => {
+                                        if (!isTaken) {
+                                            setCharacter(c)
+                                          //  handleSaveCharacter()
+                                        }
+                                    }}
+                                    disabled={isTaken || saving} // disable while saving
                                     className={`relative px-4 py-3 rounded-2xl border transition-all shadow-sm
-                    ${character.key === c.key
+          ${character?.key === c.key
                                             ? 'bg-[#8dcced] text-white shadow-lg transform -translate-y-1'
-                                            : 'bg-white/90 hover:bg-sky-50 border-sky-100 hover:shadow-md hover:-translate-y-0.5'}
-                    ${isTaken ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                            : 'bg-white/90 hover:bg-sky-50 border-sky-100 hover:shadow-md hover:-translate-y-0.5'
+                                        }
+          ${isTaken ? 'opacity-60 cursor-not-allowed' : ''}`}
                                     title={isTaken ? 'Taken by another player' : 'Select'}
                                 >
+                                    {/* Render the label safely as a string */}
                                     {c.label}
+
+                                    {/* Show lock if taken */}
                                     {isTaken && (
                                         <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 text-white grid place-items-center shadow">
                                             <FaLock />
@@ -613,7 +656,7 @@ export default function GameLobby({
                             <FaDoorOpen /> Leave
                         </button>
                         <button
-                            onClick={handleSaveCharacter}
+                            onClick={() => handleSaveCharacter()}
                             disabled={saving}
                             className="px-4 py-2.5 rounded-2xl bg-[#AAD977] text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 disabled:opacity-70 disabled:hover:translate-y-0 flex items-center gap-2"
                         >
