@@ -14,7 +14,6 @@ export function registerGameModule(app: Application, io: Server) {
   // Register REST API routes
   registerGameRoutes(app, lobbyManager);
 
-  // Register Socket.IO handlers for real-time game events
-  registerGameSocketHandlers(io, lobbyManager, gameEngine);
   logger.info('Game module registered');
+  return { gameEngine, lobbyManager }; 
 }
