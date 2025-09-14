@@ -374,6 +374,41 @@ router.get('/profile/level-progress/:userId', async (req: Request, res: Response
 
 
 
+/**
+ * @route GET /api/auth/profile/post-images/:userId?page=&pageSize=
+ * @desc Returns ONLY the image for each post the user created (with pagination)
+ */
+router.get('/profile/post-images/:userId', async (req: Request, res: Response) => {
+  const userId = Number(req.params.userId);
+
+  // Parse + clamp pagination safely
+  const page = Math.max(1, parseInt(String(req.query.page ?? '1'), 10) || 1);
+  const pageSizeRaw = parseInt(String(req.query.pageSize ?? '8'), 10) || 8;
+  const pageSize = Math.max(1, Math.min(24, pageSizeRaw)); // cap to avoid huge pages
+
+  if (Number.isNaN(userId)) {
+    res.status(400).json({ status: 'error', message: 'Invalid user ID.' });
+    return;
+  }
+
+  try {
+    const result = await userService.getUserPostImages(userId, page, pageSize);
+    res.status(200).json({
+      status: 'success',
+      message: 'Post images fetched successfully.',
+      data: result, // { page, pageSize, total, totalPages, posts: [{ post_id, image_path, created_at }] }
+    });
+  } catch (error) {
+    logger.error(`[Auth] Failed to fetch post images for user ID ${userId}:`, error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Could not load post images.',
+    });
+  }
+});
+
+
+
 // =============== Settings Page Specific Functions ============== //
 
 
