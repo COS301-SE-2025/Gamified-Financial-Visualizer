@@ -1,3 +1,4 @@
+// socket handlers for game module
 import { Server, Socket } from 'socket.io';
 import { GameLobbyManager } from '../lobby/GameLobbyManager';
 import { GameEngine } from '../engine/GameEngine';
@@ -6,12 +7,11 @@ import { logger } from '../../../config/logger';
 
 export function registerGameSocketHandlers(
   io: Server, 
+  socket: Socket,
   lobbyManager: GameLobbyManager, 
   gameEngine: GameEngine
 ) {
   const matchmakingService = new MatchmakingService(lobbyManager);
-
-  io.on('connection', (socket: Socket) => {
     const userId = socket.data.userId as number;
     if (!userId) return;
 
@@ -369,7 +369,7 @@ export function registerGameSocketHandlers(
         }, 30000);
       }
     });
-  });
+
 
   // LISTEN TO GAME ENGINE EVENTS
   
