@@ -24,12 +24,13 @@ import {
   FaExclamationTriangle
 } from 'react-icons/fa';
 
-// Fallbacks (only used if you want to keep dummy posts visible before API returns)
-import avatar1 from '../../assets/Images/avatars/Totoro.png';
-import banner1 from '../../assets/Images/achievements banners/1.png';
+// Fallbacks
+import avatarFallback from '../../assets/Images/avatars/Totoro.png';
+import bannerFallback from '../../assets/Images/achievements banners/1.png';
 
 // ---------- Config ----------
 const API_BASE = 'http://localhost:5000/api/community';
+const AUTH_BASE = 'http://localhost:5000/api/auth';
 
 // Helper to read user once
 function getUser() {
@@ -44,10 +45,40 @@ function getUser() {
 // Optional tiny utility
 const clamp = (n, min, max) => Math.min(Math.max(n, min), max);
 
+// Always sort by createdAt ASC (oldest top, newest bottom)
+const sortCommentsAsc = (arr = []) =>
+  [...arr].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
 export default function CommunityDashboard() {
   const location = useLocation();
   const user = getUser();
   const userId = user?.id ?? null;
+
+  // --- Who am I? (for optimistic UI) ---
+  const [me, setMe] = useState({
+    username: user?.username || null,
+    avatarUrl: null,
+  });
+
+  useEffect(() => {
+    if (!userId) return;
+    // Get display username + avatar so optimistic comments look correct
+    fetch(`${AUTH_BASE}/top-bar/${userId}`)
+      .then(r => (r.ok ? r.json() : Promise.reject(r)))
+      .then(json => {
+        const d = json?.data || {};
+        setMe({
+          username: d.username || user?.username || 'You',
+          avatarUrl: d.avatar_image_path ? `/assets/Images/${d.avatar_image_path}` : avatarFallback,
+        });
+      })
+      .catch(() => {
+        setMe({
+          username: user?.username || 'You',
+          avatarUrl: avatarFallback,
+        });
+      });
+  }, [userId]);
 
   // Feed state (from backend)
   const [posts, setPosts] = useState([]); // array of posts from /social/feed/:userId
@@ -72,7 +103,7 @@ export default function CommunityDashboard() {
   // Comments input
   const [commentInputs, setCommentInputs] = useState({}); // { [postId]: "text" }
 
-  // Pagination (feed – client-side; backend already limits to 50 per your service)
+  // Pagination (feed – client-side)
   const POSTS_PER_PAGE = 2;
   const [postPage, setPostPage] = useState(1);
   const totalPostPages = Math.max(1, Math.ceil(posts.length / POSTS_PER_PAGE));
@@ -104,7 +135,7 @@ export default function CommunityDashboard() {
         setRecentBanners(list); // [{achievementId, title, bannerPath}]
       })
       .catch(() => {
-        // fallback: keep at least one item to demo UI
+        // fallback to keep UI functional
         setRecentBanners([{ achievementId: 1, title: 'Sample', bannerPath: 'achievements banners/1.png' }]);
       });
   }, [userId]);
@@ -117,7 +148,7 @@ export default function CommunityDashboard() {
       .then(json => {
         const list = Array.isArray(json?.data) ? json.data : [];
         setCommunityOptions(list); // [{community_id, community_name}]
-        // If you previously stored tag names in router handoff, try to map them here:
+        // Map router handoff tags -> ids
         if (location.state?.shareAchievement?.tags?.length) {
           const names = location.state.shareAchievement.tags.slice(0, 3);
           const mappedIds = list
@@ -126,9 +157,7 @@ export default function CommunityDashboard() {
           if (mappedIds.length) setSelectedCommunityIds(mappedIds);
         }
       })
-      .catch(() => {
-        setCommunityOptions([]); // gracefully degrade
-      });
+      .catch(() => setCommunityOptions([]));
   }, [userId, location.state]);
 
   // ----------- API: Load feed -----------
@@ -139,30 +168,31 @@ export default function CommunityDashboard() {
       .then(r => (r.ok ? r.json() : Promise.reject(r)))
       .then(json => {
         const data = Array.isArray(json?.data) ? json.data : [];
-        // map into UI shape
         const mapped = data.map(row => ({
           id: row.post_id,
           createdAt: row.created_at,
           user: {
             id: row.user_id,
             name: row.username,
-            avatar: row.avatar_id ? `/assets/Images/avatars/${row.avatar_id}` : avatar1,
+            avatar: row.avatar_id ? `/assets/Images/avatars/${row.avatar_id}` : avatarFallback,
             level: row.tier_status || '—',
           },
-          banner: row.banner_image_path ? `/assets/Images/${row.banner_image_path}` : banner1,
+          banner: row.banner_image_path ? `/assets/Images/${row.banner_image_path}` : bannerFallback,
           content: row.caption,
           communities: Array.isArray(row.community_tags) ? row.community_tags : [],
           likes: Number(row.like_count || 0),
-          comments: Array.isArray(row.comments)
-            ? row.comments.map(c => ({
-                id: c.comment_id,
-                userId: c.user_id,
-                user: c.username,
-                avatar: c.avatar_id ? `/assets/Images/avatars/${c.avatar_id}` : null,
-                text: c.comment,
-                createdAt: c.created_at
-              }))
-            : []
+          comments: sortCommentsAsc(
+            Array.isArray(row.comments)
+              ? row.comments.map(c => ({
+                  id: c.comment_id,
+                  userId: c.user_id,
+                  user: c.username,
+                  avatar: c.avatar_id ? `/assets/Images/avatars/${c.avatar_id}` : null,
+                  text: c.comment,
+                  createdAt: c.created_at
+                }))
+              : []
+          )
         }));
         setPosts(mapped);
       })
@@ -209,7 +239,6 @@ export default function CommunityDashboard() {
       body: JSON.stringify({ userId })
     })
       .then(r => (r.ok ? r.json() : Promise.reject(r)))
-      .then(() => {})
       .catch(() => {
         // revert
         setPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: p.likes + (liked ? 1 : -1) } : p));
@@ -223,12 +252,29 @@ export default function CommunityDashboard() {
     const text = (commentInputs[postId] || '').trim();
     if (!text) return;
 
-    // optimistic
+    // --- optimistic comment uses REAL username/avatar immediately ---
     const tempId = `temp-${Date.now()}`;
+    const displayName = me.username || 'You';
+    const avatarUrl = me.avatarUrl || avatarFallback;
+    const createdAtISO = new Date().toISOString();
+
     setPosts(prev =>
       prev.map(p =>
         p.id === postId
-          ? { ...p, comments: [...p.comments, { id: tempId, userId, user: 'you', text, createdAt: new Date().toISOString() }] }
+          ? {
+              ...p,
+              comments: sortCommentsAsc([
+                ...p.comments,
+                {
+                  id: tempId,
+                  userId,
+                  user: displayName,
+                  avatar: avatarUrl,
+                  text,
+                  createdAt: createdAtISO
+                }
+              ])
+            }
           : p
       )
     );
@@ -242,19 +288,26 @@ export default function CommunityDashboard() {
       .then(r => (r.ok ? r.json() : Promise.reject(r)))
       .then(json => {
         const newComment = json?.comment;
+        // Swap temp id for real id/timestamp (keep username/avatar already correct)
         setPosts(prev =>
           prev.map(p =>
             p.id === postId
               ? {
                   ...p,
-                  comments: p.comments.map(c => (c.id === tempId ? { ...c, id: newComment.comment_id, createdAt: newComment.created_at } : c))
+                  comments: sortCommentsAsc(
+                    p.comments.map(c =>
+                      c.id === tempId
+                        ? { ...c, id: newComment.comment_id, createdAt: newComment.created_at }
+                        : c
+                    )
+                  )
                 }
               : p
           )
         );
       })
       .catch(() => {
-        // revert
+        // revert on failure
         setPosts(prev =>
           prev.map(p =>
             p.id === postId ? { ...p, comments: p.comments.filter(c => c.id !== tempId) } : p
@@ -285,7 +338,7 @@ export default function CommunityDashboard() {
         userId,
         achievementId: selectedAchievementId,
         caption: description,
-        communityTagIds: selectedCommunityIds // <-- send IDs from API
+        communityTagIds: selectedCommunityIds
       })
     })
       .then(r => (r.ok ? r.json() : Promise.reject(r)))
@@ -313,7 +366,6 @@ export default function CommunityDashboard() {
 
   const handleDeletePost = async (postId) => {
     if (!userId) return;
-    // optimistic
     const prev = posts;
     setPosts(prev.filter(p => p.id !== postId));
 
@@ -333,7 +385,6 @@ export default function CommunityDashboard() {
 
   const handleDeleteComment = async (postId, commentId) => {
     if (!userId) return;
-    // optimistic
     const prev = posts;
     setPosts(prev =>
       prev.map(p =>
@@ -661,7 +712,7 @@ export default function CommunityDashboard() {
                           }`}
                         >
                           <img
-                            src={b.bannerPath ? `/assets/Images/${b.bannerPath}` : banner1}
+                            src={b.bannerPath ? `/assets/Images/${b.bannerPath}` : bannerFallback}
                             alt={b.title || 'achievement'}
                             className="w-full h-28 object-cover"
                           />
