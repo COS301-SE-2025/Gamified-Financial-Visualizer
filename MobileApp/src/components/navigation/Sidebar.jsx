@@ -1,4 +1,3 @@
-// src/components/navigation/Sidebar.jsx
 import React, { useState, useMemo } from "react";
 import { View, Text, Pressable, StyleSheet, Dimensions, Image, ScrollView } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
@@ -10,7 +9,7 @@ export default function Sidebar({
   visible,
   onClose,
   activeTab,
-  navigate,
+  navigation, 
   username = "satoshi_nak",
   tier = "Silver",
   avatarSource = Logo,
@@ -29,7 +28,7 @@ export default function Sidebar({
   const sections = useMemo(
     () => [
       {
-        items: [{ key: "home", label: "Home", icon: "home", route: "home" }],
+        items: [{ key: "home", label: "Home", icon: "home", route: "HomeScreen" }], 
       },
       {
         items: [
@@ -39,10 +38,11 @@ export default function Sidebar({
             icon: "credit-card",
             expandable: true,
             children: [
-              { key: "transactions", label: "Transactions", icon: "shuffle", route: "transactions" },
-              { key: "budget", label: "Budget", icon: "pie-chart", route: "budget" },
-              { key: "insights", label: "Insights", icon: "bar-chart-2", route: "insights" },
-              { key: "imports", label: "Imports", icon: "download-cloud", route: "imports" },
+              // Updated to match your exact file names
+              { key: "transactions", label: "Transactions", icon: "shuffle", route: "Transactions" },
+              { key: "budget", label: "Budget", icon: "pie-chart", route: "Budget" },
+              { key: "insights", label: "Insights", icon: "bar-chart-2", route: "Insights" },
+              { key: "imports", label: "Imports", icon: "download-cloud", route: "Imports" },
             ],
           },
         ],
@@ -55,8 +55,8 @@ export default function Sidebar({
             icon: "target",
             expandable: true,
             children: [
-              { key: "all-goals", label: "All Goals", icon: "list", route: "goals" },
-              { key: "create-goal", label: "Create a Goal", icon: "plus-circle", route: "create-goal" },
+              { key: "all-goals", label: "All Goals", icon: "list", route: "Goal" }, 
+              { key: "create-goal", label: "Create a Goal", icon: "plus-circle", route: "CreateGoal" },
             ],
           },
         ],
@@ -69,9 +69,9 @@ export default function Sidebar({
             icon: "book",
             expandable: true,
             children: [
-              { key: "all-modules", label: "All Modules", icon: "layers", route: "learn-all" },
-              { key: "complete", label: "Completed", icon: "check-circle", route: "learn-complete" },
-              { key: "incomplete", label: "Incomplete", icon: "circle", route: "learn-incomplete" },
+              { key: "all-modules", label: "All Modules", icon: "layers", route: "Learn" },
+              { key: "complete", label: "Completed", icon: "check-circle", route: "LearnComplete" },
+              { key: "incomplete", label: "Incomplete", icon: "circle", route: "LearnIncomplete" },
             ],
           },
         ],
@@ -84,10 +84,10 @@ export default function Sidebar({
             icon: "users",
             expandable: true,
             children: [
-              { key: "social", label: "Social", icon: "message-circle", route: "social" },
-              { key: "friends", label: "Friends", icon: "user-check", route: "friends" },
-              { key: "communities", label: "Communities", icon: "grid", route: "communities" },
-              { key: "challenges", label: "Challenges", icon: "flag", route: "challenges" },
+              { key: "social", label: "Social", icon: "message-circle", route: "Social" },
+              { key: "friends", label: "Friends", icon: "user-check", route: "Friends" },
+              { key: "communities", label: "Communities", icon: "grid", route: "Communities" },
+              { key: "challenges", label: "Challenges", icon: "flag", route: "Challenges" },
             ],
           },
         ],
@@ -100,9 +100,9 @@ export default function Sidebar({
             icon: "award",
             expandable: true,
             children: [
-              { key: "ach-all", label: "All", icon: "star", route: "achievements" },
-              { key: "ach-completed", label: "Completed", icon: "check", route: "achievements-completed" },
-              { key: "ach-incomplete", label: "Incomplete", icon: "clock", route: "achievements-incomplete" },
+              { key: "ach-all", label: "All", icon: "star", route: "Achievements" },
+              { key: "ach-completed", label: "Completed", icon: "check", route: "AchievementsCompleted" },
+              { key: "ach-incomplete", label: "Incomplete", icon: "clock", route: "AchievementsIncomplete" },
             ],
           },
         ],
@@ -115,35 +115,36 @@ export default function Sidebar({
             icon: "help-circle",
             expandable: true,
             children: [
-              { key: "tutorials", label: "Tutorials", icon: "play-circle", route: "support-tutorials" },
-              { key: "faq", label: "FAQ", icon: "help-circle", route: "support-faq" },
-              { key: "overview", label: "Overview", icon: "book-open", route: "support-overview" },
+              { key: "tutorials", label: "Tutorials", icon: "play-circle", route: "Tutorials" },
+              { key: "faq", label: "FAQ", icon: "help-circle", route: "FAQs" },
+              { key: "overview", label: "Overview", icon: "book-open", route: "Overview" },
             ],
           },
         ],
       },
-       {
-         items: [
-            {
-               key: "profile",
-               label: "Profile",
-               icon: "",
-               expandable: true,
-               children: [
-                   { key:"settings", label: "Settings", icon: "settings", route: "Profile-settings"},
-                   { key:"profile", label: "Profile", icon: "profile", route: "Profile-profile"},
-
-               ]
-            }
-         ]
-      }
+      {
+        items: [
+          {
+            key: "profile",
+            label: "Profile",
+            icon: "user",
+            expandable: true,
+            children: [
+              { key: "settings", label: "Settings", icon: "settings", route: "Settings" },
+              { key: "profile", label: "Profile", icon: "user", route: "Profile" },
+            ],
+          },
+        ],
+      },
     ],
     []
   );
 
   const go = (route) => {
-    navigate?.(route);
-    onClose?.();
+    if (route) {
+      navigation.navigate(route); 
+      onClose?.();
+    }
   };
 
   if (!visible) return null;
@@ -204,7 +205,11 @@ export default function Sidebar({
                     {item.expandable && isOpen && (
                       <View style={styles.childrenWrap}>
                         {item.children.map((c) => (
-                          <Pressable key={c.key} style={styles.childItem} onPress={() => go(c.route)}>
+                          <Pressable 
+                            key={c.key} 
+                            style={styles.childItem} 
+                            onPress={() => go(c.route)}
+                          >
                             <Icon name={c.icon} size={18} color="#6b7280" style={styles.childIcon} />
                             <Text style={styles.childText}>{c.label}</Text>
                           </Pressable>
@@ -224,7 +229,6 @@ export default function Sidebar({
             style={styles.logoutButton}
             onPress={() => {
               onClose?.();
-              // TODO: handle logout
             }}
           >
             <Icon name="log-out" size={18} color="#ef4444" />
@@ -236,6 +240,7 @@ export default function Sidebar({
   );
 }
 
+// Your styles remain the same...
 const styles = StyleSheet.create({
   backdrop: {
     position: "absolute",
