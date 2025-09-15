@@ -142,13 +142,6 @@ export default function Sidebar({
       <View style={styles.sidebar}>
         {/* Header with close button */}
         <View style={styles.header}>
-          <View style={styles.headerTop}>
-            <Image source={Logo} style={styles.logo} />
-            <Text style={styles.brandText}>MobileApp</Text>
-            <Pressable onPress={onClose} style={styles.closeButton}>
-              <Icon name="x" size={24} color="#64748b" />
-            </Pressable>
-          </View>
           
           {/* Profile strip */}
           <View style={styles.profileRow}>
@@ -345,6 +338,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     marginLeft: -4,
     paddingLeft: 8,
+    paddingRight: 4,
   },
   childIcon: { width: 20, marginRight: 10 },
   childText: { fontSize: 14, color: "#374151" },

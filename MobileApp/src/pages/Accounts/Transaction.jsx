@@ -1,11 +1,15 @@
 // src/pages/Accounts/Transaction.jsx
-import React from 'react';
-import { View, Text } from 'react-native';
-
-export default function Transaction() {
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+import Layout from "../../components/navigation/Layout";
+export default function Transaction({ navigation }) {
   return (
-    <View>
-      <Text>Transaction Screen</Text>
-    </View>
+    <Layout
+      activeTab="Transaction" // This should match the route name
+      onBellPress={() => navigation.navigate("Notifications")}
+      onAvatarPress={() => navigation.navigate("Profile")}
+    >
+      {/* Your transaction content */}
+    </Layout>
   );
 }

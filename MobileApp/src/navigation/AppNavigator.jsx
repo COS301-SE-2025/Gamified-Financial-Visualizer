@@ -32,6 +32,9 @@ import FAQs from '../pages/Supports/FAQs';
 import Overview from '../pages/Supports/Overview';
 import Tutorials from '../pages/Supports/Tutorials';
 
+//Learn
+import 
+
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
