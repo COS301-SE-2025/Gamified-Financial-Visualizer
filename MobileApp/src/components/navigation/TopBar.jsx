@@ -2,7 +2,6 @@
 import React, { useRef } from "react";
 import { View, Text, Image, Pressable, StyleSheet, Animated } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
-import Logo from "../../../assets/Logo1.png";
 
 export default function TopBar({
   onBellPress,
@@ -15,10 +14,13 @@ export default function TopBar({
     <View style={styles.wrapper}>
       <View style={styles.container}>
         {/* Left: hamburger */}
-        <Pressable onPress={onMenuPress} style={styles.hamburger}>
+        <Pressable
+          onPress={onMenuPress}
+          style={styles.hamburger}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        >
           <Icon name="menu" size={26} color="#111827" />
         </Pressable>
-
 
         {/* Right: notification bell only */}
         <View style={styles.rightRow}>
@@ -37,8 +39,10 @@ export default function TopBar({
 }
 
 const styles = StyleSheet.create({
-  wrapper: { 
-    zIndex: 100,
+  wrapper: {
+    position: "relative",
+    zIndex: 1000,          // keep above content
+    elevation: 4,          // Android stacking
     backgroundColor: "#fff",
     borderBottomWidth: 1,
     borderBottomColor: "#e5e7eb",
@@ -50,27 +54,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  hamburger: { 
-    padding: 8,
-  },
-  brandCenter: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  logo: { 
-    width: 32, 
-    height: 32,
-  },
-  rightRow: { 
-    flexDirection: "row", 
-    alignItems: "center",
-  },
-  bellWrap: { 
-    marginRight: 16, 
-    padding: 6, 
-    position: "relative" 
-  },
+  hamburger: { padding: 8 },
+  rightRow: { flexDirection: "row", alignItems: "center" },
+  bellWrap: { marginRight: 16, padding: 6, position: "relative" },
   badge: {
     position: "absolute",
     top: 2,
@@ -83,9 +69,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  badgeText: { 
-    color: "#fff", 
-    fontSize: 10, 
-    fontWeight: "800" 
-  },
+  badgeText: { color: "#fff", fontSize: 10, fontWeight: "800" },
 });

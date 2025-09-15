@@ -4,26 +4,10 @@ import { View, Text, StyleSheet } from "react-native";
 import Layout from "../../components/navigation/Layout";
 
 export default function HomeScreen({ navigation }) {
-  const navigate = (key) => {
-    // map nav keys to your routes
-    const map = {
-      home: "Home",
-      transactions: "Transactions",
-      budgets: "Budgets",
-      insights: "Insights",
-      import: "Import",
-      goals: "Goals",
-      goalCreate: "GoalCreate",
-      support: "Support",
-      more: "More",
-    };
-    navigation.navigate(map[key] ?? "Home");
-  };
-
   return (
     <Layout
-      activeTab="home"
-      navigate={navigate}
+      activeTab="Home" // Changed from "home" to "Home" to match your route name
+      navigation={navigation} // Pass the full navigation object instead of navigate function
       onBellPress={() => navigation.navigate("Notifications")}
       onAvatarPress={() => navigation.navigate("Profile")}
     >

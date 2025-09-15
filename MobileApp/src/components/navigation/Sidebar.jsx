@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { View, Text, Pressable, StyleSheet, Dimensions, Image, ScrollView } from "react-native";
+import { useNavigation } from '@react-navigation/native'; // Add this import
 import Icon from "react-native-vector-icons/Feather";
 import Logo from "../../../assets/Logo1.png";
 
@@ -9,11 +10,13 @@ export default function Sidebar({
   visible,
   onClose,
   activeTab,
-  navigation, 
+  // Remove navigation prop since we're using the hook
   username = "satoshi_nak",
   tier = "Silver",
   avatarSource = Logo,
 }) {
+  const navigation = useNavigation(); // Use this hook instead of props
+  
   const [openKeys, setOpenKeys] = useState({
     accounts: false,
     goals: false,
@@ -21,14 +24,20 @@ export default function Sidebar({
     community: false,
     achievements: false,
     support: false,
+    profile: false,
   });
 
   const toggle = (key) => setOpenKeys((s) => ({ ...s, [key]: !s[key] }));
 
+  // Helper function to check if a child item is active
+  const isChildActive = (children) => {
+    return children.some(child => child.route === activeTab);
+  };
+
   const sections = useMemo(
     () => [
       {
-        items: [{ key: "home", label: "Home", icon: "home", route: "HomeScreen" }], 
+        items: [{ key: "home", label: "Home", icon: "home", route: "Home" }], 
       },
       {
         items: [
@@ -38,11 +47,11 @@ export default function Sidebar({
             icon: "credit-card",
             expandable: true,
             children: [
-              // Updated to match your exact file names
-              { key: "transactions", label: "Transactions", icon: "shuffle", route: "Transactions" },
+              // Updated to match EXACT route names from AppNavigator
+              { key: "transactions", label: "Transactions", icon: "shuffle", route: "Transaction" },
               { key: "budget", label: "Budget", icon: "pie-chart", route: "Budget" },
               { key: "insights", label: "Insights", icon: "bar-chart-2", route: "Insights" },
-              { key: "imports", label: "Imports", icon: "download-cloud", route: "Imports" },
+              { key: "imports", label: "Imports", icon: "download-cloud", route: "Import" },
             ],
           },
         ],
@@ -64,21 +73,6 @@ export default function Sidebar({
       {
         items: [
           {
-            key: "learn",
-            label: "Learn",
-            icon: "book",
-            expandable: true,
-            children: [
-              { key: "all-modules", label: "All Modules", icon: "layers", route: "Learn" },
-              { key: "complete", label: "Completed", icon: "check-circle", route: "LearnComplete" },
-              { key: "incomplete", label: "Incomplete", icon: "circle", route: "LearnIncomplete" },
-            ],
-          },
-        ],
-      },
-      {
-        items: [
-          {
             key: "community",
             label: "Community",
             icon: "users",
@@ -86,23 +80,8 @@ export default function Sidebar({
             children: [
               { key: "social", label: "Social", icon: "message-circle", route: "Social" },
               { key: "friends", label: "Friends", icon: "user-check", route: "Friends" },
-              { key: "communities", label: "Communities", icon: "grid", route: "Communities" },
+              { key: "communities", label: "Communities", icon: "grid", route: "Community" },
               { key: "challenges", label: "Challenges", icon: "flag", route: "Challenges" },
-            ],
-          },
-        ],
-      },
-      {
-        items: [
-          {
-            key: "achievements",
-            label: "Achievements",
-            icon: "award",
-            expandable: true,
-            children: [
-              { key: "ach-all", label: "All", icon: "star", route: "Achievements" },
-              { key: "ach-completed", label: "Completed", icon: "check", route: "AchievementsCompleted" },
-              { key: "ach-incomplete", label: "Incomplete", icon: "clock", route: "AchievementsIncomplete" },
             ],
           },
         ],
@@ -142,8 +121,16 @@ export default function Sidebar({
 
   const go = (route) => {
     if (route) {
-      navigation.navigate(route); 
-      onClose?.();
+      console.log("Navigating to:", route);
+      try {
+        navigation.navigate(route);
+        onClose?.();
+        console.log("Successfully navigated to:", route);
+      } catch (error) {
+        console.error("Navigation error:", error);
+      }
+    } else {
+      console.warn("No route provided");
     }
   };
 
@@ -153,8 +140,16 @@ export default function Sidebar({
     <>
       <Pressable style={styles.backdrop} onPress={onClose} />
       <View style={styles.sidebar}>
-        {/* Header */}
+        {/* Header with close button */}
         <View style={styles.header}>
+          <View style={styles.headerTop}>
+            <Image source={Logo} style={styles.logo} />
+            <Text style={styles.brandText}>MobileApp</Text>
+            <Pressable onPress={onClose} style={styles.closeButton}>
+              <Icon name="x" size={24} color="#64748b" />
+            </Pressable>
+          </View>
+          
           {/* Profile strip */}
           <View style={styles.profileRow}>
             <Image source={avatarSource} style={styles.avatar} />
@@ -172,7 +167,9 @@ export default function Sidebar({
           {sections.map((section, index) => (
             <View key={index} style={styles.menuSection}>
               {section.items.map((item) => {
-                const active = activeTab === item.key;
+                // Check if this item or any of its children is active
+                const isActiveParent = item.expandable && isChildActive(item.children);
+                const active = activeTab === item.route || isActiveParent;
                 const isOpen = item.expandable ? openKeys[item.key] : false;
 
                 return (
@@ -204,16 +201,26 @@ export default function Sidebar({
                     {/* Children */}
                     {item.expandable && isOpen && (
                       <View style={styles.childrenWrap}>
-                        {item.children.map((c) => (
-                          <Pressable 
-                            key={c.key} 
-                            style={styles.childItem} 
-                            onPress={() => go(c.route)}
-                          >
-                            <Icon name={c.icon} size={18} color="#6b7280" style={styles.childIcon} />
-                            <Text style={styles.childText}>{c.label}</Text>
-                          </Pressable>
-                        ))}
+                        {item.children.map((c) => {
+                          const childActive = activeTab === c.route;
+                          return (
+                            <Pressable 
+                              key={c.key} 
+                              style={[styles.childItem, childActive && styles.activeChildItem]} 
+                              onPress={() => go(c.route)}
+                            >
+                              <Icon 
+                                name={c.icon} 
+                                size={18} 
+                                color={childActive ? "#6aa84f" : "#6b7280"} 
+                                style={styles.childIcon} 
+                              />
+                              <Text style={[styles.childText, childActive && styles.activeChildText]}>
+                                {c.label}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
                       </View>
                     )}
                   </View>
@@ -229,6 +236,7 @@ export default function Sidebar({
             style={styles.logoutButton}
             onPress={() => {
               onClose?.();
+              // Add your logout logic here
             }}
           >
             <Icon name="log-out" size={18} color="#ef4444" />
@@ -240,7 +248,6 @@ export default function Sidebar({
   );
 }
 
-// Your styles remain the same...
 const styles = StyleSheet.create({
   backdrop: {
     position: "absolute",
@@ -275,6 +282,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 16,
+    justifyContent: "space-between",
   },
   logo: { width: 36, height: 36, marginRight: 10 },
   brandText: {
@@ -283,7 +291,10 @@ const styles = StyleSheet.create({
     color: "#6aa84f",
     flex: 1,
   },
-  closeButton: { padding: 4 },
+  closeButton: { 
+    padding: 4,
+    marginLeft: 10,
+  },
   profileRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -329,8 +340,15 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingLeft: 4,
   },
+  activeChildItem: {
+    backgroundColor: "#f0f9eb",
+    borderRadius: 6,
+    marginLeft: -4,
+    paddingLeft: 8,
+  },
   childIcon: { width: 20, marginRight: 10 },
   childText: { fontSize: 14, color: "#374151" },
+  activeChildText: { color: "#6aa84f", fontWeight: "500" },
   footer: {
     marginTop: "auto",
     paddingTop: 16,
