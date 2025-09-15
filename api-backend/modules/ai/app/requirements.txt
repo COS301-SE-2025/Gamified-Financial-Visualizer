@@ -25,5 +25,5 @@ pytest ==8.4.0
 scikit-learn==1.4.0
 scipy==1.11.4
 numpy==1.26.4
-pandas==2.1.0
-pickle==0.0  # Note: 'pickle' is a built-in module, no need to install
+
+# pickle==0.0  # Note: 'pickle' is a built-in module, no need to install
