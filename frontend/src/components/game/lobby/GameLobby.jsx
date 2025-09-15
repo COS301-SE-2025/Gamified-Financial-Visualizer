@@ -5,6 +5,7 @@ import {
   FaUsers, FaUser, FaLock, FaDoorOpen, FaSignOutAlt, FaSyncAlt, FaKey
 } from 'react-icons/fa'
 import CharacterSelectViewer from '../CharacterSelectViewer'
+import bannerImage from '../../../assets/Images/game/lobby-banner.png'
 
 const ALL_CHARACTERS = [
   { label: 'Green girl', key: 'Green_girl' },
@@ -94,8 +95,8 @@ export default function GameLobby({
 
   const lapOptions = [5, 10, 15, 20]
   const playersInLobby = currentPlayers ?? [
-    { id: 'u1', name: 'lily_rose', ready: true,  characterKey: 'Green_girl' },
-    { id: 'u2', name: 'big_bucks', ready: false,  characterKey: 'Mr_suit' },
+    { id: 'u1', name: 'lily_rose', ready: true, characterKey: 'Green_girl' },
+    { id: 'u2', name: 'big_bucks', ready: false, characterKey: 'Mr_suit' },
   ]
   const takenKeys = new Set(playersInLobby.map(p => p.characterKey).filter(Boolean))
   const canStart = useMemo(() => (mode === 'solo' ? true : players >= 2 && players <= 6), [mode, players])
@@ -113,7 +114,7 @@ export default function GameLobby({
       const res = await (onRefreshGames?.() ?? new Promise(res => setTimeout(() => {
         res([
           { id: 'r1', code: 'ABCD', name: 'Public Room', players: 2, maxPlayers: 6, laps: 10 },
-          { id: 'r2', code: 'PQRS', name: 'Speed Run',  players: 4, maxPlayers: 4, laps: 5  },
+          { id: 'r2', code: 'PQRS', name: 'Speed Run', players: 4, maxPlayers: 4, laps: 5 },
         ])
       }, 600)))
       if (Array.isArray(res)) setRooms(res)
@@ -127,43 +128,69 @@ export default function GameLobby({
   return (
     <div className="relative p-4 md:p-6 space-y-6 min-h-screen">
       {/* header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-sky-500 to-gray-200 bg-clip-text text-transparent">
-            Game Lobby
-          </h1>
-          <p className="text-sky-500/80 mt-1">Customize your experience and start playing</p>
+      <div className="flex flex-col gap-4">
+        {/* Banner image placeholder */}
+        <div className="w-full">
+          <img
+            src={bannerImage} // replace with your import or path
+            alt="Game Banner"
+            className="w-full h-42 object-cover rounded-xl shadow-md"
+          />
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <button onClick={onLeaveLobby} className="px-4 py-2 rounded-2xl border border-red-200 bg-white hover:bg-red-50 text-red-600 flex items-center gap-2">
-            <FaDoorOpen /> Leave Lobby
-          </button>
-          <button onClick={onLeaveGame} className="px-4 py-2 rounded-2xl bg-red-400 hover:bg-red-500 text-white flex items-center gap-2 shadow">
-            <FaSignOutAlt /> Leave Game
-          </button>
-          <div className="px-4 py-2 rounded-2xl text-white shadow-lg bg-[#FFCE51] flex items-center gap-2">
-            <FaCrown className="text-amber-100" /> High: {highestScore}
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-sky-500 to-gray-200 bg-clip-text text-transparent">
+              Game Lobby
+            </h1>
+            <p className="text-sky-500/80 mt-1">
+              Customize your experience and start playing
+            </p>
           </div>
-          <div className="px-4 py-2 rounded-2xl text-white shadow-lg bg-[#AAD977] flex items-center gap-2">
-            <FaCoins className="text-lime-200" /> Points: {totalPoints}
+
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={onLeaveLobby}
+              className="px-4 py-2 rounded-2xl border border-red-200 bg-white hover:bg-red-50 text-red-600 flex items-center gap-2"
+            >
+              <FaDoorOpen /> Leave Lobby
+            </button>
+            <button
+              onClick={onLeaveGame}
+              className="px-4 py-2 rounded-2xl bg-red-400 hover:bg-red-500 text-white flex items-center gap-2 shadow"
+            >
+              <FaSignOutAlt /> Leave Game
+            </button>
+            <div className="px-4 py-2 rounded-2xl text-white shadow-lg bg-[#FFCE51] flex items-center gap-2">
+              <FaCrown className="text-amber-100" /> High: {highestScore}
+            </div>
+            <div className="px-4 py-2 rounded-2xl text-white shadow-lg bg-[#AAD977] flex items-center gap-2">
+              <FaCoins className="text-lime-200" /> Points: {totalPoints}
+            </div>
+            <button
+              onClick={onReadRules}
+              className="px-4 py-2 rounded-2xl border border-sky-200 bg-white/90 hover:bg-white shadow-sm flex items-center gap-2"
+            >
+              <FaBookOpen className="text-[#5FBFFF]" /> Rules
+            </button>
+            <button
+              onClick={onWatchTutorial}
+              className="px-4 py-2 rounded-2xl border border-sky-200 bg-white/90 hover:bg-white shadow-sm flex items-center gap-2"
+            >
+              <FaInfoCircle className="text-[#5FBFFF]" /> Tutorial
+            </button>
           </div>
-          <button onClick={onReadRules} className="px-4 py-2 rounded-2xl border border-sky-200 bg-white/90 hover:bg-white shadow-sm flex items-center gap-2">
-            <FaBookOpen className="text-[#5FBFFF]" /> Rules
-          </button>
-          <button onClick={onWatchTutorial} className="px-4 py-2 rounded-2xl border border-sky-200 bg-white/90 hover:bg-white shadow-sm flex items-center gap-2">
-            <FaInfoCircle className="text-[#5FBFFF]" /> Tutorial
-          </button>
         </div>
       </div>
 
+
       <div className="grid gap-6 md:grid-cols-[1.2fr_1fr]">
-        {/* LEFT COLUMN */}
+        {/* LEFT COLUMN: game settings*/}
         <div className="rounded-3xl border border-white/20 bg-white/80 backdrop-blur-lg shadow-lg p-5 space-y-5">
           {/* top settings */}
           <div className="grid md:grid-cols-2 gap-5">
             {/* Mode */}
-              <div className="text-sky-400 font-semibold mb-3">Game Mode</div>
+            <div className="text-sky-400 font-semibold mb-3">Game Mode</div>
 
             {/* Players */}
 
@@ -314,9 +341,6 @@ export default function GameLobby({
                 </div>
               )}
             </div>
-
-            {/* Laps (global setting for “Start Game”) */}
-
           </div>
 
           {/* Players list */}

@@ -5,14 +5,8 @@ import {
 } from 'react-icons/fa';
 
 /* ----------------------------- Image imports ----------------------------- */
-import imgBusiness from '../../../assets/hud/Business Card.png';
-import imgBuy from '../../../assets/hud/Business Card.png';
-import imgLoan from '../../../assets/hud/Business Card.png';
-import imgRepay from '../../../assets/hud/Business Card.png';
-import imgDraw from '../../../assets/hud/Business Card.png';
-import imgBank from '../../../assets/hud/Business Card.png';
 
-import playerIcon from '../../../assets/Images/avatars/panda.png';
+import playerIcon from '../../../assets/Images/avatars/Skull.png';
 import playerIcon2 from '../../../assets/Images/avatars/CityBuilding.png';
 import playerIcon3 from '../../../assets/Images/avatars/koiFish.png';
 import playerIcon4 from '../../../assets/Images/avatars/Ramen.png';
