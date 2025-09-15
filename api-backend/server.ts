@@ -48,7 +48,10 @@ const io = new Server(httpServer, {
     origin: 'http://localhost:3000',
     methods: ['GET','POST'],
     credentials: true
-  }
+  },
+  transports: ['websocket'],
+  pingInterval: 30000,  // default 25s
+  pingTimeout: 60000,   // default 20s
 });
 
 // Track which socket ID belongs to which userId
@@ -76,22 +79,64 @@ io.use(async (socket, next) => {
 const { gameEngine, lobbyManager } = registerGameModule(app, io);
 
 // When a client connects, remember their socket.id
-
-io.on('connection', socket => {
-  const userId = socket.data.userId as number;
+const userToSocket = new Map<number, string>();
+const disconnectTimers = new Map<number, NodeJS.Timeout>();
+io.on('connection', async (socket) =>  {
+ const userId = socket.data.userId as number;
   if (!userId) {
-    socket.disconnect();
+    socket.disconnect(true);
     return;
   }
-  
-  registerGameSocketHandlers(io, socket, lobbyManager, gameEngine);
-  connectedUsers.set(userId, socket.id);
+
+  // 1) Enforce one-live-socket-per-user
+  const prevId = userToSocket.get(userId);
+  if (prevId && prevId !== socket.id) {
+    io.sockets.sockets.get(prevId)?.disconnect(true);
+  }
+  userToSocket.set(userId, socket.id);
+
+  // 2) Cancel any pending grace timer for this user
+  const t = disconnectTimers.get(userId);
+  if (t) { clearTimeout(t); disconnectTimers.delete(userId); }
+
+  // 3) Re-wire lobby room membership on reconnect
+  const existingLobby = lobbyManager.getLobbyByPlayer(userId);
+  if (existingLobby) {
+    lobbyManager.updatePlayerSocket(userId, socket.id);
+    await socket.join(`lobby:${existingLobby.id}`);
+  }
+
   logger.info(`User ${userId} connected on socket ${socket.id}`);
   socket.emit('connected', { message: 'Real-time notifications enabled' });
 
-  socket.on('disconnect', reason => {
+  // 4) Register per-socket handlers (NOTE: no io.on('connection') inside)
+  registerGameSocketHandlers(io, socket, lobbyManager, gameEngine);
+
+  // 5) Clean disconnect with grace period
+  socket.on('disconnect', (reason) => {
     logger.info(`User ${userId} disconnected: ${reason}`);
-    connectedUsers.delete(userId);
+
+    // only delete if this is still the active socket
+    if (userToSocket.get(userId) === socket.id) {
+      userToSocket.delete(userId);
+    }
+
+    const lobby = lobbyManager.getLobbyByPlayer(userId);
+    if (!lobby) return;
+
+    // start a 30s grace timer; cancel if they reconnect
+    const timer = setTimeout(() => {
+      // still offline? (no socket carries this userId)
+      const stillGone = !Array.from(io.sockets.sockets.values())
+        .some(s => s.data.userId === userId);
+      if (stillGone) {
+        lobbyManager.leaveLobby(userId);
+        io.to(`lobby:${lobby.id}`).emit('lobby:player-disconnected', { playerId: userId });
+      }
+      disconnectTimers.delete(userId);
+    }, 30000);
+
+    disconnectTimers.set(userId, timer);
   });
 });
 

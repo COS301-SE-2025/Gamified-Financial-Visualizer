@@ -8,7 +8,7 @@ import {
 import CharacterSelectViewer from '../CharacterSelectViewer'
 import { io } from 'socket.io-client';
 import { CopyToClipboard } from "react-copy-to-clipboard";
-
+import { getSocket } from '../socket';
 
 const ALL_CHARACTERS = [
     { label: 'Green girl', key: 'Green_girl' },
@@ -75,17 +75,6 @@ export default function GameLobby({
     onQuickJoin,
 }) {
 
-    useEffect(() => {
-        const socket = io('http://localhost:5000', {
-            auth: { token, userId: user.id }
-        });
-
-        socket.on('connect_error', (err) => {
-            console.error('Socket connection failed:', err.message);
-        });
-
-        return () => socket.disconnect();
-    }, []);
 
 
     // global settings (left cards at top)
@@ -120,6 +109,16 @@ export default function GameLobby({
     const user = JSON.parse(localStorage.getItem('user'));
     const token = user.token;
 
+        useEffect(() => {
+        const socket = getSocket(token, user?.id);
+
+        socket.on('connect_error', (err) => {
+            console.error('Socket connection failed:', err.message);
+        });
+
+        return () => socket.off("connect_error", error);
+    }, [token, user]);
+
     const lapOptions = [5, 10, 15, 20]
     const [playersInLobby, setPlayersInLobby] = useState([]);
 
@@ -130,12 +129,14 @@ export default function GameLobby({
    ]
        */
 
-const takenKeys = new Set(
-  playersInLobby
-    .map(p => p.character?.id) // extract string ID
-    .filter(Boolean)
-)
-   const canStart = useMemo(() => (mode === 'solo' ? true : players >= 2 && players <= 6), [mode, players])
+    const takenKeys = new Set(
+        playersInLobby
+            .filter(p => p.characterKey && p.characterKey !== character?.key)
+            .map(p => p.characterKey)
+    );
+
+
+    const canStart = useMemo(() => (mode === 'solo' ? true : players >= 2 && players <= 6), [mode, players])
 
     useEffect(() => { if (Array.isArray(availableGames)) setRooms(availableGames) }, [availableGames])
 
@@ -151,7 +152,7 @@ const takenKeys = new Set(
                 }),
             });
             if (res.success) {
-              //  onSaveCharacter?.(character.key);
+                //  onSaveCharacter?.(character.key);
             }
         } catch (err) {
             console.error(err);
@@ -615,14 +616,15 @@ const takenKeys = new Set(
                     <div className="grid grid-cols-2 gap-3">
                         {ALL_CHARACTERS.map((c) => {
                             // Check if this character is taken by someone else
-                           const isTaken = takenKeys.has(c.key) && c.key !== character?.key
+                            const isTaken = takenKeys.has(c.key);
+
                             return (
                                 <button
                                     key={c.key}
                                     onClick={() => {
                                         if (!isTaken) {
                                             setCharacter(c)
-                                          //  handleSaveCharacter()
+                                            //  handleSaveCharacter()
                                         }
                                     }}
                                     disabled={isTaken || saving} // disable while saving
