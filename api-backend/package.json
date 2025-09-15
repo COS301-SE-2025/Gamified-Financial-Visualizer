@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "scripts": {
     "build": "tsc",
-    "dev": "concurrently \"redis-server\" \"npx ts-node server.ts\""
+    "dev": "concurrently \"redis-server\" \"npx ts-node server.ts\"",
+    "dev:docker": "concurrently \"npx ts-node server.ts\" \"python3 modules/ai/app/server.py\"",
+    "start": "concurrently \"node dist/server.js\" \"python3 modules/ai/app/server.py\""
   },
   "dependencies": {
     "@socket.io/redis-adapter": "^8.3.0",

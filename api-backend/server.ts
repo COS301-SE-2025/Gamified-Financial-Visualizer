@@ -14,7 +14,8 @@ import http from 'http';
 import { V3 } from 'paseto';
 import './jobs/resetBudgets'; // auto-schedules your budget reset job
 // (Optional but recommended for horizontal scale)
-import { createAdapter } from '@socket.io/redis-adapter';
+//import { createAdapter } from '@socket.io/redis-adapter';
+// please consider this as well - const { createAdapter } = require('@socket.io/redis-adapter');
 
 // 🔌 module registrars
 import { registerAuthModule } from './modules/auth';
