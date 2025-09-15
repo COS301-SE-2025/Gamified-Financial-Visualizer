@@ -138,7 +138,7 @@ export class GameLobbyManager extends EventEmitter {
       username: playerUsername,
       socketId,
       isHost: false,
-      isReady: false,
+      isReady: true,
       joinedAt: new Date()
     };
 

@@ -56,6 +56,9 @@ export class MatchmakingService extends EventEmitter {
     }
   }
 
+  getAllMatches(): Lobby[] {
+    return this.lobbyManager.getPublicLobbies();
+  }
   /**
    * Add player to matchmaking queue
    */

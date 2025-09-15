@@ -3,6 +3,7 @@ import { Router, Application, Request, Response } from 'express';
 import { GameLobbyManager } from '../lobby/GameLobbyManager';
 import { MatchmakingService } from '../lobby/MatchmakingService';
 import { logger } from '../../../config/logger';
+import { log } from 'console';
 
 export function registerGameRoutes(app: Application, lobbyManager: GameLobbyManager) {
   const router = Router();
@@ -33,7 +34,7 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
       };
 
       // Note: socketId will be empty here, updated when player connects via Socket.IO
-      const lobby = lobbyManager.createLobby(user_id, username, '', settings);
+      const lobby = lobbyManager.createLobby(Number(user_id), username, '', settings);
 
       res.json({
         success: true,
@@ -58,7 +59,8 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
           status: lobby.status
         }
       });
-
+      
+      logger.info(`Lobby ${lobby.code} created by user ${username}`);
     } catch (error: any) {
       logger.error('Error creating lobby:', error);
       res.status(400).json({ error: error.message });
@@ -71,14 +73,20 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
    */
   router.post('/lobby/join', async (req: Request, res: Response) => {
     try {
+      
       const {user_id, username, code } = req.body;
+if (!user_id || !username) {
+  logger.warn('Missing user info in join lobby request');
+   res.status(400).json({ error: 'Missing user info' });
+   return;
+}
 
       if (!code) {
          res.status(400).json({ error: 'Lobby code required' });
          return;
       }
 
-      const lobby = lobbyManager.joinLobby(code, user_id, username, '');
+      const lobby = lobbyManager.joinLobby(code, Number(user_id), username, '');
 
       res.json({
         success: true,
@@ -114,10 +122,10 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
    * GET /api/game/lobby/my-lobby
    * Get current lobby for authenticated user
    */
-  router.get('/lobby/my-lobby', async (req: Request, res: Response) => {
+  router.post('/lobby/my-lobby', async (req: Request, res: Response) => {
     try {
-      const { user_id } = req.user as any;
-      const lobby = lobbyManager.getLobbyByPlayer(user_id);
+      const { user_id } = req.body;
+      const lobby = lobbyManager.getLobbyByPlayer(Number(user_id));
 
       if (!lobby) {
          res.json({ success: true, lobby: null });
@@ -135,7 +143,8 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
             username: p.username,
             isHost: p.isHost,
             isReady: p.isReady,
-            joinedAt: p.joinedAt
+            joinedAt: p.joinedAt,
+            character: p.character
           })),
           status: lobby.status,
           gameId: lobby.gameId
@@ -154,8 +163,8 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
    */
   router.post('/lobby/leave', async (req: Request, res: Response) => {
     try {
-      const { user_id } = req.user as any;
-      const success = lobbyManager.leaveLobby(user_id);
+      const { user_id } = req.body;
+      const success = lobbyManager.leaveLobby(Number(user_id));
 
       if (!success) {
          res.status(404).json({ error: 'Not in any lobby' });
@@ -166,6 +175,28 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
 
     } catch (error: any) {
       logger.error('Error leaving lobby:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  router.post('/lobby/character', async (req: Request, res: Response) => {
+    try {
+      const { user_id, character } = req.body;
+      if (!character) {
+         res.status(400).json({ error: 'Character data required' });
+         return;
+      }
+
+      const success = lobbyManager.selectCharacter(Number(user_id), character);
+      if (!success) {
+         res.status(404).json({ error: 'Not in any lobby' });
+         return;
+      }
+
+      res.json({ success: true, message: 'Character set successfully' });
+
+    } catch (error: any) {
+      logger.error('Error setting player character:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });
@@ -185,7 +216,7 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
       if (maxPlayers) settings.maxPlayers = Math.min(maxPlayers, 6);
       if (typeof isPrivate === 'boolean') settings.isPrivate = isPrivate;
 
-      const success = lobbyManager.updateSettings(user_id, settings);
+      const success = lobbyManager.updateSettings(Number(user_id), settings);
 
       if (!success) {
          res.status(403).json({ error: 'Only host can update settings or lobby not found' });
@@ -215,7 +246,7 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
         maxLaps: maxLaps || 10
       };
 
-      const lobby = matchmakingService.findMatch(user_id, username, '', preferences);
+      const lobby = matchmakingService.findMatch(Number(user_id), username, '', preferences);
 
       res.json({
         success: true,
@@ -247,7 +278,7 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
   router.get('/state/:gameId', async (req: Request, res: Response) => {
     try {
       const { gameId } = req.params;
-      const { user_id } = req.user as any;
+      const { user_id } = req.body;
 
       const gameEngine = lobbyManager.getGameEngine();
       const gameState = gameEngine.getGameState(gameId);
@@ -258,7 +289,7 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
       }
 
       // Check if user is part of this game
-      const isPlayer = gameState.players.has(user_id);
+      const isPlayer = gameState.players.has(Number(user_id));
       const lobby = Array.from(lobbyManager['lobbies'].values())
         .find(l => l.gameId === gameId);
 
@@ -303,17 +334,25 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
     }
   });
 
+  router.get('/quick-match', async (req: Request, res: Response) => {
+    try {
+      const lobbies = matchmakingService.getAllMatches();
+      res.json({ success: true, lobbies });
+    } catch (error: any) {
+      logger.error('Error getting matchmaking queues:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+  
   /**
  * POST /api/game/turn
  * Processes the current player's action and transitions to the next turn
  */
 router.post('/turn', async (req: Request, res: Response) => {
   try {
-    const { gameId } = req.body; // Get the game ID from request body
-    const { user_id } = req.user as any; // Get user ID from authentication
+    const { gameId, user_id } = req.body; // Get the game ID from request body
 
     // Fetch the game state
-    
       const gameEngine = lobbyManager.getGameEngine();
     const gameState = gameEngine.getGameState(gameId);
 
@@ -324,7 +363,7 @@ router.post('/turn', async (req: Request, res: Response) => {
 
     const currentPlayer = gameState.players.get(gameState.currentPlayerId);
 
-    if (!currentPlayer || currentPlayer.id !== user_id) {
+    if (!currentPlayer || currentPlayer.id !== Number(user_id)) {
       res.status(400).json({ error: 'Not your turn' });
       return;
     }
@@ -352,10 +391,8 @@ router.post('/turn', async (req: Request, res: Response) => {
  */
 router.post('/roll-dice', async (req: Request, res: Response) => {
   try {
-    const { gameId } = req.body; // Get the game ID from request body
-    const { user_id } = req.user as any; // Get user ID from authentication
+    const { gameId, user_id } = req.body; // Get the game ID from request body
 
-        
       const gameEngine = lobbyManager.getGameEngine();
     const gameState = gameEngine.getGameState(gameId);
 
@@ -367,14 +404,14 @@ router.post('/roll-dice', async (req: Request, res: Response) => {
 
     const currentPlayer = gameState.players.get(gameState.currentPlayerId);
 
-    if (!currentPlayer || currentPlayer.id !== user_id) {
+    if (!currentPlayer || currentPlayer.id !== Number(user_id)) {
       res.status(400).json({ error: 'Not your turn' });
       return;
     }
 
     // Roll the dice
     const diceRoll = gameEngine.rollDice();
-    const moveSuccess = gameEngine.movePlayer(gameId, user_id, diceRoll);
+    const moveSuccess = gameEngine.movePlayer(gameId, Number(user_id), diceRoll);
 
     if (!moveSuccess) {
       res.status(400).json({ error: 'Unable to move player' });
@@ -401,8 +438,7 @@ router.post('/roll-dice', async (req: Request, res: Response) => {
  */
 router.post('/purchase-asset', async (req: Request, res: Response) => {
   try {
-    const { gameId, assetId } = req.body; // Get the game ID and asset ID from request body
-    const { user_id } = req.user as any; // Get user ID from authentication
+    const { gameId, assetId, user_id } = req.body; // Get the game ID and asset ID from request body
 
           const gameEngine = lobbyManager.getGameEngine();
 
@@ -460,8 +496,7 @@ router.post('/purchase-asset', async (req: Request, res: Response) => {
  */
 router.post('/end-turn', async (req: Request, res: Response) => {
   try {
-    const { gameId } = req.body; // Get the game ID from request body
-    const { user_id } = req.user as any; // Get user ID from authentication
+    const { gameId, user_id } = req.body; // Get the game ID from request body
 
       const gameEngine = lobbyManager.getGameEngine();
     // Fetch the game state
