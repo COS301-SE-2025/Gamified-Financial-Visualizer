@@ -1,7 +1,7 @@
-# Updated docker-compose.yml (root directory)
+# Production docker-compose.prod.yml (root directory)
 
 services:
-  # Redis service (required for your backend)
+  # Redis service
   redis:
     image: redis:7-alpine
     container_name: finance-redis
@@ -20,7 +20,7 @@ services:
   api-backend:
     build:
       context: ./api-backend
-      target: development
+      target: production
     container_name: finance-api
     ports:
       - "3000:3000"
@@ -45,13 +45,10 @@ services:
       - REDIS_URL=redis://redis:6379
       
       # Environment
-      - NODE_ENV=development
+      - NODE_ENV=production
       
-      # CORS settings - allow frontend
-      - CORS_ORIGIN=http://localhost:3001
-    volumes:
-      - ./api-backend:/app
-      - /app/node_modules
+      # CORS settings
+      - CORS_ORIGIN=http://localhost:80
     depends_on:
       redis:
         condition: service_healthy
@@ -68,61 +65,24 @@ services:
     environment:
       - HF_TOKEN=${HF_TOKEN}
       - PYTHONPATH=/app
-      # CORS settings - allow frontend
-      - CORS_ORIGIN=http://localhost:3001
-    volumes:
-      - ./api-backend/modules/ai:/app
-      - /app/__pycache__
+      - CORS_ORIGIN=http://localhost:80
     restart: unless-stopped
 
-  # Frontend (Development)
+  # Frontend (Production with Nginx)
   frontend:
     build:
       context: ./frontend
-      target: development
+      target: production
     container_name: finance-frontend
     ports:
-      - "3001:3000"
+      - "80:80"
     environment:
-      # API URLs - use localhost for browser requests
       - REACT_APP_API_URL=http://localhost:3000
       - REACT_APP_AI_API_URL=http://localhost:6000
-      
-      # Docker-specific settings for hot reload
-      - CHOKIDAR_USEPOLLING=true
-      - WATCHPACK_POLLING=true
-      - FAST_REFRESH=true
-      
-      # Prevent port conflicts
-      - PORT=3000
-      - HOST=0.0.0.0
-      
-      # Fix for React dev server in Docker
-      - WDS_SOCKET_PORT=0
-      - GENERATE_SOURCEMAP=false
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/.next
     depends_on:
       - api-backend
       - ai-service
     restart: unless-stopped
-    # Use init to handle signals properly
-    init: true
-
-  # Frontend Production (uncomment to use)
-  # frontend-prod:
-  #   build:
-  #     context: ./frontend
-  #     target: production
-  #   container_name: finance-frontend-prod
-  #   ports:
-  #     - "3001:80"
-  #   depends_on:
-  #     - api-backend
-  #     - ai-service
-  #   restart: unless-stopped
 
 volumes:
   redis_data:
