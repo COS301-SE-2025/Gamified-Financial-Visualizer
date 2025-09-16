@@ -136,6 +136,8 @@ function App() {
             <Route path="tutorials" element={<TutorialDetails />} />
           </Route>
 
+
+
           {/* Routes for the Achievements page */}
           <Route path="/achievements" element={<AchievementsPage />} />
           <Route path="/achievements/:id" element={<AchievementDetailPage />} />

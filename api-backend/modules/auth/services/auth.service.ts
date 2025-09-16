@@ -605,6 +605,67 @@ export async function getUserLevelProgress(user_id: number) {
 }
 
 
+// Returns only the ACHIEVEMENT BANNER for each post a user created.
+export async function getUserPostImages(
+  user_id: number,
+  page = 1,
+  pageSize = 8
+): Promise<{
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+  posts: { post_id: number; image_path: string; created_at: string }[];
+}> {
+  const client = await pool.connect();
+  try {
+    const limit = Math.max(1, pageSize);
+    const offset = (Math.max(1, page) - 1) * limit;
+
+    // total for pagination
+    const { rows: totalRows } = await client.query(
+      `SELECT COUNT(*)::int AS total
+       FROM social_posts
+       WHERE user_id = $1`,
+      [user_id]
+    );
+    const total = totalRows[0]?.total ?? 0;
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+
+    // page of images — use ACHIEVEMENT BANNER
+    const { rows } = await client.query(
+      `
+      SELECT
+        p.post_id,
+        p.created_at,
+        a.banner_image_path AS image_path
+      FROM social_posts p
+      JOIN achievements a ON a.achievement_id = p.achievement_id
+      WHERE p.user_id = $1
+      ORDER BY p.created_at DESC, p.post_id DESC
+      LIMIT $2 OFFSET $3
+      `,
+      [user_id, limit, offset]
+    );
+
+    return {
+      page: Math.max(1, page),
+      pageSize: limit,
+      total,
+      totalPages,
+      posts: rows.map(r => ({
+        post_id: r.post_id,
+        image_path: r.image_path,  // e.g. "achievements banners/14.png"
+        created_at: r.created_at
+      }))
+    };
+  } finally {
+    client.release();
+  }
+}
+
+
+
 
 // =============== Settings Page Specific Functions ============== //
 

@@ -654,7 +654,7 @@ const ChallengeCreate = () => {
                   value={formData.endDate}
                   min={today}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                 />
               </div>
             </div>
