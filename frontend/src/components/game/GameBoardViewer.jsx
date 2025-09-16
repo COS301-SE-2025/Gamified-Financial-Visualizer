@@ -197,7 +197,7 @@ const CharacterPawn = React.forwardRef(function CharacterPawn(
     act.reset().fadeIn(0.2).play();
     return () => {
       const a = actions && actions[name];
-      if (a && a.enabled) { try { a.fadeOut(0.2); } catch {} }
+      if (a && a.enabled) { try { a.fadeOut(0.2); } catch { } }
     };
   }, [actions, play]);
 
@@ -244,7 +244,7 @@ function makePathFromBounds(bounds, tileCount = BOARD_ORDER.length, margin = 0.1
 }
 
 /* Glue Y to board via raycast; arrival checked in XZ-plane */
-function MovementController({ pieceRef, path, targetIndex, onArrive, onMoveState, speed = 7, groundYAt }) {
+function MovementController({ pieceRef, path, targetIndex, onArrive, onMoveState, speed = 7, groundYAt, offset = [0, 0] }) {
   const lastIdx = useRef(targetIndex);
 
   useFrame((_, delta) => {
@@ -252,14 +252,21 @@ function MovementController({ pieceRef, path, targetIndex, onArrive, onMoveState
     const dest = path[targetIndex];
     if (!mesh || !dest) return;
 
+    // apply small offset so multiple pawns don't overlap
+    const ox = Array.isArray(offset) ? (offset[0] || 0) : 0;
+    const oz = Array.isArray(offset) ? (offset[1] || 0) : 0;
+
     const cx = mesh.position.x;
     const cz = mesh.position.z;
-    const dx = dest.x - cx;
-    const dz = dest.z - cz;
+    const tx = dest.x + ox;
+    const tz = dest.z + oz;
+    const dx = tx - cx;
+    const dz = tz - cz;
     const planarDist = Math.hypot(dx, dz);
+
     if (planarDist <= 0.02) {
-      const y = groundYAt ? groundYAt(dest.x, dest.z) : mesh.position.y;
-      mesh.position.set(dest.x, y, dest.z);
+      const y = groundYAt ? groundYAt(tx, tz) : mesh.position.y;
+      mesh.position.set(tx, y, tz);
       if (lastIdx.current !== targetIndex) {
         lastIdx.current = targetIndex;
         onMoveState?.(false);
@@ -306,15 +313,24 @@ export default function GameBoardViewer({
   selectedCharacter = "Cowboy",
   camera = { position: [0, 26, 42], fov: 38 },
   exposure = 1.1,
+  pawns = [] // [{ key:'p1', character:'Cowboy', index: 0 }, ...]
 }) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [boardSurfaceY, setBoardSurfaceY] = useState(0.0);
   const [path, setPath] = useState([]);
   const boardMeshesRef = useRef([]);
 
+  // legacy single-pawn state (fallback only)
   const [tileIndex, setTileIndex] = useState(0);
   const [isMoving, setIsMoving] = useState(false);
   const pieceRef = useRef();
+
+  // NEW: one ref per pawn so each can animate independently
+  const pawnRefs = useRef({});
+  const getPawnRef = (k) => {
+    if (!pawnRefs.current[k]) pawnRefs.current[k] = React.createRef();
+    return pawnRefs.current[k];
+  };
 
   const [modalOpen, setModalOpen] = useState(false);
   const [activeTile, setActiveTile] = useState(null);
@@ -361,14 +377,14 @@ export default function GameBoardViewer({
     const p = makePathFromBounds(bounds, BOARD_ORDER.length, 0.12);
     setPath(p);
 
-    // place pawn right away
+    // place legacy pawn right away (fallback)
     if (pieceRef.current && p[0]) {
       const y = groundYAt(p[0].x, p[0].z);
       pieceRef.current.position.set(p[0].x, y, p[0].z);
     }
   }, [groundYAt]);
 
-  // If path changes (first load), ensure pawn is set
+  // If path changes (first load), ensure legacy pawn is set (fallback)
   useEffect(() => {
     if (pieceRef.current && path[0]) {
       const y = groundYAt(path[0].x, path[0].z);
@@ -399,26 +415,70 @@ export default function GameBoardViewer({
         <Suspense fallback={<Loader />}>
           <BoardModel src={glbPath} onReady={handleBoardReady} />
 
-          {/* Smaller pawn (scale=0.55) */}
-          <CharacterPawn
-            ref={pieceRef}
-            src={charactersGlb}
-            focus={selectedCharacter}
-            play={isMoving ? "Walk" : "Idle"}
-            position={path[0]?.toArray() ?? [0, boardSurfaceY, 0]}
-            scale={0.55}
-          />
+          {/* === PAWNS === */}
+          {pawns && pawns.length > 0 ? (
+            <>
+              {pawns.map((p, i) => {
+                const idx = Math.max(0, Math.min(p.index ?? 0, path.length - 1));
+                const spot = path[idx] || path[0];
+                if (!spot) return null;
 
-          {path.length > 0 && (
-            <MovementController
-              pieceRef={pieceRef}
-              path={path}
-              targetIndex={tileIndex}
-              onArrive={handleArrive}
-              onMoveState={setIsMoving}
-              groundYAt={groundYAt}
-            />
+                // tiny radial spread so they don't overlap on the same tile
+                const radius = 0.35;
+                const angle = (i / Math.max(1, pawns.length)) * Math.PI * 2;
+                const ox = Math.cos(angle) * radius;
+                const oz = Math.sin(angle) * radius;
+
+                const y = groundYAt(spot.x + ox, spot.z + oz);
+                const ref = getPawnRef(p.key || `pawn_${i}`);
+
+                return (
+                  <React.Fragment key={p.key || i}>
+                    <CharacterPawn
+                      ref={ref}
+                      src={charactersGlb}
+                      focus={p.character || selectedCharacter}
+                      play={"Idle"}
+                      position={[spot.x + ox, y, spot.z + oz]}
+                      scale={0.55}
+                    />
+                    {path.length > 0 && (
+                      <MovementController
+                        pieceRef={ref}
+                        path={path}
+                        targetIndex={idx}
+                        groundYAt={groundYAt}
+                        offset={[ox, oz]}
+                      />
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </>
+          ) : (
+            // Fallback: original single pawn mode
+            <>
+              <CharacterPawn
+                ref={pieceRef}
+                src={charactersGlb}
+                focus={selectedCharacter}
+                play={isMoving ? "Walk" : "Idle"}
+                position={path[0]?.toArray() ?? [0, boardSurfaceY, 0]}
+                scale={0.55}
+              />
+              {path.length > 0 && (
+                <MovementController
+                  pieceRef={pieceRef}
+                  path={path}
+                  targetIndex={tileIndex}
+                  onArrive={handleArrive}
+                  onMoveState={setIsMoving}
+                  groundYAt={groundYAt}
+                />
+              )}
+            </>
           )}
+
           <Preload all />
         </Suspense>
 
@@ -433,13 +493,12 @@ export default function GameBoardViewer({
         </div>
       )}
 
-      {/* HUD */}
+      {/* Local HUD (kept for standalone viewer) */}
       <div className="absolute top-4 left-4 flex items-center gap-2">
         <button
           onClick={handleRoll}
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-400 text-white font-semibold shadow hover:bg-amber-600 transition-colors"
           title="Roll Dice"
-          disabled={isMoving || showDiceResult}
         >
           <FaDice className="text-lg" />
           Roll Dice

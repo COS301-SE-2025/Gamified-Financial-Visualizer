@@ -21,6 +21,9 @@ import Dashboard from './pages/Dashboard/DashboardPage';
 // The AR Routes
 import ARView from './pages/ARView';
 
+// The Gmae Routes
+import MockGameSimulation from './components/game/MockGameSimulation';
+
 // The Profile Page Routes
 import Overview from './pages/Profile/Overview';
 import Settings from './pages/Profile/Settings';
@@ -150,6 +153,7 @@ function App() {
           <Route path="/community/create" element={<CommunityCreate />} />
           <Route path="/community/challenges/create" element={<ChallengeCreate />} />
           <Route path="/community/game" element={<CommunityGameRoom />} />
+           <Route path="/community/mockGame" element={<MockGameSimulation />} />
 
           {/* Routes for the Accounts pages */}
           <Route path="/transactions" element={<TransactionPage />} />
