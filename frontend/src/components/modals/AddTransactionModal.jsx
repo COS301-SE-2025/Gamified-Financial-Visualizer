@@ -614,14 +614,14 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
           <button
             onClick={onClose}
             disabled={loading}
-            className="flex items-center gap-2 bg-red-100 dark:bg-red-800 text-red-500 dark:text-red-200 px-4 py-2 rounded-full disabled:opacity-50 hover:bg-red-300 dark:hover:bg-red-700 transition"
+            className="flex items-center gap-2 bg-red-100 dark:bg-[#EA746A] text-red-500 dark:text-gray-200 px-4 py-2 rounded-full disabled:opacity-50 hover:bg-red-300 dark:hover:bg-red-700 transition"
           >
             <FaTimes /> Cancel
           </button>
           <button
             onClick={submit}
             disabled={loading}
-            className="flex items-center gap-2 bg-lime-100 dark:bg-green-700 text-lime-600 dark:text-green-100 px-4 py-2 rounded-full disabled:opacity-50 hover:bg-green-300 dark:hover:bg-green-600 transition"
+            className="flex items-center gap-2 bg-lime-100 dark:bg-[#AAD977] text-lime-600 dark:text-gray-200 px-4 py-2 rounded-full disabled:opacity-50 hover:bg-green-300 dark:hover:bg-green-600 transition"
           >
             <FaSave /> {loading ? 'Saving…' : 'Save'}
           </button>

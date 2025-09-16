@@ -424,8 +424,8 @@ const contentType = res.headers.get('content-type');
                     </div>
 
                     {files.length > 0 && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h3 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center">
+                      <div className="bg-gray-50 p-4 rounded-lg dark:bg-gray-700">
+                        <h3 className="text-md font-medium text-gray-700  dark:text-gray-200 mb-3 flex items-center">
                           <FaFileAlt className="mr-2 text-gray-500" />
                           File to Import
                         </h3>

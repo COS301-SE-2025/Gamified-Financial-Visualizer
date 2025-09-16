@@ -382,7 +382,7 @@ const handleDeleteTransaction = async (id) => {
       {/* Left Panel */}
       <div className="w-[360px] flex-shrink-0">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-semibold text-[#1C3C78] dark:text-blue-300">Accounts</h2>
+          <h2 className="text-2xl font-semibold text-[#1C3C78] dark:text-[#88D1FF]">Accounts</h2>
           <button
             onClick={() => setShowModal(true)}
             className="flex items-center gap-1 px-4 py-1 bg-[#D8F5C5] dark:bg-[#AAD977] text-[#76B947] dark:text-white text-sm font-semibold rounded-full hover:bg-[#c8ecb4] dark:hover:bg-[#A1E358] transition-colors"
@@ -449,7 +449,7 @@ const handleDeleteTransaction = async (id) => {
           <input
             type="text"
             placeholder="Search your transactions..."
-            className="w-full outline-none bg-transparent text-sm text-[#76B947]  placeholder-[#76B947]/70 dark:text-[#88BC46]"
+            className="w-full outline-none bg-transparent text-sm text-[#76B947] dark:border-[#88BC46] placeholder-[#76B947]/70 dark:text-[#88BC46]"
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -495,7 +495,7 @@ const handleDeleteTransaction = async (id) => {
                 onClick={() => paginate(pageNumber)}
                 className={`px-3 py-1 rounded ${
                   currentPage === pageNumber 
-                    ? 'bg-[#B1E1FF] dark:bg-blue-600 text-white' 
+                    ? 'bg-[#B1E1FF] dark:bg-[#9BD8FF] text-white' 
                     : 'bg-gray-200 dark:bg-gray-700 dark:text-gray-300'
                 }`}
               >
