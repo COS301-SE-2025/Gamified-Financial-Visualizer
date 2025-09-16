@@ -33,7 +33,7 @@ const faqData = {
     'Collect full categories',
     'See your XP analytics'
   ],
-  "Fainancial Literacy": [
+  "Financial Literacy": [
     'Start an interactive lesson',
     'Take and retake quizzes',
     'View your learning path',
@@ -247,7 +247,7 @@ const FAQDetails = () => {
         )
       },
 
-      'Accounts Vault': {
+      'Accounts & Transactions': {
         'How to add a transaction': (
           <>
             <p className="mb-2 dark:text-gray-300">To add a new transaction manually:</p>
@@ -319,7 +319,7 @@ const FAQDetails = () => {
         )
       },
 
-      'Trophy Room': {
+      'Achievements': {
         'Unlocking new badges': (
           <>
             <p className="mb-2 dark:text-gray-300">Badges are earned by completing achievements tied to your activity:</p>
@@ -379,7 +379,7 @@ const FAQDetails = () => {
         )
       },
 
-      'Knowledge Path': {
+      'Financial Literacy': {
         'Start an interactive lesson': (
           <>
             <p className="mb-2 dark:text-gray-300">To begin a lesson:</p>
@@ -447,7 +447,7 @@ const FAQDetails = () => {
         )
       },
 
-      'Character Profile': {
+      'Your Profile': {
         'Customize your avatar': (
           <>
             <p className="dark:text-gray-300">You can change your avatar to match your personality or achievements:</p>
@@ -595,6 +595,7 @@ const FAQDetails = () => {
 
       <div className="bg-gradient-to-r from-[#88BC46] to-[#98C988] dark:from-lime-600 dark:to-lime-700 rounded-xl p-4 shadow-lg text-white">
         <div className="flex justify-between items-center">
+          {/**We dont have any logic for streaks , this needs to be removed  */}
           <div className="flex items-center gap-3">
             <FaFire className="text-orange-300 text-xl" />
             <div>

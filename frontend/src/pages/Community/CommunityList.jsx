@@ -191,7 +191,7 @@ const CommunityList = () => {
 
                   <div className="flex flex-wrap items-center justify-end gap-2">
                     <Link to={`/community/details/${community.community_name.replace(/\s+/g, '_')}`}>
-                      <button className="bg-[#AAD977] text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-[#83AB55] transition whitespace-nowrap">
+                      <button className="bg-[#AAD977] text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-[#83AB55] transition whitespace-nowrap dark:bg-[#BBE48E]">
                         <FaEye className="inline-block mr-1" /> View
                       </button>
                     </Link>
@@ -268,14 +268,14 @@ const CommunityList = () => {
                       key={index}
                       src={`/assets/Images/${src}`}
                       alt="avatar"
-                      className="w-8 h-8 rounded-full border-2 border-white"
+                      className="w-8 h-8 rounded-full border-2 border-white dark:border-gray-700"
                     />
                   ))}
                 </div>
 
                 <div className="flex flex-wrap items-center justify-end gap-2">
                   <Link to={`/community/details/${community.community_name.replace(/\s+/g, '_')}`}>
-                    <button className="bg-[#AAD977] text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-[#83AB55] transition whitespace-nowrap">
+                    <button className="bg-[#AAD977] text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-[#83AB55] transition whitespace-nowrap dark:bg-[#BBE48E]">
                       <FaEye className="inline-block mr-1" /> View
                     </button>
                   </Link>
