@@ -1,54 +1,27 @@
-import React, {useState, useEffect, useMemo} from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   FaUsers,
   FaBolt,
-  FaCheck,
-  FaHourglassHalf,
-  FaTimes,
-  FaChartBar,
-  FaBan,
   FaUtensils,
   FaBus,
   FaFilm,
   FaHeartbeat,
-  FaPlane,
   FaBook,
-  FaLaptop,
-  FaUser,
-  FaHandsHelping,
-  FaTshirt,
-  FaDumbbell,
   FaMobileAlt,
   FaWifi,
   FaTv,
   FaHome,
-  FaCar,
-  FaShieldAlt,
-  FaCalendarAlt,
-  FaGasPump,
   FaBuilding,
-  FaUniversity,
+  FaShieldAlt,
+  FaTshirt,
+  FaDumbbell,
+  FaHandsHelping,
+  FaUser,
+  FaGasPump,
   FaMoneyBillWave,
-  FaPiggyBank,
-  FaChartLine,
-  FaChild,
-  FaPaw,
-  FaTools,
-  FaWallet,
-  FaCoins,
-  FaExchangeAlt,
-  FaSpinner
 } from 'react-icons/fa';
 
-
-const performance = {
-  score: 350,
-  level: 'Lv 3: Silver',
-  label: 'Excellent',
-  progress: 70
-};
-
-// Category icons mapping
+/** --- Category icon mapping --- */
 const categoryIcons = {
   groceries: <FaUtensils />,
   transport: <FaBus />,
@@ -71,10 +44,10 @@ const categoryIcons = {
   personal: <FaUser />,
   gifts: <FaHandsHelping />,
   charity: <FaHandsHelping />,
-  default: <FaMoneyBillWave />
+  default: <FaMoneyBillWave />,
 };
 
-// Base category colors mapping
+/** --- Base category colors mapping --- */
 const categoryColors = {
   groceries: '#FF8A8A',
   transport: '#5FBFFF',
@@ -95,10 +68,10 @@ const categoryColors = {
   clothing: '#DD6B20',
   personal: '#7FDD53',
   gifts: '#68D391',
-  charity: '#48BB78'
+  charity: '#48BB78',
 };
 
-// Array of vibrant colors for categories not in the mapping
+/** --- Fallback palette --- */
 const fallbackColors = [
   '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57',
   '#FF9FF3', '#54A0FF', '#5F27CD', '#00D2D3', '#FF9F43',
@@ -107,198 +80,135 @@ const fallbackColors = [
   '#81ECEC', '#FAB1A0', '#E84393', '#00CEC9', '#FDCB6E'
 ];
 
-// Function to get color for a category
 const getCategoryColor = (categoryKey, index = 0) => {
-  if (categoryColors[categoryKey]) {
-    return categoryColors[categoryKey];
-  }
-  
+  if (categoryColors[categoryKey]) return categoryColors[categoryKey];
   return fallbackColors[index % fallbackColors.length];
 };
 
+/** --- Helpers --- */
+const parseAmountSafe = (val) => {
+  if (val == null) return 0;
+  if (typeof val === 'number') return isFinite(val) ? val : 0;
+  const s = String(val);
+  const sign = s.trim().startsWith('-') ? -1 : 1;
+  const num = parseFloat(s.replace(/[^\d.]/g, ''));
+  return Number.isFinite(num) ? sign * num : 0;
+};
+
 const AccountsPerformanceHeader = () => {
-  const [categorySummary, setCategorySummary] = useState([]);
   const [userTransactions, setUserTransactions] = useState([]);
-  const [error, setError] = useState(null);
   const [performanceSummary, setPerformanceSummary] = useState(null);
   const [userId, setUserId] = useState(null);
+  const [error, setError] = useState('');
 
-  // Get user ID from localStorage
+  /** Get user from localStorage */
   useEffect(() => {
-    const getUserFromStorage = () => {
-      try {
-        // Try different possible keys for user data in localStorage
-        const userData = localStorage.getItem('user') ;
-        
-        if (userData) {
-          const parsedUser = JSON.parse(userData);
-          const id = parsedUser.id || parsedUser.user_id || parsedUser.userId;
-          setUserId(id);
-        } else {
-          setError('User not found in localStorage');
-        }
-      } catch (err) {
-        console.error('Error reading user from localStorage:', err);
-        setError('Failed to get user information');
-      }
-    };
-
-    getUserFromStorage();
+    try {
+      const raw = localStorage.getItem('user');
+      if (!raw) { setError('User not found in localStorage'); return; }
+      const parsed = JSON.parse(raw);
+      const id = parsed.id || parsed.user_id || parsed.userId;
+      if (!id) { setError('User ID missing in localStorage user'); return; }
+      setUserId(id);
+    } catch (e) {
+      console.error(e);
+      setError('Failed to read user from localStorage');
+    }
   }, []);
 
-  // Fetch both category summary and user transactions
+  /** Fetch performance summary + transactions */
   useEffect(() => {
-    const fetchData = async () => {
-      if (!userId) {
-        if (userId === null) {
-          return;
-        }
-        setError('User ID is required');
-        return;
-      }
+    if (!userId) return;
 
-      try {
-        setError(null);
-
-
-        // Fetch category summary
-        const summaryResponse = await fetch(`http://localhost:5000/api/transactions/user/${userId}/summary`);
-        
-        if (!summaryResponse.ok) {
-          throw new Error(`HTTP error! status: ${summaryResponse.status}`);
-        }
-
-        const summaryResult = await summaryResponse.json();
-        
-        if (summaryResult.status === 'success') {
-          setCategorySummary(summaryResult.data || []);
-        } else {
-          throw new Error(summaryResult.message || 'Failed to fetch category summary');
-        }
-
-        // Fetch user transactions
-        const transactionsResponse = await fetch(`http://localhost:5000/api/transactions/user/${userId}`);
-        
-        if (!transactionsResponse.ok) {
-          throw new Error(`HTTP error! status: ${transactionsResponse.status}`);
-        }
-
-        const transactionsResult = await transactionsResponse.json();
-        
-        if (transactionsResult.status === 'success') {
-          setUserTransactions(transactionsResult.data || []);
-        } else {
-          throw new Error(transactionsResult.message || 'Failed to fetch user transactions');
-        }
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError(err.message || 'Failed to load data');
-      }
-    };
-          const user = JSON.parse(localStorage.getItem('user') || '{}');
-
-    fetch(`http://localhost:5000/api/auth/profile/performance-summary/${user.id}`)
+    setError('');
+    // performance summary
+    fetch(`http://localhost:5000/api/auth/profile/performance-summary/${userId}`)
       .then(res => res.json())
-      .then(data => setPerformanceSummary(data.data))
+      .then(json => setPerformanceSummary(json?.data ?? null))
       .catch(err => console.error('Performance summary error:', err));
 
-    fetchData();
+    // user transactions
+    (async () => {
+      try {
+        const resp = await fetch(`http://localhost:5000/api/transactions/user/${userId}`);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const json = await resp.json();
+        if (json?.status === 'success') {
+          setUserTransactions(json.data || []);
+        } else {
+          throw new Error(json?.message || 'Failed to load transactions');
+        }
+      } catch (e) {
+        console.error(e);
+        setError(e.message || 'Failed to load transactions');
+      }
+    })();
   }, [userId]);
 
-  // Calculate performance metrics based on transactions
+  /** Performance metrics (unchanged from your logic) */
   const performanceMetrics = useMemo(() => {
     if (!userTransactions || userTransactions.length === 0) {
-      return {};
+      return { score: 0, level: 'Starter', levelNumber: 1, description: 'Getting Started', progressPercentage: 0 };
     }
 
-    const totals = userTransactions.reduce((acc, transaction) => {
-      const amount = parseFloat(transaction.transaction_amount) || 0;
-      const type = transaction.transaction_type?.toLowerCase();
-      
-      if (type === 'deposit' || type === 'income') {
-        acc.income += amount;
-      } else if (type === 'expense' || type === 'withdrawal' || type === 'fee') {
-        acc.expenses += amount;
-      } else if (type === 'transfer') {
-        acc.transfers += amount;
-      }
-      
+    const totals = userTransactions.reduce((acc, t) => {
+      const amount = parseFloat(t.transaction_amount) || parseFloat(t.amount) || 0;
+      const type = (t.transaction_type || '').toLowerCase();
+      if (['deposit', 'income'].includes(type)) acc.income += amount;
+      else if (['expense', 'withdrawal', 'fee'].includes(type)) acc.expenses += amount;
+      else if (type === 'transfer') acc.transfers += amount;
       return acc;
     }, { income: 0, expenses: 0, transfers: 0 });
 
     let score = 100;
-    const incomeBonus = Math.min((totals.income / 100) * 5, 100);
-    score += incomeBonus;
-    const expenseReduction = Math.min((totals.expenses / 100) * 3, 80);
-    score -= expenseReduction;
-    const transferBonus = Math.min((totals.transfers / 100) * 1, 20);
-    score += transferBonus;
+    score += Math.min((totals.income / 100) * 5, 100);
+    score -= Math.min((totals.expenses / 100) * 3, 80);
+    score += Math.min((totals.transfers / 100) * 1, 20);
     score = Math.max(0, Math.min(300, score));
-    
-    let level, levelNumber, description;
-    
-    if (score >= 250) {
-      level = 'Diamond';
-      levelNumber = 5;
-      description = 'Outstanding';
-    } else if (score >= 200) {
-      level = 'Platinum';
-      levelNumber = 4;
-      description = 'Excellent';
-    } else if (score >= 150) {
-      level = 'Gold';
-      levelNumber = 3;
-      description = 'Excellent';
-    } else if (score >= 100) {
-      level = 'Silver';
-      levelNumber = 3;
-      description = 'Good';
-    } else if (score >= 50) {
-      level = 'Bronze';
-      levelNumber = 2;
-      description = 'Fair';
-    } else {
-      level = 'Starter';
-      levelNumber = 1;
-      description = 'Getting Started';
-    }
-    
+
+    let level = 'Starter', levelNumber = 1, description = 'Getting Started';
+    if (score >= 250) { level = 'Diamond'; levelNumber = 5; description = 'Outstanding'; }
+    else if (score >= 200) { level = 'Platinum'; levelNumber = 4; description = 'Excellent'; }
+    else if (score >= 150) { level = 'Gold'; levelNumber = 3; description = 'Excellent'; }
+    else if (score >= 100) { level = 'Silver'; levelNumber = 3; description = 'Good'; }
+    else if (score >= 50) { level = 'Bronze'; levelNumber = 2; description = 'Fair'; }
+
     const progressPercentage = Math.min((score / 300) * 100, 100);
-    
-    return {
-      score: Math.round(score),
-      level,
-      levelNumber,
-      description,
-      progressPercentage
-    };
+    return { score: Math.round(score), level, levelNumber, description, progressPercentage };
   }, [userTransactions]);
 
+  /** --- Frontend-only: spending by category (top 6) --- */
+  const topSixCategories = useMemo(() => {
+    const spendByCat = new Map();
 
+    (userTransactions || []).forEach((t) => {
+      const type = (t.transaction_type || t.type || '').toString().toLowerCase();
+      const isExpense = ['expense', 'withdrawal', 'fee'].includes(type);
+      if (!isExpense) return;
 
-  // Process category data for display
-  const categoryTotals = useMemo(() => {
-    if (!categorySummary || categorySummary.length === 0) {
-      return [];
-    }
+      const rawCat = (t.category ?? t.category_name ?? 'Uncategorized').toString().trim();
+      const key = (rawCat || 'Uncategorized').toLowerCase();
 
-    return categorySummary.map((category, index) => {
-      const categoryKey = category.category?.toLowerCase() || 'default';
-      
-      return {
-        total: parseFloat(category.total_spent) || 0,
-        name: category.category || 'Unknown',
-        icon: categoryIcons[categoryKey] || categoryIcons.default,
-        color: getCategoryColor(categoryKey, index),
-        transactionCount: category.transaction_count || 0
-      };
-    }).sort((a, b) => b.total - a.total);
-  }, [categorySummary]);
+      const amt = Math.abs(parseAmountSafe(t.amount ?? t.transaction_amount));
+      if (!amt) return;
 
-  // Calculate total spending across all categories
-  const totalSpending = useMemo(() => {
-    return categoryTotals.reduce((sum, category) => sum + category.total, 0);
-  }, [categoryTotals]);
+      const prev = spendByCat.get(key) || { name: rawCat || 'Uncategorized', total: 0, count: 0 };
+      prev.total += amt;
+      prev.count += 1;
+      spendByCat.set(key, prev);
+    });
+
+    const rows = Array.from(spendByCat.entries()).map(([key, v], idx) => ({
+      name: v.name,
+      total: v.total,
+      transactionCount: v.count,
+      icon: categoryIcons[key] || categoryIcons.default,
+      color: getCategoryColor(key, idx),
+    }));
+
+    rows.sort((a, b) => b.total - a.total);
+    return rows.slice(0, 6);
+  }, [userTransactions]);
 
   return (
     <div className="flex flex-wrap justify-between gap-6 items-start w-full mb-6">
@@ -315,16 +225,26 @@ const AccountsPerformanceHeader = () => {
 
       {/* Right Section (Performance Card + Stat Grid) */}
       <div className="flex flex-col gap-4 flex-1">
-        {/* Center Performance Card */}
+        {/* Performance Card */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-4 flex flex-col sm:flex-row items-center justify-between gap-6">
           {/* Avatar + Info */}
           <div className="flex items-center gap-6">
-            <img src={`/assets/Images/${performanceSummary?.avatar_image_path}`} className="w-16 h-16 rounded-full object-cover" alt="Avatar" />
+            {performanceSummary?.avatar_image_path ? (
+              <img
+                src={`/assets/Images/${performanceSummary.avatar_image_path}`}
+                className="w-16 h-16 rounded-full object-cover"
+                alt="Avatar"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700" />
+            )}
             <div>
               <p className="text-sm text-gray-500">Score</p>
               <p className="text-2xl font-bold text-gray-800 dark:text-white">{performanceMetrics.score}</p>
               <p className="text-sm text-gray-500 dark:text-gray-400">{performanceMetrics.description}</p>
-              <p className="text-sm text-[#F97156] dark:text-[#FF955A] font-medium">Lv {performanceMetrics.levelNumber}: {performanceMetrics.level}</p>
+              <p className="text-sm text-[#F97156] dark:text-[#FF955A] font-medium">
+                Lv {performanceMetrics.levelNumber}: {performanceMetrics.level}
+              </p>
             </div>
           </div>
 
@@ -336,42 +256,76 @@ const AccountsPerformanceHeader = () => {
                 className="h-full rounded-full"
                 style={{
                   width: `${performanceMetrics.progressPercentage}%`,
-                  background: 'linear-gradient(to right, #4FC3F7, #B3E5FC)'
+                  background: 'linear-gradient(to right, #4FC3F7, #B3E5FC)',
                 }}
               />
               <div
                 className="absolute top-1/2 w-5 h-5 bg-[#B3E5FC] rounded-full border-2 border-white dark:border-gray-800 shadow-md"
                 style={{
                   left: `calc(${performanceMetrics.progressPercentage}% - 10px)`,
-                  transform: 'translateY(-50%)'
+                  transform: 'translateY(-50%)',
                 }}
               />
             </div>
           </div>
         </div>
 
-        {/* Stat Blocks*/}
+        {/* Stat Blocks: Top 6 categories */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 w-full">
-          {categoryTotals.map((category, i) => (
-            <div key={i} className="relative bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-3">
-                {/* Icon circle with soft background */}
-                <div className="w-10 h-10 flex items-center justify-center rounded-full" style={{ backgroundColor: `${category.color}20` }}>
-                  <span className="text-xl" style={{ color: category.color }}>{category.icon}</span>
+          {topSixCategories.length === 0 ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="relative bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden opacity-60">
+                <div className="flex items-center justify-between px-4 py-3">
+                  <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700" />
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-gray-900 dark:text-white">R0.00</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">No data</div>
+                  </div>
                 </div>
-
-                {/* Stat content */}
-                <div className="text-right">
-                  <div className="text-lg font-bold text-gray-900 dark:text-white">R{category.total.toFixed(2)}</div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">{category.name}</div>
-                </div>
+                <div className="absolute bottom-0 left-0 h-[5px] w-full rounded-b-xl bg-gray-200 dark:bg-gray-700" />
               </div>
+            ))
+          ) : (
+            topSixCategories.map((category, i) => (
+              <div key={i} className="relative bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3">
+                  {/* Icon circle with soft background */}
+                  <div
+                    className="w-10 h-10 flex items-center justify-center rounded-full"
+                    style={{ backgroundColor: `${category.color}20` }}
+                  >
+                    <span className="text-xl" style={{ color: category.color }}>
+                      {category.icon}
+                    </span>
+                  </div>
 
-              {/* Bottom colored bar */}
-              <div className="absolute bottom-0 left-0 h-[5px] w-full rounded-b-xl" style={{ backgroundColor: category.color }} />
-            </div>
-          ))}
+                  {/* Stat content */}
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-gray-900 dark:text-white">
+                      R{category.total.toFixed(2)}
+                    </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      {category.name}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom colored bar */}
+                <div
+                  className="absolute bottom-0 left-0 h-[5px] w-full rounded-b-xl"
+                  style={{ backgroundColor: category.color }}
+                />
+              </div>
+            ))
+          )}
         </div>
+
+        {/* Error (if any) */}
+        {error && (
+          <div className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30 px-4 py-3 text-sm text-red-700 dark:text-red-300">
+            {error}
+          </div>
+        )}
       </div>
     </div>
   );
