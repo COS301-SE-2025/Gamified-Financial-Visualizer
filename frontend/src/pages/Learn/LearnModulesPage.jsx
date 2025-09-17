@@ -204,7 +204,7 @@ const LearningPage = () => {
   useEffect(() => {
     const fetchModules = async () => {
       try {
-        const response = await fetch('${BASE_URL}/api/learning');
+        const response = await fetch(`${BASE_URL}/api/learning`);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         setModulesData(data.data);

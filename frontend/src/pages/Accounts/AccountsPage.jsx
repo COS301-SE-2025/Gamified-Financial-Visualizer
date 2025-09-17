@@ -126,7 +126,7 @@ const currentTransactions = filteredTransactions.slice(
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('${BASE_URL}/api/transactions/categories');
+        const response = await fetch(`${BASE_URL}/api/transactions/categories`);
         if (!response.ok) throw new Error('Failed to fetch categories');
         const data = await response.json();
         setCategories(data.data || []);

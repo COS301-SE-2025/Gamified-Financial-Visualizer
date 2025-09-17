@@ -428,7 +428,7 @@ const BudgetPage = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('${BASE_URL}/api/budget/categories');
+      const response = await fetch(`${BASE_URL}/api/budget/categories`);
       const result = await response.json();
       if (result.status === 'success') {
         setCategories(result.data);
