@@ -31,10 +31,16 @@ import { registerCityModule } from './modules/city';
 import { registerGameModule } from './modules/game';
 import { registerGameSocketHandlers } from './modules/game/socket-handlers';
 const app: Application = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
+
+const corsOrigins = [
+  'http://localhost:3001',    // Frontend in Docker
+  'http://localhost:3000',    // Keep for any direct testing
+  process.env.CORS_ORIGIN     // Use environment variable from docker-compose
+].filter((origin): origin is string => Boolean(origin));
 
 app.use(cors({
-  origin: ['http://localhost:3000'],
+  origin: corsOrigins,
   credentials: true,
   methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type','Authorization']
@@ -46,7 +52,7 @@ app.get('/ping', (req, res) => res.send('pong'));
 const httpServer = http.createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: 'http://localhost:3000',
+    origin: corsOrigins,
     methods: ['GET','POST'],
     credentials: true
   },
@@ -222,7 +228,8 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 });
 
 // Start HTTP + WebSocket server
-httpServer.listen(PORT, () => {
+const portNumber = typeof PORT === 'string' ? parseInt(PORT, 10) : PORT;
+httpServer.listen(portNumber, '0.0.0.0', () => {
   logger.info(`Monolith listening on port ${PORT} (with Socket.IO)`);
 });
 
