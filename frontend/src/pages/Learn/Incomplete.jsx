@@ -11,6 +11,8 @@ import banner5 from '../../assets/Images/banners/pixelCornerStore.gif';
 import banner6 from '../../assets/Images/banners/pixelGirl.gif';
 import { FaFilter, FaSearch, FaClock, FaChevronDown } from 'react-icons/fa';
 
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+
 const bannerImages = { 
   1: banner1,
   2: banner2,
@@ -205,7 +207,7 @@ const LearningIncompletePage = () => {
     const fetchModules = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`http://localhost:5000/api/learning/uncompleted/${user.id}`);
+        const response = await fetch(`${BASE_URL}/api/learning/uncompleted/${user.id}`);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         setModulesData(data.data);

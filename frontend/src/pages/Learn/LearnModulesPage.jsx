@@ -11,6 +11,8 @@ import banner4 from '../../assets/Images/learn_banners/Fomo.png';
 import banner5 from '../../assets/Images/learn_banners/retrenchment.png';
 import banner6 from '../../assets/Images/banners/pixelGirl.gif';
 
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+
 const bannerImages = {
   1: banner1,
   2: banner2,
@@ -202,7 +204,7 @@ const LearningPage = () => {
   useEffect(() => {
     const fetchModules = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/learning');
+        const response = await fetch('${BASE_URL}/api/learning');
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         setModulesData(data.data);

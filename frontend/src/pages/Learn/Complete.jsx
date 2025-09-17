@@ -11,6 +11,8 @@ import banner5 from '../../assets/Images/learn_banners/Budget.png'; // fixed dou
 import banner6 from '../../assets/Images/learn_banners/Budget.png';
 import { FaFilter, FaSearch, FaCheckCircle, FaChevronDown } from 'react-icons/fa';
 
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+
 const bannerImages = { 
   1: banner1,
   2: banner2,
@@ -204,7 +206,7 @@ const LearningCompletePage = () => {
     const fetchModules = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`http://localhost:5000/api/learning/completed/${user.id}`);
+        const response = await fetch(`${BASE_URL}/api/learning/completed/${user.id}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
