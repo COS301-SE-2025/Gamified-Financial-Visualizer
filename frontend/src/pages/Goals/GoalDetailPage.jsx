@@ -6,7 +6,7 @@ import goal1 from '../../assets/Images/banners/pixelApartment.gif';
 import goal2 from '../../assets/Images/banners/pixelHouse.gif';
 import goal3 from '../../assets/Images/banners/pixelOffice1.gif';
 
-
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
 
 const GoalsDetailPage = () => {
   const { goalId } = useParams();
@@ -21,7 +21,7 @@ const GoalsDetailPage = () => {
   useEffect(() => {
     const fetchGoalDetails = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/goal/${goalId}`);
+        const response = await fetch(`${BASE_URL}/api/goal/${goalId}`);
         if (!response.ok) {
           throw new Error('Failed to fetch goal details');
         }
@@ -184,7 +184,7 @@ const GoalsDetailPage = () => {
                 onClick={async () => {
                   setIsDeleting(true);
                   try {
-                    const response = await fetch(`http://localhost:5000/api/goal/${goalId}`, {
+                    const response = await fetch(`${BASE_URL}/api/goal/${goalId}`, {
                       method: 'DELETE',
                       headers: {
                         'Content-Type': 'application/json',
