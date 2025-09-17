@@ -23,6 +23,9 @@ import library from '../../assets/Building Images/Classic Day/library.png';
 import civicOffices from '../../assets/Building Images/Classic Day/civic-offices.png';
 import cafe from '../../assets/Building Images/Classic Day/cafe.png';
 
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+
+
 /* ===========================
    YOUR THEMED CITY SCENES (swap GLBs)
    Put files in /public/models/ and adjust paths if needed.
@@ -926,7 +929,7 @@ export default function CityViewer() {
   useEffect(() => {
     // Fetch building data for the selected user
     const fetchBuildingData = async () => {
-      const response = await fetch(`http://localhost:5000/api/city/buildings/${user.id}`);
+      const response = await fetch(`${BASE_URL}/api/city/buildings/${user.id}`);
       const data = await response.json();
       setBuildings(data);
     };

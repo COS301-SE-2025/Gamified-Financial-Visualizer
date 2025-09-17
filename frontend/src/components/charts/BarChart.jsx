@@ -10,6 +10,9 @@ import {
   Cell,
 } from 'recharts';
 
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+
+
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const BarChart = () => {
@@ -27,7 +30,7 @@ const BarChart = () => {
     const fetchData = async () => {
       try {
         const res = await fetch(
-          `http://localhost:5000/api/goal/${user.id}/progress-frequency`
+          `${BASE_URL}/api/goal/${user.id}/progress-frequency`
         );
         const result = await res.json();
         const apiData = result.data;

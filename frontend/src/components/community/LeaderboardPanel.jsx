@@ -7,6 +7,9 @@ import silverMedal from '../../assets/Images/medals/silverMedal.png';
 import bronzeMedal from '../../assets/Images/medals/bronzeMedal.png';
 import avatar from '../../assets/Images/avatars/Ramen.png';
 
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+
+
 // Utility for top 3 medals
 const getMedalIcon = (rank) => {
   if (rank === 0) return goldMedal;
@@ -19,7 +22,7 @@ const LeaderboardPanel = () => {
   const [leaderboard, setLeaderboard] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/community/leaderboard')
+    fetch(`${BASE_URL}/api/community/leaderboard`)
       .then(res => res.json())
       .then(data => setLeaderboard(data.data || []))
       .catch(err => console.error('Failed to load leaderboard:', err));

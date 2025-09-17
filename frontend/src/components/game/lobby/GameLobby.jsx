@@ -10,6 +10,9 @@ import { io } from 'socket.io-client';
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { getSocket } from '../socket';
 
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+
+
 const ALL_CHARACTERS = [
     { label: 'Green girl', key: 'Green_girl' },
     { label: 'The Ninja', key: 'Ninja.001' },
@@ -183,7 +186,7 @@ export default function GameLobby({
     // API Functions
     const apiCall = async (endpoint, options = {}) => {
         console.log('API Call:', endpoint, options);
-        const response = await fetch(`http://localhost:5000/api/game${endpoint}`, {
+        const response = await fetch(`${BASE_URL}/api/game${endpoint}`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,

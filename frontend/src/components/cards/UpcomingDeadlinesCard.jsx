@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { FaUmbrellaBeach, FaDesktop, FaCameraRetro, FaCalendarAlt, FaQuestion } from 'react-icons/fa';
 import { categoryIconMap, categorize } from './categoryIcons.ts';
 
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+
+
 const UpcomingDeadlinesCard = () => {
   const user = JSON.parse(localStorage.getItem('user'));
   const [deadlines, setDeadlines] = useState([]);
@@ -9,7 +12,7 @@ const UpcomingDeadlinesCard = () => {
   useEffect(() => {
     const fetchDeadlines = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/goal/user/${user.id}/upcoming`);
+        const res = await fetch(`${BASE_URL}/api/goal/user/${user.id}/upcoming`);
         const data = await res.json();
         setDeadlines(data.data || []);
       } catch (err) {
