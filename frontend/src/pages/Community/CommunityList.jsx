@@ -4,6 +4,8 @@ import toast, { Toaster } from 'react-hot-toast';
 import { FaEye, FaPlus, FaSearch, FaUsers } from 'react-icons/fa';
 import CommunityLayout from '../../pages/Community/CommunityLayout';
 
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+
 const CommunityList = () => {
   const [communities, setCommunities] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
@@ -14,7 +16,7 @@ const CommunityList = () => {
     if (!user?.id) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/auth/profile/communities/${user.id}`);
+      const res = await fetch(`${BASE_URL}/api/auth/profile/communities/${user.id}`);
       const data = await res.json();
       setCommunities(data.data || []);
     } catch (err) {
@@ -27,7 +29,7 @@ const CommunityList = () => {
     if (!user?.id) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/community/recommended/${user.id}`);
+      const res = await fetch(`${BASE_URL}/api/community/recommended/${user.id}`);
       const data = await res.json();
       setRecommendations(data.data || []);
     } catch (err) {
@@ -45,7 +47,7 @@ const CommunityList = () => {
     const userId = user?.id;
 
     const res = await fetch(
-      `http://localhost:5000/api/community/${communityId}/members/${userId}`,
+      `${BASE_URL}/api/community/${communityId}/members/${userId}`,
       { method: 'DELETE' }
     );
    
@@ -68,7 +70,7 @@ const CommunityList = () => {
             onClick={async () => {
               toast.dismiss(t.id);
               try {
-                const res = await fetch(`http://localhost:5000/api/community/${communityId}`, {
+                const res = await fetch(`${BASE_URL}/api/community/${communityId}`, {
                   method: 'DELETE',
                 });
 

@@ -27,6 +27,8 @@ import GaugeChart from 'react-gauge-chart';
 import CalendarHeatmap from 'react-calendar-heatmap';
 import { format } from 'date-fns';
 
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+
 // Color palette
 const COLORS = {
   primary: '#4f46e5',
@@ -244,7 +246,7 @@ const InsightsPage = () => {
     if (!userId) return;
     (async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/insights/transactions/${userId}`);
+        const res = await fetch(`${BASE_URL}/api/insights/transactions/${userId}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
 
@@ -267,38 +269,38 @@ const InsightsPage = () => {
 
 
         // fetch account wealth data
-        const wealthRes = await fetch(`http://localhost:5000/api/insights/wealth/${userId}`);
+        const wealthRes = await fetch(`${BASE_URL}/api/insights/wealth/${userId}`);
         if (!wealthRes.ok) throw new Error(`HTTP ${wealthRes.status}`);
         const wealthData = await wealthRes.json();
         setWealthData(wealthData);
 
         // fetch category data
-        const catRes = await fetch(`http://localhost:5000/api/insights/category/${userId}`);
+        const catRes = await fetch(`${BASE_URL}/api/insights/category/${userId}`);
         if (!catRes.ok) throw new Error(`HTTP ${catRes.status}`);
         const categoryData = await catRes.json();
         setCategoryApi(categoryData);
 
         // fetch radar insights
-        const radarRes = await fetch(`http://localhost:5000/api/insights/radar/${userId}`);
+        const radarRes = await fetch(`${BASE_URL}/api/insights/radar/${userId}`);
         if (!radarRes.ok) throw new Error(`HTTP ${radarRes.status}`);
         const radarData = await radarRes.json();
         setRadarData(radarData);
 
         // fetch sentiment
         const monthId = new Date().getMonth() + 1; // 1-based month
-        const sentimentRes = await fetch(`http://localhost:5000/api/insights/sentiment/user/${userId}/${monthId}`);
+        const sentimentRes = await fetch(`${BASE_URL}/api/insights/sentiment/user/${userId}/${monthId}`);
         if (!sentimentRes.ok) throw new Error(`HTTP ${sentimentRes.status}`);
         const sentimentData = await sentimentRes.json();
         setSentimentData(sentimentData);
 
         // fetch trend data
-        const trendRes = await fetch(`http://localhost:5000/api/insights/trends/${userId}`);
+        const trendRes = await fetch(`${BASE_URL}/api/insights/trends/${userId}`);
         if (!trendRes.ok) throw new Error(`HTTP ${trendRes.status}`);
         const trendData = await trendRes.json();
         setTrendData(trendData);
 
         // fetch heatmap data
-        const heatmapRes = await fetch(`http://localhost:5000/api/insights/transactions/heatmap/${userId}`);
+        const heatmapRes = await fetch(`${BASE_URL}/api/insights/transactions/heatmap/${userId}`);
         if (!heatmapRes.ok) throw new Error(`HTTP ${heatmapRes.status}`);
         const heatmap = await heatmapRes.json();
         setHeatmapData(heatmap);

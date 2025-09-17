@@ -10,6 +10,7 @@ import {
 } from 'react-icons/fa';
 import avatar from '../../assets/Images/avatars/BlueSky.png';
 
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
 
 const AccountsPerformanceHeader = () => {
   const user = JSON.parse(localStorage.getItem('user'));
@@ -29,8 +30,8 @@ const AccountsPerformanceHeader = () => {
     const fetchStatsAndScore = async () => {
       try {
         const [summaryRes, performanceRes] = await Promise.all([
-          fetch(`http://localhost:5000/api/goal/${user.id}/summary`),
-          fetch(`http://localhost:5000/api/goal/${user.id}/performance`)
+          fetch(`${BASE_URL}/api/goal/${user.id}/summary`),
+          fetch(`${BASE_URL}/api/goal/${user.id}/performance`)
         ]);
 
         const summaryData = await summaryRes.json();
@@ -43,13 +44,13 @@ const AccountsPerformanceHeader = () => {
       }
     };
 
-    fetch(`http://localhost:5000/api/community/performance-summary/${user.id}`)
+    fetch(`${BASE_URL}/api/community/performance-summary/${user.id}`)
       .then(res => res.json())
       .then(data => setPerformance(data.data))
       .catch(err => console.error('Community performance summary error:', err));
 
     // Fetch level progress
-    fetch(`http://localhost:5000/api/auth/profile/level-progress/${user.id}`)
+    fetch(`${BASE_URL}/api/auth/profile/level-progress/${user.id}`)
       .then(res => res.json())
       .then(res => setLevelProgress(res.data))
       .catch(err => console.error('Failed to load level progress:', err));

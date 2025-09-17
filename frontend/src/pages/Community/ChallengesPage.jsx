@@ -14,6 +14,8 @@ import {
 } from 'react-icons/fa';
 import defaultBanner from '../../assets/Images/banners/pixelStore.gif';
 
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+
 const ChallengesPage = () => {
   const [challenges, setChallenges] = useState({ active: [], upcoming: [], completed: [] });
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,7 +27,7 @@ const ChallengesPage = () => {
 
     const fetchChallenges = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/community/challenges/user/${user.id}`);
+        const res = await fetch(`${BASE_URL}/api/community/challenges/user/${user.id}`);
         const json = await res.json();
         if (res.ok) {
           setChallenges(json.data);
@@ -46,7 +48,7 @@ const ChallengesPage = () => {
   // delete challenge 
   const deleteChallenge = async (challengeId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/community/challenges/${challengeId}`, {
+      const res = await fetch(`${BASE_URL}/api/community/challenges/${challengeId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json'

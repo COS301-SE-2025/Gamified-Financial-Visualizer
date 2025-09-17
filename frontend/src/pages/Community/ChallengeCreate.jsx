@@ -9,6 +9,8 @@ import {
   FaChevronDown
 } from 'react-icons/fa';
 
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+
 const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Select...' }) => {
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(0);
@@ -181,7 +183,7 @@ const ChallengeCreate = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/transactions/categories');
+        const res = await fetch(`${BASE_URL}/api/transactions/categories`);
         const data = await res.json();
         setCategories(data.data || []);
       } catch (err) {
@@ -198,7 +200,7 @@ const ChallengeCreate = () => {
     if (!user?.id) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/auth/profile/communities/${user.id}`);
+      const res = await fetch(`${BASE_URL}/api/auth/profile/communities/${user.id}`);
       const data = await res.json();
       setCommunities(data.data || []);
     } catch (err) {
@@ -212,7 +214,7 @@ const ChallengeCreate = () => {
     if (!user?.id) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/community/friends/${user.id}`);
+      const res = await fetch(`${BASE_URL}/api/community/friends/${user.id}`);
       const data = await res.json();
       setFriendsList(data.data || []);
     } catch (err) {
@@ -343,7 +345,7 @@ const ChallengeCreate = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/community/challenges', {
+      const response = await fetch(`${BASE_URL}/api/community/challenges`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -362,7 +364,7 @@ const ChallengeCreate = () => {
 
       if (invitedFriends.length > 0) {
         try {
-          await fetch('http://localhost:5000/api/community/challenges/invite', {
+          await fetch(`${BASE_URL}/api/community/challenges/invite`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

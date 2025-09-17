@@ -41,6 +41,9 @@ import {
 } from 'react-icons/fa';
 
 
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+
+
 const performance = {
   score: 350,
   level: 'Lv 3: Silver',
@@ -162,7 +165,7 @@ const AccountsPerformanceHeader = () => {
 
 
         // Fetch category summary
-        const summaryResponse = await fetch(`http://localhost:5000/api/transactions/user/${userId}/summary`);
+        const summaryResponse = await fetch(`${BASE_URL}/api/transactions/user/${userId}/summary`);
         
         if (!summaryResponse.ok) {
           throw new Error(`HTTP error! status: ${summaryResponse.status}`);
@@ -177,7 +180,7 @@ const AccountsPerformanceHeader = () => {
         }
 
         // Fetch user transactions
-        const transactionsResponse = await fetch(`http://localhost:5000/api/transactions/user/${userId}`);
+        const transactionsResponse = await fetch(`${BASE_URL}/api/transactions/user/${userId}`);
         
         if (!transactionsResponse.ok) {
           throw new Error(`HTTP error! status: ${transactionsResponse.status}`);
@@ -197,7 +200,7 @@ const AccountsPerformanceHeader = () => {
     };
           const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-    fetch(`http://localhost:5000/api/auth/profile/performance-summary/${user.id}`)
+    fetch(`${BASE_URL}/api/auth/profile/performance-summary/${user.id}`)
       .then(res => res.json())
       .then(data => setPerformanceSummary(data.data))
       .catch(err => console.error('Performance summary error:', err));

@@ -6,6 +6,8 @@ import goal1 from '../../assets/Images/banners/pixelApartment.gif';
 import goal2 from '../../assets/Images/banners/pixelHouse.gif';
 import goal3 from '../../assets/Images/banners/pixelOffice1.gif';
 
+
+
 const GoalsDetailPage = () => {
   const { goalId } = useParams();
   const [goal, setGoal] = useState(null);

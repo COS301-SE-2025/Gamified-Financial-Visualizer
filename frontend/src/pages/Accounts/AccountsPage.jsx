@@ -5,6 +5,8 @@ import AddAccountModal from '../../components/modals/AddAccountModal';
 import EditAccountModal from '../../components/modals/EditAccountModal';
 import RecentTransactionsTable from '../../components/tables/RecentTransactionsTable';
 
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+
 const AccountsPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -92,7 +94,7 @@ const currentTransactions = filteredTransactions.slice(
     try {
       setError(null);
 
-      const res = await fetch(`http://localhost:5000/api/transactions/user/${userId}`);
+      const res = await fetch(`${BASE_URL}/api/transactions/user/${userId}`);
       if (!res.ok) throw new Error('Failed to fetch user transactions');
 
       const data = await res.json();
@@ -124,7 +126,7 @@ const currentTransactions = filteredTransactions.slice(
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/transactions/categories');
+        const response = await fetch('${BASE_URL}/api/transactions/categories');
         if (!response.ok) throw new Error('Failed to fetch categories');
         const data = await response.json();
         setCategories(data.data || []);
@@ -148,7 +150,7 @@ const currentTransactions = filteredTransactions.slice(
         setError(null);
 
         // Fetch accounts
-        const accountsResponse = await fetch(`http://localhost:5000/api/accounts/user/${userId}`);
+        const accountsResponse = await fetch(`${BASE_URL}/api/accounts/user/${userId}`);
         if (!accountsResponse.ok) throw new Error('Failed to fetch accounts');
         const accountsData = await accountsResponse.json();
         setAccounts(accountsData.data || []);
@@ -174,7 +176,7 @@ const currentTransactions = filteredTransactions.slice(
     try {
       setError(null);
 
-      const res = await fetch(`http://localhost:5000/api/transactions/accounts/${accountId}`);
+      const res = await fetch(`${BASE_URL}/api/transactions/accounts/${accountId}`);
       if (!res.ok) throw new Error('Failed to fetch transactions');
 
       const data = await res.json();
@@ -221,7 +223,7 @@ const currentTransactions = filteredTransactions.slice(
     }
     try {
       setError(null);
-      const response = await fetch('http://localhost:5000/api/accounts', {
+      const response = await fetch('${BASE_URL}/api/accounts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -257,7 +259,7 @@ const currentTransactions = filteredTransactions.slice(
     }
     try {
       setError(null);
-      const response = await fetch(`http://localhost:5000/api/accounts/${accountId}`, {
+      const response = await fetch(`${BASE_URL}/api/accounts/${accountId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId }),
@@ -296,7 +298,7 @@ const currentTransactions = filteredTransactions.slice(
     }
     try {
       setError(null);
-      const response = await fetch(`http://localhost:5000/api/accounts/${accountId}`, {
+      const response = await fetch(`${BASE_URL}/api/accounts/${accountId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ account_name: updatedAccount.accountName }),
@@ -341,7 +343,7 @@ const currentTransactions = filteredTransactions.slice(
   // In your parent component
 const handleEditTransaction = async (id, updates) => {
   try {
-    const response = await fetch(`http://localhost:5000/api/transactions/${id}`, {
+    const response = await fetch(`${BASE_URL}/api/transactions/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates)
@@ -361,7 +363,7 @@ const handleEditTransaction = async (id, updates) => {
 
 const handleDeleteTransaction = async (id) => {
   try {
-    const response = await fetch(`http://localhost:5000/api/transactions/${id}`, {
+    const response = await fetch(`${BASE_URL}/api/transactions/${id}`, {
       method: 'DELETE'
     });
     

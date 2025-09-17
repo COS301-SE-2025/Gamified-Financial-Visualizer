@@ -6,6 +6,8 @@ import { FaCoins, FaCalendarAlt, FaArrowLeft, FaPlus } from 'react-icons/fa';
 
 import bannerImg from '../../assets/Images/banners/pixelStore.gif';
 
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+
 const ChallengeDetail = () => {
     const navigate = useNavigate();
     const { id } = useParams();
@@ -16,7 +18,7 @@ const ChallengeDetail = () => {
         console.log(`Fetching challenge data from API for ID: ${id}`);
         const fetchChallenge = async () => {
             try {
-                const res = await fetch(`http://localhost:5000/api/community/challenges/${id}`);
+                const res = await fetch(`${BASE_URL}/api/community/challenges/${id}`);
                 console.log(`API Response Status: ${res.status}`);
                 const challenge = await res.json();
                 if (!res.ok) {

@@ -31,6 +31,8 @@ import badge23 from '../../assets/Images/badges/start-up.png';
 import badge24 from '../../assets/Images/badges/support.png';
 import badge26 from '../../assets/Images/badges/accepted.png';
 
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+
 // Deterministic title → { color, badge } (case-insensitive)
 const TITLE_META = {
   // Blue (Learning)
@@ -165,8 +167,8 @@ const AchievementDetailPage = () => {
 
         // 1) Fetch achievement info
         const infoUrl = isNumeric
-          ? `http://localhost:5000/api/achievements/by-id/${id}/${user.id}`
-          : `http://localhost:5000/api/achievements/by-title/${encodeURIComponent(id)}/${user.id}`;
+          ? `${BASE_URL}/api/achievements/by-id/${id}/${user.id}`
+          : `${BASE_URL}/api/achievements/by-title/${encodeURIComponent(id)}/${user.id}`;
 
         const infoRes = await fetch(infoUrl);
         if (!infoRes.ok) throw new Error('Failed to fetch achievement info');
@@ -176,7 +178,7 @@ const AchievementDetailPage = () => {
 
         // 2) Fetch tasks by TITLE from the server response
         const tRes = await fetch(
-          `http://localhost:5000/api/achievements/task/${encodeURIComponent(ach.achievement_title)}/${user.id}`
+          `${BASE_URL}/api/achievements/task/${encodeURIComponent(ach.achievement_title)}/${user.id}`
         );
         if (!tRes.ok) throw new Error('Failed to fetch tasks');
         const tJson = await tRes.json();

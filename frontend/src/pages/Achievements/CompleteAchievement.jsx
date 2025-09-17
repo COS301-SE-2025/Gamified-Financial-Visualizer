@@ -34,6 +34,8 @@ import badge24 from '../../assets/Images/badges/support.png';
 import badge25 from '../../assets/Images/badges/team.png';
 import badge26 from '../../assets/Images/badges/accepted.png';
 
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+
 // Mapping
 const TITLE_META = {
   // Blue (Learning)
@@ -352,7 +354,7 @@ const CompleteAchievement = () => {
     (async () => {
       try {
         setIsLoading(true);
-        const res = await fetch(`http://localhost:5000/api/achievements/list/${user.id}`);
+        const res = await fetch(`${BASE_URL}/api/achievements/list/${user.id}`);
         if (!res.ok) throw new Error('Fetch failed');
         const payload = await res.json();
         setRows(Array.isArray(payload?.data) ? payload.data : []);
