@@ -764,12 +764,12 @@ const InsightsPage = () => {
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="E.g. 'How can I improve my savings rate?'"
-                className="flex-1 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-700"
+                className="flex-1 border border-gray-300 rounded-lg dark:bg-gray-700 px-4 py-3 focus:ring-2 focus:ring-[#7FDD53] focus:border-transparent text-gray-700"
               />
               <button
                 onClick={() => getAiAnalysis(prompt)}
                 disabled={!prompt.trim() || isLoading}
-                className="bg-[#7FDD53] text-white px-6 py-3 rounded-lg flex items-center gap-2 disabled:opacity-50 hover:bg-indigo-700 transition-colors duration-200"
+                className="bg-[#7FDD53] text-white px-6 py-3 rounded-lg flex items-center gap-2 disabled:opacity-50 hover:bg-[#7FDD53] transition-colors duration-200"
               >
                 {isLoading ? 'Analyzing...' : (
                   <>
@@ -837,18 +837,18 @@ const InsightsPage = () => {
         </div>
 
         {/* Motivational Summary */}
-        <div className="bg-white text-black p-6 rounded-xl shadow-lg">
+        <div className="bg-white dark:bg-gray-800 text-black dark:text-gray-200 p-6 rounded-xl shadow-lg">
           <h2 className="text-xl font-bold mb-4">Your Financial Standing</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white p-4 rounded-lg shadow-md border-2 border-[#FF8A8A]/30">
-              <p className="text-sm text-gray-600 mb-1">Categories Spending Less Than Average</p>
+            <div className="bg-white dark:bg-gray-800 dark:text-gray-200 p-4 rounded-lg shadow-md border-2 border-[#FF8A8A]/30">
+              <p className="text-sm text-gray-600 mb-1 dark:text-gray-200">Categories Spending Less Than Average</p>
               <p className="text-2xl font-bold text-[#FF8A8A]"> {/* Red for categories less than average */}
                 {comparisonData.categorySpending.filter(x => x.status === 'lower').length}
                 <span className="text-lg font-normal">/{comparisonData.categorySpending.length}</span>
               </p>
             </div>
-            <div className="bg-white p-4 rounded-lg shadow-md border-2 border-[#7FDD53]/30">
-              <p className="text-sm text-gray-600 mb-1">Financial Health Score</p>
+            <div className="bg-white dark:bg-gray-800 dark:text-gray-200 p-4 rounded-lg shadow-md border-2 border-[#7FDD53]/30">
+              <p className="text-sm text-gray-600 mb-1 dark:text-gray-200">Financial Health Score</p>
               <p className="text-2xl font-bold flex items-center text-[#7FDD53]"> {/* Green for positive financial health */}
                 {comparisonData.aiScore.user}
                 <span className="text-sm font-normal ml-2">
@@ -856,25 +856,25 @@ const InsightsPage = () => {
                 </span>
               </p>
             </div>
-            <div className="bg-white p-4 rounded-lg shadow-md border-2 border-[#5FBFFF]/30">
-              <p className="text-sm text-gray-600 mb-1">Savings Rate Percentile</p>
+            <div className="bg-white dark:bg-gray-800 dark:text-gray-200 p-4 rounded-lg shadow-md border-2 border-[#5FBFFF]/30">
+              <p className="text-sm text-gray-600 mb-1 dark:text-gray-200">Savings Rate Percentile</p>
               <p className="text-2xl font-bold text-[#5FBFFF]"> {/* Blue for savings rate */}
                 Top {100 - Math.floor((comparisonData.savingsRate.user / comparisonData.savingsRate.topPercentile) * 100)}%
               </p>
             </div>
           </div>
-          <p className="mt-5 text-sm text-gray-600 bg-white/10 p-3 rounded-lg">
+          <p className="mt-5 text-sm text-gray-600 dark:text-gray-200 p-3 rounded-lg">
              Keep up the good work! You're making better financial decisions than most users in your demographic.
           </p>
         </div>
 
 
         {/* AI-Generated Monthly Summary */}
-       <div className="bg-white text-black p-6 rounded-xl shadow-lg">
+       <div className="bg-white dark:bg-gray-800 dark:text-gray-200 text-black p-6 rounded-xl shadow-lg">
             <div className="flex justify-between items-start">
               <div>
-                <h2 className="text-xl font-bold mb-3 text-black">AI-Generated Financial Summary</h2>
-                <p className="opacity-90 max-w-2xl leading-relaxed text-black">
+                <h2 className="text-xl font-bold mb-3 text-black dark:text-gray-200">AI-Generated Financial Summary</h2>
+                <p className="opacity-90 max-w-2xl dark:text-gray-200 leading-relaxed text-black">
                   Based on your June activity: Your savings rate improved by 2% from last month,
                   but dining expenses increased by 18%. You're on track to complete your emergency
                   fund goal 3 weeks early.
@@ -887,22 +887,22 @@ const InsightsPage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
               {/* Financial Health Score Box */}
-              <div className="bg-white p-4 rounded-lg shadow-md border-2 border-[#7FDD53]/30">
-                <p className="text-sm text-gray-600 mb-1">Financial Health Score</p>
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border-2 border-[#7FDD53]/30">
+                <p className="text-sm text-gray-600 mb-1 dark:text-gray-200">Financial Health Score</p>
                 <p className="text-2xl font-bold text-[#7FDD53]">82/100</p>
                 <p className="text-xs mt-1 text-[#7FDD53]">↑ 5 points from May</p>
               </div>
               
               {/* Savings Potential Box */}
-              <div className="bg-white p-4 rounded-lg shadow-md border-2 border-[#5FBFFF]/30">
-                <p className="text-sm text-gray-600 mb-1">Savings Potential</p>
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border-2 border-[#5FBFFF]/30">
+                <p className="text-sm text-gray-600 mb-1 dark:text-gray-200 ">Savings Potential</p>
                 <p className="text-2xl font-bold text-[#5FBFFF]">R1,200/mo</p>
                 <p className="text-xs mt-1 text-[#5FBFFF]">Through budget optimization</p>
               </div>
               
               {/* Goal Projection Box */}
-              <div className="bg-white p-4 rounded-lg shadow-md border-2 border-[#FF8A8A]/30">
-                <p className="text-sm text-gray-600 mb-1">Goal Projection</p>
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border-2 border-[#FF8A8A]/30">
+                <p className="text-sm text-gray-600 mb-1 dark:text-gray-200">Goal Projection</p>
                 <p className="text-2xl font-bold text-[#FF8A8A]">2.1 years</p>
                 <p className="text-xs mt-1 text-[#FF8A8A]">To financial independence</p>
               </div>
@@ -915,11 +915,11 @@ const InsightsPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           {/* Sentiment */}
-          <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200 mb-8">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border dark:border-gray-800 border-gray-200 mb-8">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xl font-bold text-gray-800">Financial Sentiment</h2>
+              <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">Financial Sentiment</h2>
               {sentiment?.clusterLabel && (
-                <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700">
+                <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
                   {sentiment.clusterLabel}
                 </span>
               )}
@@ -960,19 +960,19 @@ const InsightsPage = () => {
                                 "#5FBFFF"
                       }}
                     />
-                    <span className="text-xs text-gray-600">{label}</span>
+                    <span className="text-xs dark:text-gray-200 text-gray-600">{label}</span>
                   </div>
                 ))}
               </div>
 
               {/* Summary */}
               {sentiment?.summaryText && (
-                <p className="mt-4 text-sm text-gray-700 text-center max-w-2xl">{sentiment.summaryText}</p>
+                <p className="mt-4 text-sm dark:text-gray-200 text-gray-700 text-center max-w-2xl">{sentiment.summaryText}</p>
               )}
 
               {/* Quick highlights (first 3) */}
               {!!sentiment?.insights?.length && (
-                <ul className="mt-4 text-sm text-gray-700 space-y-1">
+                <ul className="mt-4 text-sm dark:text-gray-200 text-gray-700 space-y-1">
                   {sentiment.insights.slice(0, 3).map((i, idx) => (
                     <li key={idx}>• {i}</li>
                   ))}
@@ -1011,7 +1011,7 @@ const InsightsPage = () => {
               {!!sentiment?.tips?.length && (
                 <div className="mt-4 w-full">
                   <h4 className="text-sm font-semibold text-gray-800 mb-1">Tips</h4>
-                  <ul className="text-sm text-gray-700 list-disc pl-5 space-y-1">
+                  <ul className="text-sm dark:text-gray-200 text-gray-700 list-disc pl-5 space-y-1">
                     {sentiment.tips.slice(0, 3).map((t, i) => <li key={i}>{t}</li>)}
                   </ul>
                 </div>
@@ -1021,23 +1021,23 @@ const InsightsPage = () => {
           </div>
 
           {/* Monthly Spending by Category Bar Chart */}
-          <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200 mb-8">
+          <div className="bg-white dark:bg-gray-800  p-6 rounded-xl shadow-md border dark:border-gray-800 border-gray-200 mb-8">
               {/* Section Heading */}
               <div className="flex flex-wrap justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-gray-800 mb-4">Monthly Spending by Category</h2>
+                <h2 className="text-xl font-bold dark:text-gray-200 text-gray-800 mb-4">Monthly Spending by Category</h2>
 
                 {/* Account select and Percent View toggle */}
                 <div className="flex flex-wrap gap-4 items-center">
                   {/* Account Select Dropdown */}
                   <div>
-                    <label htmlFor="account-select" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="account-select" className="block text-sm font-medium dark:text-gray-200 text-gray-700 mb-2">
                       Account
                     </label>
                     <select
                       id="account-select"
                       value={selectedAccount}
                       onChange={(e) => setSelectedAccount(e.target.value)}
-                      className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      className="border dark:border-gray-700 dark:bg-gray-700 border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                     >
                       <option value="all">All Accounts</option>
                       {accounts.map((a) => (
@@ -1048,13 +1048,13 @@ const InsightsPage = () => {
 
                   {/* Percent View Toggle */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Scale</label>
-                    <div className="inline-flex rounded-md overflow-hidden border border-gray-300">
+                    <label className="block text-sm font-medium dark:text-gray-200 text-gray-700 mb-2">Scale</label>
+                    <div className="inline-flex rounded-md overflow-hidden border dark:border-gray-700 border-gray-300">
                       <button
                         type="button"
                         disabled={!showAvg}
                         onClick={() => setViewPercent(false)}
-                        className={`px-3 py-1.5 text-sm ${!viewPercent ? "bg-indigo-100 text-indigo-700" : "bg-white text-gray-700"} ${showAvg ? "opacity-50 cursor-not-allowed" : ""}`}
+                        className={`px-3 py-1.5 text-sm ${!viewPercent ? "bg-indigo-100 text-indigo-700" : "bg-white dark:bg-gray-700 dark:text-gray-200 text-gray-700"} ${showAvg ? "opacity-50 cursor-not-allowed" : ""}`}
                         title={showAvg ? "Disable Global Avg to use % view" : ""}
                       >
                         Amount
@@ -1076,17 +1076,17 @@ const InsightsPage = () => {
               {/* Category Multi-select (collapsible) */}
               <div className="w-full">
                 <div className="flex items-center justify-between mb-4">
-                  <label className="block text-sm font-medium text-gray-700">Categories</label>
+                  <label className="block text-sm font-medium dark:text-gray-200 text-gray-700">Categories</label>
                   <button
                     type="button"
                     onClick={() => setCatOpen(v => !v)}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-md bg-gray-100 dark:bg-gray-700 dark:text-gray-200 text-gray-700 hover:bg-gray-200"
                     aria-expanded={catOpen}
                     aria-controls="category-panel"
                   >
                     {catOpen ? "Hide" : "Show"} ({selectedCategories.length} selected)
                     <svg
-                      className={`h-4 w-4 transition-transform ${catOpen ? "rotate-180" : ""}`}
+                      className={`h-4 w-4 transition-transform dark:text-gray-200 ${catOpen ? "rotate-180" : ""}`}
                       viewBox="0 0 20 20" fill="currentColor"
                     >
                       <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" />
@@ -1111,7 +1111,7 @@ const InsightsPage = () => {
                     <button
                       type="button"
                       onClick={clearAll}
-                      className="px-3 py-1.5 text-xs rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      className="px-3 py-1.5 text-xs rounded-md bg-gray-100 dark:bg-gray-700 dark:text-gray-200 text-gray-700 hover:bg-gray-200"
                     >
                       Clear
                     </button>
@@ -1126,7 +1126,7 @@ const InsightsPage = () => {
                           key={category}
                           type="button"
                           onClick={() => toggleCat(category)}
-                          className={`px-4 py-1 text-sm rounded-lg flex items-center ${active ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 text-gray-700"}`}
+                          className={`px-4 py-1 text-sm rounded-lg flex items-center ${active ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 dark:bg-gray-700 dark:text-gray-200 text-gray-700"}`}
                           title={category}
                         >
                           <span
@@ -1138,17 +1138,17 @@ const InsightsPage = () => {
                       );
                     })}
                     {filteredCategories.length === 0 && (
-                      <span className="text-sm text-gray-500">No categories match your search.</span>
+                      <span className="text-sm dark:text-gray-200text-gray-500">No categories match your search.</span>
                     )}
                   </div>
                 </div>
 
                 {/* Compact Summary Row when collapsed */}
                 {!catOpen && selectedCategories.length > 0 && (
-                  <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-600">
-                    <span className="opacity-70">Selected:</span>
+                  <div className="mt-3 flex flex-wrap items-center gap-2 text-xs dark:text-gray-200  text-gray-600">
+                    <span className="opacity-70 ">Selected:</span>
                     {selectedCategories.slice(0, 6).map(c => (
-                      <span key={c} className="px-2 py-0.5 rounded-full bg-gray-100">{c}</span>
+                      <span key={c} className="px-2 py-0.5 rounded-full  dark:bg-gray-700 bg-gray-100">{c}</span>
                     ))}
                     {selectedCategories.length > 6 && (
                       <span className="opacity-70">+{selectedCategories.length - 6} more</span>
@@ -1176,8 +1176,8 @@ const InsightsPage = () => {
 
                         const isPct = viewPercent && !showAvg;
                         return (
-                          <div className="rounded-xl border border-gray-200 bg-white/90 backdrop-blur px-3 py-2 shadow">
-                            <div className="text-xs text-gray-500 mb-1">{label}</div>
+                          <div className="rounded-xl border dark:bg-gray-700 border-gray-200 bg-white/90 backdrop-blur px-3 py-2 shadow">
+                            <div className="text-xs dark:text-gray-200 text-gray-500 mb-1">{label}</div>
                             {payload.filter((p) => selectedCategories.includes(p.dataKey)).map((p) => {
                               const cat = p.dataKey;
                               const userVal = Number(p.value ?? 0);
@@ -1188,14 +1188,14 @@ const InsightsPage = () => {
                               const avgDisplay = isPct ? `${Math.round(avgPct)}%` : ZAR(avgVal);
 
                               return (
-                                <div key={cat} className="flex items-center gap-2 text-sm">
+                                <div key={cat} className="flex items-center  gap-2 text-sm">
                                   <span
                                     className="inline-block h-2 w-2 rounded-full"
                                     style={{ background: p.color }}
                                   />
-                                  <span className="text-gray-600">{cat.charAt(0).toUpperCase() + cat.slice(1)}</span>
-                                  <span className="ml-auto font-medium text-gray-800">{userDisplay}</span>
-                                  <span className="ml-2 text-xs text-gray-500">Avg: {avgDisplay}</span>
+                                  <span className="text-gray-600 dark:text-gray-200">{cat.charAt(0).toUpperCase() + cat.slice(1)}</span>
+                                  <span className="ml-auto font-medium dark:text-gray-200 text-gray-800">{userDisplay}</span>
+                                  <span className="ml-2 text-xs dark:text-gray-200 text-gray-500">Avg: {avgDisplay}</span>
                                 </div>
                               );
                             })}
@@ -1221,7 +1221,7 @@ const InsightsPage = () => {
 
               {/* Legend hint */}
               {showAvg && (
-                <div className="mt-3 text-xs text-gray-500">
+                <div className="mt-3 text-xs dark:text-gray-200 text-gray-500">
                   The dashed line shows the global average total for your selected categories each month.
                 </div>
               )}
@@ -1229,9 +1229,9 @@ const InsightsPage = () => {
 
 
           {/* Income vs Expense Bar Chart */}
-          <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border dark:border-gray-800 border-gray-200">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-              <h2 className="text-xl font-bold text-gray-800">Income vs Expenses</h2>
+              <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">Income vs Expenses</h2>
 
               <div className="flex items-center gap-2">
                 <button
@@ -1247,7 +1247,7 @@ const InsightsPage = () => {
                   onClick={() => setViewMode("byAccount")}
                   className={`px-3 py-1 text-sm rounded-md ${viewMode === "byAccount"
                     ? "bg-indigo-100 text-indigo-700"
-                    : "bg-gray-100 text-gray-700"
+                    : "bg-gray-100 dark:text-gray-200 dark:bg-gray-700 text-gray-700"
                     }`}
                 >
                   By Account
@@ -1257,7 +1257,7 @@ const InsightsPage = () => {
                   <select
                     value={account}
                     onChange={(e) => setAccount(e.target.value)}
-                    className="ml-2 px-3 py-1 text-sm rounded-md border border-gray-300 bg-white"
+                    className="ml-2 px-3 py-1 text-sm rounded-md border border-gray-300 dark:text-gray-200 dark:bg-gray-700 bg-white"
                   >
                     <option value="">All accounts</option>
                     {accounts.map((a) => (
@@ -1304,12 +1304,12 @@ const InsightsPage = () => {
           </div>
 
           {/* Net Worth Pie Chart */}
-          <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border dark:border-gray-800 border-gray-200">
               {/* Section Heading */}
-              <h2 className="text-xl font-bold text-gray-800 mb-4">Account Distribution</h2>
+              <h2 className="text-xl font-bold dark:text-gray-200 text-gray-800 mb-4">Account Distribution</h2>
 
               {/* Description for the chart */}
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm dark:text-gray-200 text-gray-600 mb-4">
                 This chart shows the distribution of your wealth across different account types. You can see how much of your total net worth is allocated to your checking, savings, and investment accounts.
               </p>
 
@@ -1355,7 +1355,7 @@ const InsightsPage = () => {
                       y="50%"
                       textAnchor="middle"
                       dominantBaseline="middle"
-                      className="text-xl font-bold text-gray-800"
+                      className="text-xl font-bold dark:text-gray-200 text-gray-800"
                     >
                       R{totalNetWorth.toLocaleString()}
                     </text>
@@ -1385,11 +1385,11 @@ const InsightsPage = () => {
 
 
           {/* Radar Chart */}
-          <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200 ">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Financial Health Radar</h2>
+          <div className="bg-white dark:bg-gray-800  p-6 rounded-xl shadow-md border dark:border-gray-800 border-gray-200 ">
+            <h2 className="text-xl font-bold dark:text-gray-200 text-gray-800 mb-4">Financial Health Radar</h2>
 
             {/* Description */}
-            <p className="text-sm text-gray-600 mb-6">
+            <p className="text-sm dark:text-gray-200 text-gray-600 mb-6">
               This radar chart provides a visual representation of your financial health across different metrics. Compare your score against the average to get a sense of where you stand.
             </p>
 
@@ -1426,7 +1426,7 @@ const InsightsPage = () => {
             {/* KPI Summary */}
             <div className="mt-4 grid grid-cols-3 gap-4 text-center text-xs">
               {radarStats.map((stat, i) => (
-                <div key={i} className="bg-gray-50 p-2 rounded-lg">
+                <div key={i} className="bg-gray-50 dark:bg-gray-700  p-2 rounded-lg">
                   <p className="font-medium">{stat.axis}</p>
                   <p className={`${stat.user > stat.average ? 'text-green-600' : 'text-red-600'}`}>
                     {stat.user > stat.average ? '↑' : '↓'} {Math.abs(Math.round(stat.user - stat.average))}pts
@@ -1437,11 +1437,11 @@ const InsightsPage = () => {
           </div>
 
           {/* Trend Line Chart */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <div className="bg-white dark:bg-gray-800 dark:border-gray-800 p-6 rounded-xl shadow-sm border border-gray-100">
             <div className="flex flex-col gap-4 mb-6">
               <div>
-                <h2 className="text-lg font-semibold text-gray-800 mb-1">Spending Trend</h2>
-                <p className="text-sm text-gray-500">
+                <h2 className="text-lg font-semibold dark:text-gray-200 text-gray-800 mb-1">Spending Trend</h2>
+                <p className="text-sm dark:text-gray-200 text-gray-500">
                   Monthly trends this year so far, including spending volatility and month-over-month changes.
                 </p>
               </div>
@@ -1466,7 +1466,7 @@ const InsightsPage = () => {
                     }
                     className={`px-3 py-1.5 rounded-lg text-xs transition-colors ${
                       active ? "bg-indigo-100 text-indigo-700 border border-indigo-200"
-                        : "bg-gray-50 text-gray-600 border border-gray-100"
+                        : "bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-700 text-gray-600 border border-gray-100"
                     }`}
                   >
                     {cat}
@@ -1501,15 +1501,15 @@ const InsightsPage = () => {
                       if (!active || !payload || !payload.length) return null;
                       const row = data.find(d => d.month === label);
                       return (
-                        <div className="rounded-lg border border-gray-200 bg-white/95 backdrop-blur px-3 py-2 shadow-sm">
-                          <div className="text-xs text-gray-500 mb-1">{label}</div>
+                        <div className="rounded-lg border dark:bg-gray-700 dark:border-gray-700 border-gray-200 bg-white/95 backdrop-blur px-3 py-2 shadow-sm">
+                          <div className="text-xs dark:text-gray-200 text-gray-500 mb-1">{label}</div>
                           {payload
                             .filter(p => p.value != null)
                             .map((p, idx) => (
                               <div key={idx} className="flex items-center gap-2 text-sm mb-1 last:mb-0">
                                 <span className="inline-block h-2 w-2 rounded-full" style={{ background: p.color }} />
-                                <span className="text-gray-600">{p.name || p.dataKey}</span>
-                                <span className="ml-auto font-medium text-gray-800">{ZAR(p.value)}</span>
+                                <span className="text-gray-600 dark:text-gray-200">{p.name || p.dataKey}</span>
+                                <span className="ml-auto font-medium dark:text-gray-200 text-gray-800">{ZAR(p.value)}</span>
                               </div>
                             ))}
                           
@@ -1537,7 +1537,7 @@ const InsightsPage = () => {
                           )}
 
                           {selectedCats.length > 0 && (
-                            <div className="mt-2 pt-2 border-t border-gray-100 text-xs text-gray-600">
+                            <div className="mt-2 pt-2 border-t border-gray-100  dark:text-gray-200 text-xs text-gray-600">
                               <div className="font-medium mb-1">Categories:</div>
                               <div className="grid grid-cols-2 gap-1">
                                 {selectedCats.map(cat => (
@@ -1617,12 +1617,12 @@ const InsightsPage = () => {
               </ResponsiveContainer>
             </div>
 
-            <div className="text-xs text-gray-400 mb-4">
+            <div className="text-xs dark:text-gray-200 text-gray-400 mb-4">
               Delta = change vs last month. Volatility = spread of your expense amounts in that month.
             </div>
 
             {/* Insights */}
-            <div className="text-sm text-gray-600">
+            <div className="text-sm dark:text-gray-200 text-gray-600">
               <ul className="space-y-2">
                 {!!trend?.categoryShift?.changed && (
                   <li className="flex items-start">
@@ -1654,12 +1654,12 @@ const InsightsPage = () => {
           </div>
 
           {/* Heatmap Chart */}
-          <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200 lg:col-span-2">
+          <div className="bg-white p-6 rounded-xl shadow-md border dark:border-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-200 lg:col-span-2">
             {/* Header */}
             <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
               <div>
-                <h2 className="text-xl font-bold text-gray-800">Transactions Heatmap</h2>
-                <p className="text-sm text-gray-500">
+                <h2 className="text-xl font-bold dark:text-gray-200 text-gray-800">Transactions Heatmap</h2>
+                <p className="text-sm dark:text-gray-200 text-gray-500">
                   Visualizing your daily transaction activity over the past year — the darker the shade, the busier the day.
                 </p>
               </div>
@@ -1671,7 +1671,7 @@ const InsightsPage = () => {
                   onClick={() => setMode("count")}
                   className={`px-3 py-1.5 text-sm ${mode === "count"
                     ? "bg-blue-200 text-blue-800"
-                    : "bg-white text-gray-700"
+                    : "bg-white dark:text-gray-200 dark:bg-gray-700 text-gray-700"
                     }`}
                 >
                   Count
@@ -1681,7 +1681,7 @@ const InsightsPage = () => {
                   onClick={() => setMode("amount")}
                   className={`px-3 py-1.5 text-sm border-l border-gray-300 ${mode === "amount"
                     ? "bg-blue-200 text-blue-800"
-                    : "bg-white text-gray-700"
+                    : "bg-white text-gray-700 dark:text-gray-200 dark:bg-gray-700"
                     }`}
                 >
                   Amount
@@ -1700,14 +1700,14 @@ const InsightsPage = () => {
                   gutterSize={2}
                   classForValue={() => ""}
                   transformDayElement={transformDayElement}
-                  weekdayLabelClass="text-[0.625rem] text-gray-500" // SIZE DOES NOT WANT TO CHANGE :()
-                  monthLabelClass="text-[0.625rem] text-gray-500"
+                  weekdayLabelClass="text-[0.625rem] dark:text-gray-200 text-gray-500" 
+                  monthLabelClass="text-[0.625rem] dark:bg-gray-700 dark:text-gray-200 text-gray-500"
                 />
               </div>
             </div>
 
             {/* Legend */}
-            <div className="mt-6 flex items-center flex-wrap gap-2 text-xs text-gray-600">
+            <div className="mt-6 flex items-center flex-wrap gap-2 text-xs dark:text-gray-200 text-gray-600">
               <span className="opacity-70">Less</span>
               <span className="inline-block w-3 h-3 rounded bg-blue-100 border border-gray-200" />
               <span className="inline-block w-3 h-3 rounded bg-blue-200 border border-gray-200" />
