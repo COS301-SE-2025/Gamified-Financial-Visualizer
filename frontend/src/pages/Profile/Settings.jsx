@@ -95,7 +95,7 @@ const Settings = () => {
   // fetch avatars form database
   const fetchAvatars = async () => {
     try {
-      const res = await fetch('${BASE_URL}/api/auth/avatars');
+      const res = await fetch(`${BASE_URL}/api/auth/avatars`);
       const data = await res.json();
       setAvatarList(data.data);
     } catch (err) {

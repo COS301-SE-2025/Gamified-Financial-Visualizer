@@ -27,7 +27,7 @@ import GaugeChart from 'react-gauge-chart';
 import CalendarHeatmap from 'react-calendar-heatmap';
 import { format } from 'date-fns';
 
-const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:6000";
 
 // Color palette
 const COLORS = {
