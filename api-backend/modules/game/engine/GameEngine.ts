@@ -838,6 +838,7 @@ export class GameEngine extends EventEmitter {
     );
     const debtValue = player.loans.reduce((sum, loan) => sum + loan.amount, 0);
     const netWorth = player.cash + assetValue - debtValue;
+    const numCards = player.cards.length;
 
     return {
       cash: player.cash,
@@ -845,7 +846,8 @@ export class GameEngine extends EventEmitter {
       debtValue,
       netWorth,
       lapsCompleted: player.lapsCompleted,
-      salary: player.salary
+      salary: player.salary,
+      inventory: numCards 
     };
   }
 
@@ -892,8 +894,48 @@ export class GameEngine extends EventEmitter {
     };
   }
 
+  public getAllPlayersStats(gameId: string) {
+    const game = this.games.get(gameId);
+    if (!game) return null;
 
+    return Array.from(game.players.values()).map(player => ({
+      id: player.id,
+      name: player.username,
+      position: player.position,
+      cash: player.cash,
+      assets: player.assets,
+      loans: player.loans,
+      cards: player.cards,
+      lapsCompleted: player.lapsCompleted,
+      salary: player.salary,
+      isActive: player.isActive,
+      isBankrupt: player.isBankrupt
+    }));
+  } 
+
+  public getPlayerCardInventory(gameId: string, playerId: number) {
+    const game = this.games.get(gameId);
+    const player = game?.players.get(playerId);
+
+    if (!game || !player) return null;
+
+    return {
+      cards: player.cards,
+      assets: player.assets,
+      loans: player.loans
+    };
+  }
+
+  public getPlayerAssets(gameId: string, playerId: number) {
+    const game = this.games.get(gameId);
+    const player = game?.players.get(playerId);
+
+    if (!game || !player) return null;
+
+    return player.assets;
+  }
 }
+
 
 type StatusEffect =
   | { type: 'slow_paced'; expiresTurn: number; multiplier: number }

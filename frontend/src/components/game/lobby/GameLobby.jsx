@@ -105,13 +105,13 @@ export default function GameLobby({
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [copied, setCopied] = useState(false);
-
+    const [socket, setSocket] = useState(null);
     const user = JSON.parse(localStorage.getItem('user'));
     const token = user.token;
 
-        useEffect(() => {
+    useEffect(() => {
         const socket = getSocket(token, user?.id);
-
+        setSocket(socket);
         socket.on('connect_error', (err) => {
             console.error('Socket connection failed:', err.message);
         });
@@ -350,6 +350,15 @@ export default function GameLobby({
 
             if (response.success) {
                 console.log('Left lobby successfully');
+                // remove game id
+                localStorage.removeItem('gameId');
+                onLeaveLobby?.();
+                setPlayersInLobby([]);
+                setRoomCode('');
+                setShowCreate(false);
+                setShowQuick(false);
+                setJoinCode('');
+                setError(''); // clear any previous errors
             }
         } catch (err) {
             setError(err.message);
@@ -371,11 +380,34 @@ export default function GameLobby({
         }
     };
 
-    const start = () => {
+    const start = async () => {
         if (!canStart) return;
-        //  socket.emit('lobby:start-game');  // backend will pick up userId from socket.data
+        try {
         onStart?.({ mode, players, laps }, character.key);
-        setCountdown(true);
+
+            const res = await fetch('http://localhost:5000/api/game/lobby/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: user?.id,
+                }),
+            });
+            // set game id
+            if(res.success) {
+                console.log('Game started:', res.gameId);
+                // clear gameId
+                localStorage.removeItem('gameId');
+               localStorage.setItem('gameId', res.gameId); 
+                socket.emit('lobby:start-game');  // backend will pick up userId from socket.data
+                setCountdown(true);
+            }
+            
+        } catch (err) {
+            console.error('Error starting game:', err);
+        }
+        
     };
 
     const done = () => onStart?.({ mode, players, laps }, character.key)

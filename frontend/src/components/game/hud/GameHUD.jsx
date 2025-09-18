@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FaDollarSign, FaBuilding, FaClock, FaChevronLeft, FaChevronRight, FaSignOutAlt,
   FaMoneyBillWave, FaCreditCard, FaHandHoldingUsd, FaPiggyBank, FaTruck, FaDice, FaBox
 } from 'react-icons/fa';
+import { getSocket } from '../socket';
 
 /* ----------------------------- Image imports ----------------------------- */
 import imgBusiness from '../../../assets/hud/Business Card.png';
@@ -53,10 +54,38 @@ export default function GameHUD({
   const [showInventory, setShowInventory] = useState(false);
   const [showCard, setShowCard] = useState(false);
   const [activeTab, setActiveTab] = useState('net-worth');
-
+  const user = localStorage.getItem('user');
+  const token = user ? JSON.parse(user).token : null;
+  const [socket, setSocket] = useState(null);
+  const error = (err) => console.error('Socket error:', err);
+  const userId = user ? JSON.parse(user).id : null;
+  const gameId = localStorage.getItem('gameId');
   const computedNetWorth = netWorth;
   const availableCash = netWorth - assetsValue + loanBalance;
 
+  useEffect(() => {
+    const socket = getSocket(token, user?.id);
+    setSocket(socket);
+    socket.on('connect_error', (err) => {
+      console.error('Socket connection failed:', err.message);
+    });
+
+    return () => socket.off("connect_error", error);
+  }, [token, user]);
+
+  // fetch game state
+  const fetchGameState = async (gameId) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/game/state/${gameId}`);
+      const data = await res.json();
+      if (data.success) {
+        console.log('Game state:', data.state);
+      }
+    } catch (error) {
+      console.error('Error fetching game state:', error);
+    }
+  }
+  
   // Map avatar imports to player IDs
   const playerAvatars = {
     'p1': playerIcon2,

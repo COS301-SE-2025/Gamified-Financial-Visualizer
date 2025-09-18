@@ -1,9 +1,9 @@
 import { EventEmitter } from 'events';
 import { GameEngine } from '../engine/GameEngine';
-import { Player, Character } from '../types/GameTypes';
+import { Player, Character, Asset, Loan , Card} from '../types/GameTypes';
 import { logger } from '../../../config/logger';
 import { redisClient } from '../../../config/redis';
-  import { randomBytes } from 'crypto';
+import { randomBytes } from 'crypto';
 
 export interface Lobby {
   id: string;
@@ -35,6 +35,8 @@ export interface LobbySettings {
   maxPlayers: number;
   isPrivate: boolean
 }
+
+
 
 export class GameLobbyManager extends EventEmitter {
   private lobbies = new Map<string, Lobby>();
@@ -307,8 +309,8 @@ export class GameLobbyManager extends EventEmitter {
       }
 
       // Check minimum players
-      if (lobby.players.size < 2) {
-        throw new Error('Need at least 2 players to start');
+      if (lobby.players.size < 1) { // changed to 1 for testing
+        throw new Error('Need at least 1 player to start');
       }
 
       // Check if all players are ready
@@ -361,6 +363,8 @@ export class GameLobbyManager extends EventEmitter {
       return gameId;
     }
   }
+
+
 
   /**
    * Get lobby by player ID
@@ -459,14 +463,14 @@ export class GameLobbyManager extends EventEmitter {
     return `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
-private generateJoinCode(): string {
-  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I
-  let code = '';
-  const bytes = randomBytes(6);
-  for (let i=0;i<6;i++) code += alphabet[bytes[i]%alphabet.length];
-  if (this.lobbyCodes.has(code)) return this.generateJoinCode();
-  return code;
-}
+  private generateJoinCode(): string {
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I
+    let code = '';
+    const bytes = randomBytes(6);
+    for (let i = 0; i < 6; i++) code += alphabet[ bytes[ i ] % alphabet.length ];
+    if (this.lobbyCodes.has(code)) return this.generateJoinCode();
+    return code;
+  }
 
   // Get game engine for other modules
   getGameEngine(): GameEngine {
@@ -484,4 +488,3 @@ private generateJoinCode(): string {
     return undefined;
   }
 }
-
