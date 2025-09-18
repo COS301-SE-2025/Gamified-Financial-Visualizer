@@ -72,16 +72,16 @@ const AccountsPerformanceHeader = () => {
           {/* Progress Bar */}
           <div className="w-full">
             <p className="text-sm font-medium text-[#7FBCE9] mb-1">Overall Performance</p>
-            <div className="relative h-4 w-full rounded-full bg-[#f5f5f5] overflow-hidden">
+            <div className="relative h-4 w-full rounded-full bg-[#f5f5f5] overflow-hidden dark:bg-gray-700">
               <div
-                className="h-full rounded-full"
+                className="h-full rounded-full "
                 style={{
                   width: `${performanceSummary?.performance_score/500 *100}%`,
                   background: 'linear-gradient(to right, #4FC3F7, #B3E5FC)'
                 }}
               />
               <div
-                className="absolute top-1/2 w-5 h-5 bg-[#B3E5FC] rounded-full border-2 border-white shadow-md"
+                className="absolute top-1/2 w-5 h-5 bg-[#B3E5FC] rounded-full border-2 border-white shadow-md "
                 style={{
                   left: `calc(${performanceSummary?.performance_score/500 *100}% - 10px)`,
                   transform: 'translateY(-50%)'

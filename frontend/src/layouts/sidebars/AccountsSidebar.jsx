@@ -47,7 +47,7 @@ const categoryIcons = {
   default: <FaMoneyBillWave />,
 };
 
-/** --- Base category colors mapping --- */
+/** --- (kept) category colors + fallback (unused for the top-6 palette now) --- */
 const categoryColors = {
   groceries: '#FF8A8A',
   transport: '#5FBFFF',
@@ -70,8 +70,6 @@ const categoryColors = {
   gifts: '#68D391',
   charity: '#48BB78',
 };
-
-/** --- Fallback palette --- */
 const fallbackColors = [
   '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57',
   '#FF9FF3', '#54A0FF', '#5F27CD', '#00D2D3', '#FF9F43',
@@ -79,11 +77,14 @@ const fallbackColors = [
   '#A29BFE', '#FD79A8', '#00B894', '#E17055', '#74B9FF',
   '#81ECEC', '#FAB1A0', '#E84393', '#00CEC9', '#FDCB6E'
 ];
+const getCategoryColor = (key, idx = 0) =>
+  categoryColors[key] || fallbackColors[idx % fallbackColors.length];
 
-const getCategoryColor = (categoryKey, index = 0) => {
-  if (categoryColors[categoryKey]) return categoryColors[categoryKey];
-  return fallbackColors[index % fallbackColors.length];
-};
+/** --- NEW: exact 6-color palette to match Community header --- */
+const STAT_PALETTE = ['#FF8A8A', '#7FDD53', '#5FBFFF', '#FFC541', '#F68D2B', '#FF7F9E'];
+
+/** small helper to get a translucent bg from a hex */
+const softBg = (hex) => `${hex}20`;
 
 /** --- Helpers --- */
 const parseAmountSafe = (val) => {
@@ -121,13 +122,11 @@ const AccountsPerformanceHeader = () => {
     if (!userId) return;
 
     setError('');
-    // performance summary
     fetch(`http://localhost:5000/api/auth/profile/performance-summary/${userId}`)
       .then(res => res.json())
       .then(json => setPerformanceSummary(json?.data ?? null))
       .catch(err => console.error('Performance summary error:', err));
 
-    // user transactions
     (async () => {
       try {
         const resp = await fetch(`http://localhost:5000/api/transactions/user/${userId}`);
@@ -145,7 +144,7 @@ const AccountsPerformanceHeader = () => {
     })();
   }, [userId]);
 
-  /** Performance metrics (unchanged from your logic) */
+  /** Performance metrics (kept) */
   const performanceMetrics = useMemo(() => {
     if (!userTransactions || userTransactions.length === 0) {
       return { score: 0, level: 'Starter', levelNumber: 1, description: 'Getting Started', progressPercentage: 0 };
@@ -203,11 +202,17 @@ const AccountsPerformanceHeader = () => {
       total: v.total,
       transactionCount: v.count,
       icon: categoryIcons[key] || categoryIcons.default,
+      // initial color (kept for fallback) — will be overridden by STAT_PALETTE below
       color: getCategoryColor(key, idx),
     }));
 
     rows.sort((a, b) => b.total - a.total);
-    return rows.slice(0, 6);
+
+    // ✅ Apply the exact 6-color palette after sorting (ranked order)
+    return rows.slice(0, 6).map((row, idx) => ({
+      ...row,
+      color: STAT_PALETTE[idx % STAT_PALETTE.length],
+    }));
   }, [userTransactions]);
 
   return (
@@ -270,7 +275,7 @@ const AccountsPerformanceHeader = () => {
           </div>
         </div>
 
-        {/* Stat Blocks: Top 6 categories */}
+        {/* Stat Blocks: Top 6 categories with unified palette */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 w-full">
           {topSixCategories.length === 0 ? (
             Array.from({ length: 6 }).map((_, i) => (
@@ -292,7 +297,7 @@ const AccountsPerformanceHeader = () => {
                   {/* Icon circle with soft background */}
                   <div
                     className="w-10 h-10 flex items-center justify-center rounded-full"
-                    style={{ backgroundColor: `${category.color}20` }}
+                    style={{ backgroundColor: softBg(category.color) }}
                   >
                     <span className="text-xl" style={{ color: category.color }}>
                       {category.icon}
