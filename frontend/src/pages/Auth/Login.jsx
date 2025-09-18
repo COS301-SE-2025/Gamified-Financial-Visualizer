@@ -4,7 +4,7 @@ import AuthLayout from '../../components/AuthLayout';
 import logoImg from '../../assets/Images/Logo.png';
 import { FaEye, FaEyeSlash, FaLock } from 'react-icons/fa';
 import { motion } from 'framer-motion';
-
+import  {useThemeLoader, applyThemeFromPreferences }  from '../ThemeLoader.mjs';
 const BASE_URL = "http://localhost:5000";
 
 const Login = () => {
@@ -39,6 +39,7 @@ const Login = () => {
           localStorage.setItem('user', JSON.stringify({ username, id: userId ,
             token: token
           }));
+          applyThemeFromPreferences(userId, token);
           navigate('/dashboard', { state: { userId } });
         } else {
           setError('Could not retrieve user ID after login.');
