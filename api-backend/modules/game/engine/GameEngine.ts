@@ -369,6 +369,32 @@ export class GameEngine extends EventEmitter {
     this.emit('player-bankrupt', { gameId, playerId });
   }
 
+  public async leaveGame(gameId: string, playerId: number): Promise<boolean>{
+    const game = this.games.get(gameId);
+    if (!game) return false;
+
+    if (game.gamePhase === 'waiting') {
+      game.players.delete(playerId);
+      game.turnOrder = game.turnOrder.filter(id => id !== playerId);  
+      this.emit('player-left', { gameId, playerId });
+      if (game.players.size < 2) {
+        game.gamePhase = 'waiting';
+        this.emit('game-cancelled', { gameId });
+        this.games.delete(gameId);
+      }
+    } else if (game.gamePhase === 'playing') {
+      game.players.delete(playerId);
+      game.turnOrder = game.turnOrder.filter(id => id !== playerId);
+      this.emit('player-left', { gameId, playerId });
+      if (game.players.size < 2) {
+        game.gamePhase = 'waiting';
+        this.emit('game-cancelled', { gameId });
+        this.games.delete(gameId);
+      }
+    }
+
+    return true;
+  }
 
   private async endGame(gameId: string, reason: 'laps' | 'elimination'): Promise<void> {
     const game = this.games.get(gameId)!;

@@ -352,18 +352,18 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
 
   /*
     GET player state
-    Networth, number of assets, position, laps completed/total laps
+    Net worth, number of assets, position, laps completed/total laps
   */
   router.get('/player/state', async (req: Request, res: Response) => {
     try {
-      const { user_id, gameId } = req.body;
+      const { user_id, gameId } = req.query;
       if (!user_id || !gameId) {
         res.status(400).json({ error: 'Missing user_id or gameId' });
         return;
       }
 
       const gameEngine = lobbyManager.getGameEngine();
-      const gameState = gameEngine.getGameState(gameId);
+      const gameState = gameEngine.getGameState(String(gameId));
 
       if (!gameState) {
         res.status(404).json({ error: 'Game not found' });
@@ -401,6 +401,23 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
   });
 
 
+  router.post('/game/leave', async (req: Request, res: Response) => {
+    try {
+      const { user_id, gameId } = req.body;
+      const gameEngine = lobbyManager.getGameEngine();
+      const success = await gameEngine.leaveGame(String(gameId), Number(user_id));
+
+      if (success) {
+        res.json({ success: true });
+      } else {
+        res.status(400).json({ error: 'Failed to leave game' });
+      }
+    } catch (error: any) {
+      logger.error('Error leaving game:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   /**
    * Get balance sheet of player
    * net worth, cash, business worth, loans, number of cards in inventory, asset value
@@ -408,11 +425,11 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
   router.get('/game/balance-sheet/', async (req: Request, res: Response) => {
     try {
       // get game engine
-      const { user_id, gameId } = req.body;
+      const { user_id, gameId } = req.query;
       const gameEngine = lobbyManager.getGameEngine();
-      const gameState = gameEngine.getGameState(gameId)
+      const gameState = gameEngine.getGameState(String(gameId))
 
-      const balanceSheet = gameEngine.getPlayerBalanceSheet(gameId, user_id);
+      const balanceSheet = gameEngine.getPlayerBalanceSheet(String(gameId), Number(user_id));
 
       if (!gameState) {
         res.status(404).json({ error: 'Game not found' });
@@ -442,16 +459,16 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
    */
   router.get('/game/positions', async (req: Request, res: Response) => {
     try {
-      const { gameId } = req.body;
+      const { gameId } = req.query;
       const gameEngine = lobbyManager.getGameEngine();
-      const gameState = gameEngine.getGameState(gameId);
+      const gameState = gameEngine.getGameState(String(gameId));
 
       if (!gameState) {
         res.status(404).json({ error: 'Game not found' });
         return;
       }
 
-      const playerStats = gameEngine.getAllPlayersStats(gameId);
+      const playerStats = gameEngine.getAllPlayersStats(String(gameId));
       if (!playerStats) {
         res.status(404).json({ error: 'No players found in game' });
         return;
@@ -473,16 +490,16 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
    */
   router.get('/game/cards', async (req: Request, res: Response) => {
     try {
-      const { user_id, gameId } = req.body;
+      const { user_id, gameId } = req.query;
       const gameEngine = lobbyManager.getGameEngine();
-      const gameState = gameEngine.getGameState(gameId);
+      const gameState = gameEngine.getGameState(String(gameId));
 
       if (!gameState) {
         res.status(404).json({ error: 'Game not found' });
         return;
       }
 
-      const inventory = gameEngine.getPlayerCardInventory(gameId, user_id);
+      const inventory = gameEngine.getPlayerCardInventory(String(gameId), Number(user_id));
       if (!inventory) {
         res.status(404).json({ error: 'Player not found in game' });
         return;
@@ -504,16 +521,16 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
    */
   router.get('/game/businesses', async (req: Request, res: Response) => {
     try {
-      const { user_id, gameId } = req.body;
+      const { user_id, gameId } = req.query;
       const gameEngine = lobbyManager.getGameEngine();
-      const gameState = gameEngine.getGameState(gameId);
+      const gameState = gameEngine.getGameState(String(gameId));
 
       if (!gameState) {
         res.status(404).json({ error: 'Game not found' });
         return;
       }
 
-      const businesses = gameEngine.getPlayerAssets(gameId, user_id);
+      const businesses = gameEngine.getPlayerAssets(String(gameId), Number(user_id));
       if (!businesses) {
         res.status(404).json({ error: 'Player not found in game' });
         return;

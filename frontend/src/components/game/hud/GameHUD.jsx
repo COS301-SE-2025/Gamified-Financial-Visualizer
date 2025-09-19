@@ -62,7 +62,10 @@ export default function GameHUD({
   const gameId = localStorage.getItem('gameId');
   const computedNetWorth = netWorth;
   const availableCash = netWorth - assetsValue + loanBalance;
-
+  const [balanceSheet, setBalanceSheet] = useState(null);
+  const [positions, setPositions] = useState([]);
+  const [cards, setCards] = useState([]);
+  const [businessesList, setBusinessesList] = useState([]);
   useEffect(() => {
     const socket = getSocket(token, user?.id);
     setSocket(socket);
@@ -76,7 +79,9 @@ export default function GameHUD({
   // fetch game state
   const fetchGameState = async (gameId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/game/state/${gameId}`);
+      const res = await fetch(`http://localhost:5000/api/game/state/${gameId}`,
+        { method: 'GET', headers: { 'Authorization': `Bearer ${token}` } }
+      );
       const data = await res.json();
       if (data.success) {
         console.log('Game state:', data.state);
@@ -85,7 +90,105 @@ export default function GameHUD({
       console.error('Error fetching game state:', error);
     }
   }
-  
+
+  const fetchBalanceSheet = async (gameId, userId) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/game/state?gameId=${gameId}&playerId=${userId}`,
+        { method: 'GET', headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      const data = await res.json();
+      if (data.success) {
+        setBalanceSheet(data.balanceSheet);
+        console.log('Balance sheet:', data.balanceSheet);
+      }
+    } catch (error) {
+      console.error('Error fetching balance sheet:', error);
+    }
+  }
+
+  const fetchPlayerPositions = async (gameId) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/game/positions?gameId=${gameId}`,
+        { method: 'GET', headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      const data = await res.json();
+      if (data.success) {
+        console.log('Player positions:', data.positions);
+        setPositions(data.playerStats);
+      }
+    } catch (error) {
+      console.error('Error fetching player positions:', error);
+    }
+  }
+
+  const fetchPlayerCards = async (gameId, userId) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/game/cards?gameId=${gameId}&user_id=${userId}`,
+        { method: 'GET', headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      const data = await res.json();
+      if (data.success) {
+        console.log('Player cards:', data.cards);
+        setCards(data.inventory);
+      }
+    } catch (error) {
+      console.error('Error fetching player cards:', error);
+    }
+  }
+
+
+  const fetchPlayerBusinesses = async (gameId, userId) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/game/businesses?gameId=${gameId}&user_id=${userId}`,
+        { method: 'GET', headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      const data = await res.json();
+      if (data.success) {
+        console.log('Player businesses:', data.businesses);
+        setBusinessesList(data.businesses);
+      }
+    } catch (error) {
+      console.error('Error fetching player businesses:', error);
+    }
+  }
+
+  useEffect(() => {
+    if (socket && gameId && userId) {
+      fetchGameState(gameId);
+      fetchBalanceSheet(gameId, userId);
+      fetchPlayerPositions(gameId);
+      fetchPlayerCards(gameId, userId);
+      fetchPlayerBusinesses(gameId, userId);
+    }
+  }, [socket, gameId, userId]);
+
+
+  const leaveGame = async () => {
+    try {
+      if (socket && gameId && userId) {
+        const res = await fetch(`http://localhost:5000/api/game/leave`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ gameId, userId })
+        });
+
+        if (!res.ok) {
+          throw new Error('Failed to leave game');
+        }
+        console.log('Leave game response:', res);
+        socket.emit('leaveGame', { gameId, userId });
+        localStorage.removeItem('gameId');
+        window.location.href = '/lobby'; 
+      }
+    } catch (error) {
+      console.error('Error leaving game:', error);
+    }
+
+  };
+
   // Map avatar imports to player IDs
   const playerAvatars = {
     'p1': playerIcon2,
@@ -94,7 +197,7 @@ export default function GameHUD({
     'p4': playerIcon4
   };
 
-  // player postion information at the bottom of the HUD
+  // player position information at the bottom of the HUD
   const players = [
     { id: 'p1', name: 'lily_rose', position: 5 },
     { id: 'p2', name: playerName, position: 10, active: true },
@@ -211,7 +314,9 @@ export default function GameHUD({
 
       {/* ===== Top Right: Leave Game Button ===== */}
       <div className="absolute top-2 right-12 pointer-events-auto">
-        <button className="flex items-center gap-2 bg-red-400 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-xl shadow-md">
+        <button 
+          onClick={leaveGame}
+        className="flex items-center gap-2 bg-red-400 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-xl shadow-md">
           <FaSignOutAlt className="text-lg" />
           Leave Game
         </button>

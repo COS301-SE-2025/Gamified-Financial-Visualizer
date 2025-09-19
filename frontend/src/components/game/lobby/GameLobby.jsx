@@ -381,7 +381,7 @@ export default function GameLobby({
     };
 
     const start = async () => {
-        if (!canStart) return;
+       // if (!canStart) return;
         try {
         onStart?.({ mode, players, laps }, character.key);
 
