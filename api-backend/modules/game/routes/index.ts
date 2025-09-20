@@ -293,10 +293,10 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
   router.get('/state/:gameId', async (req: Request, res: Response) => {
     try {
       const { gameId } = req.params;
-      const { user_id } = req.body;
+      const { user_id } = req.query;
 
       const gameEngine = lobbyManager.getGameEngine();
-      const gameState = gameEngine.getGameState(gameId);
+      const gameState = gameEngine.getGameState(String(gameId));
 
       if (!gameState) {
         res.status(404).json({ error: 'Game not found' });
@@ -476,7 +476,7 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
 
       res.json({
         success: true,
-        playerStats
+        players: playerStats
       });
     } catch (error: any) {
       logger.error('Error getting player positions:', error);

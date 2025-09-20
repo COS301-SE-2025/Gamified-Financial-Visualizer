@@ -6,7 +6,6 @@ import {
 } from 'react-icons/fa'
 
 import CharacterSelectViewer from '../CharacterSelectViewer'
-import { io } from 'socket.io-client';
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { getSocket } from '../socket';
 
@@ -210,7 +209,7 @@ export default function GameLobby({
                     user_id: user?.id,
                     username: user?.username,
                     gameMode: 'laps',
-                    maxLaps: laps,
+                    maxLaps: roomLaps,
                     maxPlayers: players,
                     isPrivate: false
                 })
@@ -221,6 +220,8 @@ export default function GameLobby({
                 setRoomCode(response.lobby.code);
                 onCreateRoom?.(response.lobby);
                 setShowCreate(false);
+                handleGetMyLobby();
+                fetchLobby();
             }
         } catch (err) {
             setError(err.message);
@@ -311,9 +312,7 @@ export default function GameLobby({
             return null;
         }
     };
-
-    useEffect(() => {
-        const fetchLobby = async () => {
+      const fetchLobby = async () => {
             try {
                 const response = await apiCall('/lobby/my-lobby', {
                     method: 'POST',
@@ -337,8 +336,10 @@ export default function GameLobby({
                 console.error('Error fetching lobby:', err);
             }
         };
+    useEffect(() => {
+  
 
-        fetchLobby();
+        //fetchLobby();
     }, [user]);
 
     const handleLeaveLobby = async () => {
@@ -395,15 +396,15 @@ export default function GameLobby({
                 }),
             });
             // set game id
-            if(res.success) {
-                console.log('Game started:', res.gameId);
+            const result = await res.json();
+            if(result.success) {
+                console.log('Game started:', result.gameId);
                 // clear gameId
                 localStorage.removeItem('gameId');
-               localStorage.setItem('gameId', res.gameId); 
+               localStorage.setItem('gameId', result.gameId); 
                 socket.emit('lobby:start-game');  // backend will pick up userId from socket.data
                 setCountdown(true);
-            }
-            
+            }   
         } catch (err) {
             console.error('Error starting game:', err);
         }
@@ -614,7 +615,7 @@ export default function GameLobby({
                     {/* Start game */}
                     <div className="mt-2 flex items-center justify-center">
                         {/*Room code */}
-                        {roomCode && (
+                        {roomCode && roomCode.length > 5 &&  (
                             <div className="absolute top-6 right-6 flex items-center gap-2 px-3 py-1.5 rounded-xl border bg-gray-50">
                                 <FaClipboard className="text-gray-500" />
                                 <div className="font-mono">{roomCode}</div>

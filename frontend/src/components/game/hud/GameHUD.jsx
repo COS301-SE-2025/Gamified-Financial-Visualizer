@@ -4,6 +4,8 @@ import {
   FaMoneyBillWave, FaCreditCard, FaHandHoldingUsd, FaPiggyBank, FaTruck, FaDice, FaBox
 } from 'react-icons/fa';
 import { getSocket } from '../socket';
+import { useHudData } from '../hooks/HudData';
+
 
 /* ----------------------------- Image imports ----------------------------- */
 import imgBusiness from '../../../assets/hud/Business Card.png';
@@ -30,24 +32,10 @@ function IconImg({ src, alt = '', className = 'w-5 h-5' }) {
 
 export default function GameHUD({
   /* existing props */
-  playerName = "kevin_park",
-  playerNumber = 2,
-  netWorth = 5000,
-  businesses = 4,
-  totalBusinesses = 10,
-  timePlaying = "10 min",
-  goalLaps = 10,
-  totalLaps = 15,
-  salary = 2000,
   cardsCount = 4,
   businessWorth = 6000,
-  loanBalance = 3000,
-  assetsValue = 3500,
   currentBusiness = "ProMotion Gear",
   currency = 'R',
-
-  /* NEW props from GameBoardViewer (fixes ESLint errors) */
-  currentTileLabel = '—',   // label of the tile the piece is on
   onRoll = () => { },        // function to roll dice
   isMoving = false          // whether the piece is currently animating
 }) {
@@ -60,8 +48,6 @@ export default function GameHUD({
   const error = (err) => console.error('Socket error:', err);
   const userId = user ? JSON.parse(user).id : null;
   const gameId = localStorage.getItem('gameId');
-  const computedNetWorth = netWorth;
-  const availableCash = netWorth - assetsValue + loanBalance;
   const [balanceSheet, setBalanceSheet] = useState(null);
   const [positions, setPositions] = useState([]);
   const [cards, setCards] = useState([]);
@@ -76,89 +62,13 @@ export default function GameHUD({
     return () => socket.off("connect_error", error);
   }, [token, user]);
 
-  // fetch game state
-  const fetchGameState = async (gameId) => {
-    try {
-      const res = await fetch(`http://localhost:5000/api/game/state/${gameId}`,
-        { method: 'GET', headers: { 'Authorization': `Bearer ${token}` } }
-      );
-      const data = await res.json();
-      if (data.success) {
-        console.log('Game state:', data.state);
-      }
-    } catch (error) {
-      console.error('Error fetching game state:', error);
-    }
-  }
-
-  const fetchBalanceSheet = async (gameId, userId) => {
-    try {
-      const res = await fetch(`http://localhost:5000/api/game/state?gameId=${gameId}&playerId=${userId}`,
-        { method: 'GET', headers: { 'Authorization': `Bearer ${token}` } }
-      );
-      const data = await res.json();
-      if (data.success) {
-        setBalanceSheet(data.balanceSheet);
-        console.log('Balance sheet:', data.balanceSheet);
-      }
-    } catch (error) {
-      console.error('Error fetching balance sheet:', error);
-    }
-  }
-
-  const fetchPlayerPositions = async (gameId) => {
-    try {
-      const res = await fetch(`http://localhost:5000/api/game/positions?gameId=${gameId}`,
-        { method: 'GET', headers: { 'Authorization': `Bearer ${token}` } }
-      );
-      const data = await res.json();
-      if (data.success) {
-        console.log('Player positions:', data.positions);
-        setPositions(data.playerStats);
-      }
-    } catch (error) {
-      console.error('Error fetching player positions:', error);
-    }
-  }
-
-  const fetchPlayerCards = async (gameId, userId) => {
-    try {
-      const res = await fetch(`http://localhost:5000/api/game/cards?gameId=${gameId}&user_id=${userId}`,
-        { method: 'GET', headers: { 'Authorization': `Bearer ${token}` } }
-      );
-      const data = await res.json();
-      if (data.success) {
-        console.log('Player cards:', data.cards);
-        setCards(data.inventory);
-      }
-    } catch (error) {
-      console.error('Error fetching player cards:', error);
-    }
-  }
-
-
-  const fetchPlayerBusinesses = async (gameId, userId) => {
-    try {
-      const res = await fetch(`http://localhost:5000/api/game/businesses?gameId=${gameId}&user_id=${userId}`,
-        { method: 'GET', headers: { 'Authorization': `Bearer ${token}` } }
-      );
-      const data = await res.json();
-      if (data.success) {
-        console.log('Player businesses:', data.businesses);
-        setBusinessesList(data.businesses);
-      }
-    } catch (error) {
-      console.error('Error fetching player businesses:', error);
-    }
-  }
-
   useEffect(() => {
     if (socket && gameId && userId) {
-      fetchGameState(gameId);
-      fetchBalanceSheet(gameId, userId);
-      fetchPlayerPositions(gameId);
-      fetchPlayerCards(gameId, userId);
-      fetchPlayerBusinesses(gameId, userId);
+      // fetchGameState(gameId);
+      // fetchBalanceSheet(gameId, userId);
+      // fetchPlayerPositions(gameId);
+      // fetchPlayerCards(gameId, userId);
+      // fetchPlayerBusinesses(gameId, userId);
     }
   }, [socket, gameId, userId]);
 
@@ -189,6 +99,8 @@ export default function GameHUD({
 
   };
 
+   const { hud, rollDice, endTurn, refresh, loading } = useHudData(gameId, socket);
+  
   // Map avatar imports to player IDs
   const playerAvatars = {
     'p1': playerIcon2,
@@ -197,13 +109,18 @@ export default function GameHUD({
     'p4': playerIcon4
   };
 
-  // player position information at the bottom of the HUD
-  const players = [
-    { id: 'p1', name: 'lily_rose', position: 5 },
-    { id: 'p2', name: playerName, position: 10, active: true },
-    { id: 'p3', name: 'nile_waters', position: 15 },
-    { id: 'p4', name: 'man_person', position: 20 },
-  ];
+
+const avatarBank = [playerIcon, playerIcon2, playerIcon3, playerIcon4];
+
+const players = (hud?.playersSummary).map((p, i) => ({
+    id: String(p.id),
+    name: p.name,
+    position: p.position,
+    laps: p.laps,
+    cash: p.cash ?? 0,
+    active: p.id === hud?.activePlayerId,
+    avatar: avatarBank[i % avatarBank.length] ?? playerIcon,
+  }));
 
   // Mock inventory data
   const inventorySummary = {
@@ -220,8 +137,15 @@ export default function GameHUD({
     body: 'Salary payout reduced this round.',
     delta: -3000,
   };
-
+  
   return (
+    <>
+   {/* Loader Overlay */}
+  {!hud ? (
+    <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-[2000]">
+      <div className="loader text-white text-lg">Loading HUD...</div>
+    </div>
+  ) : (
     <>
       {/* ===== Top Strip ===== */}
       <div className="pointer-events-auto fixed top-22 left-1/2 -translate-x-1/2 z-[1000]">
@@ -229,30 +153,30 @@ export default function GameHUD({
           {/* Net Worth */}
           <div className="flex items-center gap-2">
             <FaDollarSign className="text-lg text-lime-500" />
-            <span>Net Worth: {currency}{computedNetWorth.toLocaleString()}</span>
+            <span>Net Worth: <b>{hud?.currency}{(hud?.netWorth ?? 0).toLocaleString()}</b></span>
           </div>
 
           {/* Businesses */}
           <div className="flex items-center gap-2">
             <FaBuilding className="text-lg text-sky-500" />
-            <span>{businesses} Businesses Left</span>
+            <span>{hud?.businesses ?? 0} Businesses Left</span>
           </div>
 
           {/* Time Played */}
           <div className="flex items-center gap-2">
             <FaClock className="text-lg text-yellow-500" />
-            <span>{timePlaying} min</span>
+            <span>{hud?.timePlaying ?? '—'} min</span>
           </div>
 
           {/* Player Icon */}
           <div className="flex items-center gap-2">
             <img src={playerIcon} alt="Player" className="w-8 h-8 rounded-full" />
-            <span>Playing: {playerName}</span>
+            <span>Playing: {hud?.playerName}</span>
           </div>
 
           {/* Goal Laps */}
           <div className="ml-2 text-xs text-gray-600">
-            Goal Laps: {goalLaps}/{totalLaps} Laps
+            Goal Laps: {hud?.goalLaps ?? 0}/{hud?.totalLaps ?? 0} Laps
           </div>
         </div>
       </div>
@@ -264,7 +188,7 @@ export default function GameHUD({
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/95 border shadow">
             <img src={playerIcon} alt="" className="w-12 h-12 rounded-full" />
             <span className="text-sm text-gray-700">
-              <span className="text-gray-500">Playing:</span> <b>{playerName}</b>
+              <span className="text-gray-500">Playing:</span> <b>{hud?.playerName}</b>
             </span>
           </div>
         </div>
@@ -281,32 +205,32 @@ export default function GameHUD({
             <div className="flex justify-between py-1.5 text-sm">
               <FaDollarSign className="text-base text-gray-600" />
               <span className="text-gray-600">Net Worth</span>
-              <span className="font-semibold text-gray-800">R {netWorth.toLocaleString()}</span>
+              <span className="font-semibold text-gray-800">R {hud?.netWorth.toLocaleString()}</span>
             </div>
             <div className="flex justify-between py-1.5 text-sm">
               <FaMoneyBillWave className="text-base text-gray-600" />
               <span className="text-gray-600">Salary</span>
-              <span className="font-semibold text-gray-800">R {salary.toLocaleString()}</span>
+              <span className="font-semibold text-gray-800">R {hud?.salary.toLocaleString()}</span>
             </div>
             <div className="flex justify-between py-1.5 text-sm">
               <FaCreditCard className="text-base text-gray-600" />
               <span className="text-gray-600">Cards</span>
-              <span className="font-semibold text-gray-800">{cardsCount} Cards</span>
+              <span className="font-semibold text-gray-800">{hud?.cardsCount} Cards</span>
             </div>
             <div className="flex justify-between py-1.5 text-sm">
               <FaBuilding className="text-base text-gray-600" />
               <span className="text-gray-600">Business Worth</span>
-              <span className="font-semibold text-gray-800">R {businessWorth.toLocaleString()}</span>
+              <span className="font-semibold text-gray-800">R {hud?.businessWorth.toLocaleString()}</span>
             </div>
             <div className="flex justify-between py-1.5 text-sm">
               <FaHandHoldingUsd className="text-base text-gray-600" />
               <span className="text-gray-600">Loan Balance</span>
-              <span className="font-semibold text-red-600">R {loanBalance.toLocaleString()}</span>
+              <span className="font-semibold text-red-600">R {hud?.loanBalance.toLocaleString()}</span>
             </div>
             <div className="flex justify-between py-1.5 text-sm">
               <FaPiggyBank className="text-base text-gray-600" />
               <span className="text-gray-600">Assets Value</span>
-              <span className="font-semibold text-gray-800">R {assetsValue.toLocaleString()}</span>
+              <span className="font-semibold text-gray-800">R {hud?.assetsValue.toLocaleString()}</span>
             </div>
           </div>
         </div>
@@ -315,7 +239,9 @@ export default function GameHUD({
       {/* ===== Top Right: Leave Game Button ===== */}
       <div className="absolute top-2 right-12 pointer-events-auto">
         <button 
-          onClick={leaveGame}
+          onClick={async () => {
+            await leaveGame();
+          }}
         className="flex items-center gap-2 bg-red-400 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-xl shadow-md">
           <FaSignOutAlt className="text-lg" />
           Leave Game
@@ -388,6 +314,9 @@ export default function GameHUD({
             Inventory
           </span>
           <span className="ml-2 text-xs text-gray-600">
+            {
+              hud?.inventoryCards.map((c) => c.title).join(', ') || 'No cards'
+            }
             {inventorySummary.insurance ? '• Insurance' : ''}
             {inventorySummary.getOutOfBankruptcy ? ' • G.O.O.B' : ''}
             {inventorySummary.cards ? ` • ${inventorySummary.cards} card${inventorySummary.cards > 1 ? 's' : ''}` : ''}
@@ -492,5 +421,6 @@ export default function GameHUD({
         </div>
       )}
     </>
-  );
-}
+  )};
+  </>
+)}
