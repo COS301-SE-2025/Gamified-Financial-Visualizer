@@ -546,7 +546,7 @@ useEffect(() => {
               Share your achievements, goals, or ideas with the community!
             </p>
             <button
-              onClick={() => setShowCreatePost(true)} // Open the modal for creating a new post
+              onClick={() => setShowCreatePost(true)}
               className="bg-gradient-to-r from-[#88BC46] to-[#AAD977] text-white font-semibold px-6 py-2 rounded-full hover:opacity-90 transition shadow dark:from-[#4D7C0F] dark:to-[#3F6212]"
             >
               Create Post
@@ -566,134 +566,140 @@ useEffect(() => {
             )}
 
             {/* Feed */}
-            {visiblePosts.map(post => {
-              const isLiked = likedPosts.includes(post.id);
-              return (
-                <div
-                  key={post.id}
-                  className="bg-white rounded-3xl shadow-md p-6 space-y-4 border border-gray-100 hover:shadow-xl transition-all dark:bg-gray-800 dark:border-gray-700"
-                >
-                  {/* Header */}
-                  <div className="flex items-center gap-3">
-                    <img src={post.user.avatar} alt="avatar" className="w-12 h-12 rounded-full border-2 border-white shadow object-cover" />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <Link
-                          to={`/community/member/${post.user.name}`}
-                          className="font-semibold text-gray-800 hover:text-[#72C1F5] dark:text-gray-200 dark:hover:text-[#5FBFFF]"
-                        >
-                          {post.user.name}
-                        </Link>
-                        <span className="text-xs bg-[#fef9c3] text-[#92400e] px-2 py-0.5 rounded-full dark:bg-[#FFD18C] dark:text-[#FD8524]">
-                          Lv {post.user.level}
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {post.communities.map((name, i) => (
-                          <span
-                            key={`${name}-${i}`}
-                            className="text-xs bg-[#E0F2FE] text-[#72C1F5] px-2 py-0.5 rounded-full dark:bg-[#88D1FF] dark:text-[#065989]"
+            {visiblePosts.length > 0 ? (
+              visiblePosts.map(post => {
+                const isLiked = likedPosts.includes(post.id);
+                return (
+                  <div
+                    key={post.id}
+                    className="bg-white rounded-3xl shadow-md p-6 space-y-4 border border-gray-100 hover:shadow-xl transition-all dark:bg-gray-800 dark:border-gray-700"
+                  >
+                    {/* Header */}
+                    <div className="flex items-center gap-3">
+                      <img src={post.user.avatar} alt="avatar" className="w-12 h-12 rounded-full border-2 border-white shadow object-cover" />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <Link
+                            to={`/community/member/${post.user.name}`}
+                            className="font-semibold text-gray-800 hover:text-[#72C1F5] dark:text-gray-200 dark:hover:text-[#5FBFFF]"
                           >
-                            {name}
+                            {post.user.name}
+                          </Link>
+                          <span className="text-xs bg-[#fef9c3] text-[#92400e] px-2 py-0.5 rounded-full dark:bg-[#FFD18C] dark:text-[#FD8524]">
+                            Lv {post.user.level}
                           </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Delete Post (owner only) */}
-                    {post.user.id === userId && (
-                      <button
-                        onClick={() => openConfirmDeletePost(post.id)}
-                        className="p-2 rounded-full border border-red-200 text-red-500 hover:bg-red-50 transition dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/30"
-                        title="Delete post"
-                        aria-label="Delete post"
-                      >
-                        <FaTrash size={14} />
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Body */}
-                  <div className="space-y-3">
-                    <p className="text-gray-700 text-sm leading-relaxed dark:text-gray-300">{post.content}</p>
-                    {post.banner && (
-                      <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-600">
-                        <img src={post.banner} alt="post banner" className="w-full h-52 object-cover" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Footer */}
-                  <div className="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-gray-700">
-                    <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                      <button
-                        onClick={() => handleLike(post.id)}
-                        className={`flex items-center gap-1 transition ${isLiked ? 'text-red-500' : 'hover:text-red-500 dark:hover:text-red-400'}`}
-                        title={isLiked ? 'Unlike' : 'Like'}
-                        aria-pressed={isLiked}
-                        aria-label={isLiked ? 'Unlike post' : 'Like post'}
-                      >
-                        <FaHeart />
-                        <span>{post.likes}</span>
-                      </button>
-                      <div className="flex items-center gap-1">
-                        <FaComment />
-                        <span>{post.comments.length}</span>
-                      </div>
-                    </div>
-                    <Link
-                      to={`/community/member/${post.user.name}`}
-                      className="text-xs bg-[#E0F2FE] text-[#72C1F5] px-3 py-1.5 rounded-full font-medium hover:bg-[#B1E1FF] flex items-center gap-1 dark:bg-[#88D1FF] dark:text-[#065989] dark:hover:bg-[#6BB7F5]"
-                    >
-                      <EyeIcon size={12} /> Profile
-                    </Link>
-                  </div>
-
-                  {/* Comments */}
-                  <div className="space-y-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-                    {post.comments.map(c => (
-                      <div key={c.id} className="flex items-start gap-2">
-                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                          {c.user ? c.user.charAt(0).toUpperCase() : '?'}
                         </div>
-                        <div className="flex-1 bg-gray-50 rounded-lg p-2 dark:bg-gray-700">
-                          <div className="flex items-center justify-between">
-                            <div className="font-medium text-sm text-gray-700 dark:text-gray-200">{c.user}</div>
-                            {c.userId === userId && (
-                              <button
-                                onClick={() => openConfirmDeleteComment(post.id, c.id)}
-                                className="p-1.5 rounded-full border border-red-200 text-red-500 hover:bg-red-50 transition dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/30"
-                                title="Delete comment"
-                                aria-label="Delete comment"
-                              >
-                                <FaTrash size={12} />
-                              </button>
-                            )}
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {post.communities.map((name, i) => (
+                            <span
+                              key={`${name}-${i}`}
+                              className="text-xs bg-[#E0F2FE] text-[#72C1F5] px-2 py-0.5 rounded-full dark:bg-[#88D1FF] dark:text-[#065989]"
+                            >
+                              {name}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Delete Post (owner only) */}
+                      {post.user.id === userId && (
+                        <button
+                          onClick={() => openConfirmDeletePost(post.id)}
+                          className="p-2 rounded-full border border-red-200 text-red-500 hover:bg-red-50 transition dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/30"
+                          title="Delete post"
+                          aria-label="Delete post"
+                        >
+                          <FaTrash size={14} />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Body */}
+                    <div className="space-y-3">
+                      <p className="text-gray-700 text-sm leading-relaxed dark:text-gray-300">{post.content}</p>
+                      {post.banner && (
+                        <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-600">
+                          <img src={post.banner} alt="post banner" className="w-full h-52 object-cover" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-gray-700">
+                      <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                        <button
+                          onClick={() => handleLike(post.id)}
+                          className={`flex items-center gap-1 transition ${isLiked ? 'text-red-500' : 'hover:text-red-500 dark:hover:text-red-400'}`}
+                          title={isLiked ? 'Unlike' : 'Like'}
+                          aria-pressed={isLiked}
+                          aria-label={isLiked ? 'Unlike post' : 'Like post'}
+                        >
+                          <FaHeart />
+                          <span>{post.likes}</span>
+                        </button>
+                        <div className="flex items-center gap-1">
+                          <FaComment />
+                          <span>{post.comments.length}</span>
+                        </div>
+                      </div>
+                      <Link
+                        to={`/community/member/${post.user.name}`}
+                        className="text-xs bg-[#E0F2FE] text-[#72C1F5] px-3 py-1.5 rounded-full font-medium hover:bg-[#B1E1FF] flex items-center gap-1 dark:bg-[#88D1FF] dark:text-[#065989] dark:hover:bg-[#6BB7F5]"
+                      >
+                        <EyeIcon size={12} /> Profile
+                      </Link>
+                    </div>
+
+                    {/* Comments */}
+                    <div className="space-y-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                      {post.comments.map(c => (
+                        <div key={c.id} className="flex items-start gap-2">
+                          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                            {c.user ? c.user.charAt(0).toUpperCase() : '?'}
                           </div>
-                          <p className="text-sm text-gray-600 dark:text-gray-300">{c.text}</p>
+                          <div className="flex-1 bg-gray-50 rounded-lg p-2 dark:bg-gray-700">
+                            <div className="flex items-center justify-between">
+                              <div className="font-medium text-sm text-gray-700 dark:text-gray-200">{c.user}</div>
+                              {c.userId === userId && (
+                                <button
+                                  onClick={() => openConfirmDeleteComment(post.id, c.id)}
+                                  className="p-1.5 rounded-full border border-red-200 text-red-500 hover:bg-red-50 transition dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/30"
+                                  title="Delete comment"
+                                  aria-label="Delete comment"
+                                >
+                                  <FaTrash size={12} />
+                                </button>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600 dark:text-gray-300">{c.text}</p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
 
-                    <div className="flex items-center gap-2 mt-2">
-                      <input
-                        type="text"
-                        value={commentInputs[post.id] || ''}
-                        onChange={(e) => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })}
-                        placeholder="Add a comment..."
-                        className="flex-1 text-sm p-2 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#72C1F5] dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400 dark:focus:ring-[#5FBFFF]"
-                      />
-                      <button
-                        onClick={() => handleAddComment(post.id)}
-                        className="w-8 h-8 rounded-full bg-[#72C1F5] text-white flex items-center justify-center hover:bg-[#5CA8D8] dark:bg-[#88D1FF] dark:hover:bg-[#1E3A8A]"
-                      >
-                        <FaPaperPlane size={12} />
-                      </button>
+                      <div className="flex items-center gap-2 mt-2">
+                        <input
+                          type="text"
+                          value={commentInputs[post.id] || ''}
+                          onChange={(e) => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })}
+                          placeholder="Add a comment..."
+                          className="flex-1 text-sm p-2 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#72C1F5] dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400 dark:focus:ring-[#5FBFFF]"
+                        />
+                        <button
+                          onClick={() => handleAddComment(post.id)}
+                          className="w-8 h-8 rounded-full bg-[#72C1F5] text-white flex items-center justify-center hover:bg-[#5CA8D8] dark:bg-[#88D1FF] dark:hover:bg-[#1E3A8A]"
+                        >
+                          <FaPaperPlane size={12} />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            ) : (
+              <div className="text-center text-gray-500 dark:text-gray-400">
+                <p>No posts to display.</p>
+              </div>
+            )}
 
             {/* Pagination */}
             {posts.length > POSTS_PER_PAGE && (
@@ -721,213 +727,213 @@ useEffect(() => {
             )}
           </div>
         </div>
-      </div>
 
-      {/* Create Post Modal */}
-      {showCreatePost && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 dark:bg-black/60">
-          <div className="bg-white w-full max-w-2xl p-6 rounded-3xl shadow-xl border border-gray-100 relative space-y-4 dark:bg-gray-800 dark:border-gray-700">
-            {/* Close */}
-            <button
-              onClick={() => setShowCreatePost(false)}
-              className="absolute top-4 right-5 text-gray-400 hover:text-red-500 text-xl font-bold dark:hover:text-red-400"
-              aria-label="Close create post"
-            >
-              &times;
-            </button>
-
-            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2 dark:text-gray-200">
-              <FaPen className="text-[#88BC46] dark:text-[#4D7C0F]" /> Create a Post
-            </h2>
-
-            {/* Description */}
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={4}
-              placeholder="Write a short description…"
-              className="w-full p-4 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#88BC46] dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400 dark:focus:ring-[#4D7C0F]"
-            />
-
-            {/* Tags (max 3) */}
-            <div>
-              <div className="text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">Add community tags (max 3)</div>
-              <div className="flex flex-wrap gap-2">
-                {communityOptions.length === 0 && (
-                  <span className="text-xs text-gray-500">No communities.</span>
-                )}
-
-                {communityOptions.map(c => {
-                  const selected = selectedCommunityIds.includes(c.community_id);
-                  return (
-                    <button
-                      key={c.community_id}
-                      onClick={() => {
-                        setSelectedCommunityIds(prev => {
-                          if (selected) return prev.filter(id => id !== c.community_id);
-                          if (prev.length >= 3) return prev; // cap 3
-                          return [...prev, c.community_id];
-                        });
-                      }}
-                      className={`px-3 py-1 rounded-full text-sm border transition ${
-                        selected
-                          ? 'bg-[#E0F2FE] text-[#065989] border-[#93C5FD]'
-                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
-                      }`}
-                    >
-                      {selected && <FaCheck className="inline mr-1" />} {c.community_name}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Achievement Banner picker */}
-            {postType === 'Achievement' && (
-              <div className="space-y-2">
-                <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Select achievement banner</div>
-
-                <button
-                  onClick={() => setShowBannerDropdown(!showBannerDropdown)}
-                  className="w-full flex items-center justify-between px-4 py-2 rounded-xl border bg-white text-left text-sm dark:bg-gray-700 dark:border-gray-600"
-                >
-                  <span>{selectedBannerPreview ? 'Change banner' : 'Choose from recent achievements'}</span>
-                  <FaChevronDown className={`transition ${showBannerDropdown ? 'rotate-180' : ''}`} />
-                </button>
-
-                {showBannerDropdown && (
-                  <div className="mt-2 rounded-2xl border bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3 max-h-[45vh] overflow-y-auto">
-                      {paginatedBanners.map((b, idx) => (
-                        <button
-                          key={`ach-${(bannerPage - 1) * BANNERS_PER_PAGE + idx}`}
-                          onClick={() => {
-                            setSelectedAchievementId(b.achievementId);
-                            setSelectedBannerPreview(b.bannerPath ? `/assets/Images/${b.bannerPath}` : null);
-                            setShowBannerDropdown(false);
-                          }}
-                          className={`relative rounded-xl overflow-hidden border transition focus:outline-none ${
-                            selectedAchievementId === b.achievementId
-                              ? 'ring-2 ring-[#5FBFFF] border-[#5FBFFF]'
-                              : 'border-gray-200 dark:border-gray-600 hover:opacity-90'
-                          }`}
-                        >
-                          <img
-                            src={b.bannerPath ? `/assets/Images/${b.bannerPath}` : bannerFallback}
-                            alt={b.title || 'achievement'}
-                            className="w-full h-28 object-cover"
-                          />
-                          {selectedAchievementId === b.achievementId && (
-                            <div className="absolute top-2 right-2 bg-white text-[#065989] rounded-full p-1 shadow">
-                              <FaCheck />
-                            </div>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-
-                    {totalBannerPages > 1 && (
-                      <div className="flex items-center justify-between px-3 py-2 border-t border-gray-200 dark:border-gray-600">
-                        <button
-                          onClick={() => setBannerPage(p => clamp(p - 1, 1, totalBannerPages))}
-                          disabled={bannerPage === 1}
-                          className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border dark:border-gray-600 ${
-                            bannerPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-600'
-                          }`}
-                        >
-                          <FaChevronLeft /> Prev
-                        </button>
-
-                        <span className="text-xs text-gray-600 dark:text-gray-300">
-                          Page {bannerPage} of {totalBannerPages}
-                        </span>
-
-                        <button
-                          onClick={() => setBannerPage(p => clamp(p + 1, 1, totalBannerPages))}
-                          disabled={bannerPage === totalBannerPages}
-                          className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border dark:border-gray-600 ${
-                            bannerPage === totalBannerPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-600'
-                          }`}
-                        >
-                          Next <FaChevronRight />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {selectedBannerPreview && (
-                  <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-600">
-                    <img src={selectedBannerPreview} alt="preview" className="w-full h-40 object-cover" />
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className="flex justify-end pt-2">
+        {/* Create Post Modal */}
+        {showCreatePost && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 dark:bg-black/60">
+            <div className="bg-white w-full max-w-2xl p-6 rounded-3xl shadow-xl border border-gray-100 relative space-y-4 dark:bg-gray-800 dark:border-gray-700">
+              {/* Close */}
               <button
-                onClick={handleCreatePost}
-                className="bg-gradient-to-r from-[#88BC46] to-[#AAD977] text-white font-semibold px-6 py-2 rounded-full hover:opacity-90 transition shadow dark:from-[#4D7C0F] dark:to-[#3F6212]"
+                onClick={() => setShowCreatePost(false)}
+                className="absolute top-4 right-5 text-gray-400 hover:text-red-500 text-xl font-bold dark:hover:text-red-400"
+                aria-label="Close create post"
               >
-                Post
+                &times;
               </button>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Styled Confirm Dialog */}
-      {confirm.open && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4"
-          role="dialog"
-          aria-modal="true"
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') closeConfirm();
-            if (e.key === 'Enter') confirmDelete();
-          }}
-        >
-          <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
-            <div className="flex items-start gap-3">
-              <div className="shrink-0">
-                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-600 dark:bg-red-900/30 dark:text-red-300">
-                  <FaExclamationTriangle />
+              <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2 dark:text-gray-200">
+                <FaPen className="text-[#88BC46] dark:text-[#4D7C0F]" /> Create a Post
+              </h2>
+
+              {/* Description */}
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={4}
+                placeholder="Write a short description…"
+                className="w-full p-4 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#88BC46] dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400 dark:focus:ring-[#4D7C0F]"
+              />
+
+              {/* Tags (max 3) */}
+              <div>
+                <div className="text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">Add community tags (max 3)</div>
+                <div className="flex flex-wrap gap-2">
+                  {communityOptions.length === 0 && (
+                    <span className="text-xs text-gray-500">No communities.</span>
+                  )}
+
+                  {communityOptions.map(c => {
+                    const selected = selectedCommunityIds.includes(c.community_id);
+                    return (
+                      <button
+                        key={c.community_id}
+                        onClick={() => {
+                          setSelectedCommunityIds(prev => {
+                            if (selected) return prev.filter(id => id !== c.community_id);
+                            if (prev.length >= 3) return prev; // cap 3
+                            return [...prev, c.community_id];
+                          });
+                        }}
+                        className={`px-3 py-1 rounded-full text-sm border transition ${
+                          selected
+                            ? 'bg-[#E0F2FE] text-[#065989] border-[#93C5FD]'
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
+                        }`}
+                      >
+                        {selected && <FaCheck className="inline mr-1" />} {c.community_name}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-              <div className="flex-1">
-                <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100">
-                  {confirm.type === 'post' ? 'Delete this post?' : 'Delete this comment?'}
-                </h3>
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                  This action can’t be undone.
-                </p>
-              </div>
-              <button
-                onClick={closeConfirm}
-                className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-                aria-label="Close confirm"
-              >
-                <FaTimes />
-              </button>
-            </div>
 
-            <div className="mt-5 flex justify-end gap-2">
-              <button
-                onClick={closeConfirm}
-                className="px-4 py-2 text-sm rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDelete}
-                className="px-4 py-2 text-sm rounded-full bg-red-600 text-white hover:bg-red-700 shadow"
-              >
-                Delete
-              </button>
+              {/* Achievement Banner picker */}
+              {postType === 'Achievement' && (
+                <div className="space-y-2">
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Select achievement banner</div>
+
+                  <button
+                    onClick={() => setShowBannerDropdown(!showBannerDropdown)}
+                    className="w-full flex items-center justify-between px-4 py-2 rounded-xl border bg-white text-left text-sm dark:bg-gray-700 dark:border-gray-600"
+                  >
+                    <span>{selectedBannerPreview ? 'Change banner' : 'Choose from recent achievements'}</span>
+                    <FaChevronDown className={`transition ${showBannerDropdown ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {showBannerDropdown && (
+                    <div className="mt-2 rounded-2xl border bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3 max-h-[45vh] overflow-y-auto">
+                        {paginatedBanners.map((b, idx) => (
+                          <button
+                            key={`ach-${(bannerPage - 1) * BANNERS_PER_PAGE + idx}`}
+                            onClick={() => {
+                              setSelectedAchievementId(b.achievementId);
+                              setSelectedBannerPreview(b.bannerPath ? `/assets/Images/${b.bannerPath}` : null);
+                              setShowBannerDropdown(false);
+                            }}
+                            className={`relative rounded-xl overflow-hidden border transition focus:outline-none ${
+                              selectedAchievementId === b.achievementId
+                                ? 'ring-2 ring-[#5FBFFF] border-[#5FBFFF]'
+                                : 'border-gray-200 dark:border-gray-600 hover:opacity-90'
+                            }`}
+                          >
+                            <img
+                              src={b.bannerPath ? `/assets/Images/${b.bannerPath}` : bannerFallback}
+                              alt={b.title || 'achievement'}
+                              className="w-full h-28 object-cover"
+                            />
+                            {selectedAchievementId === b.achievementId && (
+                              <div className="absolute top-2 right-2 bg-white text-[#065989] rounded-full p-1 shadow">
+                                <FaCheck />
+                              </div>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+
+                      {totalBannerPages > 1 && (
+                        <div className="flex items-center justify-between px-3 py-2 border-t border-gray-200 dark:border-gray-600">
+                          <button
+                            onClick={() => setBannerPage(p => clamp(p - 1, 1, totalBannerPages))}
+                            disabled={bannerPage === 1}
+                            className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border dark:border-gray-600 ${
+                              bannerPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-600'
+                            }`}
+                          >
+                            <FaChevronLeft /> Prev
+                          </button>
+
+                          <span className="text-xs text-gray-600 dark:text-gray-300">
+                            Page {bannerPage} of {totalBannerPages}
+                          </span>
+
+                          <button
+                            onClick={() => setBannerPage(p => clamp(p + 1, 1, totalBannerPages))}
+                            disabled={bannerPage === totalBannerPages}
+                            className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border dark:border-gray-600 ${
+                              bannerPage === totalBannerPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-600'
+                            }`}
+                          >
+                            Next <FaChevronRight />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {selectedBannerPreview && (
+                    <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-600">
+                      <img src={selectedBannerPreview} alt="preview" className="w-full h-40 object-cover" />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="flex justify-end pt-2">
+                <button
+                  onClick={handleCreatePost}
+                  className="bg-gradient-to-r from-[#88BC46] to-[#AAD977] text-white font-semibold px-6 py-2 rounded-full hover:opacity-90 transition shadow dark:from-[#4D7C0F] dark:to-[#3F6212]"
+                >
+                  Post
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Styled Confirm Dialog */}
+        {confirm.open && (
+          <div
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4"
+            role="dialog"
+            aria-modal="true"
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') closeConfirm();
+              if (e.key === 'Enter') confirmDelete();
+            }}
+          >
+            <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
+              <div className="flex items-start gap-3">
+                <div className="shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-600 dark:bg-red-900/30 dark:text-red-300">
+                    <FaExclamationTriangle />
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100">
+                    {confirm.type === 'post' ? 'Delete this post?' : 'Delete this comment?'}
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                    This action can't be undone.
+                  </p>
+                </div>
+                <button
+                  onClick={closeConfirm}
+                  className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  aria-label="Close confirm"
+                >
+                  <FaTimes />
+                </button>
+              </div>
+
+              <div className="mt-5 flex justify-end gap-2">
+                <button
+                  onClick={closeConfirm}
+                  className="px-4 py-2 text-sm rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="px-4 py-2 text-sm rounded-full bg-red-600 text-white hover:bg-red-700 shadow"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </CommunityLayout>
   );
 }
