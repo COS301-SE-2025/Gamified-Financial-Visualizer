@@ -1,48 +1,71 @@
-# Simple Node.js backend Dockerfile (no Python)
+# Multi-stage build for Node.js backend
 FROM node:18-alpine AS base
 
-# Set working directory
+# Install security updates and required packages
+RUN apk update && apk upgrade && apk add --no-cache \
+    dumb-init \
+    && rm -rf /var/cache/apk/*
+
+# Create app directory with proper permissions
 WORKDIR /app
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001 -G nodejs && \
+    chown -R nodejs:nodejs /app
 
 # Copy package files
-COPY package*.json ./
-COPY tsconfig.json ./
+COPY --chown=nodejs:nodejs package*.json ./
+COPY --chown=nodejs:nodejs tsconfig.json ./
 
-# Install production dependencies
-RUN npm ci --only=production
+# Install production dependencies only
+RUN npm ci --only=production --no-audit --no-fund && \
+    npm cache clean --force
 
 # Development stage
-FROM node:18-alpine AS development
+FROM base AS development
+USER root
+RUN npm ci --no-audit --no-fund
+COPY --chown=nodejs:nodejs . .
+USER nodejs
+EXPOSE 3000
+CMD ["dumb-init", "npx", "ts-node", "server.ts"]
+
+# Build stage
+FROM base AS build
+USER root
+RUN npm ci --no-audit --no-fund
+COPY --chown=nodejs:nodejs . .
+RUN npm run build && \
+    npm prune --production --no-audit --no-fund
+
+# Production stage
+FROM node:18-alpine AS production
+
+# Install security updates and dumb-init
+RUN apk update && apk upgrade && apk add --no-cache \
+    dumb-init \
+    curl \
+    && rm -rf /var/cache/apk/*
+    
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001 -G nodejs
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY tsconfig.json ./
+# Copy built application and dependencies
+COPY --from=build --chown=nodejs:nodejs /app/node_modules ./node_modules
+COPY --from=build --chown=nodejs:nodejs /app/dist ./dist
+COPY --from=build --chown=nodejs:nodejs /app/package*.json ./
 
-# Install all dependencies (including dev)
-RUN npm ci
-
-# Copy source code
-COPY . .
-
-# Expose Node.js server port only
-EXPOSE 3000
-
-# Development command - just run the Node.js server
-CMD ["npx", "ts-node", "server.ts"]
-
-# Production stage
-FROM base AS production
-
-# Copy source code
-COPY . .
-
-# Build TypeScript
-RUN npm run build
+# Switch to non-root user
+USER nodejs
 
 # Expose port
 EXPOSE 3000
 
-# Production command
-CMD ["node", "dist/server.js"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+
+# Use dumb-init to handle signals properly
+CMD ["dumb-init", "node", "dist/server.js"]

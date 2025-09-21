@@ -1,71 +1,69 @@
-# Frontend Dockerfile (frontend/Dockerfile)
+# Frontend production build
+FROM node:20-alpine AS base
 
-# Use Node.js 20 Alpine as base image
-FROM node:20-alpine as base
+# Install security updates
+RUN apk update && apk upgrade && \
+    apk add --no-cache python3 make g++ && \
+    rm -rf /var/cache/apk/*
 
-# Set working directory
 WORKDIR /app
-
-# Install dependencies needed for native modules
-RUN apk add --no-cache python3 make g++
 
 # Copy package files
 COPY package*.json ./
 
 # Development stage
-FROM base as development
-
-# Install dependencies with legacy peer deps to handle React 19 conflicts
-RUN npm install --legacy-peer-deps
-
-# Copy source code
+FROM base AS development
+RUN npm install --legacy-peer-deps --no-audit --no-fund
 COPY . .
-
-# Expose port
 EXPOSE 3000
-
-# Start development server with polling for Docker
 CMD ["npm", "start"]
 
-# Build stage  
-FROM base as build
-
-# Install all dependencies for building
-RUN npm install --legacy-peer-deps
-
-# Copy source code
+# Build stage
+FROM base AS build
+RUN npm install --legacy-peer-deps --no-audit --no-fund
 COPY . .
 
-# Build the application
+# Build with production environment variables
+ARG REACT_APP_API_URL
+ARG REACT_APP_AI_API_URL
+ENV REACT_APP_API_URL=${REACT_APP_API_URL}
+ENV REACT_APP_AI_API_URL=${REACT_APP_AI_API_URL}
+
 RUN npm run build
 
-# Production stage
-FROM nginx:alpine as production
+# Production stage with nginx
+FROM nginx:alpine AS production
+
+# Install security updates
+RUN apk update && apk upgrade && \
+    apk add --no-cache curl && \
+    rm -rf /var/cache/apk/*
+
+# Create non-root user and group, but check if they already exist
+RUN if ! getent group nginx; then addgroup -g 1001 -S nginx; fi && \
+    if ! id -u nginx; then adduser -S nginx -u 1001 -G nginx; fi
 
 # Copy custom nginx config
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Copy built files from build stage
+# Copy built files
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Create a non-root user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nextjs -u 1001
-
-# Change ownership of nginx directories
-RUN chown -R nextjs:nodejs /var/cache/nginx && \
-    chown -R nextjs:nodejs /var/log/nginx && \
-    chown -R nextjs:nodejs /etc/nginx/conf.d
+# Set proper permissions
+RUN chown -R nginx:nginx /var/cache/nginx && \
+    chown -R nginx:nginx /var/log/nginx && \
+    chown -R nginx:nginx /etc/nginx/conf.d && \
+    chown -R nginx:nginx /usr/share/nginx/html && \
+    touch /var/run/nginx.pid && \
+    chown -R nginx:nginx /var/run/nginx.pid
 
 # Switch to non-root user
-USER nextjs
+USER nginx
 
-# Expose port 80
-EXPOSE 80
+EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost/health || exit 1
+  CMD curl -f http://localhost:8080/health || exit 1
 
-# Start nginx
 CMD ["nginx", "-g", "daemon off;"]
