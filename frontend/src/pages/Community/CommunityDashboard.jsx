@@ -543,7 +543,10 @@ useEffect(() => {
 
           <div className="md:col-span-2 space-y-6">
             {loadingFeed && (
-              <div className="text-sm text-gray-500 dark:text-gray-400">Loading feed…</div>
+              <div className="flex justify-center items-center space-x-2 py-4">
+                {/* Loading Text */}
+                <p className="text-lg text-gray-500 dark:text-gray-300">Loading feed...</p>
+              </div>
             )}
 
             {/* Feed */}
