@@ -229,17 +229,17 @@ export default function CommunityDashboard() {
         }
 
         // 2) Otherwise, try a dedicated endpoint of liked post IDs
-        try {
-          const likedRes = await fetch(`${API_BASE}/social/liked-posts/${userId}`);
-          if (likedRes.ok) {
-            const likedJson = await likedRes.json();
-            const ids = Array.isArray(likedJson?.data) ? likedJson.data : [];
-            setLikedPosts(ids);
-            return;
-          }
-        } catch {
-          // fall through to localStorage
-        }
+        // try {
+        //   const likedRes = await fetch(`${API_BASE}/social/liked-posts/${userId}`);
+        //   if (likedRes.ok) {
+        //     const likedJson = await likedRes.json();
+        //     const ids = Array.isArray(likedJson?.data) ? likedJson.data : [];
+        //     setLikedPosts(ids);
+        //     return;
+        //   }
+        // } catch {
+        //   // fall through to localStorage
+        // }
 
         // 3) Final fallback: keep whatever is in localStorage (already set in state)
       })

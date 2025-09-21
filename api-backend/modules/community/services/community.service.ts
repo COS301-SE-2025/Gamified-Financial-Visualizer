@@ -1480,6 +1480,31 @@ export async function unlikePost(userId: number, postId: number) {
   return { like_count: Number(rows[0]?.like_count || 0) };
 }
 
+/**
+ * Return the list of post_ids the user has liked.
+ * Kept as plain number[] to plug straight into your frontend state.
+ */
+export async function getUserLikedPostIds(userId: number): Promise<number[]> {
+  // Optional sanity check (helps avoid silent success on bad ids)
+  const { rowCount: userExists } = await pool.query(
+    `SELECT 1 FROM users WHERE user_id = $1`,
+    [userId]
+  );
+  if (userExists === 0) {
+    return []; // or throw new Error('User not found');
+  }
+
+  const { rows } = await pool.query(
+    `SELECT pl.post_id
+       FROM post_likes pl
+      WHERE pl.user_id = $1
+      ORDER BY pl.post_id ASC`, // or ORDER BY pl.liked_at DESC if you track it
+    [userId]
+  );
+
+  return rows.map(r => Number(r.post_id));
+}
+
 export async function addPostComment(userId: number, postId: number, comment: string) {
   const trimmedComment = comment.trim();
 
