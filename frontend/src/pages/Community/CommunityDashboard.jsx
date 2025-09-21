@@ -93,6 +93,35 @@ export default function CommunityDashboard() {
   });
   const [loadingFeed, setLoadingFeed] = useState(false);
 
+  const [liking, setLiking] = useState({}); // { [postId]: true|false }
+
+  // Clear local liked cache when user changes / logs out
+useEffect(() => {
+  if (!userId) {
+    setLikedPosts([]);
+    try { localStorage.removeItem('likedPosts'); } catch {}
+    return;
+  }
+}, [userId]);
+
+// Fetch liked IDs in parallel so the heart is correct on first paint
+useEffect(() => {
+  if (!userId) return;
+
+  (async () => {
+    try {
+      const r = await fetch(`${API_BASE}/social/liked-posts/${userId}`);
+      if (!r.ok) return;
+      const j = await r.json();
+      const ids = Array.isArray(j?.data) ? j.data : [];
+      setLikedPosts(ids);
+    } catch {
+      // fall back to whatever’s in localStorage (already initialized in state)
+    }
+  })();
+}, [userId]);
+
+
   // Persist liked ids locally as a graceful fallback
   useEffect(() => {
     try {
@@ -229,17 +258,17 @@ export default function CommunityDashboard() {
         }
 
         // 2) Otherwise, try a dedicated endpoint of liked post IDs
-        // try {
-        //   const likedRes = await fetch(`${API_BASE}/social/liked-posts/${userId}`);
-        //   if (likedRes.ok) {
-        //     const likedJson = await likedRes.json();
-        //     const ids = Array.isArray(likedJson?.data) ? likedJson.data : [];
-        //     setLikedPosts(ids);
-        //     return;
-        //   }
-        // } catch {
-        //   // fall through to localStorage
-        // }
+        try {
+          const likedRes = await fetch(`${API_BASE}/social/liked-posts/${userId}`);
+          if (likedRes.ok) {
+            const likedJson = await likedRes.json();
+            const ids = Array.isArray(likedJson?.data) ? likedJson.data : [];
+            setLikedPosts(ids);
+            return;
+          }
+        } catch {
+          // fall through to localStorage
+        }
 
         // 3) Final fallback: keep whatever is in localStorage (already set in state)
       })
@@ -269,48 +298,41 @@ export default function CommunityDashboard() {
   }, [location.state]);
 
   // ----------- UI actions (like/unlike, comment, post) -----------
-  const handleLike = (postId) => {
-    if (!userId) return;
-    const alreadyLiked = likedPosts.includes(postId);
+  const handleLike = async (postId) => {
+    if (!userId || liking[postId]) return;
 
-    // optimistic update
-    setPosts(prev =>
-      prev.map(p =>
-        p.id === postId ? { ...p, likes: p.likes + (alreadyLiked ? -1 : 1) } : p
-      )
-    );
-    setLikedPosts(prev =>
-      alreadyLiked ? prev.filter(id => id !== postId) : [...prev, postId]
-    );
+    const alreadyLiked = likedPosts.includes(postId);
+    setLiking(prev => ({ ...prev, [postId]: true }));
+
+    // optimistic: flip heart + adjust count locally
+    setPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: p.likes + (alreadyLiked ? -1 : 1) } : p));
+    setLikedPosts(prev => alreadyLiked ? prev.filter(id => id !== postId) : [...prev, postId]);
 
     const url = `${API_BASE}/social/posts/${postId}/${alreadyLiked ? 'unlike' : 'like'}`;
     const method = alreadyLiked ? 'DELETE' : 'POST';
 
-    fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId })
-    })
-      .then(r => (r.ok ? r.json() : Promise.reject(r)))
-      .then(json => {
-        // If API returns the updated likeCount, sync it to avoid drift
-        const serverCount = Number(json?.likeCount);
-        if (!Number.isNaN(serverCount)) {
-          setPosts(prev => prev.map(p => (p.id === postId ? { ...p, likes: serverCount } : p)));
-        }
-      })
-      .catch(() => {
-        // revert on failure
-        setPosts(prev =>
-          prev.map(p =>
-            p.id === postId ? { ...p, likes: p.likes + (alreadyLiked ? 1 : -1) } : p
-          )
-        );
-        setLikedPosts(prev =>
-          alreadyLiked ? [...prev, postId] : prev.filter(id => id !== postId)
-        );
-        toast.error('Failed to update like');
+    try {
+      const r = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
       });
+      if (!r.ok) throw new Error('Network');
+
+      const json = await r.json();
+      const serverCount = Number(json?.likeCount);
+      if (!Number.isNaN(serverCount)) {
+        // snap like count to server truth (prevents drift)
+        setPosts(prev => prev.map(p => (p.id === postId ? { ...p, likes: serverCount } : p)));
+      }
+    } catch (e) {
+      // revert on failure
+      setPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: p.likes + (alreadyLiked ? 1 : -1) } : p));
+      setLikedPosts(prev => alreadyLiked ? [...prev, postId] : prev.filter(id => id !== postId));
+      toast.error('Failed to update like');
+    } finally {
+      setLiking(prev => ({ ...prev, [postId]: false }));
+    }
   };
 
   const handleAddComment = (postId) => {
