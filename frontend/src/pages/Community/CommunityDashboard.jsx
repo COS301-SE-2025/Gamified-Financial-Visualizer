@@ -546,7 +546,7 @@ useEffect(() => {
               Share your achievements, goals, or ideas with the community!
             </p>
             <button
-              onClick={() => setShowCreatePost(true)}
+              onClick={() => setShowCreatePost(true)} // Open the modal for creating a new post
               className="bg-gradient-to-r from-[#88BC46] to-[#AAD977] text-white font-semibold px-6 py-2 rounded-full hover:opacity-90 transition shadow dark:from-[#4D7C0F] dark:to-[#3F6212]"
             >
               Create Post
