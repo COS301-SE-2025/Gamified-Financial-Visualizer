@@ -121,6 +121,28 @@ router.delete('/social/posts/:postId/unlike', async (req: Request, res: Response
   }
 });
 
+/**
+ * GET /api/community/social/liked-posts/:userId
+ * Returns: { status: 'success', data: number[] }
+ */
+router.get('/social/liked-posts/:userId', async (req: Request, res: Response) => {
+  try {
+    const userId = Number.parseInt(req.params.userId, 10);
+    if (Number.isNaN(userId) || userId <= 0) {
+      res.status(400).json({ status: 'error', message: 'Invalid userId' });
+      return;
+    }
+
+    const likedIds = await communityService.getUserLikedPostIds(userId);
+    res.status(200).json({ status: 'success', data: likedIds });
+    return;
+  } catch (err: any) {
+    console.error('Error fetching liked posts:', err?.message || err);
+    res.status(500).json({ status: 'error', message: 'Failed to fetch liked posts' });
+    return;
+  }
+});
+
 // POST add comment
 router.post('/social/posts/:postId/comment', async (req: Request, res: Response) => {
   try {
