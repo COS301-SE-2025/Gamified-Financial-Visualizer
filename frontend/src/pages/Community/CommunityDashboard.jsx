@@ -554,7 +554,7 @@ useEffect(() => {
                   No posts yet!
                 </h3>
                 <p className="text-gray-500 dark:text-gray-400">
-                  Share your achievements, goals, or ideas with the community!
+                  Share your achievements, goals, or ideas with the communit. Start today!
                 </p>
                 <button
                   onClick={() => setShowCreatePost(true)} // Open the modal for creating a new post
