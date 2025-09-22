@@ -629,17 +629,22 @@ describe('Community Service - additional functions', () => {
           // games played
           .mockResolvedValueOnce({ rows: [ { count: '7' } ] })
           // friends
-          .mockResolvedValueOnce({ rows: [ { count: '4' } ] }),
+          .mockResolvedValueOnce({ rows: [ { count: '4' } ] })
+          // social posts count
+          .mockResolvedValueOnce({ rows: [ { count: '10' } ] }),  // Mock the socialPosts count query here
         release: jest.fn(),
       };
       (pool.connect as jest.Mock).mockResolvedValueOnce(mockClient);
 
       const result = await service.getCommunityStats(11);
+      
+      // Assertions
       expect(result.communities).toBe(2);
       expect(result.challenges).toBe(5);
       expect(result.leaderboard).toBe(3);
       expect(result.gamesPlayed).toBe(7);
       expect(result.friends).toBe(4);
+      expect(result.socialPosts).toBe(10);  // Add assertion for socialPosts here
       expect(mockClient.release).toHaveBeenCalled();
     });
 
