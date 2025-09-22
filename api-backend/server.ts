@@ -47,9 +47,20 @@ app.use(cors({
   methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type','Authorization']
 }));
+
+app.use(cors({
+  origin: corsOrigins,
+  credentials: true,
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization']
+}));
+
+
 app.use(helmet());
 app.use(express.json());
 app.get('/ping', (req, res) => res.send('pong'));
+
+
 
 const httpServer = http.createServer(app);
 const io = new Server(httpServer, {

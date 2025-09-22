@@ -5,7 +5,7 @@ import logoImg from '../../assets/Images/Logo.png';
 import { FaEye, FaEyeSlash, FaLock } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
-const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+const BASE_URL = process.env.REACT_APP_API_URL || "http://api-backend:3000";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -23,8 +23,8 @@ const Login = () => {
       const res = await fetch(`${BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify(formData),
+        credentials: 'include',
       });
 
       const result = await res.json();
