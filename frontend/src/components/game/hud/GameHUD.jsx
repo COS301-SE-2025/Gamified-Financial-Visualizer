@@ -99,7 +99,7 @@ export default function GameHUD({
 
   };
 
-   const { hud, rollDice, endTurn, refresh, loading } = useHudData(gameId, socket);
+   const { hud, rollDice, endTurn, refresh, loading , businesses} = useHudData(gameId, socket);
   
   // Map avatar imports to player IDs
   const playerAvatars = {
@@ -256,11 +256,11 @@ const players = (hud?.playersSummary).map((p, i) => ({
           </div>
           <div className="p-4 bg-sky-50 text-sm space-y-2">
             <div className="text-center py-2 bg-white rounded font-semibold">
-              {currentBusiness}
+              {businesses?.length > 0 ? businesses[0].name : currentBusiness}
             </div>
             <div className="flex justify-between py-1.5">
               <span className="text-gray-600">Business Worth</span>
-              <span className="font-semibold text-gray-800">{currency}{businessWorth.toLocaleString()}</span>
+              <span className="font-semibold text-gray-800">{currency}{businesses?.length > 0 ? businesses[0].purchasePrice.toLocaleString() : 0}</span>
             </div>
             <img src={artBusiness} alt="Player" className="w-16 h-18 left-12" />
             <button

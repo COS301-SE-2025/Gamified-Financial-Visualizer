@@ -68,7 +68,7 @@ export class GameLobbyManager extends EventEmitter {
 
     const defaultSettings: LobbySettings = {
       gameMode: 'laps',
-      maxLaps: 10,
+      maxLaps: settings.maxLaps || 5,
       maxPlayers: 6,
       isPrivate: false,
       ...settings
@@ -323,7 +323,7 @@ export class GameLobbyManager extends EventEmitter {
 
       // Create game
       gameId = this.generateGameId();
-      const gameState = this.gameEngine.createGame(gameId, playerId, lobby.settings.gameMode);
+      const gameState = this.gameEngine.createGame(gameId, playerId, lobby.settings.gameMode, lobby.settings.maxLaps || 5);
 
       // Add all players to the game
       for (const lobbyPlayer of lobby.players.values()) {

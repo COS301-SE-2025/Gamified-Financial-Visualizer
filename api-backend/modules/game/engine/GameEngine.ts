@@ -12,7 +12,7 @@ export class GameEngine extends EventEmitter {
   private chanceCards = BoardData.CHANCE_CARDS;
   private communityCards = BoardData.COMMUNITY_CARDS;
 
-  createGame(gameId: string, hostPlayerId: number, gameMode: 'laps' | 'elimination'): GameState {
+  createGame(gameId: string, hostPlayerId: number, gameMode: 'laps' | 'elimination', laps: number): GameState {
     const gameState: GameState = {
       id: gameId,
       players: new Map(),
@@ -24,7 +24,7 @@ export class GameEngine extends EventEmitter {
       communityDiscard: [],
       chanceDiscard: [],
       gameMode,
-      maxLaps: gameMode === 'laps' ? 10 : undefined,
+      maxLaps: gameMode === 'laps' ? laps : 10,
       createdAt: new Date(),
       turnCounter: 0,
       turnOrder: [],
