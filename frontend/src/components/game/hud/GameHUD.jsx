@@ -229,18 +229,6 @@ export default function GameHUD({
             </button>
           </div>
         </div>
-
-        {/* Current Tile */}
-        <div className="rounded-2xl overflow-hidden shadow-2xl border bg-white">
-          <div className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 border-b text-white">
-            <div className="text-sm font-extrabold tracking-wide">Current Tile</div>
-          </div>
-          <div className="p-4 bg-amber-50 text-sm">
-            <div className="text-center py-2 bg-white rounded-xl font-semibold text-amber-700 border border-amber-200">
-              {currentTileLabel}
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* BOTTOM FOOTER: players & active highlight */}
