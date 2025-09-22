@@ -283,8 +283,8 @@ const Settings = () => {
                 onChange={action} 
                 className="sr-only peer" 
               />
-              <div className="w-11 h-6 bg-gray-200 peer-checked:bg-[#88BC46] rounded-full transition-all duration-300"></div>
-              <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-md transform peer-checked:translate-x-5 transition-transform duration-300"></div>
+              <div className="w-11 h-6 bg-gray-200 peer-checked:bg-[#88BC46] rounded-full transition-all duration-300 dark:bg-gray-700"></div>
+              <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-md transform peer-checked:translate-x-5 transition-transform duration-300 dark:bg-gray-500 "></div>
             </label>
           </div>
         ))}
@@ -300,7 +300,7 @@ const Settings = () => {
               placeholder="Current Password" 
               value={currentPassword} 
               onChange={(e) => setCurrentPassword(e.target.value)} 
-              className="input w-full dark:text-gray-300" 
+              className="input w-full dark:text-gray-300 dark:bg-gray-700" 
             />
             <button 
               onClick={() => setShowCurrentPassword(!showCurrentPassword)}
@@ -315,7 +315,7 @@ const Settings = () => {
               placeholder="New Password" 
               value={newPassword} 
               onChange={(e) => setNewPassword(e.target.value)} 
-              className="input w-full dark:text-gray-300" 
+              className="input w-full dark:text-gray-300 dark:bg-gray-700" 
             />
             <button 
               onClick={() => setShowNewPassword(!showNewPassword)}
@@ -330,7 +330,7 @@ const Settings = () => {
               placeholder="Confirm New Password" 
               value={confirmPassword} 
               onChange={(e) => setConfirmPassword(e.target.value)} 
-              className="input w-full dark:text-gray-300" 
+              className="input w-full dark:text-gray-300 dark:bg-gray-700 " 
             />
             <button 
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -357,7 +357,7 @@ const Settings = () => {
             !Object.values(passwordStatus).every(Boolean) ||
             !passwordsMatch
           }
-          className={`px-4 py-2 rounded-md mt-2 text-white ${
+          className={`px-4 py-2 rounded-md mt-2 text-white dark:bg-gray-700 dark:text-white ${
             !currentPassword.length ||
             !Object.values(passwordStatus).every(Boolean) ||
             !passwordsMatch

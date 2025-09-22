@@ -344,7 +344,7 @@ const Overview = () => {
                 <img
                   src={`/assets/Images/${community.banner}`}
                   alt={community.community_name}
-                  className="w-16 h-16 rounded-full object-cover shadow "
+                  className="w-16 h-16 rounded-full object-cover shadow dark: "
                 />
                 <div>
                   <p className="text-lg font-medium text-gray-800 dark:text-gray-400">{community.community_name}</p>

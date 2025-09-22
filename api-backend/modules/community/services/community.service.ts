@@ -1370,7 +1370,7 @@ export async function getFriendFeed(userId: number) {
       -- User info
       u.user_id,
       u.username,
-      up.avatar_id,
+      ai.avatar_image_path AS user_avatar_path,  -- Join with the avatar_images table to get the actual avatar path for the user
       pts.tier_status,
 
       -- Achievement
@@ -1391,7 +1391,7 @@ export async function getFriendFeed(userId: number) {
             'comment_id', pc.comment_id,
             'user_id', cu.user_id,
             'username', cu.username,
-            'avatar_id', cp.avatar_id,
+            'avatar_image_path', cp_avatar.avatar_image_path,  -- Join to fetch the actual avatar path for comments
             'comment', pc.comment,
             'created_at', pc.created_at
           )
@@ -1417,6 +1417,8 @@ export async function getFriendFeed(userId: number) {
     LEFT JOIN post_comments pc ON pc.post_id = sp.post_id
     LEFT JOIN users cu ON cu.user_id = pc.user_id
     LEFT JOIN user_preferences cp ON cp.user_id = cu.user_id
+    LEFT JOIN avatar_images ai ON ai.avatar_id = up.avatar_id  -- Correct join for user's avatar
+    LEFT JOIN avatar_images cp_avatar ON cp_avatar.avatar_id = cp.avatar_id  -- Correct join for commenter's avatar
 
     WHERE sp.user_id = $1
       OR sp.user_id IN (
@@ -1426,7 +1428,7 @@ export async function getFriendFeed(userId: number) {
       )
 
     GROUP BY 
-      sp.post_id, u.user_id, up.avatar_id, pts.tier_status, a.achievement_id
+      sp.post_id, u.user_id, ai.avatar_image_path, pts.tier_status, a.achievement_id
     ORDER BY sp.created_at DESC
     LIMIT 50
     `,
@@ -1478,6 +1480,31 @@ export async function unlikePost(userId: number, postId: number) {
   );
 
   return { like_count: Number(rows[0]?.like_count || 0) };
+}
+
+/**
+ * Return the list of post_ids the user has liked.
+ * Kept as plain number[] to plug straight into your frontend state.
+ */
+export async function getUserLikedPostIds(userId: number): Promise<number[]> {
+  // Optional sanity check (helps avoid silent success on bad ids)
+  const { rowCount: userExists } = await pool.query(
+    `SELECT 1 FROM users WHERE user_id = $1`,
+    [userId]
+  );
+  if (userExists === 0) {
+    return []; // or throw new Error('User not found');
+  }
+
+  const { rows } = await pool.query(
+    `SELECT pl.post_id
+       FROM post_likes pl
+      WHERE pl.user_id = $1
+      ORDER BY pl.post_id ASC`, // or ORDER BY pl.liked_at DESC if you track it
+    [userId]
+  );
+
+  return rows.map(r => Number(r.post_id));
 }
 
 export async function addPostComment(userId: number, postId: number, comment: string) {
