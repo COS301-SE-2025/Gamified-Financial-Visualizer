@@ -10,6 +10,8 @@ import { io } from 'socket.io-client';
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { getSocket } from '../socket';
 
+import bannerImage from '../../../assets/Images/game/lobby-banner.png'
+
 const ALL_CHARACTERS = [
     { label: 'Green girl', key: 'Green_girl' },
     { label: 'The Ninja', key: 'Ninja.001' },
@@ -380,12 +382,17 @@ export default function GameLobby({
 
     const done = () => onStart?.({ mode, players, laps }, character.key)
 
-
-
-
     return (
         <div className="relative p-4 md:p-6 space-y-6 min-h-screen">
             {/* header */}
+            {/* Banner image placeholder */}
+        <div className="w-full">
+          <img
+            src={bannerImage} // replace with your import or path
+            alt="Game Banner"
+            className="w-full h-42 object-cover rounded-xl shadow-md"
+          />
+        </div>
             <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                     <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-sky-500 to-gray-200 bg-clip-text text-transparent">
