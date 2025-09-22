@@ -1370,7 +1370,7 @@ export async function getFriendFeed(userId: number) {
       -- User info
       u.user_id,
       u.username,
-      up.avatar_id,
+      ai.avatar_image_path AS user_avatar_path,  -- Join with the avatar_images table to get the actual avatar path for the user
       pts.tier_status,
 
       -- Achievement
@@ -1391,7 +1391,7 @@ export async function getFriendFeed(userId: number) {
             'comment_id', pc.comment_id,
             'user_id', cu.user_id,
             'username', cu.username,
-            'avatar_id', cp.avatar_id,
+            'avatar_image_path', cp_avatar.avatar_image_path,  -- Join to fetch the actual avatar path for comments
             'comment', pc.comment,
             'created_at', pc.created_at
           )
@@ -1417,6 +1417,8 @@ export async function getFriendFeed(userId: number) {
     LEFT JOIN post_comments pc ON pc.post_id = sp.post_id
     LEFT JOIN users cu ON cu.user_id = pc.user_id
     LEFT JOIN user_preferences cp ON cp.user_id = cu.user_id
+    LEFT JOIN avatar_images ai ON ai.avatar_id = up.avatar_id  -- Correct join for user's avatar
+    LEFT JOIN avatar_images cp_avatar ON cp_avatar.avatar_id = cp.avatar_id  -- Correct join for commenter's avatar
 
     WHERE sp.user_id = $1
       OR sp.user_id IN (
@@ -1426,7 +1428,7 @@ export async function getFriendFeed(userId: number) {
       )
 
     GROUP BY 
-      sp.post_id, u.user_id, up.avatar_id, pts.tier_status, a.achievement_id
+      sp.post_id, u.user_id, ai.avatar_image_path, pts.tier_status, a.achievement_id
     ORDER BY sp.created_at DESC
     LIMIT 50
     `,

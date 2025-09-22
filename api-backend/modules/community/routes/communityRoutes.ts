@@ -76,14 +76,17 @@ router.get('/social/communities/:userId', async (req: Request, res: Response) =>
 router.get('/social/feed/:userId', async (req: Request, res: Response) => {
   try {
     const userId = parseInt(req.params.userId);
+    
+    if (isNaN(userId)) {
+      return res.status(400).json({ status: 'error', message: 'Invalid user ID' });
+    }
+
     const posts = await communityService.getFriendFeed(userId);
 
     res.status(200).json({ status: 'success', data: posts });
-    return;
   } catch (err) {
     console.error('Error fetching feed:', err);
     res.status(500).json({ status: 'error', message: 'Failed to fetch feed' });
-    return;
   }
 });
 

@@ -96,31 +96,30 @@ export default function CommunityDashboard() {
   const [liking, setLiking] = useState({}); // { [postId]: true|false }
 
   // Clear local liked cache when user changes / logs out
-useEffect(() => {
-  if (!userId) {
-    setLikedPosts([]);
-    try { localStorage.removeItem('likedPosts'); } catch {}
-    return;
-  }
-}, [userId]);
-
-// Fetch liked IDs in parallel so the heart is correct on first paint
-useEffect(() => {
-  if (!userId) return;
-
-  (async () => {
-    try {
-      const r = await fetch(`${API_BASE}/social/liked-posts/${userId}`);
-      if (!r.ok) return;
-      const j = await r.json();
-      const ids = Array.isArray(j?.data) ? j.data : [];
-      setLikedPosts(ids);
-    } catch {
-      // fall back to whatever’s in localStorage (already initialized in state)
+  useEffect(() => {
+    if (!userId) {
+      setLikedPosts([]);
+      try { localStorage.removeItem('likedPosts'); } catch {}
+      return;
     }
-  })();
-}, [userId]);
+  }, [userId]);
 
+  // Fetch liked IDs in parallel so the heart is correct on first paint
+  useEffect(() => {
+    if (!userId) return;
+
+    (async () => {
+      try {
+        const r = await fetch(`${API_BASE}/social/liked-posts/${userId}`);
+        if (!r.ok) return;
+        const j = await r.json();
+        const ids = Array.isArray(j?.data) ? j.data : [];
+        setLikedPosts(ids);
+      } catch {
+        // fall back to whatever's in localStorage (already initialized in state)
+      }
+    })();
+  }, [userId]);
 
   // Persist liked ids locally as a graceful fallback
   useEffect(() => {
@@ -147,7 +146,7 @@ useEffect(() => {
   // Comments input
   const [commentInputs, setCommentInputs] = useState({}); // { [postId]: "text" }
 
-  // Pagination (feed – client-side)
+  // Pagination (feed - client-side)
   const POSTS_PER_PAGE = 2;
   const [postPage, setPostPage] = useState(1);
   const totalPostPages = Math.max(1, Math.ceil(posts.length / POSTS_PER_PAGE));
@@ -228,8 +227,8 @@ useEffect(() => {
           user: {
             id: row.user_id,
             name: row.username,
-            avatar: row.avatar_id
-              ? `/assets/Images/avatars/${row.avatar_id}.png` // Fetch the image using the avatar_id
+            avatar: row.user_avatar_path
+              ? `/assets/Images/${row.user_avatar_path}` // Fetch the image using the actual avatar path
               : avatarFallback,
             level: row.tier_status || '—',
           },
@@ -243,8 +242,8 @@ useEffect(() => {
                   id: c.comment_id,
                   userId: c.user_id,
                   user: c.username,
-                  avatar: c.avatar_id
-                    ? `/assets/Images/avatars/${c.avatar_id}.png` // Fetch the commenter's avatar using avatar_id
+                  avatar: c.avatar_image_path
+                    ? `/assets/Images/${c.avatar_image_path}` // Fetch the commenter's avatar using the actual avatar path
                     : avatarFallback,
                   text: c.comment,
                   createdAt: c.created_at,
@@ -552,47 +551,47 @@ useEffect(() => {
                   >
                     {/* Header */}
                     <div className="flex items-center gap-3">
-                    <img
-                      src={post.user.avatar || avatarFallback} // Use the fetched avatar URL
-                      alt="avatar"
-                      className="w-12 h-12 rounded-full border-2 border-white shadow object-cover"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <Link
-                          to={`/community/member/${post.user.name}`}
-                          className="font-semibold text-gray-800 hover:text-[#72C1F5] dark:text-gray-200 dark:hover:text-[#5FBFFF]"
-                        >
-                          {post.user.name}
-                        </Link>
-                        <span className="text-xs bg-[#fef9c3] text-[#92400e] px-2 py-0.5 rounded-full dark:bg-[#FFD18C] dark:text-[#FD8524]">
-                          Lv {post.user.level}
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {post.communities.map((name, i) => (
-                          <span
-                            key={`${name}-${i}`}
-                            className="text-xs bg-[#E0F2FE] text-[#72C1F5] px-2 py-0.5 rounded-full dark:bg-[#88D1FF] dark:text-[#065989]"
+                      <img
+                        src={post.user.avatar || avatarFallback} // Use the fetched avatar URL
+                        alt="avatar"
+                        className="w-12 h-12 rounded-full border-2 border-white shadow object-cover"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <Link
+                            to={`/community/member/${post.user.name}`}
+                            className="font-semibold text-gray-800 hover:text-[#72C1F5] dark:text-gray-200 dark:hover:text-[#5FBFFF]"
                           >
-                            {name}
+                            {post.user.name}
+                          </Link>
+                          <span className="text-xs bg-[#fef9c3] text-[#92400e] px-2 py-0.5 rounded-full dark:bg-[#FFD18C] dark:text-[#FD8524]">
+                            Lv {post.user.level}
                           </span>
-                        ))}
+                        </div>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {post.communities.map((name, i) => (
+                            <span
+                              key={`${name}-${i}`}
+                              className="text-xs bg-[#E0F2FE] text-[#72C1F5] px-2 py-0.5 rounded-full dark:bg-[#88D1FF] dark:text-[#065989]"
+                            >
+                              {name}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Delete Post (owner only) */}
-                    {post.user.id === userId && (
-                      <button
-                        onClick={() => openConfirmDeletePost(post.id)}
-                        className="p-2 rounded-full border border-red-200 text-red-500 hover:bg-red-50 transition dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/30"
-                        title="Delete post"
-                        aria-label="Delete post"
-                      >
-                        <FaTrash size={14} />
-                      </button>
-                    )}
-                  </div>
+                      {/* Delete Post (owner only) */}
+                      {post.user.id === userId && (
+                        <button
+                          onClick={() => openConfirmDeletePost(post.id)}
+                          className="p-2 rounded-full border border-red-200 text-red-500 hover:bg-red-50 transition dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/30"
+                          title="Delete post"
+                          aria-label="Delete post"
+                        >
+                          <FaTrash size={14} />
+                        </button>
+                      )}
+                    </div>
 
                     {/* Body */}
                     <div className="space-y-3">
@@ -634,9 +633,11 @@ useEffect(() => {
                     <div className="space-y-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                       {post.comments.map(c => (
                         <div key={c.id} className="flex items-start gap-2">
-                          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                            {c.user ? c.user.charAt(0).toUpperCase() : '?'}
-                          </div>
+                          <img
+                            src={c.avatar || avatarFallback}
+                            alt="commenter avatar"
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
                           <div className="flex-1 bg-gray-50 rounded-lg p-2 dark:bg-gray-700">
                             <div className="flex items-center justify-between">
                               <div className="font-medium text-sm text-gray-700 dark:text-gray-200">{c.user}</div>
