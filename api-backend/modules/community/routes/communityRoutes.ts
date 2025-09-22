@@ -73,7 +73,7 @@ router.get('/social/communities/:userId', async (req: Request, res: Response) =>
 });
 
 // GET friend feed
-router.get('/social/feed/:userId', async (req: Request, res: Response): Promise<Response> => {
+router.get('/social/feed/:userId', async (req: Request, res: Response) => {
   try {
     const userId = parseInt(req.params.userId);
     const posts = await communityService.getFriendFeed(userId);
