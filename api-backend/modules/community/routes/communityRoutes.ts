@@ -73,17 +73,15 @@ router.get('/social/communities/:userId', async (req: Request, res: Response) =>
 });
 
 // GET friend feed
-router.get('/social/feed/:userId', async (req: Request, res: Response) => {
+router.get('/social/feed/:userId', async (req: Request, res: Response): Promise<Response> => {
   try {
     const userId = parseInt(req.params.userId);
     const posts = await communityService.getFriendFeed(userId);
 
-    res.status(200).json({ status: 'success', data: posts });
-    return;
+    return res.status(200).json({ status: 'success', data: posts });
   } catch (err) {
     console.error('Error fetching feed:', err);
-    res.status(500).json({ status: 'error', message: 'Failed to fetch feed' });
-    return;
+    return res.status(500).json({ status: 'error', message: 'Failed to fetch feed' });
   }
 });
 
