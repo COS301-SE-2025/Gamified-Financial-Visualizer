@@ -14,7 +14,7 @@ import http from 'http';
 import { V3 } from 'paseto';
 import './jobs/resetBudgets'; // auto-schedules your budget reset job
 // (Optional but recommended for horizontal scale)
-import { createAdapter } from '@socket.io/redis-adapter';
+// import { createAdapter } from '@socket.io/redis-adapter';
 
 // 🔌 module registrars
 import { registerAuthModule } from './modules/auth';
@@ -40,7 +40,7 @@ app.use(cors({
 }));
 app.use(helmet());
 app.use(express.json());
-app.get('/ping', (req, res) => res.send('pong'));
+// app.get('/ping', (req, res) => res.send('pong'));
 
 const httpServer = http.createServer(app);
 const io = new Server(httpServer, {
