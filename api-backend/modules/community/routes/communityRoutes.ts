@@ -78,7 +78,8 @@ router.get('/social/feed/:userId', async (req: Request, res: Response) => {
     const userId = parseInt(req.params.userId);
     
     if (isNaN(userId)) {
-      return res.status(400).json({ status: 'error', message: 'Invalid user ID' });
+       res.status(400).json({ status: 'error', message: 'Invalid user ID' });
+       return;
     }
 
     const posts = await communityService.getFriendFeed(userId);
