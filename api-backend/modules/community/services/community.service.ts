@@ -649,61 +649,96 @@ export async function getCommunityStats(user_id: number) {
       challenges,
       leaderboardRank,
       gamesPlayed,
-      friends
+      friends,
+      socialPosts
     ] = await Promise.all([
-      // 1. Communities joined
-      client.query(`
-        SELECT COUNT(*) FROM community_members
-        WHERE user_id = $1 AND membership_status = 'accepted'
-      `, [ user_id ]),
+      // 1) Communities joined
+      client.query(
+        `
+        SELECT COUNT(*) 
+        FROM community_members
+        WHERE user_id = $1
+          AND membership_status = 'accepted'
+        `,
+        [user_id]
+      ),
 
-      // 2. Challenges across user's communities
-      client.query(`
-        SELECT COUNT(*) FROM challenges c
+      // 2) Challenges across user's communities
+      client.query(
+        `
+        SELECT COUNT(*)
+        FROM challenges c
         WHERE c.community_id IN (
-          SELECT community_id FROM community_members
-          WHERE user_id = $1 AND membership_status = 'accepted'
+          SELECT community_id 
+          FROM community_members
+          WHERE user_id = $1
+            AND membership_status = 'accepted'
         )
-      `, [ user_id ]),
+        `,
+        [user_id]
+      ),
 
-      // 3. Leaderboard rank (assumes 1 row per user)
-      client.query(`
-        SELECT ranking FROM (
+      // 3) Leaderboard rank (assumes 1 row per user)
+      client.query(
+        `
+        SELECT ranking
+        FROM (
           SELECT user_id, RANK() OVER (ORDER BY total_points DESC) AS ranking
           FROM user_points
         ) ranked
         WHERE user_id = $1
-      `, [ user_id ]),
+        `,
+        [user_id]
+      ),
 
-      // 4. Games played — from quiz attempts
-      client.query(`
-        SELECT COUNT(*) FROM quiz_attempts
+      // 4) Games played — from quiz attempts
+      client.query(
+        `
+        SELECT COUNT(*)
+        FROM quiz_attempts
         WHERE user_id = $1
-      `, [ user_id ]),
+        `,
+        [user_id]
+      ),
 
-      // 5. Friends — accepted only
-      client.query(`
-        SELECT COUNT(*) FROM friendships
+      // 5) Friends — accepted only
+      client.query(
+        `
+        SELECT COUNT(*)
+        FROM friendships
         WHERE (user_id = $1 OR friend_id = $1)
-        AND relationship_status = 'accepted'
-      `, [ user_id ])
+          AND relationship_status = 'accepted'
+        `,
+        [user_id]
+      ),
+
+      // 6) Social posts authored by the user
+      client.query(
+        `
+        SELECT COUNT(*) 
+        FROM social_posts
+        WHERE user_id = $1
+        `,
+        [user_id]
+      )
     ]);
 
     client.release();
 
     return {
-      communities: parseInt(communities.rows[ 0 ].count),
-      challenges: parseInt(challenges.rows[ 0 ].count),
-      leaderboard: leaderboardRank.rows[ 0 ]?.ranking || null,
-      gamesPlayed: parseInt(gamesPlayed.rows[ 0 ].count),
-      friends: parseInt(friends.rows[ 0 ].count),
-      socialPosts: 7 // Mocked static value for now
+      communities: parseInt(communities.rows[0].count, 10),
+      challenges: parseInt(challenges.rows[0].count, 10),
+      leaderboard: leaderboardRank.rows[0]?.ranking ?? null,
+      gamesPlayed: parseInt(gamesPlayed.rows[0].count, 10),
+      friends: parseInt(friends.rows[0].count, 10),
+      socialPosts: parseInt(socialPosts.rows[0].count, 10)
     };
   } catch (err) {
     logger.error(`[CommunityService] Failed to fetch stats for user ${user_id}:`, err);
     throw err;
   }
 }
+
 
 async function getContributionScoresByCommunity(communityId: number) {
   try {
@@ -1335,7 +1370,7 @@ export async function getFriendFeed(userId: number) {
       -- User info
       u.user_id,
       u.username,
-      up.avatar_id,
+      ai.avatar_image_path AS user_avatar_path,  -- Join with the avatar_images table to get the actual avatar path for the user
       pts.tier_status,
 
       -- Achievement
@@ -1356,7 +1391,7 @@ export async function getFriendFeed(userId: number) {
             'comment_id', pc.comment_id,
             'user_id', cu.user_id,
             'username', cu.username,
-            'avatar_id', cp.avatar_id,
+            'avatar_image_path', cp_avatar.avatar_image_path,  -- Join to fetch the actual avatar path for comments
             'comment', pc.comment,
             'created_at', pc.created_at
           )
@@ -1382,6 +1417,8 @@ export async function getFriendFeed(userId: number) {
     LEFT JOIN post_comments pc ON pc.post_id = sp.post_id
     LEFT JOIN users cu ON cu.user_id = pc.user_id
     LEFT JOIN user_preferences cp ON cp.user_id = cu.user_id
+    LEFT JOIN avatar_images ai ON ai.avatar_id = up.avatar_id  -- Correct join for user's avatar
+    LEFT JOIN avatar_images cp_avatar ON cp_avatar.avatar_id = cp.avatar_id  -- Correct join for commenter's avatar
 
     WHERE sp.user_id = $1
       OR sp.user_id IN (
@@ -1391,7 +1428,7 @@ export async function getFriendFeed(userId: number) {
       )
 
     GROUP BY 
-      sp.post_id, u.user_id, up.avatar_id, pts.tier_status, a.achievement_id
+      sp.post_id, u.user_id, ai.avatar_image_path, pts.tier_status, a.achievement_id
     ORDER BY sp.created_at DESC
     LIMIT 50
     `,
@@ -1445,6 +1482,31 @@ export async function unlikePost(userId: number, postId: number) {
   return { like_count: Number(rows[0]?.like_count || 0) };
 }
 
+/**
+ * Return the list of post_ids the user has liked.
+ * Kept as plain number[] to plug straight into your frontend state.
+ */
+export async function getUserLikedPostIds(userId: number): Promise<number[]> {
+  // Optional sanity check (helps avoid silent success on bad ids)
+  const { rowCount: userExists } = await pool.query(
+    `SELECT 1 FROM users WHERE user_id = $1`,
+    [userId]
+  );
+  if (userExists === 0) {
+    return []; // or throw new Error('User not found');
+  }
+
+  const { rows } = await pool.query(
+    `SELECT pl.post_id
+       FROM post_likes pl
+      WHERE pl.user_id = $1
+      ORDER BY pl.post_id ASC`, // or ORDER BY pl.liked_at DESC if you track it
+    [userId]
+  );
+
+  return rows.map(r => Number(r.post_id));
+}
+
 export async function addPostComment(userId: number, postId: number, comment: string) {
   const trimmedComment = comment.trim();
 
@@ -1489,4 +1551,94 @@ export async function getPostComments(postId: number) {
   );
 
   return rows;
+}
+
+export async function deleteSocialPost(userId: number, postId: number) {
+  // Verify post exists & ownership
+  const { rows: postRows } = await pool.query(
+    `SELECT user_id FROM social_posts WHERE post_id = $1`,
+    [postId]
+  );
+  if (postRows.length === 0) {
+    throw new Error('Post not found');
+  }
+  if (postRows[0].user_id !== userId) {
+    throw new Error('You are not authorized to delete this post');
+  }
+
+  // Delete post
+  const { rowCount } = await pool.query(
+    `DELETE FROM social_posts WHERE post_id = $1 AND user_id = $2`,
+    [postId, userId]
+  );
+
+  if (rowCount === 0) {
+    // Extremely unlikely if the above check passed, but guards against races
+    throw new Error('Failed to delete post');
+  }
+
+  return { post_id: postId, message: 'Post deleted successfully' };
+}
+
+export async function deletePostComment(
+  userId: number,
+  postId: number,
+  commentId: number
+) {
+  // Pull comment + owning post user
+  const { rows: commentRows } = await pool.query(
+    `
+    SELECT 
+      pc.comment_id,
+      pc.user_id      AS comment_user_id,
+      pc.post_id,
+      sp.user_id      AS post_user_id
+    FROM post_comments pc
+    JOIN social_posts sp ON sp.post_id = pc.post_id
+    WHERE pc.comment_id = $1
+    `,
+    [commentId]
+  );
+
+  if (commentRows.length === 0) {
+    throw new Error('Comment not found');
+  }
+
+  const c = commentRows[0];
+
+  // Ensure this comment is on the expected post
+  if (Number(c.post_id) !== Number(postId)) {
+    throw new Error('Comment does not belong to the specified post');
+  }
+
+  // Authorization: comment author OR post owner can delete
+  const isCommentOwner = Number(c.comment_user_id) === Number(userId);
+  const isPostOwner = Number(c.post_user_id) === Number(userId);
+
+  if (!isCommentOwner && !isPostOwner) {
+    throw new Error('You are not authorized to delete this comment');
+  }
+
+  // Delete the comment
+  const { rowCount } = await pool.query(
+    `DELETE FROM post_comments WHERE comment_id = $1`,
+    [commentId]
+  );
+
+  if (rowCount === 0) {
+    throw new Error('Failed to delete comment');
+  }
+
+  // Return remaining comment count (handy for optimistic UI updates)
+  const { rows: countRows } = await pool.query(
+    `SELECT COUNT(*)::INT AS remaining FROM post_comments WHERE post_id = $1`,
+    [postId]
+  );
+
+  return {
+    comment_id: commentId,
+    post_id: postId,
+    remaining_comments: countRows[0]?.remaining ?? 0,
+    message: 'Comment deleted successfully',
+  };
 }

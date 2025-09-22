@@ -31,7 +31,9 @@ import { RedisOptions } from 'bullmq';
 import { createClient, RedisClientType } from 'redis';
 
 // Parse the Redis URL for BullMQ connection options
-const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+// const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+
+const redisUrl = 'redis://localhost:6379';
 const parsedUrl = new URL(redisUrl);
 
 export const redisConnection: RedisOptions = {

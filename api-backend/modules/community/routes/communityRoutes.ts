@@ -76,14 +76,18 @@ router.get('/social/communities/:userId', async (req: Request, res: Response) =>
 router.get('/social/feed/:userId', async (req: Request, res: Response) => {
   try {
     const userId = parseInt(req.params.userId);
+    
+    if (isNaN(userId)) {
+       res.status(400).json({ status: 'error', message: 'Invalid user ID' });
+       return;
+    }
+
     const posts = await communityService.getFriendFeed(userId);
 
     res.status(200).json({ status: 'success', data: posts });
-    return;
   } catch (err) {
     console.error('Error fetching feed:', err);
     res.status(500).json({ status: 'error', message: 'Failed to fetch feed' });
-    return;
   }
 });
 
@@ -121,6 +125,28 @@ router.delete('/social/posts/:postId/unlike', async (req: Request, res: Response
   }
 });
 
+/**
+ * GET /api/community/social/liked-posts/:userId
+ * Returns: { status: 'success', data: number[] }
+ */
+router.get('/social/liked-posts/:userId', async (req: Request, res: Response) => {
+  try {
+    const userId = Number.parseInt(req.params.userId, 10);
+    if (Number.isNaN(userId) || userId <= 0) {
+      res.status(400).json({ status: 'error', message: 'Invalid userId' });
+      return;
+    }
+
+    const likedIds = await communityService.getUserLikedPostIds(userId);
+    res.status(200).json({ status: 'success', data: likedIds });
+    return;
+  } catch (err: any) {
+    console.error('Error fetching liked posts:', err?.message || err);
+    res.status(500).json({ status: 'error', message: 'Failed to fetch liked posts' });
+    return;
+  }
+});
+
 // POST add comment
 router.post('/social/posts/:postId/comment', async (req: Request, res: Response) => {
   try {
@@ -153,6 +179,75 @@ router.get('/social/posts/:postId/comments', async (req: Request, res: Response)
     return;
   }
 });
+
+// DELETE a post
+router.delete('/social/posts/:postId', async (req: Request, res: Response) => {
+  try {
+    const postId = parseInt(req.params.postId, 10);
+    const userId = Number(req.body.userId); // (from auth in future)
+
+    if (Number.isNaN(postId) || Number.isNaN(userId)) {
+      res.status(400).json({ status: 'error', message: 'Invalid postId or userId' });
+      return;
+    }
+
+    const result = await communityService.deleteSocialPost(userId, postId);
+
+    res.status(200).json({ status: 'success', message: result.message });
+    return;
+  } catch (err: any) {
+    const msg = String(err?.message || '');
+
+    if (msg.includes('Post not found')) {
+      res.status(404).json({ status: 'error', message: 'Post not found' });
+      return;
+    }
+    if (msg.includes('Unauthorized')) {
+      res.status(403).json({ status: 'error', message: 'Not allowed to delete this post' });
+      return;
+    }
+
+    console.error('Error deleting post:', err);
+    res.status(500).json({ status: 'error', message: 'Failed to delete post' });
+    return;
+  }
+});
+
+// DELETE a single comment on a post
+router.delete('/social/posts/:postId/comments/:commentId', async (req: Request, res: Response) => {
+  try {
+    const postId = parseInt(req.params.postId, 10);
+    const commentId = parseInt(req.params.commentId, 10);
+    const userId = Number(req.body.userId); // (from auth in future)
+
+    if ([postId, commentId, userId].some(n => Number.isNaN(n))) {
+      res.status(400).json({ status: 'error', message: 'Invalid postId, commentId, or userId' });
+      return;
+    }
+
+    const result = await communityService.deletePostComment(userId, postId, commentId);
+
+    res.status(200).json({ status: 'success', message: result.message });
+    return;
+  } catch (err: any) {
+    const msg = String(err?.message || '');
+
+    if (msg.includes('Comment not found')) {
+      res.status(404).json({ status: 'error', message: 'Comment not found' });
+      return;
+    }
+    if (msg.includes('Unauthorized')) {
+      res.status(403).json({ status: 'error', message: 'Not allowed to delete this comment' });
+      return;
+    }
+
+    console.error('Error deleting comment:', err);
+    res.status(500).json({ status: 'error', message: 'Failed to delete comment' });
+    return;
+  }
+});
+
+
 
 
 /**

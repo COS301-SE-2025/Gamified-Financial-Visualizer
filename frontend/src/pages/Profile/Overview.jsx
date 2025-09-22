@@ -6,12 +6,6 @@ import { motion } from 'framer-motion';
 // Profile banner
 import profileBanner from '../../assets/Images/banners/pixelBalcony.gif';
 
-// Community banner images
-import comm1 from '../../assets/Images/banners/pixelApartment.gif';
-import comm2 from '../../assets/Images/banners/pixelGirlAlly.gif';
-import comm3 from '../../assets/Images/banners/pixelStudents.jpeg';
-import comm4 from '../../assets/Images/banners/pixelWindow.gif';
-
 import avatar4 from '../../assets/Images/avatars/Totoro.png';
 
 // Format amount cleanly (e.g., 7500 or 7500.14)
@@ -72,30 +66,32 @@ const Overview = () => {
       .catch(err => console.error('Failed to load level progress:', err));
   }, []);
 
-  // Community posts
-  const userPosts = [
-    { id: 1, image: comm1 },
-    { id: 2, image: comm2 },
-    { id: 3, image: comm3 },
-    { id: 4, image: comm4 },
-    { id: 5, image: profileBanner },
-    { id: 6, image: comm2 },
-    { id: 7, image: comm1 },
-  ];
-
-  // pagation for the user posts 
-  const POSTS_PER_PAGE = 5; // 2 rows on large screens (6 x 2)
-
+  // Posts (images only)
+  const POSTS_PER_PAGE = 12; // fits your lg:grid-cols-6 nicely (2 rows)
   const [postPage, setPostPage] = useState(1);
+  const [postImages, setPostImages] = useState([]); // [{ post_id, image_path, created_at }]
+  const [postTotalPages, setPostTotalPages] = useState(1);
 
-  const totalPostPages = Math.max(1, Math.ceil(userPosts.length / POSTS_PER_PAGE));
-  const start = (postPage - 1) * POSTS_PER_PAGE;
-  const currentPosts = userPosts.slice(start, start + POSTS_PER_PAGE);
+  const [userId] = useState(() => JSON.parse(localStorage.getItem('user'))?.id ?? null);
 
   useEffect(() => {
-    // Clamp page if posts length changes
-    if (postPage > totalPostPages) setPostPage(totalPostPages);
-  }, [totalPostPages, postPage]);
+    if (!userId) return;
+    fetch(`http://localhost:5000/api/auth/profile/post-images/${userId}?page=${postPage}&pageSize=${POSTS_PER_PAGE}`)
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then(json => {
+        const data = json?.data;
+        setPostImages(data?.posts || []);
+        setPostTotalPages(data?.totalPages || 1);
+        if (postPage > (data?.totalPages || 1)) setPostPage(data?.totalPages || 1);
+      })
+      .catch(err => {
+        console.error('Failed to load post images:', err);
+        setPostImages([]); setPostTotalPages(1);
+      });
+  }, [userId, postPage]);
 
 
   return (
@@ -348,7 +344,7 @@ const Overview = () => {
                 <img
                   src={`/assets/Images/${community.banner}`}
                   alt={community.community_name}
-                  className="w-16 h-16 rounded-full object-cover shadow "
+                  className="w-16 h-16 rounded-full object-cover shadow dark: "
                 />
                 <div>
                   <p className="text-lg font-medium text-gray-800 dark:text-gray-400">{community.community_name}</p>
@@ -397,68 +393,50 @@ const Overview = () => {
       <div className="bg-white p-6 rounded-3xl shadow-md dark:bg-gray-800">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">My Posts</h2>
-          {/* Removed the code for the view all button */}
         </div>
 
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
-          {currentPosts.map((post) => (
-            <div
-              key={post.id}
-              className="relative group overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
-            >
-              <img
-                src={post.image}
-                alt={`post-${post.id}`}
-                className="w-full h-full object-cover aspect-square transition-transform duration-300 group-hover:scale-105"
-              />
-              {/* Post engagement overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-2">
-                <div className="flex items-center space-x-2 text-white">
-                  {typeof post.likes !== 'undefined' && (
-                    <span className="flex items-center text-xs font-medium">
-                      <FaHeart className="w-3 h-3 mr-1" />
-                      {post.likes}
-                    </span>
-                  )}
-                  {typeof post.comments !== 'undefined' && (
-                    <span className="flex items-center text-xs font-medium">
-                      <FaRegComment className="w-3 h-3 mr-1" />
-                      {post.comments}
-                    </span>
-                  )}
-                </div>
+        {/* Grid */}
+        {postImages.length === 0 ? (
+          <p className="text-sm text-gray-500 italic text-center">No posts yet.</p>
+        ) : (
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+            {postImages.map((p) => (
+              <div
+                key={p.post_id}
+                className="relative group overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+              >
+                <img
+                  src={`/assets/Images/${p.image_path}`}
+                  alt={`post-${p.post_id}`}
+                  className="w-full h-full object-cover aspect-square transition-transform duration-300 group-hover:scale-105"
+                  onError={(e) => { e.currentTarget.src = '/assets/Images/badges/default.png'; }}
+                />
               </div>
-              {/* Video indicator for video posts */}
-              {post.type === 'video' && (
-                <div className="absolute top-2 right-2 bg-black/50 rounded-full p-1">
-                  <FaPlay className="w-3 h-3 text-white" />
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* Pagination controls */}
-        {userPosts.length > POSTS_PER_PAGE && (
+        {postTotalPages > 1 && (
           <div className="flex items-center justify-between mt-4">
             <button
               onClick={() => setPostPage(p => Math.max(1, p - 1))}
               disabled={postPage === 1}
               className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border dark:border-gray-600
-          ${postPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                ${postPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
             >
               <FaChevronLeft /> Prev
             </button>
 
             <span className="text-xs text-gray-500 dark:text-gray-400">
-              Page {postPage} of {totalPostPages}
+              Page {postPage} of {postTotalPages}
             </span>
 
             <button
-              onClick={() => setPostPage(p => Math.min(totalPostPages, p + 1))}
-              disabled={postPage === totalPostPages}
+              onClick={() => setPostPage(p => Math.min(postTotalPages, p + 1))}
+              disabled={postPage === postTotalPages}
               className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border dark:border-gray-600
-          ${postPage === totalPostPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                ${postPage === postTotalPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
             >
               Next <FaChevronRight />
             </button>

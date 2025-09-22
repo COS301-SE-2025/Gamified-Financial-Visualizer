@@ -530,7 +530,7 @@ const RecentTransactionsTable = ({
 
       {/* Header + Controls */}
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold text-[#336699]">{heading}</h2>
+        <h2 className="text-xl font-semibold text-[#336699] dark:text-[#88D1FF]">{heading}</h2>
 
         <div className="flex gap-2 items-center">
           <SortDropdown
@@ -634,14 +634,22 @@ const RecentTransactionsTable = ({
                 const isEditing = editTransactionId === txn.transaction_id;
 
                 const amountColor = txn._isExpense
-                  ? 'text-red-500'
-                  : txn._isIncome
-                    ? 'text-lime-600'
-                    : txn._isTransfer
-                      ? 'text-blue-500'
-                      : '';
+                ? 'text-red-500 dark:text-red-400'
+                : txn._isIncome
+                  ? 'text-lime-600 dark:text-lime-400'
+                  : txn._isTransfer
+                    ? 'text-blue-500 dark:text-sky-400'
+                    : 'text-gray-700 dark:text-gray-300';
 
-                const amountSign = txn._isExpense ? '-' : txn._isIncome ? '+' : txn._isTransfer ? '→' : '';
+                const amountPrefix =
+                  txn._isTransfer ? '→'
+                  : txn._isExpense ? '-'
+                  : txn._isIncome  ? '+'
+                  : '';
+
+                const formattedAmount = Math.abs(txn._amount)
+                  .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 
                 const originalYMD = ymd(txn._date || txn.transaction_date || txn.date);
 
@@ -699,13 +707,11 @@ const RecentTransactionsTable = ({
                         />
                       ) : (
                         <>
-                          {amountSign}{' '}
-                          {txn._isTransfer
-                            ? ''
-                            : Math.abs(txn._amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          {amountPrefix} {formattedAmount}
                         </>
                       )}
                     </td>
+
                     <td className="px-4 py-2 flex gap-2">
                       {isEditing ? (
                         <>
@@ -723,7 +729,7 @@ const RecentTransactionsTable = ({
                       ) : (
                         <>
                           <button
-                            className="text-blue-500 hover:text-blue-600 text-sm"
+                            className="text-blue-500 hover:text-blue-600  text-sm dark:text-[#5FBFFF]"
                             onClick={() => {
                               setEditTransactionId(txn.transaction_id);
                               setEditValues({
@@ -735,7 +741,7 @@ const RecentTransactionsTable = ({
                             }}
                           ><FaEdit /></button>
                           <button
-                            className="text-red-500 hover:text-red-600 text-sm"
+                            className="text-red-500 hover:text-red-600 text-sm dark:text-[#EA746A]"
                             onClick={() => showDelete(txn.transaction_id)}
                           ><FaTrash /></button>
                         </>
