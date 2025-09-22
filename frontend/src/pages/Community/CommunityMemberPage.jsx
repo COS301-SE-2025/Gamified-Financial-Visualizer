@@ -22,6 +22,9 @@ const CommunityMemberPage = () => {
   const [summary, setSummary] = useState(null);
   const [friendship, setFriendship] = useState(null);
 
+  // Check if the current user is viewing their own profile
+  const isViewingOwnProfile = user?.username === username;
+
   useEffect(() => {
     if (!username) return;
     (async () => {
@@ -123,6 +126,7 @@ const CommunityMemberPage = () => {
   };
 
   const cancelRequest = async () => {
+    // Implement the cancel request functionality if needed
   }
 
   const removeFriend = async () => {
@@ -150,7 +154,8 @@ const CommunityMemberPage = () => {
   const statusF = friendship?.status;
   const isInitiator = friendship?.isInitiator;
 
-  if (!statusF) {
+  // Don't show friend buttons if viewing own profile or if already friends
+  if (!isViewingOwnProfile && !statusF) {
     friendButtons = (
       <button onClick={handleFriendRequest}
         className="flex items-center gap-1 px-4 py-2 text-sm rounded-full bg-[#FFD18C] text-white shadow hover:bg-[#f9b54c] transition"
@@ -178,7 +183,7 @@ const CommunityMemberPage = () => {
           </button>
         </>
       );
-  } else /* accepted */ {
+  } else if (statusF === 'accepted' && !isViewingOwnProfile) {  // Show remove button only for others, not your own profile
     friendButtons = (
       <button onClick={removeFriend} className="flex items-center gap-1 px-4 py-2 text-sm rounded-full bg-[#FA8B81] text-white shadow hover:bg-[#f56a5a] transition">
         <FaUserMinus /> Remove Friend
