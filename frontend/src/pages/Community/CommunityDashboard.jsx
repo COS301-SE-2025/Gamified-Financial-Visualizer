@@ -374,6 +374,14 @@ export default function CommunityDashboard() {
       });
   };
 
+  // NEW: Handle Enter key press for comments
+  const handleCommentKeyDown = (e, postId) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault(); // Prevent new line in input
+      handleAddComment(postId);
+    }
+  };
+
   const handleCreatePost = () => {
     if (!userId) {
       toast.error('Please log in.');
@@ -658,20 +666,21 @@ export default function CommunityDashboard() {
                       ))}
 
                       <div className="flex items-center gap-2 mt-2">
-                        <input
-                          type="text"
-                          value={commentInputs[post.id] || ''}
-                          onChange={(e) => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })}
-                          placeholder="Add a comment..."
-                          className="flex-1 text-sm p-2 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#72C1F5] dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400 dark:focus:ring-[#5FBFFF]"
-                        />
-                        <button
-                          onClick={() => handleAddComment(post.id)}
-                          className="w-8 h-8 rounded-full bg-[#72C1F5] text-white flex items-center justify-center hover:bg-[#5CA8D8] dark:bg-[#88D1FF] dark:hover:bg-[#1E3A8A]"
-                        >
-                          <FaPaperPlane size={12} />
-                        </button>
-                      </div>
+                      <input
+                        type="text"
+                        value={commentInputs[post.id] || ''}
+                        onChange={(e) => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })}
+                        onKeyDown={(e) => handleCommentKeyDown(e, post.id)} // NEW: Added keydown handler
+                        placeholder="Add a comment..."
+                        className="flex-1 text-sm p-2 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#72C1F5] dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400 dark:focus:ring-[#5FBFFF]"
+                      />
+                      <button
+                        onClick={() => handleAddComment(post.id)}
+                        className="w-8 h-8 rounded-full bg-[#72C1F5] text-white flex items-center justify-center hover:bg-[#5CA8D8] dark:bg-[#88D1FF] dark:hover:bg-[#1E3A8A]"
+                      >
+                        <FaPaperPlane size={12} />
+                      </button>
+                    </div>
                     </div>
                   </div>
                 );
@@ -873,7 +882,7 @@ export default function CommunityDashboard() {
               <div className="flex items-start gap-3">
                 <div className="shrink-0">
                   <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-600 dark:bg-red-900/30 dark:text-red-300">
-                    <FaExclamationTriangle />
+                    <FaTrash/>
                   </div>
                 </div>
                 <div className="flex-1">
@@ -896,7 +905,7 @@ export default function CommunityDashboard() {
               <div className="mt-5 flex justify-end gap-2">
                 <button
                   onClick={closeConfirm}
-                  className="px-4 py-2 text-sm rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+                  className="px-4 py-2 text-sm rounded-full bg-gray-100 text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700"
                 >
                   Cancel
                 </button>
