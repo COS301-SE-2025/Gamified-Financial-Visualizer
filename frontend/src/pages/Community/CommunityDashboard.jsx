@@ -221,14 +221,16 @@ useEffect(() => {
       .then(async json => {
         const raw = Array.isArray(json?.data) ? json.data : [];
 
-        // Build posts
+        // Map over the fetched posts and replace the avatar_id with actual image path
         const mapped = raw.map(row => ({
           id: row.post_id,
           createdAt: row.created_at,
           user: {
             id: row.user_id,
             name: row.username,
-            avatar: row.avatar_id ? `/assets/Images/avatars/${row.avatar_id}` : avatarFallback,
+            avatar: row.avatar_id
+              ? `/assets/Images/avatars/${row.avatar_id}.png` // Fetch the image using the avatar_id
+              : avatarFallback,
             level: row.tier_status || '—',
           },
           banner: row.banner_image_path ? `/assets/Images/${row.banner_image_path}` : bannerFallback,
@@ -241,36 +243,16 @@ useEffect(() => {
                   id: c.comment_id,
                   userId: c.user_id,
                   user: c.username,
-                  avatar: c.avatar_id ? `/assets/Images/avatars/${c.avatar_id}` : null,
+                  avatar: c.avatar_id
+                    ? `/assets/Images/avatars/${c.avatar_id}.png` // Fetch the commenter's avatar using avatar_id
+                    : avatarFallback,
                   text: c.comment,
-                  createdAt: c.created_at
+                  createdAt: c.created_at,
                 }))
               : []
-          )
+          ),
         }));
         setPosts(mapped);
-
-        // 1) If feed carries liked_by_me flags, use them
-        const likedFromFeed = deriveLikedIdsFromFeed(raw);
-        if (likedFromFeed) {
-          setLikedPosts(likedFromFeed);
-          return;
-        }
-
-        // 2) Otherwise, try a dedicated endpoint of liked post IDs
-        try {
-          const likedRes = await fetch(`${API_BASE}/social/liked-posts/${userId}`);
-          if (likedRes.ok) {
-            const likedJson = await likedRes.json();
-            const ids = Array.isArray(likedJson?.data) ? likedJson.data : [];
-            setLikedPosts(ids);
-            return;
-          }
-        } catch {
-          // fall through to localStorage
-        }
-
-        // 3) Final fallback: keep whatever is in localStorage (already set in state)
       })
       .catch(err => {
         console.error('Feed error', err);
@@ -570,43 +552,47 @@ useEffect(() => {
                   >
                     {/* Header */}
                     <div className="flex items-center gap-3">
-                      <img src={post.user.avatar} alt="avatar" className="w-12 h-12 rounded-full border-2 border-white shadow object-cover" />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <Link
-                            to={`/community/member/${post.user.name}`}
-                            className="font-semibold text-gray-800 hover:text-[#72C1F5] dark:text-gray-200 dark:hover:text-[#5FBFFF]"
-                          >
-                            {post.user.name}
-                          </Link>
-                          <span className="text-xs bg-[#fef9c3] text-[#92400e] px-2 py-0.5 rounded-full dark:bg-[#FFD18C] dark:text-[#FD8524]">
-                            Lv {post.user.level}
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {post.communities.map((name, i) => (
-                            <span
-                              key={`${name}-${i}`}
-                              className="text-xs bg-[#E0F2FE] text-[#72C1F5] px-2 py-0.5 rounded-full dark:bg-[#88D1FF] dark:text-[#065989]"
-                            >
-                              {name}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Delete Post (owner only) */}
-                      {post.user.id === userId && (
-                        <button
-                          onClick={() => openConfirmDeletePost(post.id)}
-                          className="p-2 rounded-full border border-red-200 text-red-500 hover:bg-red-50 transition dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/30"
-                          title="Delete post"
-                          aria-label="Delete post"
+                    <img
+                      src={post.user.avatar || avatarFallback} // Use the fetched avatar URL
+                      alt="avatar"
+                      className="w-12 h-12 rounded-full border-2 border-white shadow object-cover"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <Link
+                          to={`/community/member/${post.user.name}`}
+                          className="font-semibold text-gray-800 hover:text-[#72C1F5] dark:text-gray-200 dark:hover:text-[#5FBFFF]"
                         >
-                          <FaTrash size={14} />
-                        </button>
-                      )}
+                          {post.user.name}
+                        </Link>
+                        <span className="text-xs bg-[#fef9c3] text-[#92400e] px-2 py-0.5 rounded-full dark:bg-[#FFD18C] dark:text-[#FD8524]">
+                          Lv {post.user.level}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {post.communities.map((name, i) => (
+                          <span
+                            key={`${name}-${i}`}
+                            className="text-xs bg-[#E0F2FE] text-[#72C1F5] px-2 py-0.5 rounded-full dark:bg-[#88D1FF] dark:text-[#065989]"
+                          >
+                            {name}
+                          </span>
+                        ))}
+                      </div>
                     </div>
+
+                    {/* Delete Post (owner only) */}
+                    {post.user.id === userId && (
+                      <button
+                        onClick={() => openConfirmDeletePost(post.id)}
+                        className="p-2 rounded-full border border-red-200 text-red-500 hover:bg-red-50 transition dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/30"
+                        title="Delete post"
+                        aria-label="Delete post"
+                      >
+                        <FaTrash size={14} />
+                      </button>
+                    )}
+                  </div>
 
                     {/* Body */}
                     <div className="space-y-3">
