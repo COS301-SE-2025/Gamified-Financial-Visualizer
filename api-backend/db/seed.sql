@@ -3116,258 +3116,236 @@ SELECT user_id, total_points, DENSE_RANK() OVER (ORDER BY total_points DESC)
 FROM user_points;
 
 
+-- Learning Modules
 
-INSERT INTO learning_modules (module_title, topic, difficulty, module_banner_id) VALUES 
-  ('Budgeting Basics', 'Personal Finance', 'beginner', 1);
 
-INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (1, 1, 'What is Budgeting and Why it Matters', 
-  'Budgeting is the act of creating a plan to manage your income and expenses. It gives you control over your money by helping you understand where it goes and how much you can allocate to your needs, wants, and future goals. A budget isn''t about restricting your lifestyle—it''s about making sure your spending aligns with what you truly value and want to achieve.
+--- Budgeting Basics
+INSERT INTO learning_modules (module_title, topic, difficulty, banner_image_path) VALUES
+    ('Budgeting Basics', 'Personal Finance', 'beginner', 'learn_banners/Budget.png');
 
-  Without a budget, it''s easy to overspend and find yourself falling short when emergencies arise or bills are due. Budgeting reduces financial stress, helps avoid debt, and empowers you to make informed financial decisions. Whether you''re a student managing an allowance or an adult with a salary, budgeting is a foundational skill that builds financial independence.', 6
-  );
-
-INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (1, 2, 'Understanding Your Income and Expenses', 
-  'The first step in budgeting is understanding how much money you have and where it''s going. Income includes anything you earn—your salary, side hustles, stipends, or allowances. Expenses, on the other hand, are the things you spend money on. These are usually split into two categories: fixed (like rent, subscriptions, school fees) and variable (like groceries, entertainment, or dining out).
-
-  Tracking every expense, even the small ones, helps reveal patterns in your spending. Many people underestimate how much they spend on daily coffees or spontaneous takeouts. Using tools like budgeting apps or even a simple spreadsheet can give you a clear view of your financial habits. Once you see your income versus expenses laid out, you can start making smarter choices about where to cut back and where to allocate more.', 7
-  );
+-- Lessons
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES
+    (1, 1, 'What is Budgeting and Why it Matters', 
+    'Budgeting is the act of creating a plan to manage your income and expenses. It gives you control over your money by helping you understand where it goes and how much you can allocate to your needs, wants, and future goals. A budget isn''t about restricting your lifestyle—it''s about making sure your spending aligns with what you truly value and want to achieve. Without a budget, it''s easy to overspend and find yourself falling short when emergencies arise or bills are due. Budgeting reduces financial stress, helps avoid debt, and empowers you to make informed financial decisions. Whether you''re a student managing an allowance or an adult with a salary, budgeting is a foundational skill that builds financial independence.', 6
+    );
 
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (1, 3, 'Setting Financial Goals', 
-  'Financial goals are the targets you aim to reach with your money. They help you stay motivated and focused when making spending decisions. Goals can be short-term (saving for a concert, emergency fund), medium-term (paying off a loan, getting a new laptop), or long-term (saving for university or a car). The clearer your goals are, the easier it becomes to prioritize your spending around them.
-
-  When setting goals, make them SMART: Specific, Measurable, Achievable, Relevant, and Time-bound. For example, instead of saying "I want to save money," a SMART goal would be: “I want to save R1,500 in 3 months for a new phone by saving R125 each week.” Having a plan like this makes it easier to stay on track and adjust your budget if needed.', 6
-  );
+    (1, 2, 'Understanding Your Income and Expenses', 
+    'The first step in budgeting is understanding how much money you have and where it''s going. Income includes anything you earn—your salary, side hustles, stipends, or allowances. Expenses, on the other hand, are the things you spend money on. These are usually split into two categories: fixed (like rent, subscriptions, school fees) and variable (like groceries, entertainment, or dining out). Tracking every expense, even the small ones, helps reveal patterns in your spending. Many people underestimate how much they spend on daily coffees or spontaneous takeouts. Using tools like budgeting apps or even a simple spreadsheet can give you a clear view of your financial habits. Once you see your income versus expenses laid out, you can start making smarter choices about where to cut back and where to allocate more.', 7
+    );
 
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (1, 4, 'Building a Simple Monthly Budget', 
-  'Now that you understand your income, expenses, and goals, it''s time to create your actual budget. A popular method is the 50/30/20 rule: 50% of your income goes to needs (rent, transport, groceries), 30% to wants (clothes, takeout, hobbies), and 20% to savings or debt repayments. This method gives structure while leaving room for flexibility and enjoyment.
-
-  Start by writing down your monthly income, then subtract your fixed and variable expenses. Allocate money to each category using the rule as a guide, adjusting percentages based on your situation. Don''t forget to review your budget at the end of each month—look at what worked and what didn''t. Budgeting is not static—it evolves with your lifestyle, goals, and unexpected changes.', 8
-  );
+    (1, 3, 'Setting Financial Goals', 
+    'Financial goals are the targets you aim to reach with your money. They help you stay motivated and focused when making spending decisions. Goals can be short-term (saving for a concert, emergency fund), medium-term (paying off a loan, getting a new laptop), or long-term (saving for university or a car). The clearer your goals are, the easier it becomes to prioritize your spending around them. When setting goals, make them SMART: Specific, Measurable, Achievable, Relevant, and Time-bound. For example, instead of saying "I want to save money," a SMART goal would be: “I want to save R1,500 in 3 months for a new phone by saving R125 each week.” Having a plan like this makes it easier to stay on track and adjust your budget if needed.', 6
+    );
 
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (1, 5, 'Sticking to Your Budget', 
-  'Creating a budget is one thing—sticking to it is where the real challenge lies. Consistency is key. You can use mobile apps, reminders, or a weekly financial check-in to keep your spending in check. Keep track of your receipts or transactions and review them every few days. This habit keeps you aware of where your money is going and helps you avoid end-of-month surprises.
+    (1, 4, 'Building a Simple Monthly Budget', 
+    'Now that you understand your income, expenses, and goals, it''s time to create your actual budget. A popular method is the 50/30/20 rule: 50% of your income goes to needs (rent, transport, groceries), 30% to wants (clothes, takeout, hobbies), and 20% to savings or debt repayments. This method gives structure while leaving room for flexibility and enjoyment. Start by writing down your monthly income, then subtract your fixed and variable expenses. Allocate money to each category using the rule as a guide, adjusting percentages based on your situation. Don''t forget to review your budget at the end of each month—look at what worked and what didn''t. Budgeting is not static—it evolves with your lifestyle, goals, and unexpected changes.', 8
+    );
 
-  It''s also important to allow flexibility. Life happens—maybe an emergency pops up or a one-time deal you can''t miss. If you overspend one week, reduce your spending the next. Forgive slip-ups, but always get back on track. Reward yourself (in small, affordable ways) for hitting savings goals or sticking to your plan. Financial success doesn''t come from perfection—it comes from persistence.', 7
-  );
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    (1, 5, 'Sticking to Your Budget', 
+    'Creating a budget is one thing—sticking to it is where the real challenge lies. Consistency is key. You can use mobile apps, reminders, or a weekly financial check-in to keep your spending in check. Keep track of your receipts or transactions and review them every few days. This habit keeps you aware of where your money is going and helps you avoid end-of-month surprises. It''s also important to allow flexibility. Life happens—maybe an emergency pops up or a one-time deal you can''t miss. If you overspend one week, reduce your spending the next. Forgive slip-ups, but always get back on track. Reward yourself (in small, affordable ways) for hitting savings goals or sticking to your plan. Financial success doesn''t come from perfection—it comes from persistence.', 7
+    );
 
+-- Quizzes
 INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES 
-  (1, 
-  '[
-      {
-          "question": "What is the primary purpose of budgeting?",
-          "options": [
-              "To restrict your spending completely",
-              "To help you manage your income and expenses effectively",
-              "To make you rich quickly",
-              "To track only your large purchases"
-          ],
-          "correct_answer": 1,
-          "points": 1
-      },
-      {
-          "question": "What are the two main categories of expenses?",
-          "options": [
-              "Income and savings",
-              "Fixed and variable",
-              "Large and small",
-              "Personal and business"
-          ],
-          "correct_answer": 1,
-          "points": 1
-      },
-      {
-          "question": "What does the SMART acronym stand for in financial goal setting?",
-          "options": [
-              "Simple, Manageable, Achievable, Realistic, Timely",
-              "Specific, Measurable, Achievable, Relevant, Time-bound",
-              "Strategic, Meaningful, Actionable, Responsible, Targeted",
-              "Savings, Money, Assets, Resources, Treasury"
-          ],
-          "correct_answer": 1,
-          "points": 1
-      },
-      {
-          "question": "According to the 50/30/20 rule, what percentage should go to needs?",
-          "options": ["20%", "30%", "50%", "70%"],
-          "correct_answer": 2,
-          "points": 1
-      },
-      {
-          "question": "What is the key to successful budgeting?",
-          "options": [
-              "Perfection in following the budget",
-              "Complete avoidance of all wants",
-              "Persistence and consistency",
-              "Earning more money"
-          ],
-          "correct_answer": 2,
-          "points": 1
-      }
-  ]', 
-  5, 3);
+    (1, 
+    '[
+        {
+            "question": "What is the primary purpose of budgeting?",
+            "options": [
+                "To restrict your spending completely",
+                "To help you manage your income and expenses effectively",
+                "To make you rich quickly",
+                "To track only your large purchases"
+            ],
+            "correct_answer": 1,
+            "points": 1
+        },
+        {
+            "question": "What are the two main categories of expenses?",
+            "options": [
+                "Income and savings",
+                "Fixed and variable",
+                "Large and small",
+                "Personal and business"
+            ],
+            "correct_answer": 1,
+            "points": 1
+        },
+        {
+            "question": "What does the SMART acronym stand for in financial goal setting?",
+            "options": [
+                "Simple, Manageable, Achievable, Realistic, Timely",
+                "Specific, Measurable, Achievable, Relevant, Time-bound",
+                "Strategic, Meaningful, Actionable, Responsible, Targeted",
+                "Savings, Money, Assets, Resources, Treasury"
+            ],
+            "correct_answer": 1,
+            "points": 1
+        },
+        {
+            "question": "According to the 50/30/20 rule, what percentage should go to needs?",
+            "options": ["20%", "30%", "50%", "70%"],
+            "correct_answer": 2,
+            "points": 1
+        },
+        {
+            "question": "What is the key to successful budgeting?",
+            "options": [
+                "Perfection in following the budget",
+                "Complete avoidance of all wants",
+                "Persistence and consistency",
+                "Earning more money"
+            ],
+            "correct_answer": 2,
+            "points": 1
+        }
+    ]', 
+    5, 3);
 
-INSERT INTO learning_modules (module_title, topic, difficulty, module_banner_id) VALUES 
-  (
-    'Investment Fundamentals', 
-    'Wealth Building', 
-    'intermediate', 
-    (SELECT module_banner_id FROM module_banners WHERE banner_image_path = 'module_banners/investment_banner.jpg' LIMIT 1)
-  );
 
+
+
+
+
+
+--- Investment Fundamentals
+INSERT INTO learning_modules (module_title, topic, difficulty, banner_image_path) VALUES 
+    ('Investment Fundamentals', 'Wealth Building', 'intermediate', 'learn_banners/Investment.png');
+
+-- Lessons
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (
-    (SELECT module_id FROM learning_modules WHERE module_title = 'Investment Fundamentals' LIMIT 1),
-    1,
-    'Introduction to Investing',
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Investment Fundamentals' LIMIT 1), 1, 'Introduction to Investing', 
     'Investing is the process of allocating money with the expectation of generating profit or income. Unlike saving, which focuses on preserving money, investing aims to grow your wealth over time through various assets like stocks, bonds, and real estate.
 
-  Key Benefits:
-  - Potential for higher returns than savings accounts
-  - Protection against inflation
-  - Building long-term wealth
-  - Generating passive income
+    Key Benefits:
+    - Potential for higher returns than savings accounts
+    - Protection against inflation
+    - Building long-term wealth
+    - Generating passive income
 
-  Common Investment Vehicles:
-  1. Stocks (Equities)
-  2. Bonds (Fixed Income)
-  3. Mutual Funds & ETFs
-  4. Real Estate
-  5. Commodities (Gold, Oil, etc.)
+    Common Investment Vehicles:
+    1. Stocks (Equities)
+    2. Bonds (Fixed Income)
+    3. Mutual Funds & ETFs
+    4. Real Estate
+    5. Commodities (Gold, Oil, etc.)
 
-  Understanding your risk tolerance and investment horizon is crucial before beginning your investment journey.',
-    7
-  );
+    Understanding your risk tolerance and investment horizon is crucial before beginning your investment journey.', 7
+    );
 
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (
-    (SELECT module_id FROM learning_modules WHERE module_title = 'Investment Fundamentals' LIMIT 1),
-    2,
-    'Understanding Risk and Return',
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Investment Fundamentals' LIMIT 1), 2, 'Understanding Risk and Return',
     'The relationship between risk and return is fundamental to investing. Generally, higher potential returns come with higher risk.
 
-  Types of Investment Risk:
-  - Market Risk: Overall market fluctuations
-  - Inflation Risk: Purchasing power erosion
-  - Interest Rate Risk: Bond price sensitivity
-  - Liquidity Risk: Difficulty selling assets
-  - Concentration Risk: Overexposure to one asset
+    Types of Investment Risk:
+    - Market Risk: Overall market fluctuations
+    - Inflation Risk: Purchasing power erosion
+    - Interest Rate Risk: Bond price sensitivity
+    - Liquidity Risk: Difficulty selling assets
+    - Concentration Risk: Overexposure to one asset
 
-  Risk Management Strategies:
-  1. Diversification: Spreading investments across different assets
-  2. Asset Allocation: Balancing stocks, bonds, and other assets
-  3. Dollar-Cost Averaging: Investing fixed amounts regularly
-  4. Rebalancing: Adjusting portfolio periodically
+    Risk Management Strategies:
+    1. Diversification: Spreading investments across different assets
+    2. Asset Allocation: Balancing stocks, bonds, and other assets
+    3. Dollar-Cost Averaging: Investing fixed amounts regularly
+    4. Rebalancing: Adjusting portfolio periodically
 
-  Historical Average Annual Returns:
-  - Stocks: ~7-10%
-  - Bonds: ~3-5%
-  - Savings Accounts: ~0.5-2%',
-    8
-  );
+    Historical Average Annual Returns:
+    - Stocks: ~7-10%
+    - Bonds: ~3-5%
+    - Savings Accounts: ~0.5-2%', 8
+    );
 
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (
-    (SELECT module_id FROM learning_modules WHERE module_title = 'Investment Fundamentals' LIMIT 1),
-    3,
-  'Stock Market: Your Money’s Playground',
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Investment Fundamentals' LIMIT 1), 3, 'Stock Market: Your Money’s Playground', 
     'Think of the stock market like a giant marketplace where pieces of companies (called shares) are bought and sold. It''s where your money can grow while you focus on living your life!
 
-  🔍 Quick Cheat Sheet:
-  - NYSE/NASDAQ/JSE = Different "shops" where stocks are traded
-  - Bull market = Prices going up (🔼 like a bull’s horns)
-  - Bear market = Prices going down (🔽 like a bear swiping down)
-  - Market cap = Company size (Large = established, Small = up-and-coming)
+    🔍 Quick Cheat Sheet:
+    - NYSE/NASDAQ/JSE = Different "shops" where stocks are traded
+    - Bull market = Prices going up (🔼 like a bull’s horns)
+    - Bear market = Prices going down (🔽 like a bear swiping down)
+    - Market cap = Company size (Large = established, Small = up-and-coming)
 
-  💰 How People Make Money:
-  1. Price goes up → Sell for profit (Capital gains)
-  2. Company shares profits → You get paid (Dividends)
+    💰 How People Make Money:
+    1. Price goes up → Sell for profit (Capital gains)
+    2. Company shares profits → You get paid (Dividends)
 
-  🎯 Pro Tips for Beginners:
-  • Start with companies you know (Love their products? Research them!)
-  • Don''t put all your cash in one stock (That''s like only eating pizza forever)
-  • Ignore the hype (If everyone''s screaming "BUY NOW!", take a breath)
+    🎯 Pro Tips for Beginners:
+    • Start with companies you know (Love their products? Research them!)
+    • Don''t put all your cash in one stock (That''s like only eating pizza forever)
+    • Ignore the hype (If everyone''s screaming "BUY NOW!", take a breath)
 
-  💡 Fun Fact: 
-  If you''d invested R1,000 in Naspers in 1994, it''d be worth over R2 million today! But remember – past performance ≠ future results.
+    💡 Fun Fact: 
+    If you''d invested R1,000 in Naspers in 1994, it''d be worth over R2 million today! But remember – past performance ≠ future results.
 
-  🛒 Buying Stocks is Easier Than You Think:
-  1. Choose an app (EasyEquities, ETFSA, etc.)
-  2. Deposit money
-  3. Buy shares (as little as R100!)
-  4. Watch your money work for you (but don''t check daily!)',
-    8
-  );
+    🛒 Buying Stocks is Easier Than You Think:
+    1. Choose an app (EasyEquities, ETFSA, etc.)
+    2. Deposit money
+    3. Buy shares (as little as R100!)
+    4. Watch your money work for you (but don''t check daily!)', 8
+    );
 
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (
-    (SELECT module_id FROM learning_modules WHERE module_title = 'Investment Fundamentals' LIMIT 1),
-    4,
-    'Building a Diversified Portfolio',
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Investment Fundamentals' LIMIT 1), 4, 'Building a Diversified Portfolio', 
     'A well-diversified portfolio reduces risk while maximizing returns potential. Your asset allocation should match your goals and risk tolerance.
 
-  Portfolio Construction Principles:
-  1. The 60/40 Rule: 60% stocks, 40% bonds (traditional)
-  2. Age-Based Allocation: (100 - age)% in stocks
-  3. Core-Satellite Approach: Index funds + individual picks
+    Portfolio Construction Principles:
+    1. The 60/40 Rule: 60% stocks, 40% bonds (traditional)
+    2. Age-Based Allocation: (100 - age)% in stocks
+    3. Core-Satellite Approach: Index funds + individual picks
 
-  Rebalancing Strategies:
-  - Calendar-Based: Quarterly/annually
-  - Threshold-Based: When allocations deviate 5-10%
+    Rebalancing Strategies:
+    - Calendar-Based: Quarterly/annually
+    - Threshold-Based: When allocations deviate 5-10%
 
-  Example Portfolio for Moderate Risk:
-  - 50% Domestic Stocks
-  - 20% International Stocks
-  - 20% Bonds
-  - 5% Real Estate (REITs)
-  - 5% Cash',
-    8
-  );
+    Example Portfolio for Moderate Risk:
+    - 50% Domestic Stocks
+    - 20% International Stocks
+    - 20% Bonds
+    - 5% Real Estate (REITs)
+    - 5% Cash', 8
+    );
 
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (
-    (SELECT module_id FROM learning_modules WHERE module_title = 'Investment Fundamentals' LIMIT 1),
-    5,
-    'Long-Term Investment Strategies',
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Investment Fundamentals' LIMIT 1), 5, 'Long-Term Investment Strategies',
     'Successful investing requires patience and discipline. These proven strategies help investors build wealth over time.
 
-  Buy-and-Hold Strategy:
-  - Invest in quality companies
-  - Hold through market fluctuations
-  - Benefit from compounding returns
+    Buy-and-Hold Strategy:
+    - Invest in quality companies
+    - Hold through market fluctuations
+    - Benefit from compounding returns
 
-  Index Investing:
-  - Low-cost index funds/ETFs
-  - Matches market performance
-  - Minimal maintenance required
+    Index Investing:
+    - Low-cost index funds/ETFs
+    - Matches market performance
+    - Minimal maintenance required
 
-  Dividend Growth Investing:
-  - Focus on companies with growing dividends
-  - Reinvest dividends for compounding
-  - Provides income in retirement
+    Dividend Growth Investing:
+    - Focus on companies with growing dividends
+    - Reinvest dividends for compounding
+    - Provides income in retirement
 
-  Common Mistakes to Avoid:
-  - Emotional trading
-  - Chasing "hot" stocks
-  - Market timing attempts
-  - Overconcentration in one sector',
-    7
-  );
+    Common Mistakes to Avoid:
+    - Emotional trading
+    - Chasing "hot" stocks
+    - Market timing attempts
+    - Overconcentration in one sector', 7
+    );
 
+-- Quizzes
 INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES 
-  (
-    (SELECT module_id FROM learning_modules WHERE module_title = 'Investment Fundamentals' LIMIT 1),
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Investment Fundamentals' LIMIT 1),
     '[{
         "question": "What is the primary purpose of investing?",
         "options": [
-          "To keep money completely safe",
-          "To grow wealth over time",
-          "To avoid paying taxes",
-          "To impress friends with financial knowledge"
+            "To keep money completely safe",
+            "To grow wealth over time",
+            "To avoid paying taxes",
+            "To impress friends with financial knowledge"
         ],
         "correct_answer": 1,
         "points": 1
@@ -3375,10 +3353,10 @@ INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES
       {
         "question": "Which investment typically carries the highest risk?",
         "options": [
-          "Government bonds",
-          "Savings accounts",
-          "Blue-chip stocks",
-          "Cryptocurrencies"
+            "Government bonds",
+            "Savings accounts",
+            "Blue-chip stocks",
+            "Cryptocurrencies"
         ],
         "correct_answer": 3,
         "points": 1
@@ -3386,10 +3364,10 @@ INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES
       {
         "question": "What does diversification aim to achieve?",
         "options": [
-          "Maximize returns on a single stock",
-          "Reduce overall portfolio risk",
-          "Time the market perfectly",
-          "Avoid all investment losses"
+            "Maximize returns on a single stock",
+            "Reduce overall portfolio risk",
+            "Time the market perfectly",
+            "Avoid all investment losses"
         ],
         "correct_answer": 1,
         "points": 1
@@ -3397,10 +3375,10 @@ INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES
       {
         "question": "What is a key benefit of dollar-cost averaging?",
         "options": [
-          "Eliminates all investment risk",
-          "Guarantees above-market returns",
-          "Reduces impact of market volatility",
-          "Requires large upfront capital"
+            "Eliminates all investment risk",
+            "Guarantees above-market returns",
+            "Reduces impact of market volatility",
+            "Requires large upfront capital"
         ],
         "correct_answer": 2,
         "points": 1
@@ -3408,170 +3386,150 @@ INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES
       {
         "question": "Which strategy focuses on reinvesting profits?",
         "options": [
-          "Market timing",
-          "Day trading",
-          "Dividend growth investing",
-          "Short selling"
+            "Market timing",
+            "Day trading",
+            "Dividend growth investing",
+            "Short selling"
         ],
         "correct_answer": 2,
         "points": 1
       }]',
-    5,
-    3
-  );
+    5, 3);
 
-INSERT INTO module_banners (banner_image_path) VALUES 
- ('module_banners/credit_banner.jpg');
 
-INSERT INTO learning_modules (module_title, topic, difficulty, module_banner_id) VALUES 
-  (
-    'Credit Sensei', 
-    'Smart Borrowing', 
-    'beginner', 
-    (SELECT module_banner_id FROM module_banners WHERE banner_image_path = 'module_banners/credit_banner.jpg' LIMIT 1)
-  );
 
+
+
+
+
+
+
+--- Credit Sensei
+INSERT INTO learning_modules (module_title, topic, difficulty, banner_image_path) VALUES 
+    ('Credit Sensei', 'Smart Borrowing', 'beginner', 'learn_banners/credit.png');
+
+-- Lessons
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (
-    (SELECT module_id FROM learning_modules WHERE module_title = 'Credit Sensei' LIMIT 1),
-    1,
-    'Credit 101 - The Adulting Hack',
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Credit Sensei' LIMIT 1), 1, 'Credit 101 - The Adulting Hack', 
     '💳 Credit = Borrowing money now that you promise to pay back later (with interest!). It''s like a financial trust score that follows you everywhere.
 
-  🔥 Why It Matters:
-  - Can help you buy a car/home/start business
-  - Affects cellphone contracts & apartment rentals
-  - Good credit = lower interest rates = more money saved
+    🔥 Why It Matters:
+    - Can help you buy a car/home/start business
+    - Affects cellphone contracts & apartment rentals
+    - Good credit = lower interest rates = more money saved
 
-  💸 Credit Golden Rule:
-  "Only borrow what you can DEFINITELY pay back by payday" - Your Future Self
+    💸 Credit Golden Rule:
+    "Only borrow what you can DEFINITELY pay back by payday" - Your Future Self
 
-  🚦 Credit Types:
-  • Credit cards (like a reusable loan)
-  • Store accounts (Hi, Mr Price!)
-  • Personal loans (Bigger amounts)
-  • Student loans (Education investment)
+    🚦 Credit Types:
+    • Credit cards (like a reusable loan)
+    • Store accounts (Hi, Mr Price!)
+    • Personal loans (Bigger amounts)
+    • Student loans (Education investment)
 
-  📱 Pro Tip: 
-  Check your credit report for free once a year at TransUnion or Experian!',
-    6
-  );
+    📱 Pro Tip: 
+    Check your credit report for free once a year at TransUnion or Experian!', 6
+    );
 
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (
-    (SELECT module_id FROM learning_modules WHERE module_title = 'Credit Sensei' LIMIT 1),
-    2,
-    'Credit Scores Demystified',
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Credit Sensei' LIMIT 1), 2, 'Credit Scores Demystified',
     'Your credit score is like a financial report card (but way more important than matric!). Scores range 0-999:
 
-  🟢 767+ = Credit Ninja
-  🟡 681-766 = On Your Way
-  🔴 0-680 = Needs Work
+    🟢 767+ = Credit Ninja
+    🟡 681-766 = On Your Way
+    🔴 0-680 = Needs Work
 
-  🧮 What Affects Your Score:
-  1. Payment History (35%) - Pay on time, every time!
-  2. Amounts Owed (30%) - Keep balances <30% of limit
-  3. Credit Age (15%) - Older accounts help
-  4. Credit Mix (10%) - Different types (but don''t overdo it)
-  5. New Credit (10%) - Too many applications = red flag
+    🧮 What Affects Your Score:
+    1. Payment History (35%) - Pay on time, every time!
+    2. Amounts Owed (30%) - Keep balances <30% of limit
+    3. Credit Age (15%) - Older accounts help
+    4. Credit Mix (10%) - Different types (but don''t overdo it)
+    5. New Credit (10%) - Too many applications = red flag
 
-  💯 Quick Boosters:
-  • Set up debit orders for minimum payments
-  • Keep old accounts open (even if unused)
-  • Space out credit applications',
-    7
-  );
+    💯 Quick Boosters:
+    • Set up debit orders for minimum payments
+    • Keep old accounts open (even if unused)
+    • Space out credit applications', 7
+    );
 
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (
-    (SELECT module_id FROM learning_modules WHERE module_title = 'Credit Sensei' LIMIT 1),
-    3,
-    'Credit Cards - Friend or Foe?',
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Credit Sensei' LIMIT 1), 3, 'Credit Cards - Friend or Foe?',
     'Credit cards are like fire - useful tool or dangerous weapon depending on how you use them!
 
-  ✅ The Good:
-  • Build credit history
-  • Earn rewards/cashback
-  • Fraud protection
-  • Emergency cushion
+    ✅ The Good:
+    • Build credit history
+    • Earn rewards/cashback
+    • Fraud protection
+    • Emergency cushion
 
-  ❌ The Bad:
-  • 20%+ interest if not paid in full
-  • Easy to overspend
-  • Fees add up quickly
+    ❌ The Bad:
+    • 20%+ interest if not paid in full
+    • Easy to overspend
+    • Fees add up quickly
 
-  🛡️ Safety Rules:
-  1. ALWAYS pay full balance monthly
-  2. Never use >30% of your limit
-  3. Skip "buy now, pay later" unless essential
-  4. Freeze your card in an actual freezer if tempted!
+    🛡️ Safety Rules:
+    1. ALWAYS pay full balance monthly
+    2. Never use >30% of your limit
+    3. Skip "buy now, pay later" unless essential
+    4. Freeze your card in an actual freezer if tempted!
 
-  💡 Pro Hack: 
-  Use your credit card like a debit card - only spend what''s in your bank account right now.',
-    8
-  );
+    💡 Pro Hack: 
+    Use your credit card like a debit card - only spend what''s in your bank account right now.', 8
+    );
 
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (
-    (SELECT module_id FROM learning_modules WHERE module_title = 'Credit Sensei' LIMIT 1),
-    4,
-    'Debt Dig-Out Strategies',
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Credit Sensei' LIMIT 1), 4, 'Debt Dig-Out Strategies',
     'In a debt hole? Stop digging! Here''s your escape ladder:
 
-  🚨 Danger Signs:
-  • Paying one credit card with another
-  • Minimum payments only
-  • Lying to friends/family about debt
+    🚨 Danger Signs:
+    • Paying one credit card with another
+    • Minimum payments only
+    • Lying to friends/family about debt
 
-  🔧 Fix-It Tools:
-  1️⃣ Snowball Method: 
-  - Pay smallest debt first (quick wins!)
-  - Then roll that payment to next debt
+    🔧 Fix-It Tools:
+    1️⃣ Snowball Method: 
+    - Pay smallest debt first (quick wins!)
+    - Then roll that payment to next debt
 
-  2️⃣ Avalanche Method:
-  - Attack highest interest debt first
-  - Saves most money long-term
+    2️⃣ Avalanche Method:
+    - Attack highest interest debt first
+    - Saves most money long-term
 
-  3️⃣ Debt Consolidation:
-  - Combine debts into one lower-interest loan
-  - BUT don''t run up cards again!
+    3️⃣ Debt Consolidation:
+    - Combine debts into one lower-interest loan
+    - BUT don''t run up cards again!
 
-  📞 Lifelines:
-  • National Debtline (0800 20 57 28)
-  • Debt counseling (it''s confidential!)',
-    7
-  );
+    📞 Lifelines:
+    • National Debtline (0800 20 57 28)
+    • Debt counseling (it''s confidential!)', 7
+    );
 
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (
-    (SELECT module_id FROM learning_modules WHERE module_title = 'Credit Sensei' LIMIT 1),
-    5,
-    'Credit Hacks for Big Goals',
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Credit Sensei' LIMIT 1), 5, 'Credit Hacks for Big Goals',
     'Want a car/home/business loan someday? Start prepping NOW:
 
-  🚗 Car Loan Prep (12+ months before):
-  • Get credit score >650
-  • Save 20% deposit = better rates
-  • Keep debt-to-income ratio <35%
+    🚗 Car Loan Prep (12+ months before):
+    • Get credit score >650
+    • Save 20% deposit = better rates
+    • Keep debt-to-income ratio <35%
 
-  🏡 Home Loan Game Plan:
-  • Need 650+ credit score
-  • No missed payments for 2 years
-  • Stable job history matters too
+    🏡 Home Loan Game Plan:
+    • Need 650+ credit score
+    • No missed payments for 2 years
+    • Stable job history matters too
 
-  💼 Business Funding:
-  • Personal credit still counts
-  • Separate business account ASAP
-  • Build relationships with local banks
+    💼 Business Funding:
+    • Personal credit still counts
+    • Separate business account ASAP
+    • Build relationships with local banks
 
-  🌟 Golden Rule: 
-  The best time to fix your credit was last year. The second-best time? TODAY!',
-    8
-  );
+    🌟 Golden Rule: 
+    The best time to fix your credit was last year. The second-best time? TODAY!', 8
+    );
 
+-- Quizzes
 INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES 
-  (
-    (SELECT module_id FROM learning_modules WHERE module_title = 'Credit Sensei' LIMIT 1),
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Credit Sensei' LIMIT 1),
     '[{
         "question": "What percentage of your credit limit should you ideally use?",
         "options": [
@@ -3627,147 +3585,126 @@ INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES
         "correct_answer": 1,
         "points": 1
       }]',
-    5,
-    3
-  );
+    5, 3);
 
-INSERT INTO module_banners (banner_image_path)  VALUES 
- ('module_banners/fomo_banner.jpg');
 
-INSERT INTO learning_modules (module_title, topic, difficulty, module_banner_id) VALUES 
-  (
-    'FOMO vs. Future You', 
-    'Social Budgeting', 
-    'beginner', 
-    (SELECT module_banner_id FROM module_banners WHERE banner_image_path = 'module_banners/fomo_banner.jpg' LIMIT 1)
-  );
 
+
+
+
+
+
+--- 'FOMO vs. Future You'
+INSERT INTO learning_modules (module_title, topic, difficulty, banner_image_path) VALUES 
+    ('FOMO vs. Future You', 'Social Budgeting', 'beginner', 'learn_banners/Fomo.png');
+
+-- Lessons
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (
-    (SELECT module_id FROM learning_modules WHERE module_title = 'FOMO vs. Future You' LIMIT 1),
-    1,
-    'Why FOMO Costs More Than Money',
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'FOMO vs. Future You' LIMIT 1), 1, 'Why FOMO Costs More Than Money',
     '💸 **FOMO Fact:** The average South African spends **R1,200/month** on unplanned social outings (yes, that''s **R14k/year!**).  
 
-  🔍 **What''s Really Happening?**  
-  - You say *"It''s just one night out!"* → But 5 "just one nights" = a month''s savings.  
-  - **Hidden Cost:** The *"I''ll fix it later"* mindset keeps you stuck in paycheck-to-paycheck mode.  
+    🔍 **What''s Really Happening?**  
+    - You say *"It''s just one night out!"* → But 5 "just one nights" = a month''s savings.  
+    - **Hidden Cost:** The *"I''ll fix it later"* mindset keeps you stuck in paycheck-to-paycheck mode.  
 
-  🎯 **This Lesson''s Goal:**  
-  Identify your **FOMO Triggers**:  
-  1. **Scrolling Instagram** → "They''re all at the club!"  
-  2. **Group Chats** → "Everyone''s going!"  
-  3. **FOMO Discounts** → "Last chance! Sale ends tonight!"  
+    🎯 **This Lesson''s Goal:**  
+    Identify your **FOMO Triggers**:  
+    1. **Scrolling Instagram** → "They''re all at the club!"  
+    2. **Group Chats** → "Everyone''s going!"  
+    3. **FOMO Discounts** → "Last chance! Sale ends tonight!"  
 
-  💡 **Try This:**  
-  Next time you feel FOMO, **pause and ask**:  
-  *"Will I remember this in 3 months? Or would Future Me rather have R500 closer to a car deposit?"*',
-    6
-  );
+    💡 **Try This:**  
+    Next time you feel FOMO, **pause and ask**:  
+    *"Will I remember this in 3 months? Or would Future Me rather have R500 closer to a car deposit?"*', 6
+    );
 
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (
-    (SELECT module_id FROM learning_modules WHERE module_title = 'FOMO vs. Future You' LIMIT 1),
-    2,
-    'The 50/30/20 Rule for Fun & Savings',
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'FOMO vs. Future You' LIMIT 1), 2, 'The 50/30/20 Rule for Fun & Savings',
     '💰 **Budget Like a Pro:**  
-  Split your after-tax income like this:  
-  - **50% Needs** (Rent, food, transport)  
-  - **30% Wants** (Social life, Netflix, takeout)  
-  - **20% Future You** (Savings, investments)  
+    Split your after-tax income like this:  
+    - **50% Needs** (Rent, food, transport)  
+    - **30% Wants** (Social life, Netflix, takeout)  
+    - **20% Future You** (Savings, investments)  
 
-  📌 **Example (R10k salary):**  
-  - **R3k for fun** = R750/week (still enough for 2-3 outings!)  
-  - **R2k savings** = R24k/year → Hello, emergency fund!  
+    📌 **Example (R10k salary):**  
+    - **R3k for fun** = R750/week (still enough for 2-3 outings!)  
+    - **R2k savings** = R24k/year → Hello, emergency fund!  
 
-  🔥 **Hack:**  
-  Open a **separate "Guilt-Free Fun" bank account**. When the R750 is gone, **get creative**:  
-  - Host a *bring-and-braai* (cheaper than clubs!)  
-  - Swap pricey cocktails for *DIY gin tastings*  
-  - Try *free events* (comedy nights, hiking, beach days)  
+    🔥 **Hack:**  
+    Open a **separate "Guilt-Free Fun" bank account**. When the R750 is gone, **get creative**:  
+    - Host a *bring-and-braai* (cheaper than clubs!)  
+    - Swap pricey cocktails for *DIY gin tastings*  
+    - Try *free events* (comedy nights, hiking, beach days)  
 
-  💡 **Pro Tip:**  
-  Automate your savings **right after payday** – Future You will high-five you later!',
-    7
-  );
+    💡 **Pro Tip:**  
+    Automate your savings **right after payday** – Future You will high-five you later!', 7
+    );
 
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (
-    (SELECT module_id FROM learning_modules WHERE module_title = 'FOMO vs. Future You' LIMIT 1),
-    3,
-    'The 24-Hour Rule to Stop Impulse Spending',
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'FOMO vs. Future You' LIMIT 1), 3, 'The 24-Hour Rule to Stop Impulse Spending',
     '🛑 **The Problem:**  
-  FOMO makes us **spend fast** → regret later.  
+    FOMO makes us **spend fast** → regret later.  
 
-  ✅ **The Fix:** **Wait 24 hours** before saying *"YES"* to any non-essential spend.  
+    ✅ **The Fix:** **Wait 24 hours** before saying *"YES"* to any non-essential spend.  
 
-  📱 **Real-Life Test:**  
-  1. **You see:** "Concert tickets on sale now!"  
-  2. **Instead of buying immediately**, set a reminder for **tomorrow**.  
-  3. **Ask yourself:**  
-    - *"Can I afford this without touching savings?"*  
-    - *"Is there a cheaper alternative?"* (e.g., watch the live stream?)  
+    📱 **Real-Life Test:**  
+    1. **You see:** "Concert tickets on sale now!"  
+    2. **Instead of buying immediately**, set a reminder for **tomorrow**.  
+    3. **Ask yourself:**  
+        - *"Can I afford this without touching savings?"*  
+        - *"Is there a cheaper alternative?"* (e.g., watch the live stream?)  
 
-  📊 **Results:**  
-  - **80% of the time**, you''ll realize you *don''t actually need it*.  
-  - **20% of the time**, you''ll buy it **with zero guilt** because it was a *real* priority.  
+    📊 **Results:**  
+    - **80% of the time**, you''ll realize you *don''t actually need it*.  
+    - **20% of the time**, you''ll buy it **with zero guilt** because it was a *real* priority.  
 
-  💬 **Challenge:**  
-  Try this for **one week** and track how much you save!',
-    6
-  );
+    💬 **Challenge:**  
+    Try this for **one week** and track how much you save!', 6
+    );
 
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (
-    (SELECT module_id FROM learning_modules WHERE module_title = 'FOMO vs. Future You' LIMIT 1),
-    4,
-    '"Fake Rich" vs. "Real Rich" Habits',
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'FOMO vs. Future You' LIMIT 1), 4, '"Fake Rich" vs. "Real Rich" Habits',
     '🎭 **Fake Rich Habits:**  
-  - Buying rounds for the whole squad *"to look cool"*  
-  - Leasing a fancy car *just for Instagram*  
-  - Maxing out credit cards on designer sales  
+    - Buying rounds for the whole squad *"to look cool"*  
+    - Leasing a fancy car *just for Instagram*  
+    - Maxing out credit cards on designer sales  
 
-  🏆 **Real Rich Habits:**  
-  - **Saying NO** to events you can''t afford  
-  - **Investing in skills** (online courses > overpriced bottles)  
-  - **Delayed gratification** (e.g., saving for a trip instead of clubbing weekly)  
+    🏆 **Real Rich Habits:**  
+    - **Saying NO** to events you can''t afford  
+    - **Investing in skills** (online courses > overpriced bottles)  
+    - **Delayed gratification** (e.g., saving for a trip instead of clubbing weekly)  
 
-  💡 **Reality Check:**  
-  That friend who *always* posts luxury trips?  
-  - They might be **in serious debt**.  
-  - **OR** they budgeted for months to afford it.  
+    💡 **Reality Check:**  
+    That friend who *always* posts luxury trips?  
+    - They might be **in serious debt**.  
+    - **OR** they budgeted for months to afford it.  
 
-  🔑 **Takeaway:**  
-  *"We buy things we don''t need, with money we don''t have, to impress people we don''t like."* – Fight the FOMO illusion!',
-    7
-  );
+    🔑 **Takeaway:**  
+    *"We buy things we don''t need, with money we don''t have, to impress people we don''t like."* – Fight the FOMO illusion!', 7
+    );
 
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (
-    (SELECT module_id FROM learning_modules WHERE module_title = 'FOMO vs. Future You' LIMIT 1),
-    5,
-    'How to Politely Say "I''m on a Budget"',
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'FOMO vs. Future You' LIMIT 1), 5, 'How to Politely Say "I''m on a Budget"',
     '🚨 **The Struggle:**  
-  Your friends want to go to an expensive restaurant, but you''re saving. What do you say?  
+    Your friends want to go to an expensive restaurant, but you''re saving. What do you say?  
 
-  💬 **Scripts That Work:**  
-  1. *"I''m saving for [goal], but I''ll join for drinks later!"*  
-  2. *"Let''s try [cheaper alternative] instead – my treat next time!"*  
-  3. *"I''m doing a no-spend month, but let''s plan a braai soon!"*  
+    💬 **Scripts That Work:**  
+    1. *"I''m saving for [goal], but I''ll join for drinks later!"*  
+    2. *"Let''s try [cheaper alternative] instead – my treat next time!"*  
+    3. *"I''m doing a no-spend month, but let''s plan a braai soon!"*  
 
-  🔄 **Better Yet – Suggest Alternatives:**  
-  - **"Picnic in the park"** > R200 cocktails  
-  - **"Game night at home"** > R500 club cover  
-  - **"Hike + coffee"** > R300 brunch  
+    🔄 **Better Yet – Suggest Alternatives:**  
+    - **"Picnic in the park"** > R200 cocktails  
+    - **"Game night at home"** > R500 club cover  
+    - **"Hike + coffee"** > R300 brunch  
 
-  💡 **Truth Bomb:**  
-  *Real friends* won''t judge you for budgeting. If they do? **Time for new friends.**',
-    6
-  );
+    💡 **Truth Bomb:**  
+    *Real friends* won''t judge you for budgeting. If they do? **Time for new friends.**', 6
+    );
 
+-- Quizzes
 INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES 
-  (
-    (SELECT module_id FROM learning_modules WHERE module_title = 'FOMO vs. Future You' LIMIT 1),
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'FOMO vs. Future You' LIMIT 1),
     '[{
         "question": "What''s the BEST way to handle FOMO spending?",
         "options": [
@@ -3791,12 +3728,12 @@ INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES
         "points": 1
       },
       {
-        "question": "What''s a \"Real Rich\" habit?",
+        "question": "What''s a ''Real Rich'' habit?",
         "options": [
-          "Leasing a car to look successful",
-          "Saving R500/month for a future goal",
-          "Buying drinks for everyone at the club",
-          "Maxing out credit cards on sales"
+            "Leasing a car to look successful",
+            "Saving R500/month for a future goal",
+            "Buying drinks for everyone at the club",
+            "Maxing out credit cards on sales"
         ],
         "correct_answer": 1,
         "points": 1
@@ -3823,146 +3760,124 @@ INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES
         "correct_answer": 0,
         "points": 1
       }]',
-    5,
-    3
-  );
+    5, 3);
 
-INSERT INTO module_banners (banner_image_path) VALUES 
-  ('module_banners/retrenchment_banner.jpg');
 
-INSERT INTO learning_modules (module_title, topic, difficulty, module_banner_id) VALUES 
-  (
-    'Retrenchment Rescue', 
-    'Crisis Management', 
-    'beginner', 
-    (SELECT module_banner_id FROM module_banners WHERE banner_image_path = 'module_banners/retrenchment_banner.jpg' LIMIT 1)
-  );
 
+
+
+
+
+--- Retrenchment Rescue
+INSERT INTO learning_modules (module_title, topic, difficulty, banner_image_path) VALUES 
+    ('Retrenchment Rescue', 'Crisis Management', 'intermediate', 'learn_banners/retrenchment.png');
+
+-- Lessons
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (
-    (SELECT module_id FROM learning_modules WHERE module_title = 'Retrenchment Rescue' LIMIT 1),
-    1,
-    'Your 30-Day Survival Plan',
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Retrenchment Rescue' LIMIT 1), 1, 'Your 30-Day Survival Plan',
     '💥 **First 72 Hours Checklist:**  
-  1. **Breathe.** Job loss = shock. Don''t make rash money decisions.  
-  2. **Confirm paperwork** – Get retrenchment letter & UIF forms signed.  
-  3. **Cut non-essentials** NOW (subscriptions, eating out).  
+    1. **Breathe.** Job loss = shock. Don''t make rash money decisions.  
+    2. **Confirm paperwork** - Get retrenchment letter & UIF forms signed.  
+    3. **Cut non-essentials** NOW (subscriptions, eating out).  
 
-  📉 **Cash Flow Triage:**  
-  - **Priority 1:** Rent, utilities, food  
-  - **Priority 2:** Minimum debt payments  
-  - **Pause:** Savings, investments, luxury spending  
+    📉 **Cash Flow Triage:**  
+    - **Priority 1:** Rent, utilities, food  
+    - **Priority 2:** Minimum debt payments  
+    - **Pause:** Savings, investments, luxury spending  
 
-  💡 **SA Pro Tip:**  
-  Call providers *before* missing payments – many offer **payment holidays** for retrenchment (Cell C, DSTV, banks).  
+    💡 **SA Pro Tip:**  
+    Call providers *before* missing payments - many offer **payment holidays** for retrenchment (Cell C, DSTV, banks).  
 
-  🛠️ **Action Step:**  
-  List your **last 3 months'' expenses** – highlight what can be paused or reduced.',
-    7
-  );
+    🛠️ **Action Step:**  
+    List your **last 3 months'' expenses** - highlight what can be paused or reduced.', 7
+    );
 
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (
-    (SELECT module_id FROM learning_modules WHERE module_title = 'Retrenchment Rescue' LIMIT 1),
-    2,
-    'How to Claim UIF Like a Pro',
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Retrenchment Rescue' LIMIT 1), 2, 'How to Claim UIF Like a Pro',
     '🇿🇦 **UIF Fast Facts:**  
-  - You get **38-58% of your salary** for up to 12 months.  
-  - First payment takes **6-8 weeks** → act FAST.  
+    - You get **38-58% of your salary** for up to 12 months.  
+    - First payment takes **6-8 weeks** → act FAST.  
 
-  📝 **Documents Needed:**  
-  1. ID copy  
-  2. UI-2.8 form (from employer)  
-  3. UI-19 form (proof of termination)  
-  4. 3 months'' bank statements  
+    📝 **Documents Needed:**  
+    1. ID copy  
+    2. UI-2.8 form (from employer)  
+    3. UI-19 form (proof of termination)  
+    4. 3 months'' bank statements  
 
-  🚀 **Online Application Steps:**  
-  1. Register on [uFiling](https://ufiling.labour.gov.za)  
-  2. Upload documents  
-  3. Track status via SMS  
+    🚀 **Online Application Steps:**  
+    1. Register on [uFiling](https://ufiling.labour.gov.za)  
+    2. Upload documents  
+    3. Track status via SMS  
 
-  ⚠️ **Avoid These Mistakes:**  
-  - Waiting >12 months to claim  
-  - Not following up if payment delays  
-  - Forgetting to **re-apply every 4 months**  
+    ⚠️ **Avoid These Mistakes:**  
+    - Waiting >12 months to claim  
+    - Not following up if payment delays  
+    - Forgetting to **re-apply every 4 months**  
 
-  💡 **Hack:** Visit a **Labour Centre** early morning to skip queues.',
-    8
-  );
+    💡 **Hack:** Visit a **Labour Centre** early morning to skip queues.', 8
+    );
 
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (
-    (SELECT module_id FROM learning_modules WHERE module_title = 'Retrenchment Rescue' LIMIT 1),
-    3,
-    'Emergency Side Hustles That Pay Fast',
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Retrenchment Rescue' LIMIT 1), 3, 'Emergency Side Hustles That Pay Fast',
     '💰 **Quick Cash Options (R500+ daily):**  
-  - **Food Delivery** (Mr D, Uber Eats) – Use a bicycle/scooter  
-  - **Freelancing** (Upwork, Fiverr) – Data entry, basic graphic design  
-  - **Tutoring** – Maths/English via Zoom (R150-300/hour)  
+    - **Food Delivery** (Mr D, Uber Eats) – Use a bicycle/scooter  
+    - **Freelancing** (Upwork, Fiverr) – Data entry, basic graphic design  
+    - **Tutoring** – Maths/English via Zoom (R150-300/hour)  
 
-  🛒 **Sell Smart:**  
-  1. **Facebook Marketplace** – Old gadgets, clothes, furniture  
-  2. **Back-a-Buddy** – Crowdfund upskilling courses  
-  3. **Airvoice/Flash** – Resell prepaid data/Airtime  
+    🛒 **Sell Smart:**  
+    1. **Facebook Marketplace** – Old gadgets, clothes, furniture  
+    2. **Back-a-Buddy** – Crowdfund upskilling courses  
+    3. **Airvoice/Flash** – Resell prepaid data/Airtime  
 
-  🔥 **Low-Cost Ideas:**  
-  - **Car Washing** (R100/car, 5 cars/day = R500)  
-  - **CV Writing** (R200 per CV for job seekers)  
+    🔥 **Low-Cost Ideas:**  
+    - **Car Washing** (R100/car, 5 cars/day = R500)  
+    - **CV Writing** (R200 per CV for job seekers)  
 
-  💡 **Pro Tip:**  
-  Use free Google Certificates (IT support, digital marketing) to boost earning potential.',
-    7
-  );
-
-INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (
-    (SELECT module_id FROM learning_modules WHERE module_title = 'Retrenchment Rescue' LIMIT 1),
-    4,
-    'Emotional & Mental Health First Aid',
-    '💔 **It''s Not Just Money – It''s Grief:**  
-  - Allow yourself to feel anger/sadness (but set a *"worry time"* limit)  
-  - Avoid isolation → join free support groups ([SADAG](https://www.sadag.org))  
-
-  🧠 **Crisis Mindset Shifts:**  
-  - **"I lost a job, not my worth."**  
-  - **"This is temporary – what can I control?"**  
-
-  🆘 **Free SA Resources:**  
-  1. **SADAG Helpline:** 0800 456 789  
-  2. **LifeLine:** 0861 322 322  
-  3. **Local churches/NGOs** often offer free counseling  
-
-  💡 **Action Step:**  
-  Schedule **one small win daily** (e.g., 10 job applications, 1 networking call).',
-    6
-  );
+    💡 **Pro Tip:**  
+    Use free Google Certificates (IT support, digital marketing) to boost earning potential.', 7
+    );
 
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
-  (
-    (SELECT module_id FROM learning_modules WHERE module_title = 'Retrenchment Rescue' LIMIT 1),
-    5,
-    'Bouncing Back Stronger',
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Retrenchment Rescue' LIMIT 1), 4, 'Emotional & Mental Health First Aid',
+    '💔 **It''s Not Just Money - It''s Grief:**  
+    - Allow yourself to feel anger/sadness (but set a *"worry time"* limit)  
+    - Avoid isolation → join free support groups ([SADAG](https://www.sadag.org))  
+
+    🧠 **Crisis Mindset Shifts:**  
+    - **"I lost a job, not my worth."**  
+    - **"This is temporary - what can I control?"**  
+
+    🆘 **Free SA Resources:**  
+    1. **SADAG Helpline:** 0800 456 789  
+    2. **LifeLine:** 0861 322 322  
+    3. **Local churches/NGOs** often offer free counseling  
+
+    💡 **Action Step:**  
+    Schedule **one small win daily** (e.g., 10 job applications, 1 networking call).', 6
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Retrenchment Rescue' LIMIT 1), 5, 'Bouncing Back Stronger',
     '🚀 **Rebuild Strategy:**  
-  1. **Upskill for Free:**  
+    1. **Upskill for Free:**  
     - Google Digital Garage (certificates)  
     - Coursera Financial Aid (apply for free courses)  
-  2. **Network Relentlessly:**  
-    - LinkedIn messages: *"I''m exploring X roles – any advice?"*  
-  3. **Consider Pivoting:**  
+    2. **Network Relentlessly:**  
+    - LinkedIn messages: *"I''m exploring X roles - any advice?"*  
+    3. **Consider Pivoting:**  
     - Remote work (international companies hire SA talent)  
 
-  📈 **Future-Proofing:**  
-  - **Build a 6-month emergency fund** (start small – R500/month)  
-  - **Diversify income** (always have 2+ income streams)  
+    📈 **Future-Proofing:**  
+    - **Build a 6-month emergency fund** (start small - R500/month)  
+    - **Diversify income** (always have 2+ income streams)  
 
-  💡 **Success Story:**  
-  *"After retrenchment, I learned coding via YouTube. Now I earn 3x my old salary remotely."* – Thando, 28',
-    8
-  );
+    💡 **Success Story:**  
+    *"After retrenchment, I learned coding via YouTube. Now I earn 3x my old salary remotely."* - Thando, 28', 8
+    );
 
+-- Quizzes
 INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES 
-  (
-    (SELECT module_id FROM learning_modules WHERE module_title = 'Retrenchment Rescue' LIMIT 1),
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Retrenchment Rescue' LIMIT 1),
     '[{
         "question": "What''s the FIRST thing to do after retrenchment?",
         "options": [
@@ -4018,211 +3933,2812 @@ INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES
         "correct_answer": 2,
         "points": 1
       }]',
+    5, 3);
+
+
+
+
+
+
+
+
+
+--- Tax Master
+INSERT INTO learning_modules (module_title, topic, difficulty, banner_image_path) VALUES 
+    ('Tax Master', 'Personal Finance', 'intermediate', 'learn_banners/TaxMaster.png');
+
+-- Lessons
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Tax Master' LIMIT 1), 1, 'SARS Deadlines You Can''t Miss',
+    '📅 SA Tax Calendar Cheat Sheet:
+
+    💡 Key Dates for Individuals:  
+    - 31 Oct: Provisional Tax Return (if you earn side income)  
+    - 23 Nov: E-filing deadline for non-provisional taxpayers  
+    - 31 Jan: Medical tax credit claims must be submitted  
+
+    💼 For Freelancers/Small Business:  
+    - 7th of each month: PAYE submissions if registered as employer  
+    - Last day of month: VAT returns (if registered)  
+
+    ⚠️ Late Penalties:
+    - R250 per month for missed personal returns  
+    - 10% of tax due for late business payments  
+
+    📱 Pro Tip:
+    Set calendar reminders 1 week before each deadline - SARS won''t send reminders!', 8
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Tax Master' LIMIT 1), 2, '5 Tax Deductions You''re Not Claiming',
+    '💰 Hidden SARS Rebates for Salaried Employees:
+
+    1. Home Office Costs
+       - Need dedicated workspace + logbook  
+       - Claim portion of rent, internet, electricity  
+
+    2. Retirement Contributions  
+       - Up to 27.5% of income (max R350k/year)  
+       - Includes RA, pension, provident funds  
+
+    3. Travel Expenses  
+       - Keep petrol slips if client visits exceed 12,000km/year  
+
+    4. Medical Expenses 
+       - Out-of-pocket costs not covered by medical aid  
+       - Includes prescribed meds, doctor visits  
+
+    5. Education Fees  
+       - Courses related to your current job  
+       - E.g. Programmer claiming coding bootcamp  
+
+    📌 Must Have:
+    - Keep all receipts for 5 years
+    - Use SARS eFiling app to scan and store docs', 9
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Tax Master' LIMIT 1), 3, 'Freelancer Tax Hacks',
+    '👩💻 Tax Survival Guide for Gig Workers: 
+
+    📌 Register As:  
+    - Provisional Taxpayer if earning > R30k/year side income  
+    - VAT Vendor only if turnover > R1 million/year (optional below)  
+
+    💡 Smart Deductions:  
+    - Device Depreciation - Claim 33% of laptop/phone cost over 3 years  
+    - Coworking Spaces - Full deduction if used for work  
+    - Bank Fees - On business accounts  
+
+    🚨 Common Mistakes:  
+    - Mixing personal & business accounts → SARS audits  
+    - Forgetting UberEarnings count as taxable income  
+
+    📱 Tools That Help:  
+    - Wave Apps (free invoicing + expense tracking)  
+    - TaxTim (SA-specific tax calculator)', 7
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Tax Master' LIMIT 1), 4, 'SARS Audit Protection',
+    '🔍 What Triggers an Audit: 
+    - Sudden income jumps (>30% year-on-year)  
+    - Claiming 100% home office without proof  
+    - Consistent losses in side business  
+
+    🛡️ Audit-Proof Your Taxes:
+    1. Document Everything
+       - Photos of home office, client meeting logs
+    2. Reconcile Bank Statements
+       - SARS compares declared income to deposits
+    3. Use SARS-Compatible Software
+       - Xero, QuickBooks SA versions
+
+    💡 If Audited:
+    - You have 21 days to respond
+    - Can request extension if needed
+    - Never ignore the letter!
+
+    📌 Red Flag: 
+    Writing "estimates" instead of actual figures', 8
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Tax Master' LIMIT 1), 5, 'Tax-Free Savings Explained',
+    '💸 TFSA vs RA vs Normal Savings:  
+
+    🏦 Tax-Free Savings Account (TFSA) 
+    - No tax on interest/dividends/capital gains  
+    - Max R36k/year (R500k lifetime limit)  
+    - Best for: Short-term goals (5-10 years)  
+
+    🔄 Retirement Annuity (RA) 
+    - Tax deduction when contributing  
+    - Taxed on withdrawal after retirement  
+    - Best for: Long-term growth  
+
+    📈 Normal Savings  
+    - Taxed on interest > R23,800/year (under 65)  
+
+    💡 SA Pro Tip:  
+    Open a TFSA early - the R500k lifetime limit includes growth! Example:  
+    - Invest R36k/year for 10 years = R360k  
+    - If it grows to R600k, you can''t contribute more even though you only put in R360k', 7
+    );
+
+-- Quizzes
+INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Tax Master' LIMIT 1),
+    '[{
+        "question": "When is the deadline for provisional taxpayers?",
+        "options": [
+          "31 December",
+          "31 October",
+          "23 November",
+          "No deadline"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "What percentage of retirement contributions are deductible?",
+        "options": [
+          "10% of income",
+          "15% of income",
+          "27.5% of income",
+          "50% of income"
+        ],
+        "correct_answer": 2,
+        "points": 1
+      },
+      {
+        "question": "What is the annual TFSA contribution limit?",
+        "options": [
+          "R12,000",
+          "R36,000",
+          "R100,000",
+          "No limit"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "Which expense CANNOT be claimed by freelancers?",
+        "options": [
+          "Home internet (30% if working from home)",
+          "New gaming laptop (if used for work)",
+          "Business lunches with clients",
+          "Commuting to regular office job"
+        ],
+        "correct_answer": 3,
+        "points": 1
+      },
+      {
+    "question": "Why does a R10k side hustle payment often become R3k after tax?",
+    "options": [
+      "Provisional tax demands 40% upfront",
+      "SARS penalties for late registration",
+      "You get pushed into a higher tax bracket",
+      "All of the above"
+    ],
+    "correct_answer": 3,
+    "points": 1
+  }]',
+  5, 3);
+
+
+
+
+
+
+
+
+
+
+
+--- Side Hustler
+INSERT INTO learning_modules (module_title, topic, difficulty, banner_image_path) VALUES 
+    ('Side Hustler', 'Income Generation', 'beginner', 'learn_banners/sideHustle.png');
+
+-- Lessons
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Side Hustler' LIMIT 1), 1, '5 Low-Cost Side Hustles to Start This Weekend',
+    '🚀 SA-Friendly Side Gigs Under R500 Startup:
+
+    1. Freelance Writing 
+       - Platforms: Upwork, PeoplePerHour  
+       - Earn: R200-R500/article  
+
+    2. Tutoring
+       - Teach school subjects via Zoom
+       - Rate: R150-R300/hour  
+
+    3. Reselling Thrift Finds
+       - Buy at Hospice shops, sell on Facebook Marketplace
+       - Profit margin: 200-300%
+
+    4. Car Washing
+       - Mobile service with bucket & sponge
+       - Charge R150/car (3 cars/day = R450)
+
+    5. Social Media Management
+       - Help small businesses post 3x/week
+       - Earn: R800-R2000/month/client
+
+    💡 Pro Tip:
+    Start with what you already own - phone, laptop, or bicycle!', 6
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Side Hustler' LIMIT 1), 2, 'From Side Hustle to Registered Business',
+    '📌 When to Register Your Hustle:
+    - Earning > R30k/year consistently  
+    - Want to open business bank account  
+    - Need to claim expenses against tax  
+
+    📝 Registration Options:
+    1. Sole Proprietor
+       - Free to register
+       - No separation between personal & business assets
+
+    2. Pty Ltd
+       - Costs ~R175 at CIPC  
+       - Protects personal assets  
+
+    💼 Must-Have Documents:
+    - SARS income tax number (free)
+    - Business banking (FNB, Capitec offer free accounts)  
+
+    ⚠️ Watch Out:
+    - Don''t register too early - admin costs add up  
+    - Keep personal & biz transactions separate from Day 1', 7
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Side Hustler' LIMIT 1), 3, 'Pricing Strategies That Win Clients',
+    '💵 How to Price Without Scaring Customers:
+
+    📊 Pricing Models That Work in SA:
+    1. Hourly Rate
+       - Beginner: R150-R300/hour
+       - Expert: R500+/hour
+
+    2. Value-Based Pricing 
+       - "I''ll increase your Instagram followers by 500 = R800"  
+
+    3. Package Deals
+       - "3 social media posts/week = R1200/month"
+
+    🚫 Common Mistakes:  
+    - Charging too low "to get experience"  
+    - Not including revisions in quote  
+
+    💡 SA Hack:
+    Offer 3 price options (Basic/Standard/Premium) - 80% will pick middle option!', 6
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Side Hustler' LIMIT 1), 4, 'Time Management for Hustlers',
+    '⏰ Balance 9-5 + Side Hustle Without Burning Out:
+
+    🗓️ Weekly Schedule Template:  
+    - Mon-Wed: 19:00-21:00 - Client work  
+    - Sat AM: 08:00-12:00 - Business admin  
+    - Sun: REST (non-negotiable)  
+
+    🚀 Productivity Hacks:  
+    - Use "time blocking" in Google Calendar  
+    - Batch similar tasks (e.g., do all invoicing at once)  
+    - Automate with free tools like Wave Apps  
+
+    ⚠️ Red Flags:  
+    - Working after 22:00 regularly  
+    - Missing main job deadlines  
+
+    💡 Rule of Thumb:  
+    Never let side hustle exceed 15 hours/week if employed full-time', 7
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Side Hustler' LIMIT 1), 5, 'Scaling Beyond Your Time',
+    '📈 How to Earn While You Sleep:
+
+    🔄 Systems to Automate:
+    1. Pre-Made Templates
+       - Reusable proposals, invoices, social media posts
+
+    2. Outsource Repetitive Tasks 
+       - Hire VA from OfferZen Jump (R50-R100/hour)  
+
+    3. Digital Products
+       - Sell eBooks, Notion templates, online courses
+
+    4. Affiliate Marketing
+       - Earn commission promoting tools you already use
+
+    💰 Passive Income Ideas for SA:
+    - YouTube tutorials (AdSense earnings)
+    - Print-on-demand merch with Printful
+    - Blog with Google Ads
+
+    💡 First Step:
+    Document your process - this becomes your sellable system!', 8
+    );
+
+-- Quizzes
+INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Side Hustler' LIMIT 1),
+    '[{
+        "question": "Which side hustle has the lowest startup cost?",
+        "options": [
+          "Opening a coffee stand",
+          "Freelance writing",
+          "Car wash with rented equipment",
+          "T-shirt printing business"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "When should you register your side hustle as a business?",
+        "options": [
+          "After first payment",
+          "When earning >R30k/year",
+          "Before starting",
+          "Never"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "What percentage of time should a full-time employee dedicate to a side hustle?",
+        "options": [
+          "5-10 hours/week",
+          "15-20 hours/week",
+          "25+ hours/week",
+          "As much as possible"
+        ],
+        "correct_answer": 0,
+        "points": 1
+      },
+      {
+        "question": "Which is NOT a passive income strategy?",
+        "options": [
+          "Affiliate marketing",
+          "Selling digital products",
+          "Freelance consulting",
+          "YouTube ad revenue"
+        ],
+        "correct_answer": 2,
+        "points": 1
+      },
+        {
+        "question": "Why do 89% of side hustlers undercharge their first clients?",
+        "options": [
+            "They confuse ''hourly rate'' with ''take-home pay''",
+            "They forget to factor in taxes and expenses",
+            "They compare to salaries instead of business costs",
+            "All of the above"
+        ],
+        "correct_answer": 3,
+        "points": 1
+        }
+        ]',
+        5,
+        3
+    );
+
+
+
+
+
+
+
+
+
+
+--- Adulting Starter Pack
+INSERT INTO learning_modules (module_title, topic, difficulty, banner_image_path) VALUES 
+    ('Adulting Starter Pack', 'Life Skills', 'beginner', 'learn_banners/Adulting.png');
+
+-- Lessons
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Adulting Starter Pack' LIMIT 1), 1, 'Renting Your First Place - SA Edition',
+    '🔑 How to Get Approved Without Rental History:  
+
+    📝 Must-Have Documents:  
+    - 3 months bank statements (even if blank)  
+    - Copy of ID & proof of income (payslip/letter)  
+    - Contactable reference (lecturer/former landlord)  
+
+    💰 Hidden Costs First-Timers Forget:  
+    1. Deposit = Usually 1-2 months'' rent  
+    2. Electricity Deposit = R1500-R3000 with municipality  
+    3. Connection Fees = WiFi installation (~R1000)  
+
+    🚨 Red Flags in Lease Agreements:  
+    - "No guests after 8pm" clauses  
+    - Verbal agreements only (must be written)  
+
+    💡 SA Pro Tip: 
+    View places at night - checks for safety and noise levels', 8
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Adulting Starter Pack' LIMIT 1), 2, 'Understanding Payslips & UIF',
+    '🧾 Decoding Your First Payslip: 
+
+    🔍 Key Sections Explained:  
+    - Gross Pay: Salary before deductions  
+    - PAYE: Income tax (starts at 18% over R91,250/year)  
+    - UIF: 1% contribution (max R177/month)  
+    - Net Pay: What actually hits your account  
+
+    🛡️ UIF Benefits You Pay For:  
+    - Covers you for 12 months if retrenched  
+    - Claim sickness benefits if hospitalized  
+    - Pays maternity leave (66% of salary)  
+
+    📌 How to Claim: 
+    1. Register at labour.gov.za  
+    2. Submit UI-2.8 form at nearest labour office  
+    3. Wait 6-8 weeks for payment  
+
+    ⚠️ Watch Out: 
+    Companies that "forget" to deduct UIF - this is illegal!', 7
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Adulting Starter Pack' LIMIT 1), 3, 'Basic Car Ownership Math',
+    '🚗 Real Costs of Your First Car in SA:  
+
+    📊 Monthly Breakdown (Example: 2010 VW Polo):  
+    - Loan: R2500 (if you put down R20k deposit)  
+    - Insurance: R800 (third-party only)  
+    - Petrol: R1500 (for 1000km/month)  
+    - Maintenance: R500 (oil changes, tires)  
+    = R5300/month minimum  
+
+    💡 Cheaper Alternatives:  
+    1. Ride-Sharing: Uber at R1500/month may be cheaper  
+    2. Rentals: Rent when needed (~R300/day)  
+    3. Public Transport: MyCiTi bus card = R400/month  
+
+    🚨 Used Car Checklist:  
+    - Ask for service history  
+    - Check for license disk renewal costs  
+    - Test drive with radio OFF to hear engine', 8
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Adulting Starter Pack' LIMIT 1), 4, 'Medical Aid vs Hospital Plan',
+    '🏥 SA Healthcare Options Compared:
+
+    🛡️ Hospital Plan (R500-R1500/month):  
+    - Covers emergencies only  
+    - No day-to-day benefits  
+    - Best for: Young, healthy people  
+
+    💊 Full Medical Aid (R2000-R5000/month):  
+    - GP visits, medication, dentistry  
+    - Often includes savings account  
+    - Best for: Chronic meds users  
+
+    🚑 Gap Cover (R200-R400/month):  
+    - Pays what medical aid doesn''t  
+    - Crucial for serious surgeries  
+
+    💡 SA Hack:
+    Get hospital plan + savings account (e.g., Discovery Smart) for basic coverage at ~R1000/month', 6
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Adulting Starter Pack' LIMIT 1), 5, 'The 30-Day Credit Cleanse',
+    '💳 Fix Your Credit Score in 1 Month:  
+
+    📉 What Ruins Your Score:  
+    - Late payments (even R50 phone bills)  
+    - Too many credit applications  
+    - Maxed-out store cards  
+
+    🛠️ Quick Fixes:  
+    1. Get Your Report: ClearScore (free)  
+    2. Dispute Errors: Email credit bureau  
+    3. Lower Utilization: Keep card balances below 30% limit  
+
+    🚫 Myth Buster:  
+    - Checking your own score doesn''t hurt it  
+    - Closing old accounts can actually lower your score  
+
+    💡 SA Pro Tip:  
+    Set up debit orders for minimum payments so you''re never late', 7
+    );
+
+-- Quizzes
+INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Adulting Starter Pack' LIMIT 1),
+    '[{
+        "question": "What is the typical rental deposit in SA?",
+        "options": [
+          "1 week''s rent",
+          "1-2 months'' rent",
+          "6 months'' rent",
+          "No deposit required"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "What percentage is UIF contribution?",
+        "options": [
+          "0.5% of salary",
+          "1% of salary",
+          "5% of salary",
+          "Only employers pay"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "Which car cost is often underestimated?",
+        "options": [
+          "Insurance",
+          "Maintenance",
+          "Petrol",
+          "All of the above"
+        ],
+        "correct_answer": 3,
+        "points": 1
+      },
+      {
+        "question": "What credit utilization percentage should you stay below?",
+        "options": [
+          "10%",
+          "30%",
+          "75%",
+          "100%"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+    "question": "What''s the most overlooked cost when renting your first place?",
+    "options": [
+        "Electricity deposit (often R2000+)",
+        "Municipal account arrears from previous tenant", 
+        "Connection fees for WiFi/Lights",
+        "All of the above"
+    ],
+    "correct_answer": 3,
+    "points": 1
+    }
+    ]',
     5,
     3
-  );
-
-
-
-
-INSERT INTO user_lessons (user_id, lesson_id, completed_at) VALUES
-  (1, 5, '2025-06-12 14:30:00'),
-  (1, 3, '2025-06-12 14:30:00'),
-  (1, 8, '2025-06-15 14:30:00'),
-  (1, 21, '2025-06-03 14:30:00'),
-  (1, 12, '2025-06-19 14:30:00'),
-  (1, 22, '2025-06-05 14:30:00'),
-  (1, 13, '2025-06-17 14:30:00'),
-  (1, 2, '2025-06-12 14:30:00'),
-  (1, 25, '2025-06-13 14:30:00'),
-  (1, 15, '2025-06-11 14:30:00'),
-  (2, 9, '2025-06-05 14:30:00'),
-  (2, 8, '2025-06-03 14:30:00'),
-  (2, 4, '2025-06-15 14:30:00'),
-  (2, 1, '2025-06-06 14:30:00'),
-  (2, 6, '2025-06-15 14:30:00'),
-  (2, 16, '2025-06-03 14:30:00'),
-  (2, 17, '2025-06-11 14:30:00'),
-  (2, 13, '2025-06-12 14:30:00'),
-  (2, 23, '2025-06-03 14:30:00'),
-  (2, 25, '2025-06-18 14:30:00'),
-  (2, 18, '2025-06-18 14:30:00'),
-  (2, 5, '2025-06-10 14:30:00'),
-  (2, 12, '2025-06-10 14:30:00'),
-  (2, 24, '2025-06-06 14:30:00'),
-  (2, 19, '2025-06-06 14:30:00'),
-  (2, 10, '2025-06-12 14:30:00'),
-  (2, 14, '2025-06-17 14:30:00'),
-  (2, 15, '2025-06-08 14:30:00'),
-  (2, 2, '2025-06-04 14:30:00'),
-  (2, 22, '2025-06-07 14:30:00'),
-  (3, 8, '2025-06-13 14:30:00'),
-  (3, 16, '2025-06-16 14:30:00'),
-  (3, 1, '2025-06-17 14:30:00'),
-  (3, 12, '2025-06-14 14:30:00'),
-  (3, 18, '2025-06-14 14:30:00'),
-  (3, 19, '2025-06-19 14:30:00'),
-  (3, 22, '2025-06-03 14:30:00'),
-  (3, 15, '2025-06-05 14:30:00'),
-  (3, 5, '2025-06-11 14:30:00'),
-  (3, 3, '2025-06-03 14:30:00'),
-  (3, 2, '2025-06-15 14:30:00'),
-  (3, 17, '2025-06-15 14:30:00'),
-  (4, 1, '2025-06-10 09:00:00'),
-  (4, 2, '2025-06-11 10:00:00'),
-  (4, 3, '2025-06-11 11:00:00'),
-  (4, 4, '2025-06-12 12:00:00'),
-  (4, 5, '2025-06-13 13:00:00'),
-  (5, 6, '2025-06-14 08:30:00'),
-  (5, 7, '2025-06-14 09:30:00'),
-  (5, 8, '2025-06-15 10:30:00'),
-  (5, 9, '2025-06-15 11:30:00'),
-  (5, 10, '2025-06-16 12:30:00'),
-  (5, 11, '2025-06-17 13:30:00'),
-  (6, 1, '2025-06-12 07:00:00'),
-  (6, 12, '2025-06-13 08:00:00'),
-  (6, 13, '2025-06-13 09:00:00'),
-  (6, 14, '2025-06-14 10:00:00'),
-  (6, 15, '2025-06-15 11:00:00'),
-  (7, 16, '2025-06-10 14:00:00'),
-  (7, 17, '2025-06-11 15:00:00'),
-  (7, 18, '2025-06-12 16:00:00'),
-  (7, 19, '2025-06-13 17:00:00'),
-  (7, 20, '2025-06-14 18:00:00'),
-  (8, 1, '2025-06-18 10:00:00'),
-  (8, 6, '2025-06-19 11:00:00'),
-  (8, 11, '2025-06-20 12:00:00'),
-  (9, 21, '2025-06-08 09:45:00'),
-  (9, 22, '2025-06-08 10:45:00'),
-  (9, 23, '2025-06-09 11:45:00'),
-  (9, 24, '2025-06-10 12:45:00'),
-  (9, 25, '2025-06-11 13:45:00'),
-  (10, 5, '2025-06-14 16:00:00'),
-  (10, 10, '2025-06-14 17:00:00'),
-  (10, 15, '2025-06-15 18:00:00'),
-  (10, 20, '2025-06-16 19:00:00'),
-  (10, 25, '2025-06-17 20:00:00');
+    );
 
-INSERT INTO quiz_attempts (user_id, quiz_id, attempt_score, passed, attempt_number) VALUES
-  -- User 1
-  (1, 1, 1, FALSE, 1),
-  (1, 1, 1, FALSE, 2),
-  (1, 1, 2, FALSE, 3),
-  (1, 1, 3, TRUE, 4),
-  (1, 2, 3, TRUE, 1),
-  (1, 3, 4, TRUE, 1),
 
-  -- User 2
-  (2, 1, 3, TRUE, 1),
-  (2, 2, 5, TRUE, 1),
-  (2, 4, 2, FALSE, 1),
 
-  -- User 3
-  (3, 2, 2, FALSE, 1),
-  (3, 2, 4, TRUE, 2),
-  (3, 4, 5, TRUE, 1),
-  (3, 5, 1, FALSE, 1),
 
-  -- User 4
-  (4, 1, 5, TRUE, 1),
-  (4, 3, 2, FALSE, 1),
-  (4, 3, 5, TRUE, 2),
 
-  -- User 5
-  (5, 5, 4, TRUE, 1),
-  (5, 5, 2, FALSE, 2),
-  (5, 4, 3, TRUE, 1),
 
-  -- User 6
-  (6, 1, 5, TRUE, 1),
-  (6, 2, 5, TRUE, 1),
-  (6, 3, 5, TRUE, 1),
-  (6, 4, 3, TRUE, 1),
 
-  -- User 7
-  (7, 2, 1, FALSE, 1),
-  (7, 2, 5, TRUE, 2),
-  (7, 3, 2, FALSE, 1),
 
-  -- User 8
-  (8, 4, 3, TRUE, 1),
-  (8, 5, 3, TRUE, 1),
 
-  -- User 9
-  (9, 1, 4, TRUE, 1),
-  (9, 2, 2, FALSE, 1),
-  (9, 2, 3, TRUE, 2),
-  (9, 3, 1, FALSE, 1),
-  (9, 5, 5, TRUE, 1),
 
-  -- User 10
-  (10, 1, 2, FALSE, 1),
-  (10, 3, 2, FALSE, 1),
-  (10, 4, 2, FALSE, 1),
-  (10, 4, 4, TRUE, 2);
 
 
 
+--- Relationship Money Talks
+INSERT INTO learning_modules (module_title, topic, difficulty, banner_image_path) VALUES 
+    ('Relationship Money Talks', 'Personal Finance', 'beginner', 'learn_banners/Money Talks.png');
 
+-- Lessons
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Relationship Money Talks' LIMIT 1), 1, 'How to Split Bills Fairly',
+    '💔 The #1 Couples Fight: Money arguments (they are worse than cheating stats!)  
 
+    💡 SA-Friendly Splitting Methods:
 
+    1. Proportional to Income
+       - You earn R15k, they earn R10k? You pay 60% of shared bills  
+       - Best for: Serious relationships with income gaps  
 
+    2. Fixed Percentage 
+       - Both contribute 30% of your salaries to joint account  
+       - Best for: Couples who want equality over exact "fairness"  
 
+    3. Expense Categories  
+       - You handle groceries, they cover rent  
+       - Best for: Newly moved-in couples  
 
+    ⚠️ Watch Out:  
+    - "I''ll pay you back later" → Use Splitwise app to track  
+    - Uneven spending on "fun" → Set monthly discretionary limits  
 
+    📱 SA Apps That Help: 
+    - Splitwise (track IOUs)  
+    - StokFella (group bills for housemates/couples)', 7
+    );
 
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Relationship Money Talks' LIMIT 1), 2, 'The R3,000 Dilemma - How to Handle Loans to Partners',
+    '💸 Scenario: Your partner needs R3k "just until payday." What do you do?  
 
+    🚦 Step-by-Step Guide:  
 
+    1. Ask Why 
+       - Emergency? (Medical, car fix) → Consider gift  
+       - Lifestyle? (Shopping, drinks) → Say no  
 
+    2. Set Terms 
+       - "I can lend R1,500, repayable over 3 months?"  
+       - Put it in writing (Even WhatsApp counts)  
 
+    3. Plan for Non-Payment  
+       - "If you can''t repay, we pause date nights until it''s settled"  
 
+    💡 SA Law Note:  
+    - Loans over R5k can be enforced in small claims court  
+    - But is your relationship worth legal action?  
 
+    📌 Better Alternative:  
+    - Offer to help budget instead of giving cash  
+    - "Let''s look at your expenses together"', 8
+    );
 
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Relationship Money Talks' LIMIT 1), 3, 'Love Contracts - SA Cohabitation Agreements',
+    '📝 What is a Cohabitation Agreement?  
+     A legal doc that outlines:  
+    - Who owns what (furniture, pets, property)  
+    - How bills are split  
+    - What happens if you break up  
 
+     SA Law Facts:
+    - No common-law marriage - unmarried partners have few rights  
+    - Without agreement: Your R20k TV = whoever''s card bought it  
 
+    🔑 Key Clauses to Include:  
+    1. Property: "If we separate, I keep my laptop, they keep their PS5"  
+    2. Rent: "We split 50/50, or move out with 30 days''s notice"  
+    3. Debt: "Personal loans remain individual responsibilities"  
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    💡 Get It Done:  
+    - Download free templates from LegalWise  
+    - Notarize at police station (free) or attorney (~R500)', 7
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Relationship Money Talks' LIMIT 1), 4, '5 Financial Red Flags in Relationships',
+    '🚩 Danger Signs You are Dating a Financial Vampire:
+
+    1. "I''m bad with money"
+       - Translation: You''ll be their human ATM
+
+    2. Secret Spending
+       - Hiding Takealot packages or gym contracts  
+
+    3. Guilt Trips
+       - "If you loved me, you''d lend me R2k"
+
+    4. No Savings at 30+ 
+       - Unless paying off student debt, this is irresponsible  
+
+    5. They Owe Everyone 
+       - "My mom/cousin/ex still asks for money"  
+
+    💡 SA Reality Check:
+    50% of divorces cite money fights as main cause.
+
+    🛑 When to Walk Away: 
+    - They refuse to discuss money AT ALL 
+    - You feel anxious checking your bank balance around them', 6
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Relationship Money Talks' LIMIT 1), 5, 'Money Dates - How to Talk Finances Without Fighting',
+    '🍷 Turn Money Chats Into Bonding Time:
+
+    🗓️ Monthly Money Date Agenda:
+    1. `Celebrate Wins
+       - "We saved R500 on groceries this month!"  
+
+    2. Review Bills
+       - Use smart tools to track your spending—start with the best, like Gamified Financial Visualizer, or settle for more old options like 22Seven.
+
+    3. Set Next Month''s Goal  
+       - "Let''s save R1k for our Durban trip" 
+       - You can use our easy to use budgeting or goal feature :) 
+
+    💬 Phrases That Work:
+    - "How can we make this fair?" (Not "You spend too much")
+    - `I feel stressed when..." (Use feelings, not accusations)
+
+    🎮 Make It Fun:  
+    - Whoever stays under budget picks the next Netflix show  
+    - Create a "dream board" of shared goals (house, travel)  
+
+    💡 Pro Tip:  
+    Always have money talks in daylight, never during/before bed.', 7
+    );
+
+-- Quizzes
+INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Relationship Money Talks' LIMIT 1),
+    '[{
+        "question": "What''s the fairest way to split bills with unequal incomes?",
+        "options": [
+          "50/50 always",
+          "Proportional to income",
+          "Whoever remembers to pay",
+          "The richer person pays all"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "A cohabitation agreement is:",
+        "options": [
+          "A legal doc for unmarried couples",
+          "Only for rich people",
+          "Not valid in SA",
+           "A marriage certificate"
+        ],
+        "correct_answer": 4,
+        "points": 1
+      },
+      {
+        "question": "Which is NOT a financial red flag?",
+        "options": [
+          "Having student debt",
+          "Borrowing from multiple people",
+           "Secret gambling",
+          "Refusing to discuss money"
+        ],
+        "correct_answer": 3,
+        "points": 1
+      },
+  {
+    "question": "Why does ''splitting rent 50/50'' often hurt lower-earning partners?",
+    "options": [
+      "It consumes a larger % of their income",
+      "They sacrifice savings while the other builds wealth", 
+      "It creates power imbalances in the relationship",
+      "All of the above"
+    ],
+    "correct_answer": 3,
+    "points": 1
+  },
+  {
+    "question": "What percentage of couples break up after lending R5k+ to a partner?",
+    "options": [
+      "12%",
+      "37%",
+      "64%", 
+      "89%"
+    ],
+    "correct_answer": 2,
+    "points": 1
+  }
+  ]',
+  5,
+  2
+);
+
+
+
+
+
+
+
+
+
+
+--- Money Therapy
+INSERT INTO learning_modules (module_title, topic, difficulty, banner_image_path) VALUES 
+    ('Money Therapy', 'Financial Wellness', 'beginner', 'learn_banners/MoneyTherapy.png');
+
+-- Lessons
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Money Therapy' LIMIT 1), 1, 'Your Money Story - What Childhood Taught You',
+    '🧠 Trace Your Financial Blueprint:  
+
+    🔍 Exercise: Finish these sentences:  
+    1. "In my family, money was..."  
+    2. "Rich people are..."  
+    3. "I''ll never have enough money to..."  
+
+    💡 Common Money Scripts in SA:  
+    - "Money is for survival only" (poverty mindset)  
+    - "I deserve to splurge after payday" (feast-or-famine)  
+    - "Talking about money is rude" (avoidance)  
+
+    🔄 Rewriting Your Story: 
+    1. Identify one limiting belief  
+    2. Find evidence against it ("My cousin escaped poverty")  
+    3. Create new mantra ("Money flows to me easily")  
+
+    📌 SA Reality:  
+    79% of adults repeat their parents'' money habits - be the cycle breaker!', 9
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Money Therapy' LIMIT 1), 2, 'Money Avoidance vs Money Vigilance',
+    '⚖️ Your Financial Personality Type  
+
+    🚫 The Avoider:  
+    - Hates checking bank balance  
+    - Throws away statements unopened  
+    - Says "I will deal with it later"
+
+    🔍 The Vigilant: 
+    - Tracks every cent  
+    - Feels guilty about spending  
+    - Hoards savings unnecessarily  
+
+    💡 Healthy Middle Ground:
+    - Weekly 10-minute money dates with yourself  
+    - 50/30/20 rule (needs/wants/savings)  
+    - "Good enough" budgeting (no perfectionism)  
+
+    🛠️ SA Tools to Try:  
+    - 22Seven for gentle tracking  
+    - PocketGuard for avoiders  
+    - Our app''s "Financial Sentiment" feature', 8
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Money Therapy' LIMIT 1), 3, 'Financial Anxiety First Aid',
+    '😰 When Money Stress Overwhelms You: 
+
+    🆘 Immediate Relief Techniques:  
+    1. 5-4-3-2-1 Grounding: 
+       - 5 things you see  
+       - 4 things you touch  
+       - 3 sounds you hear  
+       - 2 smells  
+       - 1 deep breath  
+
+    2. Worst-Case Reality Check:  
+       - "If I miss this payment...?" (Usually not catastrophic)  
+
+    3. Separate Facts from Feelings:
+       - "I feel broke" vs "I have RX until payday"  
+
+    📞 SA Support Resources:  
+    - SADAG Mental Health Line: 011 234 4837  
+    - Financial Counseling Network (pro bono advisors)  
+
+    💡 Remember:  
+    Money problems are temporary situations - not your worth!', 7
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Money Therapy' LIMIT 1), 4, 'The Psychology of Sales',
+    '🛍️ Why You Overspend - And How to Stop:  
+
+    🧠 Neurological Tricks Stores Use:  
+    1. "R199" Pricing (brain reads as R100s)  
+    2. Limited Stock Notifications (FOMO trigger)  
+    3. Free Delivery Thresholds ("Might as well add more")  
+
+    🛑 Defense Strategies:  
+    - 24-hour rule for purchases >R500  
+    - Unsubscribe from promo emails  
+    - Pay with cash (physical pain of spending)  
+
+    💡 SA-Specific Triggers:  
+    - "Eish, I deserve this after load shedding"  
+    - "It''s on sale at Woolies" (but still overpriced)  
+
+    📱 App Blockers to Try: 
+    - StayFocusd (limits shopping sites)  
+    - Our app''s "Impulse Spend Tracker"', 8
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Money Therapy' LIMIT 1), 5, 'Money & Relationships Revisited',
+    '💑 When Partners Have Opposite Money Mindsets:  
+
+    🔍 Identify Your Money Languages:
+    1. The Saver (security = love)
+    2. The Spender (experiences = love)
+    3. The Investor (growth = love)
+    4. The Avoider (no conflict = love)
+
+    💬 Communication Scripts:
+    - "I feel [emotion] when [behavior], because..."
+    - "Could we try [compromise] for 3 months?"
+
+    💰 SA-Friendly Compromises:
+    - Separate "no questions asked" accounts (R500/month each)
+    - Monthly budget meetings with favorite snacks
+    - Visual goal tracker (e.g., vacation fund jar)
+
+    ⚠️ When to Seek Help:
+    - Hiding purchases regularly
+    - Constant money arguments (3+ monthly)', 9
+    );
+
+-- Quizzes
+INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Money Therapy' LIMIT 1),
+    '[{
+        "question": "What percentage of adults repeat parental money habits?",
+        "options": [
+          "25%",
+          "52%",
+          "79%",
+          "90%"
+        ],
+        "correct_answer": 2,
+        "points": 1
+      },
+      {
+        "question": "Which is NOT a money avoidance behavior?",
+        "options": [
+          "Not checking bank statements",
+          "Tracking every expense",
+          "Ignoring overdue bills",
+          "Avoiding budget talks"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "What technique helps during financial panic?",
+        "options": [
+          "5-4-3-2-1 grounding",
+          "Retail therapy",
+          "Ignoring the problem",
+          "Taking out more credit"
+        ],
+        "correct_answer": 0,
+        "points": 1
+      },
+      {
+        "question": "Which SA-specific spending trigger is real?",
+        "options": [
+          "''It''s on sale at Woolies''",
+          "''Election year savings''",
+          "''Tax season discount''",
+          "''Load shedding bonus''"
+        ],
+        "correct_answer": 0,
+        "points": 1
+      },
+      {
+        "question": "What''s the #1 psychological reason people overspend after payday?",
+        "options": [
+          "Fear of missing out (FOMO)",
+          "Compensating for childhood deprivation",
+          "Social media envy",
+          "All of the above"
+        ],
+        "correct_answer": 3,
+        "points": 1
+      }
+    ]',
+    5,
+    3
+    );
+
+
+
+
+
+
+
+
+
+
+
+
+--- Young & Wealthy
+INSERT INTO learning_modules (module_title, topic, difficulty, banner_image_path) VALUES 
+    ('Young & Wealthy', 'Wealth Building', 'advanced', 'learn_banners/Young.png');
+
+-- Lessons
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Young & Wealthy' LIMIT 1), 1, 'Compound Growth Hacking',
+    '📈 The Math That Beats Salaries: 
+
+    🔥 SA-Specific Compound Scenarios:  
+    - R5k/month at 12% (SA equity avg.) = R4.8M in 20 years  
+    - R10k/month in USD ETFs (10% avg.) = $500k in 15 years  
+
+    💡 Advanced Tactics:  
+    1. Dividend Reinvestment: Use SA REITs paying 8-12% yields  
+    2. Tax Harvesting: Offset capital gains with tax-loss selling  
+    3. Leveraged Investing: Prudently use RA top-up tax benefits  
+
+    ⚠️ Advanced Risks:  
+    - Sequence risk (withdrawing during market dips)  
+    - Currency volatility in offshore investments  
+
+    🛠️ Tools:
+    - ETFSA calculator (compare SA vs offshore growth)
+    - Tax-free compounding visualizer (our app premium feature)', 10
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Young & Wealthy' LIMIT 1), 2, 'Asset Location Strategy',
+    '🌍 Optimal Placement Across Jurisdictions: 
+
+    🗺️ SA Asset Map: 
+    - Tax-Free Savings Account: High-growth equities  
+    - RA: USD-denominated ETFs (Regulation 28 compliant)  
+    - Discretionary: SA dividend-paying stocks (dividend tax = 20%)  
+
+    🇺🇸 Offshore Allocation Sweet Spot:  
+    - 30-50% in USD ETFs (VOO, VXUS)  
+    - LISPs vs direct ownership tax implications  
+
+    💣 SA-Specific Pitfalls:  
+    - Exchange control limits (R1M discretionary allowance)  
+    - Estate duty traps on foreign assets  
+
+    💡 Pro Move:  
+    Use endowment policies for tax-efficient offshore exposure beyond R1M', 12
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Young & Wealthy' LIMIT 1), 3, 'Advanced Tax Arbitrage',
+    '⚖️ Playing SARS Like Chess: 
+
+    ♟️ SA-Specific Moves:
+    1. Retirement Annuity Timing:
+       - Contribute R350k in high-income years (max deduction)
+       - Withdraw at lower tax bracket post-retirement
+
+    2. Trust Structures:
+       - Income splitting with family trusts (effective tax rate 20-30%)
+
+    3. Section 12J Sunset Clauses:
+       - 100% tax deduction on qualifying venture capital  
+
+    💡 Case Study:
+    Earning R1.5M/year? RA contribution saves you R157,500 in tax immediately
+
+    ⚠️ Compliance Note:  
+    Always disclose offshore assets - SARS shares data with 100+ countries', 11
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Young & Wealthy' LIMIT 1), 4, 'Leveraged Wealth Building',
+    '🏗️ Using OPM (Other People''s Money) Wisely: 
+
+    🏠 SA Property Hacks:
+    - Access bonds: Draw down on home equity at prime -1%
+    - Rental arbitrage: Lease-to-let strategies in student areas
+
+    📈 Securities Lending:
+    - Earn 4-8% p.a. lending your ETF units to short sellers
+
+    🚫 Danger Zones:
+    - CFD trading (99% lose money)  
+    - Unsecured personal loans for investing  
+
+    💡 Advanced Play:  
+    Margin loans at 6% to invest in dividend stocks paying 9% = 3% risk-adjusted spread', 10
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Young & Wealthy' LIMIT 1), 5, 'Exit Strategies & Liquidity Events',
+    '🔄 Turning Paper Wealth Into Cash:  
+
+    💸 SA Liquidity Options:
+    1. Dividend Recapitalization:
+       - Take loans against share portfolios (60-70% LTV)
+
+    2. Asset-Backed Lending:  
+       - Use ETF holdings as collateral for property deposits  
+
+    3. Tax-Free Withdrawals:
+       - Structured withdrawals from TFSA after 10+ years
+
+    🇺🇸 Offshore Considerations:  
+    - Wash sale rules (30-day waiting period)  
+    - PFIC taxation traps for SA residents  
+
+    📌 Golden Rule:
+    Always maintain 3 liquidity buckets:
+    1. Immediate (cash)  
+    2. Medium-term (income assets)  
+    3. Long-term (growth assets)', 12
+    );
+
+-- Quizzes
+INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Young & Wealthy' LIMIT 1),
+    '[{
+        "question": "What''s the optimal use of a TFSA for a high earner?",
+        "options": [
+          "Money market funds",
+          "High-growth equities",
+          "Forex trading",
+          "Cryptocurrency"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "What''s the maximum RA contribution tax deduction?",
+        "options": [
+          "R50,000",
+          "R175,000",
+          "R350,000",
+          "Unlimited"
+        ],
+        "correct_answer": 2,
+        "points": 1
+      },
+      {
+        "question": "Which leveraged strategy has acceptable risk for advanced investors?",
+        "options": [
+          "CFD trading",
+          "Margin loans for dividend stocks",
+          "Unsecured personal loans for crypto",
+          "All of the above"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "What''s a key consideration for offshore asset location?",
+        "options": [
+          "SARS data sharing",
+          "Estate duty implications",
+          "Exchange control limits",
+          "All of the above"
+        ],
+        "correct_answer": 3,
+        "points": 1
+      },
+      {
+        "question": "What''s the minimum recommended liquidity buckets?",
+        "options": [
+          "1 (cash only)",
+          "2 (cash + investments)",
+          "3 (cash + income + growth)",
+          "No need for liquidity planning"
+        ],
+        "correct_answer": 2,
+        "points": 1
+      }
+    ]',
+    5,
+    4
+    );
+
+
+
+
+
+
+
+
+
+
+--- Salary Negotiator
+INSERT INTO learning_modules (module_title, topic, difficulty, banner_image_path) VALUES 
+    ('Salary Negotiator', 'Career Growth', 'intermediate', 'learn_banners/SalaryNegotiator.png');
+
+-- Lessons
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Salary Negotiator' LIMIT 1), 1, 'The SA Market Value Calculator',
+    '💰 Know Your Worth Before Negotiating: 
+
+    📊 SA-Specific Benchmark Tools:
+    1. Payscale SA (Industry-adjusted averages)
+    2. CareerJunction Salary Report (2024 tech salaries 15% higher)
+    3. Recruiter Rule of Thumb:
+       - Junior (0-3yrs): R15k-R35k  
+       - Mid (4-7yrs): R40k-R75k  
+       - Senior (8+ yrs): R80k-R150k  
+
+    🔢 Adjust For:
+    - Location: Cape Town salaries 8% > Johannesburg
+    - Qualification: Degree adds 18-25% premium
+    - Niche Skills: Cloud certs = +R10k-R15k
+
+    💡 Script:
+    "Based on my research, the market range for this role with my Python and AWS skills is R55k-R65k. Where does this fit your budget?"', 8
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Salary Negotiator' LIMIT 1), 2, 'The Counteroffer Playbook',
+    '🔄 When They Say "We Can Only Offer R50k":
+
+    🚦 Response Strategy: 
+    1. Pause (5 second rule) - Don''t react immediately  
+    2. Anchor High - "I was expecting R65k based on market data"  
+    3. Trade Variables -  
+       - "Could we do R55k with a 6-month review?"  
+       - "Would R50k plus 10% bonus work?"  
+
+    💼 SA-Specific Perks to Negotiate: 
+    - Car allowance (Tax-efficient up to R85k/year)  
+    - Education fund (SARS-deductible for employer)  
+    - Remote work days (Save 2hrs commute = 11% time bonus)  
+
+    ⚠️ Red Flags: 
+    - "We''ll review later" → Get written timelines  
+    - "Budget constraints" → Ask for non-cash compensation', 9
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Salary Negotiator' LIMIT 1), 3, 'Promotion Poker',
+    '🎯 Timing Your Ask Perfectly:
+
+    📅 SA Corporate Cycles:
+    - Budgets set in Feb/March → Ask in January  
+    - Performance reviews → Prepare 6 weeks early  
+
+    📈 Build Your Case: 
+    1. Metric Map:  
+       - "Increased team productivity by 30%"  
+       - "Saved R200k in vendor costs"  
+    2. Peer Evidence:  
+       - "Comparable roles at [Competitor] pay R20k more"  
+
+    💡 Phrase That Works: 
+    "I''ve taken on responsibilities beyond my role (list). Let''s discuss aligning my compensation with this scope."
+
+    ⏳ When to Walk Away:  
+    - >20% below market after 2 negotiation rounds  
+    - Broken promises on previous reviews', 8
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Salary Negotiator' LIMIT 1), 4, 'Benefits Decoder',
+    '🏆 R1 = R1.28 in Smart Benefits: 
+
+    🧮 SA Tax-Efficient Compensation:
+    1. Retirement Contributions
+       - Employer RA contributions = tax-free up to 27.5% of salary
+
+    2. Car Allowance
+       - R85k/year tax-free vs taxable salary
+
+    3. Stock Options
+       - Capital gains tax (18%) vs income tax (45%)  
+
+    💰 Hidden Value Calculator:
+    - R10k car allowance = R14k pre-tax salary
+    - R5k education fund = R7k after-tax value
+
+    💡 Script:
+    "Instead of a R10k increase, could we structure it as R5k salary + R5k education allowance?"', 7
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Salary Negotiator' LIMIT 1), 5, 'The Exit Interview Pay Bump',
+    '✈️ Leveraging Job Offers Ethically:
+
+    🕵️ The 80/20 Intelligence Gathering:
+    - Research: "What''s the retention budget for my role?"
+    - Signal: "I''ve been approached about opportunities paying R20k more"
+
+    💼 SA-Specific Dynamics: 
+    - Q4 (Oct-Dec) = Highest counteroffer success rates  
+    - SMEs more flexible than corporates on quick adjustments  
+
+    ⚖️ Ethical Approach:  
+    1. Be prepared to actually leave  
+    2. Give current employer 72 hours to respond  
+    3. Never bluff with fake offers  
+
+    📌 Template:  
+    "I enjoy working here but have an offer at R75k. Before I consider it, I wanted to see if we could close this gap."', 8
+    );
+
+-- Quizzes
+INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Salary Negotiator' LIMIT 1),
+    '[{
+        "question": "What''s the tax-free cap for car allowances in SA?",
+        "options": [
+          "R45k/year",
+          "R85k/year",
+          "R120k/year",
+          "Unlimited"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "When are SA corporate budgets typically set?",
+        "options": [
+          "January",
+          "February/March",
+          "June/July",
+          "December"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "Which benefit provides the most tax efficiency?",
+        "options": [
+          "Cash bonus",
+          "Employer RA contributions",
+          "Travel allowance",
+          "Stock options"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "What''s the recommended response time when leveraging an offer?",
+        "options": [
+          "24 hours",
+          "72 hours",
+          "1 week",
+          "2 weeks"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+    "question": "Why does a R30k ''increase'' often only net R18k?",
+    "options": [
+        "Progressive tax brackets jump at R31k",
+        "UIF/PAYE deductions scale non-linearly",
+        "Retirement contributions auto-increase",
+        "All of the above"
+    ],
+    "correct_answer": 3,
+    "points": 1
+    }
+    ]',
+    5,
+    3
+    );
+
+
+
+
+
+
+
+
+
+
+--- Insurance Decoded
+INSERT INTO learning_modules (module_title, topic, difficulty, banner_image_path) VALUES 
+    ('Insurance Decoded', 'Risk Management', 'intermediate', 'learn_banners/Insurance.png');
+
+-- Lessons
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Insurance Decoded' LIMIT 1), 1, 'The SA Insurance Ladder',
+    '🛡️ What to Cover & When:
+
+    📊 Age-Based Coverage Matrix:  
+    18-25:  
+    - Hospital Plan (R500-R1,200/month)  
+    - Cellphone insurance (if contract)  
+
+    26-35:  
+    - Income Protection (3-6X salary)  
+    - Disability Cover (R15k-R25k/month)  
+
+    36-50:  
+    - Life Cover (10X salary)  
+    - Critical Illness (R500k lump sum)  
+
+    💡 SA-Specific Rules: 
+    - HIV+ can get cover after 6 months ARV treatment  
+    - Load shedding increases appliance claims → check policy exclusions  
+
+    ⚠️ Overlap Alert:  
+    RA already includes life cover - don''t double pay!', 8
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Insurance Decoded' LIMIT 1), 2, 'Policy Fine Print Translator',
+    '🔍 Hidden Clauses That Deny Claims: 
+
+    🚨 Top SA Exclusions: 
+    1. "Acts of nature" - Some exclude flood damage (check Cape Town policies)  
+    2. "Gradual Damage" - Damp/mold claims often rejected  
+    3. "Unauthorized Repairs" - Must use insurer''s approved vendors  
+
+    📝 Must-Check Sections: 
+    - Average Clause - If underinsured, they pay proportionally  
+    - Excess Structure - Often higher for weather-related claims  
+
+    💡 Pro Tip:  
+    Request the wording guide - plain English explanation of terms', 9
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Insurance Decoded' LIMIT 1), 3, 'The Bundling Hack',
+    '🎁 How to Combine Policies & Save 30%:  
+
+    🔄 SA Provider Combinations:
+    1. Car + Home (Outsurance, Discovery)
+       - Save up to 25%
+    2. Life + Disability (Sanlam, Momentum)
+       - Cheaper than separate policies  
+
+    💰 Break-Even Calculator:
+    - Bundling saves money if total premium < sum of individual policies
+    - Always compare with standalone options annually
+
+    ⚠️ Watch Out For:
+    - "Convenience bundling" with unnecessary add-ons
+    - Automatic premium increases after first year', 7
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Insurance Decoded' LIMIT 1), 4, 'Claims Kung Fu',
+    '🥋 Get Paid Faster in SA: 
+
+    📌 Documentation Checklist:
+    1. Car Accident:
+       - SAPS case number within 24hrs
+       - 3+ photos from different angles
+
+    2. Home Claim:
+       - Before/after photos of damaged items
+       - Original purchase receipts
+
+    💡 Claims Hacks:
+    - Use WhatsApp timestamps as evidence
+    - Submit via app instead of email (faster processing)
+
+    🚫 Claim-Killers:
+    - Posting on social media before claim settled
+    - Admitting fault at accident scene', 8
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Insurance Decoded' LIMIT 1), 5, 'Vitality vs Reality',
+    '🏆 Reward Programs Demystified:  
+
+    ⚖️ Discovery Vitality Math:
+    - Gold status = 25% cashback on healthy food  
+    - But requires gym 12x/month + 10k steps/day  
+
+    📊 Break-Even Analysis:
+    - For R499/month premium:
+      Need R2,000/month healthy spend to justify cost
+
+    💡 Best For:  
+    - Frequent gym-goers  
+    - Families (child discounts add value)  
+
+    🚫 Worst For:
+    - Infrequent travelers
+    - Those without Discovery Bank  
+
+    🔄 Alternatives:
+    - Sanlam Reality (better for retirees)
+    - Momentum Multiply (stronger investment links)', 7
+    );
+
+-- Quizzes
+INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Insurance Decoded' LIMIT 1),
+    '[{
+        "question": "What must HIV+ patients do to qualify for cover?",
+        "options": [
+          "Pay 50% higher premiums",
+          "Complete 6 months ARV treatment",
+          "Get specialist approval",
+          "No cover available"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "What does the ''average clause'' mean?",
+        "options": [
+          "They pay average market rates",
+          "Claims are paid proportionally if underinsured",
+          "Only covers average-risk individuals",
+          "Premiums adjust to industry averages"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "Which documents are critical for car claims?",
+        "options": [
+          "Driver''s license copy",
+          "SAPS case number",
+          "Service history",
+          "All of the above"
+        ],
+        "correct_answer": 3,
+        "points": 1
+      },
+      {
+        "question": "How many gym visits needed for Vitality Gold?",
+        "options": [
+          "4x/month",
+          "8x/month",
+          "12x/month",
+          "16x/month"
+        ],
+        "correct_answer": 2,
+        "points": 1
+      },
+        {
+    "question": "Why does ''full medical aid'' often leave you with massive bills?",
+    "options": [
+        "Procedure codes are deliberately mismatched",
+        "Hospitals charge above medical aid rates",
+        "Your plan has hidden sub-limits",
+        "All of the above"
+    ],
+    "correct_answer": 3,
+    "points": 1
+    }
+    ]',
+    5,
+    3
+    );
+
+
+
+
+
+
+
+
+
+
+-- Money Moves for Students
+INSERT INTO learning_modules (module_title, topic, difficulty, banner_image_path) VALUES 
+    ('Money Moves for Students', 'Personal Finance', 'beginner', 'learn_banners/MoneyForStudents.png');
+
+-- Lessons
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Money Moves for Students' LIMIT 1), 1, 'The Student Budget Blueprint',
+    '📊 R5000/month Survival Guide (2024):
+
+    🍞 Essential Breakdown:
+    - Rent: R2500 (shared accommodation)
+    - Food: R1500 (bulk staples + varsity meal deals)
+    - Transport: R500 (student bus pass)
+    - Data: R300 (night surfer packages)
+    - Buffer: R200
+
+    💡 SA Student Hacks:
+    - Use Yebo Fresh for bulk pantry deliveries
+    - Checkers Sixty60 first-order discount for groceries
+    - NSFAS allowance? Allocate 20% to emergency savings
+
+    🚨 Budget Killers:
+    - Takeout coffee (R25/day = R750/month)
+    - Club cover charges (rather pre-drink responsibly)', 7
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Money Moves for Students' LIMIT 1), 2, 'Textbook Hacks That Save Thousands',
+    '📚 Avoid Paying Full Price:
+
+    🔄 SA Book Routes:
+    1. Rent:
+       - Textbook Library (R200/semester vs R800 new)
+       - Campus noticeboards (Seniors selling used)
+
+    2. Digital:
+       - LibGen for international editions (check copyright)
+       - VitalSource for e-book rentals
+
+    3. Sell Back:
+       - List on StudentCircle 2 months before exams
+
+    💸 Case Study:
+    Accounting 101 textbook:  
+    - New: R1200  
+    - Used: R600  
+    - Rental: R300  
+    - E-book: R450  
+    - Library: FREE (but limited copies)  
+
+    ⚠️ Warning:
+    Avoid photocopy shops - fines up to R5000 for pirated copies', 8
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Money Moves for Students' LIMIT 1), 3, 'Student Discounts You are Missing',
+    '🎟️ SA Student Perks (Flash Your Card):
+
+    💰 Big Savings: 
+    - Transport: 50% off Metrorail, MyCiTi  
+    - Tech: Apple Edu Discount (up to 10%), Microsoft Office FREE  
+    - Banking: FNB Student Account (no fees)  
+
+    🍔 Food Deals:  
+    - Steers: Free chips with burger (Tuesdays)  
+    - McDonalds: R20 coffee refills  
+    - Nandos: 10% off with campus ID  
+
+    📱 App Bonuses:  
+    - Entertainment: Spotify + Showmax bundle (R99/month)  
+    - Shopping: Superbalist student discount (15% off first order)  
+
+    💡 Pro Tip:  
+    Keep digital student ID on phone - some places accept screenshots!', 6
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Money Moves for Students' LIMIT 1), 4, 'Side Hustles Between Lectures',
+    '🕒 Earn R2000/month in 10 Hours/Week:  
+
+    👩💻 Campus-Friendly Gigs: 
+    1. Note-Taking: Sell summaries on Stuvia (R50-R200/doc)  
+    2. Reselling: Buy cheap snacks in bulk, sell in res  
+    3. Tutoring: High school subjects (R150-R300/hour)  
+    4. Event Staffing: Sign up with StudentLink for weekend gigs  
+
+    📌 SA Platforms:  
+    - Upwork for freelance writing/design  
+    - M4Jam for micro-tasks (R5-R50/job)  
+
+    ⚠️ Avoid:  
+    - Pyramid schemes ("financial freedom" seminars)  
+    - Unregistered loan sharks in townships', 7
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Money Moves for Students' LIMIT 1), 5, 'Graduation Financial Prep',
+    '🎓 Set Up Your Future in Final Year:  
+
+    📝 Pre-Grad Checklist:  
+    1. Clear Debt:  
+       - NSFAS starts charging interest 1 year after graduating  
+    2. Build Credit:  
+       - Get student credit card (R500 limit)  
+       - Pay Netflix subscription with it  
+    3. Job Hunt Fund:  
+       - Save R2000 for interview transport/portfolios  
+
+    💼 SA Graduate Reality:  
+    - First salary likely R12k-R18k  
+    - 40% will be deductions (tax, UIF, medical)  
+
+    💡 Transition Tips:  
+    - Keep student discounts until card expires  
+    - Switch to youth accounts (e.g., Capitec Youth)', 8
+    );
+
+-- Quizzes
+INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Money Moves for Students' LIMIT 1),
+    '[{
+        "question": "What percentage of NSFAS allowance should be saved?",
+        "options": [
+          "5%",
+          "10%",
+          "20%",
+          "30%"
+        ],
+        "correct_answer": 2,
+        "points": 1
+      },
+      {
+        "question": "Which textbook option is usually cheapest?",
+        "options": [
+          "New from bookstore",
+          "E-book rental",
+          "Secondhand from senior",
+          "Campus library"
+        ],
+        "correct_answer": 3,
+        "points": 1
+      },
+      {
+        "question": "Which is NOT a legit student side hustle?",
+        "options": [
+          "Selling lecture notes",
+          "Tutoring high schoolers",
+          "Pyramid scheme recruitment",
+          "Event staffing"
+        ],
+        "correct_answer": 2,
+        "points": 1
+      },
+      {
+        "question": "When does NSFAS start charging interest?",
+        "options": [
+          "Immediately after graduation",
+          "1 year after graduating",
+          "5 years after graduating",
+          "Never"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+    "question": "What''s the #1 way students waste money on textbooks?",
+    "options": [
+        "Buying new instead of renting",
+        "Purchasing international editions unknowingly",
+        "Not reselling books after finals",
+        "All of the above"
+    ],
+    "correct_answer": 3,
+    "points": 1
+    }
+    ]',
+    5,
+    3
+    );
+
+
+
+
+
+
+
+
+
+
+--- Big Life Purchases: The Don''ts'
+INSERT INTO learning_modules (module_title, topic, difficulty, banner_image_path) VALUES 
+    ('Big Life Purchases: The Don''ts', 'Financial Planning', 'intermediate', 'learn_banners/BigLifeChangers.png');
+
+-- Lessons
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Big Life Purchases: The Don''ts' LIMIT 1), 1, 'Don''t Buy a Car Like This',
+    '🚗 Car Buying Traps That Wreck Your Budget:  
+
+    🚫 SA-Specific Mistakes:  
+    1. "R3500/month" Scam  
+       - 72-month loans at 15% interest = paying 2X car value  
+       - Instead: Max 3-year term, 20% deposit  
+
+    2. Demo Model Danger  
+       - Ex-rentals with 40,000km sold as "new"  
+       - Red Flag: No full service history  
+
+    3. Credit Life Insurance Upsell  
+       - Often costs R300-R800/month unnecessarily  
+       - Better: Use existing life policy  
+
+    💸 True Cost Example:  
+    R200k car on 6-year loan = R380k after interest & insurance', 9
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Big Life Purchases: The Don''ts' LIMIT 1), 2, 'House Hunting Red Flags',
+    '🏠 Property Don''ts That Become Nightmares:  
+
+    🚩 SA Warning Signs:  
+    1. "Too Good" Listings  
+       - Hijacked properties (verify deeds office)  
+       - Municipal debts not cleared (you inherit them)  
+
+    2. Developer Promises  
+       - "Guaranteed rental income" schemes  
+       - "No transfer costs" hidden in inflated price  
+
+    3. Emotional Bidding  
+       - Paying 20% above market due to FOMO  
+
+    🔍 Must-Do Checks:  
+    - Physically visit at different times  
+    - Demand 2 years of utility bills  
+    - Check for pending rezoning applications  
+
+    ⚠️ Quote to Remember:  
+    "Rather miss the ''perfect'' house than buy a money pit"', 10
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Big Life Purchases: The Don''ts' LIMIT 1), 3, 'Wedding Spending Traps',
+    '💍 How SA Couples Waste R100k+:  
+
+    🚫 Budget-Killing Choices:  
+    1. Saturday Tax  
+       - Venues charge 30% more for Saturdays  
+       - Smart Alternative: Friday sunset weddings  
+
+    2. Guest List Creep  
+       - Adding 20 "maybe" invites = R15k extra  
+
+    3. Package Deception  
+       - "All-inclusive" that excludes chairs/tents  
+
+    💰 Real Costs:  
+    - Average SA wedding: R80k-R150k  
+    - Divorce rate: 40% within 10 years  
+
+    💡 Better Idea:  
+    Spend 50% on wedding, invest 50% in property deposit', 8
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Big Life Purchases: The Don''ts' LIMIT 1), 4, 'Furniture Finance Fails',
+    '🛋️ Why 0% Interest Is a Lie:  
+
+    🚨 Retail Tricks That Cost You:  
+    1. "No Deposit" Deals  
+       - Hidden 25% price markup  
+       - Example: R10k couch actually costs R7k cash  
+
+    2. Balloon Payment Shock  
+       - Owning R3000 after 2 years on a bed  
+
+    3. Damage Waiver Scam  
+       - Paying R150/month for "protection" that excludes spills  
+
+    💡 SA Reality Check:  
+    - Secondhand quality furniture = 70% cheaper  
+    - "Repo auctions" sell repossessed items at 40% value  
+
+    ⚠️ Rule:  
+    If it won''t last 5 years, don''t finance it', 7
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Big Life Purchases: The Don''ts' LIMIT 1), 5, 'Education Investment Pitfalls',
+    '🎓 When Degrees Don''t Pay Off:  
+
+    🚫 SA Career Missteps:  
+    1. Private College Debt  
+       - R120k diploma with no accreditation  
+
+    2. "Guaranteed Job" Lies  
+       - TVET colleges promising 100% employment  
+
+    3. Overseas Degree Trap  
+       - R500k UK degree for a R25k/month SA job  
+
+    📉 ROI Reality Check:  
+    - Teachers: 10+ years to repay student loans  
+    - Artists: 62% earn under R8000/month  
+
+    💡 Smarter Paths:  
+    - NSFAS-funded public universities  
+    - Learn-to-earn coding bootcamps  
+    - Part-time studies while working', 9
+    );
+
+-- Quizzes
+INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Big Life Purchases: The Don''ts' LIMIT 1),
+    '[{
+        "question": "What''s the maximum recommended car loan term?",
+        "options": [
+          "2 years",
+          "3 years",
+          "5 years",
+          "7 years"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "Which wedding cost is most avoidable?",
+        "options": [
+          "Saturday venue premium",
+          "Marriage officer fees",
+          "Basic catering",
+          "Marriage license"
+        ],
+        "correct_answer": 0,
+        "points": 1
+      },
+      {
+        "question": "What do repo auctions offer?",
+        "options": [
+          "Brand new items",
+          "Repossessed goods at 40% value",
+          "Defective products",
+          "Stolen goods"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "Which education option carries accreditation risks?",
+        "options": [
+          "Public universities",
+          "TVET colleges",
+          "Private career colleges",
+          "Both B & C"
+        ],
+        "correct_answer": 3,
+        "points": 1
+      },
+      {
+    "question": "Why does a ''R3,500/month'' car deal actually cost R100k+ extra?",
+    "options": [
+        "72-month loan terms with compound interest",
+        "Mandatory credit life insurance add-ons",
+        "Dealer admin fees inflated by 300%",
+        "All of the above"
+    ],
+    "correct_answer": 3,
+    "points": 1
+    }
+    ]',
+    5,
+    3
+    );
+
+
+
+
+
+
+
+
+
+
+
+
+
+--- Don''t Get Scammed: SA Financial Predators Exposed
+INSERT INTO learning_modules (module_title, topic, difficulty, banner_image_path) VALUES 
+    ('Don''t Get Scammed: SA Financial Predators Exposed', 'Financial Safety', 'intermediate', 'learn_banners/Scammed.png');
+
+-- Lessons
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Don''t Get Scammed: SA Financial Predators Exposed' LIMIT 1), 1, 'MLM vs Pyramid: Spot the Difference',
+    '🚨 SA''s Most Disguised Scams:  
+
+    🔍 Telltale Signs of a Pyramid Scheme:  
+    1. Focus on Recruitment - "Earn R10k/week by signing up 5 friends"  
+    2. No Real Product - Vague "financial education packages"  
+    3. Inventory Loading - Forced to buy stock you can''t sell  
+
+    💰 SA Case Study:  
+    - "Women Empowerment" groups charging R2500 "starter kits"  
+    - "Bitcoin Clubs" promising 20% monthly returns  
+
+    💡 Legit Alternatives:  
+    - Actual sales jobs with base pay (e.g., retail)  
+    - Registered stokvels with transparent rules', 8
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Don''t Get Scammed: SA Financial Predators Exposed' LIMIT 1), 2, 'The 500% Interest Trap',
+    '💸 How Loan Sharks Operate in Townships:  
+
+    📉 Math of Destruction:  
+    - Borrow R1000 → Owe R5000 in 3 months  
+    - "Rollover" loans double debt weekly  
+
+    🕵️ Identifying Illegal Lenders:  
+    1. No NCR registration number  
+    2. Cash-only transactions  
+    3. Keeps your ID/SASSA card  
+
+    🚨 SA Red Flags:  
+    - "No paperwork needed"  
+    - "We know where you live" threats  
+
+    💡 Emergency Options:  
+    - National Debtline (0800 007 081)  
+    - CAPitec small loans at 28% APR max', 9
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Don''t Get Scammed: SA Financial Predators Exposed' LIMIT 1), 3, 'Too-Good-To-Be-True Returns',
+    '📈 Fake Investment Hall of Shame:  
+
+    🚫 SA Scams That Fooled Thousands:  
+    1. "10% Monthly Crypto Returns" (disappeared with R50M)  
+    2. "Government Tender Investments" (fake documents)  
+    3. "Property Syndication" (ghost developments)  
+
+    🔎 Verification Checklist:  
+    - Check FSCA registration (www.fsca.co.za)  
+    - Google "[company name] + scam"  
+    - Demand physical office visit  
+
+    💡 Safe Alternatives:  
+    - EasyEquities for real investing  
+    - Registered unit trusts', 8
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Don''t Get Scammed: SA Financial Predators Exposed' LIMIT 1), 4, 'Your Phone is the New Target',
+    '📱 SA-Specific Digital Traps:  
+
+    ⚠️ Current Scams (2024):  
+    1. "SARS Refund" SMS - Fake link steals banking login  
+    2. "Parcel Delivery Fee" - Fake Post Office invoices  
+    3. "Job Offer" WhatsApps - Upfront "training fee" scam  
+
+    🔐 Protection Protocol:  
+    1. Never share OTPs (even with "bank staff")  
+    2. Check sender IDs (real SARS uses 47277)  
+    3. Enable 2FA on all accounts  
+
+    📞 Report To:  
+    - SA Fraud Hotline: 0800 020 081  
+    - Banks reverse scams if reported <24hrs', 7
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Don''t Get Scammed: SA Financial Predators Exposed' LIMIT 1), 5, 'When Loved Ones Become Predators',
+    '💔 Emotional Blackmail Scams:  
+
+    🎭 Common Tactics:  
+    1. "Emergency Loan" - Niece needing varsity funds  
+    2. "Business Opportunity" - Cousin''s sure-bet spaza shop  
+    3. "Inheritance Fee" - Distant relative claiming lottery winnings  
+
+    🚫 How to Say No:  
+    - "I have a strict no-loan policy"  
+    - "Let me check with my financial advisor"  
+    - Offer non-cash help instead  
+
+    💡 SA Reality:  
+    - 68% of personal loans to family never repaid  
+    - Stokvels safer than informal family "investments"', 8
+    );
+
+-- Quiz
+INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Don''t Get Scammed: SA Financial Predators Exposed' LIMIT 1),
+    '[{
+        "question": "What proves a lender is registered with NCR?",
+        "options": [
+          "WhatsApp messages",
+          "NCR registration number",
+          "Flashy car",
+          "Many customers"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "Which is a real SARS SMS number?",
+        "options": [
+          "072 123 4567",
+          "47277",
+          "SARS123",
+          "No official number"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "What percentage of family loans get repaid?",
+        "options": [
+          "10%",
+          "32%",
+          "68%",
+          "95%"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "Where to check investment company legitimacy?",
+        "options": [
+          "Facebook likes",
+          "FSCA website",
+          "Google ads",
+          "TikTok comments"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+        {
+    "question": "Why do ''get rich quick'' scams use WhatsApp groups?",
+    "options": [
+        "To bypass financial regulators",
+        "Pressure tactics with fake success screenshots",
+        "Disappear after payment with no trace",
+        "All of the above"
+    ],
+    "correct_answer": 3,
+    "points": 1
+    }
+    ]',
+    5,
+    3
+    );
+
+
+
+
+
+
+
+
+--- Don''t Sign That! Contract Traps for South Africans
+INSERT INTO learning_modules (module_title, topic, difficulty, banner_image_path) VALUES 
+    ('Don''t Sign That! Contract Traps for South Africans', 'Consumer Rights', 'intermediate', 'learn_banners/Sign.png');
+
+-- Lessons
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Don''t Sign That! Contract Traps for South Africans' LIMIT 1), 1, 'Cellphone Contract Maths That Screw You',
+    '📱 The R15,000 "Free" Phone Trap:  
+
+    🔢 SA Reality Check (24-month contract):  
+    - "Free" iPhone 15: R0 upfront  
+    - Monthly cost: R999 x 24 = R23,976  
+    - Actual phone price: R18,000  
+    = You pay R5,976 extra in airtime  
+
+    🚫 Tricks to Spot:  
+    1. "Flexi" data that expires monthly  
+    2. Handset penalties if you cancel early  
+    3. Automatic renewal clauses  
+
+    💡 Smarter Move:  
+    Buy phone cash + prepaid = Save R300/month  
+    "Would you take a R24k loan to buy a R18k phone?"', 9
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Don''t Sign That! Contract Traps for South Africans' LIMIT 1), 2, 'Gym Lock-In Horror Stories',
+    '🏋️ Why Cancelling is Near Impossible:  
+
+    📜 SA Contract Tricks:  
+    1. 12-24 month minimum terms (even if gym closes)  
+    2. Debit order + admin fee combo (R1500 cancellation)  
+    3. "Freeze fee" scams (R200/month to pause membership)  
+
+    💸 Real Case:  
+    Sign R499/month x 24 months → Gym closes Month 3 → Still owe R11,976  
+
+    🛑 Escape Routes:  
+    1. Cooling-off period: 5 business days to cancel  
+    2. CPA Section 14: Cancel if services decline  
+    3. Death/disability clause: Submit docs to exit', 8
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Don''t Sign That! Contract Traps for South Africans' LIMIT 1), 3, 'Timeshares: The Vacation That Owns You',
+    '🏝️ Why 94% of SA Owners Regret Buying:  
+
+    📉 The Math:  
+    - Buy-in: R80,000 once-off  
+    - Annual fees: R12,000 (increases 10% yearly)  
+    - 10-year cost = R80k + R192k = R272k  
+    = Could book 45+ luxury getaways instead  
+
+    🚨 Resale Scams:  
+    - "We''ll sell your week for R50k!" (then demand R5k "marketing fee")  
+
+    🔐 Exit Options:  
+    1. CPA Section 14 (if mis-sold)  
+    2. Voluntary surrender (still pay 2 years fees)  
+    3. Debt review if unable to pay', 9
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Don''t Sign That! Contract Traps for South Africans' LIMIT 1), 4, 'Lease Clauses That Rob You',
+    '🏠 Illegal Rental Terms in SA:  
+
+    🚩 Never Accept:  
+    1. "No CPA Protection" (All rentals covered)  
+    2. "Deposit non-refundable" (Max 1 month refundable)  
+    3. "No repairs responsibility" (Landlord must fix)  
+
+    💸 Hidden Costs:  
+    - "Key deposit" over R500  
+    - "Cleaning fee" not in contract  
+
+    ⚖️ Your Rights:  
+    1. 5% interest on deposit (must be paid yearly)  
+    2. 24hr notice for inspections  
+    3. Lease cannot auto-renew without new agreement', 8
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Don''t Sign That! Contract Traps for South Africans' LIMIT 1), 5, 'When "7 Days Free" Costs R2000',
+    '💳 Dark Pattern Subscriptions:  
+
+    🔄 How They Get You:  
+    1. Pre-checked boxes = "I agree to pay R399/month after trial"  
+    2. Obscure cancel process = Must phone during office hours  
+    3. Instant debit orders = No 5-day CPA waiting period  
+
+    📌 SA Victims'' Stories:  
+    - "Free" ancestry test → R189/month forever  
+    - "Sample" skincare → R600/month auto-shipments  
+
+    🛡️ Defense Tactics:  
+    1. Virtual cards with R1 limit (Discovery/FNB)  
+    2. Screen record cancellation processes  
+    3. CPA Section 17 demand refund within 20 days', 7
+    );
+
+-- Quiz
+INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Don''t Sign That! Contract Traps for South Africans' LIMIT 1),
+    '[{
+        "question": "What''s the max refundable rental deposit in SA?",
+        "options": [
+          "1 month''s rent",
+          "2 months'' rent",
+          "3 months'' rent",
+          "Non-refundable"
+        ],
+        "correct_answer": 0,
+        "points": 1
+      },
+      {
+        "question": "Which clause is illegal in rental agreements?",
+        "options": [
+          "No pets allowed",
+          "No CPA protection",
+          "No loud music after 10pm",
+          "No painting walls"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "How long is the cooling-off period for gym contracts?",
+        "options": [
+          "24 hours",
+          "5 business days",
+          "14 days",
+          "No cooling-off period"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "What increases annually in timeshare costs?",
+        "options": [
+          "Only buy-in price",
+          "Only annual fees",
+          "Both buy-in and fees",
+          "No increases allowed"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "What''s the most predatory clause in SA cellphone contracts?",
+        "options": [
+          "Automatic renewal without notice",
+          "Admin fees doubling after 12 months",
+          "Forced upgrades voiding your warranty", 
+          "All of the above"
+        ],
+        "correct_answer": 3,
+        "points": 1
+        }
+    ]',
+    5,
+    3
+    );
+
+
+
+
+
+
+
+
+
+
+
+
+--- Black Friday: The SA Discount Lies
+INSERT INTO learning_modules (module_title, topic, difficulty, banner_image_path) VALUES 
+    ('Black Friday: The SA Discount Lies', 'Consumer Awareness', 'beginner', 'learn_banners/BlackFriday.png');
+
+-- Lessons
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Black Friday: The SA Discount Lies' LIMIT 1), 1, 'The "70% Off" Lie You Keep Falling For',
+    '🛒 How Retailers Fake Discounts:  
+
+    📈 SA Price Tracking Data:  
+    - Takealot "discounted" TVs:  
+      - Oct: R12,999 → Nov: R18,999 → BF "sale" R13,499 ("30% off")  
+    - Cotton On jeans:  
+      - Sept: R399 → BF "50% off" at R449  
+
+    🔍 Spot the Tricks:  
+    1. Price jacking 2-3 months before BF  
+    2. "Was/Now" pricing with fake original values  
+    3. Limited stock of only sale items  
+
+    💡 Prove It Yourself:  
+    Use PriceCheck.co.za history tool to verify real discounts', 8
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Black Friday: The SA Discount Lies' LIMIT 1), 2, '0% Interest = 100% Debt Trap',
+    '💳 Why Store Credit is a Predator:  
+
+    📉 The Real Math (R5k "interest-free" TV):  
+    - 6 months "no interest" at R833/month  
+    - Miss 1 payment → 22% interest BACKDATED  
+    - Total paid: R5,000 → R6,270  
+
+    🚨 SA Retail Tricks:  
+    1. Hidden admin fees (R50-R150/month)  
+    2. Auto-debit mandates that overdraft you  
+    3. Credit life insurance add-ons (R89/month)  
+
+    💡 Better Option:  
+    Save R800/month for 6 months → Buy cash next year', 9
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Black Friday: The SA Discount Lies' LIMIT 1), 3, 'Why "Doorbusters" Are Junk',
+    '📱 Black Friday "Deals" to Avoid:  
+
+    🚫 SA Electronics Red Flags:  
+    1. "Export Version" phones - No local warranty  
+    2. Refurbished as new - Check IMEI numbers  
+    3. Display models - 2000+ hours screen wear  
+
+    🔌 Burned Buyers Stories:  
+    - R8k "discount" laptop with 30-day warranty  
+    - R3k headphones returned → "No refunds on BF sales"  
+
+    💡 Smart Checklist:  
+    1. Google "[product] + problems"  
+    2. Demand warranty terms in writing  
+    3. Film unboxing as proof', 7
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Black Friday: The SA Discount Lies' LIMIT 1), 4, 'How Countdowns Hijack Your Brain',
+    '🧠 Retail Mind Games in SA:  
+
+    ⏳ Tactics That Trigger Panic Buys:  
+    1. "3 left in stock!" (Same message for 48hrs)  
+    2. Fake timers (Page refreshes reset "last chance")  
+    3. Cart reservations ("Hold your items for 10min!")  
+
+    💰 The 24-Hour Rule:  
+    For any BF purchase:  
+    1. Screenshot item  
+    2. Wait 24 hours  
+    3. Ask: "Would I buy this at full price?"  
+
+    📌 SA Reality:  
+    Real discounts continue until Dec 15 - no rush!', 6
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Black Friday: The SA Discount Lies' LIMIT 1), 5, 'When to Actually Shop',
+    '🗓️ SA Retail Calendar for Smart Shoppers:  
+
+    🛍️ Better Sale Periods:  
+    - Feb/March: Back-to-school (real tech discounts)  
+    - End-of-month: Sales targets pressure = real deals  
+    - April/Oct: Mid-season clearance (50-70% off)  
+
+    💎 Pro Moves:  
+    1. Follow "SA Dealz" on Twitter for legit drops  
+    2. Use apps like PriceCheck to track items  
+    3. Negotiate in-store ("Can you beat this price?")  
+
+    ⚠️ Remember:  
+    Black Friday isn''t cheaper - just louder!', 7
+    );
+
+-- Quiz
+INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Black Friday: The SA Discount Lies' LIMIT 1),
+    '[{
+        "question": "What proves a discount is fake?",
+        "options": [
+          "''Was'' price was higher 2 months ago",
+          "Limited stock available",
+          "Bright red sale tag",
+          "All of the above"
+        ],
+        "correct_answer": 0,
+        "points": 1
+      },
+      {
+        "question": "What happens if you miss a ''0% interest'' payment?",
+        "options": [
+          "Nothing",
+          "Backdated interest applies",
+          "Small late fee",
+          "They cancel the deal"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "Which SA period has better deals than BF?",
+        "options": [
+          "December holidays",
+          "February back-to-school",
+          "Easter weekend",
+          "None - BF is best"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "What''s the golden rule before BF purchases?",
+        "options": [
+          "Buy immediately",
+          "24-hour wait period",
+          "Ask friends first",
+          "Check Instagram ads"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "Why do stores use ''Limited Stock!'' labels on Black Friday?",
+        "options": [
+          "They actually have very few items",
+          "To trigger FOMO (Fear Of Missing Out)",
+          "Legal requirements for sale items",
+          "To manage crowd control"
+        ],
+        "correct_answer": 1,
+        "points": 1
+        }
+    ]',
+    5,
+    3
+    );
+
+
+
+
+
+
+
+
+
+--- Banking Blindly: SA Account Fees That Steal From You
+INSERT INTO learning_modules (module_title, topic, difficulty, banner_image_path) VALUES 
+    ('Banking Blindly: SA Account Fees That Steal From You', 'Personal Finance', 'beginner', 'learn_banners/BankingBlindly.png');
+
+-- Lessons
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Banking Blindly: SA Account Fees That Steal From You' LIMIT 1), 1, '"Zero Fees" That Cost R720/Year',
+    '🏦 SA Bank Fee Tricks Revealed:  
+
+    💸 "Free" Account Real Costs:  
+    - "Pay-as-you-transact":  
+      - R5 debit card swipe x 20 transactions = R100/month  
+    - "Included" fees:  
+      - R4.50 SMS notification x 30 = R135/month  
+    - "Optional" charges:  
+      - R8 paper statement if you forget to go digital  
+
+    📌 SA Bank Comparison (Monthly):  
+    - FNB Easy: R105  
+    - Capitec Global One: R35  
+    - TymeBank: R0 (legit free)  
+
+    💡 Switch Hack:  
+    Use the BankservAfrica Account Switching Kit to change banks in 7 days', 8
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Banking Blindly: SA Account Fees That Steal From You' LIMIT 1), 2, 'How Banks Profit From Unauthorized Debits',
+    '🔄 The Debit Order Shakedown:  
+
+    🚨 SA Fraud Stats:  
+    - 42% of debit orders are disputed  
+    - Banks charge R45-R95 to reverse EACH  
+
+    🔍 Spot Illegal Debits:  
+    1. "Recurring Token" scams (subscriptions that won''t die)  
+    2. Amount creep (Netflix R159 → R169 → R189)  
+    3. Ghost debits (old gym contracts resurrected)  
+
+    🛡️ Protect Yourself:  
+    1. Enable Debit Freeze (FNB/Standard)  
+    2. Use Debit Order Protection (Capitec)  
+    3. Dispute via Directive 8 within 40 days', 9
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Banking Blindly: SA Account Fees That Steal From You' LIMIT 1), 3, 'How R500 Overdrafts Become R5000 Debts',
+    '💳 The Overdraft Interest Spiral:  
+
+    📉 Real Example:  
+    - R500 overdraft at 22% interest  
+    - R15/day unpaid fee  
+    - After 3 months = R500 → R1,850  
+
+    ⚠️ Bank Tricks:  
+    1. Auto-approve small overdrafts  
+    2. Hide compound interest in fine print  
+    3. "Courtesy pay" that opts you in automatically  
+
+    💡 Escape Plan:  
+    1. Opt out of overdraft facilities  
+    2. Pay smallest overdraft first  
+    3. Use National Debt Mediation if trapped', 8
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Banking Blindly: SA Account Fees That Steal From You' LIMIT 1), 4, 'The R200 "Service Fee" on Every Overseas Purchase',
+    '💱 How Banks Rob You on Forex:  
+
+    💰 Real USD100 Purchase Comparison:  
+    - Standard Bank: R1,850 + R200 fee  
+    - Wise: R1,790 + R15 fee  
+    - Revoult: R1,775 + R0 fee  
+
+    🔎 Hidden Charges:  
+    1. 3% "admin fee" on top of bad rates  
+    2. Double conversion (USD→EUR→ZAR)  
+    3. Weekend markups (extra 2%)  
+
+    💡 Smart Alternatives:  
+    1. Global accounts (Discovery/Tyme)  
+    2. Prepaid travel cards load during strong ZAR  
+    3. Cryptocurrency wallets for large transfers', 7
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Banking Blindly: SA Account Fees That Steal From You' LIMIT 1), 5, 'The Email That Gets Fees Refunded',
+    '✍️ Template to Reclaim Your Money:  
+
+    📧 Subject: Formal Complaint - Unauthorized Fees  
+    Body:  
+    "Per NCA Sec 74, I dispute these charges:  
+    1. R95 unauthorized debit reversal fee (Tx123)  
+    2. R15 overdraft interest on 01/03  
+    3. R200 forex ''service fee''  
+
+    Provide refund within 7 days or I escalate to:  
+    - Ombudsman for Banking Services (ombud@obssa.co.za)  
+    - FSCA Case#: [Your ID Number]  
+
+    Attached: Proof of transactions"  
+
+    📌 SA Law Weapons:  
+    1. National Credit Act (fee limits)  
+    2. CPA (unfair contract terms)  
+    3. FSCA (banking misconduct)', 8
+    );
+
+-- Quiz
+INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Banking Blindly: SA Account Fees That Steal From You' LIMIT 1),
+    '[{
+        "question": "Which truly free SA bank account exists?",
+        "options": [
+          "FNB Easy",
+          "Capitec Global One", 
+          "TymeBank",
+          "All have hidden fees"
+        ],
+        "correct_answer": 2,
+        "points": 1
+      },
+      {
+        "question": "How long to dispute unauthorized debit orders?",
+        "options": [
+          "7 days",
+          "40 days",
+          "6 months",
+          "1 year"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "What happens to R500 overdraft in 3 months at 22%?",
+        "options": [
+          "R500",
+          "R750",
+          "R1,850",
+          "R5,000"
+        ],
+        "correct_answer": 2,
+        "points": 1
+      },
+      {
+        "question": "Who regulates bank fee disputes?",
+        "options": [
+          "SARS",
+          "FSCA",
+          "Dept of Education", 
+          "No one"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+     {
+        "question": "What''s the most common ''hidden'' bank fee in SA?",
+        "options": [
+           "R5 ''notification fee'' per declined transaction",
+           "R15 monthly ''inactivity fee'' for unused accounts",
+           "R50 ''paper statement fee'' even for digital users",
+           "All of the above"
+        ],
+        "correct_answer": 3,
+        "points": 1
+        }
+    ]',
+    5,
+    3
+    );
+
+
+
+
+
+
+
+
+
+
+
+-- Learning Modules
+INSERT INTO learning_modules (module_title, topic, difficulty, banner_image_path) VALUES 
+    ('Study Debt: SA Education Loans That Don''t Pay Off', 'Education Finance', 'intermediate', 'module_banners/studentdebt_banner.jpg');
+
+-- Lessons
+-- Insert lessons for 'Study Debt: SA Education Loans That Don''t Pay Off' (module_id dynamically fetched)
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Study Debt: SA Education Loans That Don''t Pay Off' LIMIT 1), 1, 'How "Interest-Free" Becomes R250k',
+    '🎓 NSFAS Fine Print That Hurts:  
+
+    📉 The Math (R100k Loan @ 8% After 1 Year):  
+    - Year 1-5: "No interest" while studying  
+    - Year 6: 8% interest BACKDATED to Year 1  
+    - Total Owed: R100k → R146k (46% extra)  
+
+    ⚠️ SA Reality Check:  
+    - Only 12% NSFAS graduates repay fully  
+    - Blacklisted if earning > R30k/year and not paying  
+
+    💡 Escape Routes:  
+    1. Pay interest during study years  
+    2. Negotiate income-based repayments  
+    3. Become a teacher/nurse (partial forgiveness)', 9
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Study Debt: SA Education Loans That Don''t Pay Off' LIMIT 1), 2, 'R150k Diplomas Employers Ignore',
+    '🏫 Unaccredited SA Colleges Exposed:  
+
+    🚨 Red Flags:  
+    1. "100% Job Placement" claims  
+    2. "No Matric Needed" promises  
+    3. CHE/SAQA registration missing  
+
+    💸 Victim Stories:  
+    - R120k "IT Diploma" = Print shop job @ R5k/month  
+    - R80k "Fashion Design" course = Unemployed  
+
+    🔍 Verification Tools:  
+    1. Check www.che.ac.za  
+    2. Demand SAQA NQF level  
+    3. Google "[College] + scam"', 8
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Study Debt: SA Education Loans That Don''t Pay Off' LIMIT 1), 3, 'Why UK Degrees Don''t Equal UK Salaries',
+    'R500k Debt for R25k Jobs:  
+
+    📊 SA Return-on-Investment Reality:  
+    - UK Degree Cost: R500k (with living expenses)  
+    - Average SA Salary: R25k/month  
+    - Payback Period: 22+ years  
+
+    🚫 Hidden Costs:  
+    1. SAQA evaluation fees (R2000+)  
+    2. Unaccredited "colleges" (e.g., non-Russell Group)  
+    3. No work visa = Must return to SA  
+
+    💡 Smarter Paths:  
+    1. SA universities + exchange programs  
+    2. German public universities (free tuition)  
+    3. Online degrees + local internships', 9
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Study Debt: SA Education Loans That Don''t Pay Off' LIMIT 1), 4, 'Degrees vs Certificates That Actually Pay',
+    '🔄 SA Education ROI Rankings:  
+
+    💵 Top Earning Certificates (1-2 years):  
+    1. AWS Cloud Practitioner (R35k-R60k starting)  
+    2. CompTIA Security+ (R40k-R70k in cybersecurity)  
+    3. PMI-CAPM (Project management @ R45k+)  
+
+    📜 Worthwhile Degrees:  
+    1. Actuarial Science (R50k+ starting)  
+    2. Data Science (R45k+)  
+    3. Nursing (Govt bursaries + quick employment)  
+
+    💣 Worst ROI Degrees:  
+    - Generic Business Admin (R18k avg)  
+    - Fine Arts (R8k-R15k freelance)  
+    - Psychology BA (needs Masters to practice)', 8
+    );
+
+INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Study Debt: SA Education Loans That Don''t Pay Off' LIMIT 1), 5, 'How to Negotiate Student Debt',
+    '⚖️ SA Debt Relief Options:  
+
+    🛠️ Actionable Steps:  
+    1. NSFAS: Apply for R0 payments if earning < R30k  
+    2. Private Loans: Demand interest rate reduction  
+    3. Credit Bureaus: Dispute incorrect listings  
+
+    📝 Template Letter:  
+    "Per NCA Sec 87, I request:  
+    - Reduced repayment (current: R___ → proposed: R___)  
+    - Interest freeze due to financial hardship  
+    - Written confirmation within 14 days  
+
+    Failure to respond will be reported to NCR"  
+
+    📞 Helplines:  
+    - National Student Financial Aid Scheme: 0800 202 733  
+    - Debt Rescue: 086 111 6197', 8
+    );
+
+-- Quiz
+INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES 
+    ((SELECT module_id FROM learning_modules WHERE module_title = 'Study Debt: SA Education Loans That Don''t Pay Off' LIMIT 1),
+    '[{
+        "question": "When does NSFAS backdated interest start?",
+        "options": [
+          "Immediately",
+          "After 1 year employment",
+          "After 5 years",
+          "Never"
+        ],
+        "correct_answer": 2,
+        "points": 1
+      },
+      {
+        "question": "Where to verify college accreditation?",
+        "options": [
+          "College website",
+          "CHE website",
+          "Facebook reviews",
+          "None needed"
+        ],
+        "correct_answer": 1,
+        "points": 1
+      },
+      {
+        "question": "Which certificate has the highest starting salary?",
+        "options": [
+          "AWS Cloud",
+          "Tourism Diploma",
+          "Event Management",
+          "Graphic Design"
+        ],
+        "correct_answer": 0,
+        "points": 1
+      },
+      {
+        "question": "What law protects student loan borrowers?",
+        "options": [
+          "National Credit Act",
+          "Consumer Protection Act",
+          "Both",
+          "Neither"
+        ],
+        "correct_answer": 2,
+        "points": 1
+      },
+     {
+        "question": "What are the consequences of defaulting on student loans?",
+        "options": [
+          "Legal action",
+          "Credit score impact",
+          "Wage garnishment",
+          "All of the above"
+        ],
+        "correct_answer": 3,
+        "points": 1
+        }
+    ]',
+    5,
+    3
+    );
 
 
