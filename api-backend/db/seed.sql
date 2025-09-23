@@ -6393,7 +6393,7 @@ INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES
 
 --- Banking Blindly: SA Account Fees That Steal From You
 INSERT INTO learning_modules (module_title, topic, difficulty, banner_image_path) VALUES 
-    ('Banking Blindly: SA Account Fees That Steal From You', 'Personal Finance', 'beginner', 'learn_banners/BankingBlindly.png');
+    ('Banking Blindly: SA Account Fees That Steal From You', 'Personal Finance', 'beginner', 'learn_banners/BankingBlinding.png');
 
 -- Lessons
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
