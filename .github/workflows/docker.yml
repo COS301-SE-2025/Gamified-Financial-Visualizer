@@ -37,3 +37,5 @@ jobs:
         docker push ${{ secrets.ACR_LOGIN_SERVER }}/finance-frontend:${IMAGE_TAG}
         docker tag ${{ secrets.ACR_LOGIN_SERVER }}/finance-frontend:${IMAGE_TAG} ${{ secrets.ACR_LOGIN_SERVER }}/finance-frontend:latest
         docker push ${{ secrets.ACR_LOGIN_SERVER }}/finance-frontend:latest 
+        --build-arg REACT_APP_API_URL=https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net
+        docker push ${{ secrets.ACR_LOGIN_SERVER }}/finance-frontend:latest
