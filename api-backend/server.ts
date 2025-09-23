@@ -221,7 +221,7 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 });
 
 // Start HTTP + WebSocket server
-httpServer.listen(PORT, () => {
+httpServer.listen(Number(PORT), '127.0.0.1', () => {
   logger.info(`Monolith listening on port ${PORT} (with Socket.IO)`);
 });
 
