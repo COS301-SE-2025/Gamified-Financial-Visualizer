@@ -5878,7 +5878,7 @@ INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES
 
 --- Don''t Get Scammed: SA Financial Predators Exposed
 INSERT INTO learning_modules (module_title, topic, difficulty, banner_image_path) VALUES 
-    ('Don''t Get Scammed: SA Financial Predators Exposed', 'Financial Safety', 'intermediate', 'learn_banners/Scammed.png');
+    ('Don''t Get Scammed: SA Financial Predators Exposed', 'Financial Safety', 'intermediate', 'learn_banners/SATraps.png');
 
 -- Lessons
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
@@ -6050,7 +6050,7 @@ INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES
 
 --- Don''t Sign That! Contract Traps for South Africans
 INSERT INTO learning_modules (module_title, topic, difficulty, banner_image_path) VALUES 
-    ('Don''t Sign That! Contract Traps for South Africans', 'Consumer Rights', 'intermediate', 'learn_banners/Sign.png');
+    ('Don''t Sign That! Contract Traps for South Africans', 'Consumer Rights', 'intermediate', 'learn_banners/ContractTraps.png');
 
 -- Lessons
 INSERT INTO lessons (module_id, lesson_number, lesson_title, content, estimated_duration) VALUES 
@@ -6574,7 +6574,7 @@ INSERT INTO quizzes (module_id, questions_jsonb, max_score, pass_score) VALUES
 
 -- Learning Modules
 INSERT INTO learning_modules (module_title, topic, difficulty, banner_image_path) VALUES 
-    ('Study Debt: SA Education Loans That Don''t Pay Off', 'Education Finance', 'intermediate', 'module_banners/studentdebt_banner.jpg');
+    ('Study Debt: SA Education Loans That Don''t Pay Off', 'Education Finance', 'intermediate', 'learn_banners/StudyDebt.png');
 
 -- Lessons
 -- Insert lessons for 'Study Debt: SA Education Loans That Don''t Pay Off' (module_id dynamically fetched)
