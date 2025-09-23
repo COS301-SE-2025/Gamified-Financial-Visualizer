@@ -5,7 +5,7 @@ import logoImg from '../../assets/Images/Logo.png';
 import { FaEye, FaEyeSlash, FaLock } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
-const BASE_URL = process.env.REACT_APP_API_URL || "http://api-backend:3000";
+const BASE_URL = process.env.REACT_APP_API_URL;
 
 const Login = () => {
   const navigate = useNavigate();
