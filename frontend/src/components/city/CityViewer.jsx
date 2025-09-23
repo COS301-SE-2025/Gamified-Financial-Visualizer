@@ -1,8 +1,8 @@
 // CityViewer.jsx — THEMED GLB SWAP (6 scenes) + beacons + rich modal + collapsible panel
-import { useState, useEffect, Suspense, use, useMemo } from 'react'
-import { Canvas, useThree } from '@react-three/fiber'
+import { useState, useEffect, Suspense, useRef, useMemo } from 'react'
+import { Canvas, useThree, useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { OrbitControls, Html, useGLTF, useProgress } from '@react-three/drei'
+import { OrbitControls, Html, useGLTF } from '@react-three/drei'
 
 import {
   GiBank, GiHospitalCross, GiCoffeeCup, GiPoliceBadge, GiHouse, GiArchiveResearch,
@@ -38,67 +38,89 @@ const CITY_SCENES = {
 
 // --- Add near the top, below CITY_SCENES ---
 const THEME_PRESETS = {
-  classic_day: { exposure: 1.15, bg: '#f2f5f8', fog: null },
+  classic_day: {
+    exposure: 1.1,
+    bg: '#f0f5ff',
+    fog: null,
+    rain: false
+  },
 
-  // milky blue haze
   foggy_morning: {
-    exposure: 0.92, bg: '#dfe5ea',
-    fog: { type: 'exp2', color: '#cfd8e3', density: 0.022 }
-  },
-
-  // deeper orange, light pink air
-  golden_hour: {
-    exposure: 1.05, bg: '#ffe1c6',
-    fog: { type: 'linear', color: '#ffd6b3', near: 140, far: 300 }
-  },
-
-  // dark navy, heavier night haze
-  neon_night: {
     exposure: 0.85,
-    bg: '#0a1024',
-    fog: { type: 'exp2', color: '#0a1024', density: 0.018 }
+    bg: '#d0d8e0',
+    fog: {
+      type: 'exp2',
+      color: '#b8c5d5',
+      density: 0.045
+    },
+    rain: false
   },
 
-  // grey overcast, flatter contrast
+  golden_hour: {
+    exposure: 1.2,
+    bg: '#ffebd6',
+    fog: { type: 'linear', color: '#ffd6b3', near: 100, far: 300 },
+    rain: false
+  },
+
+  // ENHANCED NEON NIGHT - DARKER FOR BETTER EMISSION CONTRAST
+  neon_night: {
+    exposure: 0.6,  // Lower exposure for more dramatic neon
+    bg: '#050520',  // Darker background
+    fog: { type: 'exp2', color: '#0a0a2a', density: 0.008 }, // Less fog to see emissions better
+    rain: false
+  },
+
   rainy_evening: {
-    exposure: 0.98, bg: '#c7d0db',
-    fog: { type: 'linear', color: '#b8c3cf', near: 110, far: 240 }
+    exposure: 0.75,
+    bg: '#a8b0b8',
+    fog: {
+      type: 'linear',
+      color: '#8a98a8',
+      near: 40,
+      far: 180
+    },
+    rain: true,
+    rainIntensity: 1.5  // Increased rain intensity
   },
 
-  // peach‑pink sky, very gentle haze
   sunset_pink: {
-    exposure: 1.10, bg: '#ffe6ee',
-    fog: { type: 'linear', color: '#ffd6e8', near: 160, far: 360 }
+    exposure: 1.15,
+    bg: '#ffe6f0',
+    fog: { type: 'linear', color: '#ffd6e0', near: 120, far: 320 },
+    rain: false
   },
 }
-
 
 // Applies bg + fog whenever theme changes
 function ThemeAtmosphere({ theme }) {
   const { scene, gl } = useThree()
   useEffect(() => {
     const preset = THEME_PRESETS[theme] || THEME_PRESETS.classic_day
+    
     // Background
     scene.background = new THREE.Color(preset.bg)
 
-    // Fog
-    if (preset.fog) {
-      const c = new THREE.Color(preset.fog.color)
-      if (preset.fog.type === 'exp2') {
-        scene.fog = new THREE.FogExp2(c, preset.fog.density)
+    // Handle fog for all themes except those with EnhancedFog
+    if (!['rainy_evening', 'foggy_morning'].includes(theme)) {
+      if (preset.fog) {
+        const c = new THREE.Color(preset.fog.color)
+        if (preset.fog.type === 'exp2') {
+          scene.fog = new THREE.FogExp2(c, preset.fog.density)
+        } else {
+          scene.fog = new THREE.Fog(c, preset.fog.near, preset.fog.far)
+        }
       } else {
-        scene.fog = new THREE.Fog(c, preset.fog.near, preset.fog.far)
+        scene.fog = null
       }
-    } else {
-      scene.fog = null
     }
 
-    // Also tint the canvas clear color for consistency
+    // Canvas clear color
     gl.setClearColor(scene.background, 1)
   }, [theme, scene, gl])
+  
   return null
 }
-
 
 // Helper: pick a path from a theme + mode
 const getModelPath = (themeKey, mode) => {
@@ -552,6 +574,85 @@ function GameModal({ open, onClose, data }) {
 }
 
 /* ===========================
+   Animated Rain System for Rainy Evening
+=========================== */
+function RainSystem({ intensity = 1.0 }) {
+  const rainRef = useRef()
+  const rainCount = Math.floor(200 * intensity)
+
+  useFrame((state, delta) => {
+    if (!rainRef.current) return
+
+    // Animate all rain drops
+    rainRef.current.children.forEach((drop, i) => {
+      drop.position.y -= (0.5 + Math.random() * 1.5) * 30 * delta
+
+      // Reset when drop falls below ground
+      if (drop.position.y < -10) {
+        drop.position.y = 100 + Math.random() * 50
+        drop.position.x = Math.random() * 200 - 100
+        drop.position.z = Math.random() * 200 - 100
+      }
+    })
+  })
+
+  return (
+    <group ref={rainRef}>
+      {Array.from({ length: rainCount }).map((_, i) => (
+        <mesh
+          key={i}
+          position={[
+            Math.random() * 200 - 100,
+            Math.random() * 100 + 30,
+            Math.random() * 200 - 100
+          ]}
+        >
+          <cylinderGeometry args={[0.015, 0.015, 0.3, 4]} />
+          <meshBasicMaterial color="#a0c8e0" transparent opacity={0.7} />
+        </mesh>
+      ))}
+
+      {/* Distant rain particles for atmosphere */}
+      <points>
+        <bufferGeometry>
+          <bufferAttribute
+            attach="attributes-position"
+            count={Math.floor(300 * intensity)}
+            array={new Float32Array(Array.from({ length: Math.floor(300 * intensity) * 3 },
+              () => [Math.random() * 400 - 200, Math.random() * 200, Math.random() * 400 - 200]).flat())}
+            itemSize={3}
+          />
+        </bufferGeometry>
+        <pointsMaterial size={2} color="#a0c8e0" transparent opacity={0.4} />
+      </points>
+    </group>
+  )
+}
+
+/* ===========================
+   Enhanced Fog Component
+=========================== */
+function EnhancedFog({ color, near, far, density, type }) {
+  const { scene } = useThree()
+
+  useEffect(() => {
+    const fogColor = new THREE.Color(color)
+
+    if (type === 'exp2') {
+      scene.fog = new THREE.FogExp2(fogColor, density)
+    } else {
+      scene.fog = new THREE.Fog(fogColor, near, far)
+    }
+
+    return () => {
+      scene.fog = null
+    }
+  }, [scene, color, near, far, density, type])
+
+  return null
+}
+
+/* ===========================
    Beacon
 =========================== */
 function Beacon({ label, onClick }) {
@@ -592,33 +693,6 @@ function CityModel({ glbPath, onPick, hideBeacons, useGltfLights = true, theme }
   // Materials + optional GLB lights adjustments (two-pass)
   useEffect(() => {
     if (!hasScene) return
-    const neon = theme === 'neon_night'
-
-    // allow only these to glow in neon:
-    const ALLOW = [
-      /window/i, /glass/i, /emiss/i, /sign/i, /screen/i, /billboard/i,
-      /neon/i, /coffee/i, /market/i, /hospital/i, /(lamp|light)[ _-]?(head|bulb)/i, /strip/i
-    ]
-    // never glow (even if they contain the word "light"):
-    const DENY = [
-      /pole|post|pillar|frame|roof|road|street|ground|tree|cloud|bank/i
-    ]
-
-    // helper: save & restore original emissives
-    const saveOrig = (m) => {
-      if (!m.userData.__orig) {
-        m.userData.__orig = {
-          emissive: m.emissive ? m.emissive.clone() : new THREE.Color(0x000000),
-          intensity: m.emissiveIntensity ?? 1
-        }
-      }
-    }
-    const restoreOrig = (m) => {
-      if (m.userData.__orig) {
-        m.emissive.copy(m.userData.__orig.emissive)
-        m.emissiveIntensity = m.userData.__orig.intensity
-      }
-    }
 
     scene.traverse((o) => {
       if (o.isLight) {
@@ -635,65 +709,24 @@ function CityModel({ glbPath, onPick, hideBeacons, useGltfLights = true, theme }
       mats.forEach((m) => {
         if (!m) return
 
-        // base look (keep your low‑poly feel)
-        m.metalness = 0
-        m.roughness = o.name.startsWith('Cloud') ? 0.9 : 0.5
-        m.envMapIntensity = 0
-        m.flatShading = !o.name.startsWith('Cloud')
+        // Keep Blender's original material properties
+        // Only enhance shadows and basic properties
+        m.metalness = m.metalness ?? 0
+        m.roughness = m.roughness ?? (o.name.startsWith('Cloud') ? 0.9 : 0.5)
+        m.envMapIntensity = m.envMapIntensity ?? 0
 
-        const n = (m.name || o.name || '').toLowerCase()
-       // const isWindow = n.includes('window') || n.includes('emiss') || n.includes('light') || n.includes('screen') || n.includes('board')
-        const name = (m.name || o.name || '').toLowerCase()
-
-        // always save once
-        saveOrig(m)
-
-        if (!neon) {
-          // leaving neon => put the material back exactly
-          restoreOrig(m)
-          return
-        }
-
-        // Neon: start from no emissive for everyone
-        m.emissive = new THREE.Color(0x000000)
-        m.emissiveIntensity = 0
-
-        // check allow/deny
-        const isDenied  = DENY.some((re) => re.test(name))
-        const isAllowed = !isDenied && ALLOW.some((re) => re.test(name))
-        if (!isAllowed) return
-
-        // Pick a neon color by type
-        const isScreen  = /screen|billboard/i.test(name)
-        const isSign    = /sign|coffee|market|hospital/i.test(name)
-        const isWindow = n.includes('window') || n.includes('emiss') || n.includes('light') || n.includes('screen') || n.includes('board')
-        const isBulb    = /(lamp|light)[ _-]?(head|bulb)/i.test(name)
-
-        if (isScreen || isSign) {
-          m.emissive.set('#00e5ff')         // cyan for screens/signs
-          m.emissiveIntensity = 1.35
-        } else if (isWindow) {
-          if (neon) {
-            // pop for neon night
-            const isScreen = n.includes('screen') || n.includes('board')
-            m.emissive = new THREE.Color(isScreen ? '#00e5ff' : '#ff3bd4')
-            m.emissiveIntensity = isScreen ? 1.4 : 1.25
-          } else {
-            // clamp for every other theme
-            m.emissiveIntensity = Math.min(m.emissiveIntensity ?? 0.2, 0.35)
-            // tone the color to warm white so it doesn’t fight the sun color
-            m.emissive = new THREE.Color('#ffd9b3')
+        // Preserve Blender's emission settings - DON'T OVERRIDE
+        if (theme === 'neon_night') {
+          // For neon theme, slightly boost existing emissions if they exist
+          if (m.emissive && m.emissiveIntensity > 0) {
+            m.emissiveIntensity = Math.min(m.emissiveIntensity * 1.2, 2.0)
           }
-        } else if (isBulb) {
-          m.emissive.set('#ffd066')         // warm small bulbs
-          m.emissiveIntensity = 0.9
         }
 
         m.needsUpdate = true
       })
     })
   }, [hasScene, scene, useGltfLights, theme])
-
 
   // Group meshes into buildings & compute beacon positions
   useEffect(() => {
@@ -818,71 +851,6 @@ function GoldenHourRig() {
   )
 }
 
-// Neon Night Light Rig
-function NeonNightRig() {
-  return (
-    <>
-      {/* dark navy ambience, slight purple ground bounce */}
-      <hemisphereLight skyColor={'#0a1024'} groundColor={'#2a0031'} intensity={0.5} />
-
-      {/* cyan "moon" key from front-right */}
-      <directionalLight
-        color={'#79d0ff'} position={[44, 82, 22]} intensity={1.45}
-        castShadow
-        shadow-mapSize-width={2048} shadow-mapSize-height={2048}
-        shadow-camera-left={-120} shadow-camera-right={120}
-        shadow-camera-top={120} shadow-camera-bottom={-120}
-        shadow-camera-near={1} shadow-camera-far={320}
-        shadow-bias={-0.00075} shadow-normalBias={0.7}
-      />
-
-      {/* magenta rim from back-left */}
-      <directionalLight
-        color={'#ff3bd4'} position={[-36, 34, -30]} intensity={1.05}
-      />
-
-      {/* keep ambient tiny so neon does the work */}
-      <ambientLight intensity={0.08} />
-    </>
-  )
-}
-
-// Foggy Morning Light Rig
-function FoggyMorningRig() {
-  return (
-    <>
-      <hemisphereLight skyColor={'#e6eef5'} groundColor={'#c9d4dd'} intensity={1.0} />
-      {/* softer, cooler key */}
-      <directionalLight
-        color={'#cfe0ef'} position={[58, 88, 32]} intensity={1.15}
-        castShadow shadow-mapSize-width={2048} shadow-mapSize-height={2048}
-        shadow-camera-left={-100} shadow-camera-right={100} shadow-camera-top={100} shadow-camera-bottom={100}
-        shadow-bias={-0.0005} shadow-normalBias={0.6}
-      />
-      <directionalLight color={'#b3c3d1'} position={[-38, 36, -24]} intensity={0.55} />
-      <ambientLight intensity={0.24} />
-    </>
-  )
-}
-
-// Rainy Evening Light Rig
-function RainyEveningRig() {
-  return (
-    <>
-      <hemisphereLight skyColor={'#c7d0db'} groundColor={'#9aadbd'} intensity={0.9} />
-      {/* overcast = flatter key, less contrast */}
-      <directionalLight
-        color={'#c9d8e3'} position={[54, 72, 26]} intensity={1.25}
-        castShadow shadow-mapSize-width={2048} shadow-mapSize-height={2048}
-        shadow-camera-left={-110} shadow-camera-right={110} shadow-camera-top={110} shadow-camera-bottom={110}
-        shadow-bias={-0.00045} shadow-normalBias={0.6}
-      />
-      <directionalLight color={'#8aa3bd'} position={[-34, 26, -26]} intensity={0.75} />
-      <ambientLight intensity={0.24} />
-    </>
-  )
-}
-
 // Sunset Pink Light Rig
 function SunsetPinkRig() {
   return (
@@ -900,20 +868,121 @@ function SunsetPinkRig() {
   )
 }
 
+// Neon Night Light Rig 
+function NeonNightRig() {
+  return (
+    <>
+      {/* Very dark blue-purple ambient */}
+      <hemisphereLight
+        skyColor={'#0a0a2a'}
+        groundColor={'#1a0a2a'}
+        intensity={0.3}
+      />
+
+      {/* Blue moonlight from above */}
+      <directionalLight
+        color={'#4a7bff'}
+        position={[40, 120, 20]}
+        intensity={0.6}
+        castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+        shadow-camera-left={-80}
+        shadow-camera-right={80}
+        shadow-camera-top={80}
+        shadow-camera-bottom={-80}
+        shadow-bias={-0.001}
+        shadow-normalBias={0.6}
+      />
+
+      {/* Purple fill light for contrast */}
+      <directionalLight
+        color={'#8a2be2'}
+        position={[-30, 60, -40]}
+        intensity={0.4}
+        castShadow={false}
+      />
+
+      {/* Very low ambient to make emissions pop */}
+      <ambientLight intensity={0.08} />
+    </>
+  )
+}
+
+// Foggy Morning Light Rig 
+function FoggyMorningRig() {
+  return (
+    <>
+      <hemisphereLight
+        skyColor={'#e8f0f8'}
+        groundColor={'#d0d8e0'}
+        intensity={0.8}
+      />
+
+      {/* Softer, more diffused key light */}
+      <directionalLight
+        color={'#e0e8f0'}
+        position={[80, 120, 80]}
+        intensity={1.8}
+        castShadow
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        shadow-camera-left={-120}
+        shadow-camera-right={120}
+        shadow-camera-top={120}
+        shadow-camera-bottom={-120}
+        shadow-bias={-0.0003}
+        shadow-normalBias={0.3}
+      />
+
+      <ambientLight intensity={0.5} /> {/* Higher ambient for foggy look */}
+    </>
+  )
+}
+
+// Rainy Evening Light Rig 
+function RainyEveningRig() {
+  return (
+    <>
+      <hemisphereLight
+        skyColor={'#8a98a8'}  // Darker, more overcast
+        groundColor={'#6a7888'}
+        intensity={0.5}       // Reduced intensity for rainy darkness
+      />
+
+      {/* Cool, muted key light for rain */}
+      <directionalLight
+        color={'#a0a8b0'}     // Cooler, more muted
+        position={[60, 90, 50]} // Lower position for overcast look
+        intensity={1.0}       // Reduced intensity
+        castShadow
+        shadow-mapSize-width={1024} // Lower resolution for performance with rain
+        shadow-mapSize-height={1024}
+        shadow-camera-left={-80}
+        shadow-camera-right={80}
+        shadow-camera-top={80}
+        shadow-camera-bottom={-80}
+        shadow-bias={-0.0002}
+        shadow-normalBias={0.3}
+      />
+
+      <ambientLight intensity={0.3} /> {/* Slightly reduced ambient */}
+    </>
+  )
+}
+
 /* ===========================
    Viewer shell
 =========================== */
 export default function CityViewer() {
   const [open, setOpen] = useState(false)
   const [selected, setSelected] = useState(null)
-
-  const [theme, setTheme] = useState('classic_day') // one of CITY_SCENES keys
-  const [mode, setMode] = useState('day')         // 'day' | 'night' (if theme is single, both map to same file)
+  const [theme, setTheme] = useState('classic_day')
+  const [mode, setMode] = useState('day')
   const [panelOpen, setPanelOpen] = useState(false)
+  const [buildings, setBuildings] = useState([])
 
   const glbPath = getModelPath(theme, mode)
-
-  const [buildings, setBuildings] = useState([])
   const user = JSON.parse(localStorage.getItem('user'));
 
   // Map backend list -> lookup by id
@@ -924,18 +993,36 @@ export default function CityViewer() {
   }, [buildings]);
 
   useEffect(() => {
+    if (!user?.id) return;
+
     // Fetch building data for the selected user
     const fetchBuildingData = async () => {
-      const response = await fetch(`http://localhost:5000/api/city/buildings/${user.id}`);
-      const data = await response.json();
-      setBuildings(data);
+      try {
+        const response = await fetch(`http://localhost:5000/api/city/buildings/${user.id}`);
+        const data = await response.json();
+        setBuildings(data);
+      } catch (error) {
+        console.error('Error fetching building data:', error);
+      }
     };
 
     fetchBuildingData();
   }, [user]);
 
+  // Tiny cleanup to avoid odd displays (no styling change)
+  const normalizeValue = (v) => {
+    if (typeof v !== 'string') return v;
+    if (/^-R0\b/.test(v)) return v.slice(1);           // "-R0" -> "R0"
+    if (/^-?\d+%$/.test(v)) {                           // clamp "267%" -> "100%"
+      const n = parseInt(v, 10);
+      const c = Math.max(0, Math.min(100, n));
+      return `${c}%`;
+    }
+    return v;
+  }
+
   // Non-destructive merge: keep styling/icons; only swap values from server
-  function mergeBinding(staticBinding, server) {
+  const mergeBinding = (staticBinding, server) => {
     if (!server) return staticBinding;
 
     const merged = { ...staticBinding };
@@ -956,29 +1043,15 @@ export default function CityViewer() {
     return merged;
   }
 
-  // Tiny cleanup to avoid odd displays (no styling change)
-  function normalizeValue(v) {
-    if (typeof v !== 'string') return v;
-    if (/^-R0\b/.test(v)) return v.slice(1);           // "-R0" -> "R0"
-    if (/^-?\d+%$/.test(v)) {                           // clamp "267%" -> "100%"
-      const n = parseInt(v, 10);
-      const c = Math.max(0, Math.min(100, n));
-      return `${c}%`;
-    }
-    return v;
-  }
-
+  // DEFINE openModalFor BEFORE it's used in the return statement
   const openModalFor = (target) => {
-    // the static BUILDING_BINDINGS object is left as-is on purpose. 
-    // We don’t mutate it. Instead, we create a merged copy at click time that overrides just the values with what the API returns.
     const staticBinding = BUILDING_BINDINGS[target.key] || { label: target.label }
-    const server = buildingsById.get(target.key) // e.g. "Building_E001"
-    const merged = mergeBinding(staticBinding, server) // only values swapped
+    const server = buildingsById.get(target.key)
+    const merged = mergeBinding(staticBinding, server)
     setSelected(merged)
     setOpen(true)
   }
 
-  // inside CityViewer() just before return:
   const preset = THEME_PRESETS[theme] || THEME_PRESETS.classic_day
 
   const Rig = {
@@ -1019,13 +1092,27 @@ export default function CityViewer() {
         <RendererTuning exposure={preset.exposure} />
         <ThemeAtmosphere theme={theme} />
 
+        {/* Enhanced Fog */}
+        {preset.fog && (
+          <EnhancedFog
+            color={preset.fog.color}
+            near={preset.fog.near}
+            far={preset.fog.far}
+            density={preset.fog.density}
+            type={preset.fog.type}
+          />
+        )}
+
+        {/* Rain System for Rainy Evening */}
+        {preset.rain && <RainSystem intensity={preset.rainIntensity || 1.0} />}
+
         <Suspense fallback={<Loader />}>
           <CityModel
             glbPath={glbPath}
             hideBeacons={open}
             onPick={openModalFor}
             useGltfLights={false}
-            theme={theme}            // <-- for optional neon tweaks
+            theme={theme}
           />
         </Suspense>
 
@@ -1041,7 +1128,6 @@ export default function CityViewer() {
           target={[0, 0, 0]}
         />
       </Canvas>
-
 
       {/* AR BUTTON */}
       <a

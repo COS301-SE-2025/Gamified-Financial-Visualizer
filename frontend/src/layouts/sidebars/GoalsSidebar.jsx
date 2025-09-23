@@ -63,7 +63,7 @@ const AccountsPerformanceHeader = () => {
       <div className="text-center lg:text-left">
         <div className="flex items-center justify-center lg:justify-start gap-2 text-[#B4DFA4]">
           <FaUsers className="text-6xl" />
-          <h1 className="text-5xl font-light dark:text-white">Goals</h1>
+          <h1 className="text-5xl font-light dark:text-[#B4DFA4]">Goals</h1>
         </div>
         <p className="text-lg text-gray-400 dark:text-gray-500 mt-1 max-w-xs mx-auto lg:mx-0">
           Set savings goals and milestones, monitor your progress, and earn XP as you achieve them.

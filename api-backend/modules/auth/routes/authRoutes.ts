@@ -439,7 +439,7 @@ router.delete('/:userId', async (req: Request, res: Response) => {
 
 /**
  * @route PUT /api/auth/:userId/settings
- * @desc Updates user settings including username, theme, avatar, preferences, 2FA
+ * @desc Updates user settings including username, theme, avatar, preferences, 2FA, and banner
  */
 router.put('/:userId/settings', async (req: Request, res: Response) => {
   const { userId } = req.params;
@@ -454,7 +454,7 @@ router.put('/:userId/settings', async (req: Request, res: Response) => {
   }
 
   // check updates for valid fields
-  const validFields = ['username', 'theme', 'avatar_id', 'inAppNotifications', 'outOfAppEnabled', 'twoFactorEnabled'];
+  const validFields = ['username', 'theme', 'avatar_id', 'banner_id', 'inAppNotifications', 'outOfAppEnabled', 'twoFactorEnabled']; // Added banner_id
   const invalidFields = Object.keys(updates).filter(key => !validFields.includes(key));
 
   if (invalidFields.length > 0) {
@@ -480,6 +480,7 @@ router.put('/:userId/settings', async (req: Request, res: Response) => {
     });
     return;
   }
+
   // Validate theme if provided
   if (updates.theme && !['light', 'dark'].includes(updates.theme)) {
     res.status(400).json({
@@ -494,6 +495,15 @@ router.put('/:userId/settings', async (req: Request, res: Response) => {
     res.status(400).json({
       status: 'error',
       message: 'Avatar ID must be a number.',
+    });
+    return;
+  }
+
+  // Validate banner_id if provided (ensure it's a valid number)
+  if (updates.banner_id && typeof updates.banner_id !== 'number') {
+    res.status(400).json({
+      status: 'error',
+      message: 'Banner ID must be a number.',
     });
     return;
   }
@@ -625,6 +635,17 @@ router.get('/avatars', async (_req, res) => {
   }
 });
 
+
+// Get all banners
+router.get('/banners', async (_req, res) => {
+  try {
+    const banners = await userService.getAllBanners();
+    res.status(200).json({ status: 'success', data: banners });
+  } catch (err) {
+    logger.error('[Auth] Failed to fetch banners:', err);
+    res.status(500).json({ status: 'error', message: 'Could not fetch banners.' });
+  }
+});
 
 
 
