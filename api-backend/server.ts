@@ -34,10 +34,7 @@ const app: Application = express();
 const PORT = process.env.PORT || 3000;
 
 const corsOrigins = [
-  'http://localhost',    // Frontend in Docker
-  'http://localhost:80',     // Frontend in Docker Compose
-  'http://localhost:3000',    // Keep for any direct testing
-  'http://localhost:3001',    // AI Service in Docker Compose
+  'https://gamified-finance-visualizer-c5djg3fhcnhqfyfj.canadacentral-01.azurewebsites.net',  // Frontend URL (Azure)
   process.env.CORS_ORIGIN     // Use environment variable from docker-compose
 ].filter((origin): origin is string => Boolean(origin));
 
