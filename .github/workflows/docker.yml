@@ -1,17 +1,17 @@
-name: Build and Push Docker image to ACR
+name: Build and Deploy to Azure
 
 on:
   push:
     branches:
-      - deploy-frontend-demo4  # Trigger on push to the branch
+      - deploy-frontend-demo4
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Log in to Azure Container Registry
       uses: azure/docker-login@v1
@@ -20,10 +20,17 @@ jobs:
         username: ${{ secrets.ACR_USERNAME }}
         password: ${{ secrets.ACR_PASSWORD }}
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
-
-    - name: Build and push Docker image
+    - name: Build and push API Backend
       run: |
-        docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/gamified-financial-visualizer:latest .
-        docker push ${{ secrets.ACR_LOGIN_SERVER }}/gamified-financial-visualizer:latest
+        docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/gamified-financial-visualizer-api-backend:latest ./api-backend --target production
+        docker push ${{ secrets.ACR_LOGIN_SERVER }}/gamified-financial-visualizer-api-backend:latest
+
+    - name: Build and push AI Service
+      run: |
+        docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/gamified-financial-visualizer-ai-service:latest ./api-backend/modules/ai --target production
+        docker push ${{ secrets.ACR_LOGIN_SERVER }}/gamified-financial-visualizer-ai-service:latest
+
+    - name: Build and push Frontend
+      run: |
+        docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/finance-frontend:latest ./frontend --target production
+        docker push ${{ secrets.ACR_LOGIN_SERVER }}/finance-frontend:latest
