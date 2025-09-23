@@ -179,7 +179,7 @@ function ThemePanel({ open, setOpen, theme, setTheme, mode, setMode }) {
           </div>
 
           {/* Day / Night (works; if theme is single, both map to same file) */}
-          <div className="px-3 pb-2 flex items-center gap-2">
+          {/* <div className="px-3 pb-2 flex items-center gap-2">
             <button
               onClick={() => setMode('day')}
               className={`flex-1 flex items-center justify-center gap-2 px-2 py-1 rounded-lg border ${mode === 'day' ? 'bg-sky-600 text-white border-sky-600' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600'
@@ -196,7 +196,7 @@ function ThemePanel({ open, setOpen, theme, setTheme, mode, setMode }) {
             >
               <FiMoon /> Night
             </button>
-          </div>
+          </div> */}
 
           {/* Theme chips */}
           <div className="px-3 pb-3 grid grid-cols-2 gap-2">
