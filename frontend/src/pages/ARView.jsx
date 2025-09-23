@@ -1,13 +1,9 @@
 // src/pages/ARView.jsx
 import { useMemo, useRef, useEffect, useState } from 'react';
+import { FaBuilding, FaBullseye, FaCamera, FaCheck, FaGamepad, FaInfoCircle, FaMobileAlt, FaPhoneAlt, FaVideo } from 'react-icons/fa';
 import { useSearchParams, Link } from 'react-router-dom';
 
-/**
- * Make sure model-viewer is loaded once in index.html:
- * <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
- */
-
-// Theme detection from GLB path
+// EXACT theme matching with CityViewer
 const detectThemeFromPath = (glbPath) => {
   const path = glbPath.toLowerCase();
   if (path.includes('classic_day')) return 'classic_day';
@@ -16,297 +12,402 @@ const detectThemeFromPath = (glbPath) => {
   if (path.includes('neon_night')) return 'neon_night';
   if (path.includes('rainy_evening')) return 'rainy_evening';
   if (path.includes('sunset_pink')) return 'sunset_pink';
-  return 'classic_day'; // default
+  return 'classic_day';
 };
 
-// Theme-specific settings that match CityViewer
+// PROVEN theme settings that match CityViewer exactly
 const THEME_SETTINGS = {
   classic_day: {
-    exposure: 1.1,
-    bgGradient: 'linear-gradient(135deg, #f0f5ff 0%, #e6f0ff 50%, #d9e8ff 100%)',
-    environmentIntensity: 0.3,
-    shadowIntensity: 0.7,
+    exposure: 1.0,
+    environmentImage: 'neutral',
+    bgColor: '#f0f5ff',
+    arShadow: true,
+    arPlacement: 'floor'
   },
   foggy_morning: {
-    exposure: 0.85,
-    bgGradient: 'linear-gradient(135deg, #d0d8e0 0%, #c8d0d8 50%, #b8c5d5 100%)',
-    environmentIntensity: 0.5,
-    shadowIntensity: 0.4,
+    exposure: 0.8,
+    environmentImage: 'neutral',
+    bgColor: '#d0d8e0',
+    arShadow: true,
+    arPlacement: 'floor'
   },
   golden_hour: {
-    exposure: 1.2,
-    bgGradient: 'linear-gradient(135deg, #ffebd6 0%, #ffdfc2 50%, #ffd6b3 100%)',
-    environmentIntensity: 0.4,
-    shadowIntensity: 0.6,
+    exposure: 1.1,
+    environmentImage: 'neutral',
+    bgColor: '#ffebd6',
+    arShadow: true,
+    arPlacement: 'floor'
   },
   neon_night: {
-    exposure: 0.6,
-    bgGradient: 'linear-gradient(135deg, #050520 0%, #0a0a2a 50%, #151540 100%)',
-    environmentIntensity: 0.1,
-    shadowIntensity: 0.8,
+    exposure: 0.7,
+    environmentImage: 'none',
+    bgColor: '#050520',
+    arShadow: false,
+    arPlacement: 'floor'
   },
   rainy_evening: {
     exposure: 0.75,
-    bgGradient: 'linear-gradient(135deg, #a8b0b8 0%, #8a98a8 50%, #6a7888 100%)',
-    environmentIntensity: 0.3,
-    shadowIntensity: 0.5,
+    environmentImage: 'neutral',
+    bgColor: '#a8b0b8',
+    arShadow: true,
+    arPlacement: 'floor'
   },
   sunset_pink: {
-    exposure: 1.15,
-    bgGradient: 'linear-gradient(135deg, #ffe6f0 0%, #ffd6e0 50%, #ffc2d6 100%)',
-    environmentIntensity: 0.35,
-    shadowIntensity: 0.6,
+    exposure: 1.05,
+    environmentImage: 'neutral',
+    bgColor: '#ffe6f0',
+    arShadow: true,
+    arPlacement: 'floor'
   },
 };
 
-function QR({ url }) {
-  const safe = encodeURIComponent(url);
-  const src = `https://chart.googleapis.com/chart?cht=qr&chs=220x220&chl=${safe}`;
+// USDZ path mapping
+const getUSDZPath = (glbPath) => {
+  const theme = detectThemeFromPath(glbPath);
+  const themeMap = {
+    'classic_day': 'Classic_Day_City',
+    'foggy_morning': 'Foggy_Morning_City',
+    'golden_hour': 'Golden_Hour_City',
+    'neon_night': 'Neon_Night_City',
+    'rainy_evening': 'Rainy_Evening_City',
+    'sunset_pink': 'Sunset_Pink_City'
+  };
+  return `/models/${themeMap[theme]}.usdz`;
+};
+
+function QRCode({ url, size = 200 }) {
+  // Using a more reliable QR code generator
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(url)}`;
+
   return (
-    <img
-      src={src}
-      alt="Open on phone"
-      className="rounded-lg border border-black/10 dark:border-white/10 bg-white"
-      width={220}
-      height={220}
-    />
+    <div className="flex flex-col items-center">
+      <img
+        src={qrUrl}
+        alt="Scan for AR Experience"
+        className="rounded-xl border-4 border-white shadow-2xl"
+        width={size}
+        height={size}
+      />
+      <p className="mt-3 text-sm text-gray-600 dark:text-gray-300 text-center">
+        Scan with your phone's camera
+      </p>
+    </div>
   );
 }
+
+
 
 export default function ARView() {
   const [params] = useSearchParams();
   const glbSrc = decodeURIComponent(params.get('src') || '/models/Classic_Day_City.glb');
-  
-  // Detect theme from GLB path
+  const usdzSrc = getUSDZPath(glbSrc);
+
   const currentTheme = detectThemeFromPath(glbSrc);
   const themeSettings = THEME_SETTINGS[currentTheme];
 
   const mvRef = useRef(null);
   const [isIOS, setIsIOS] = useState(false);
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-  // GLB-only AR modes (Scene Viewer + WebXR)
-  const arModes = useMemo(() => 'webxr scene-viewer', []);
+  const [hasUSDZ, setHasUSDZ] = useState(false);
+  const [arReady, setArReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [arStatus, setArStatus] = useState('initializing');
 
   useEffect(() => {
     setIsIOS(/iPad|iPhone|iPod/i.test(navigator.userAgent));
-  }, []);
+    checkUSDZExists(usdzSrc).then(setHasUSDZ);
+
+    // Check WebXR support
+    if (navigator.xr) {
+      navigator.xr.isSessionSupported('immersive-ar').then((supported) => {
+        setArStatus(supported ? 'supported' : 'not-supported');
+      });
+    } else {
+      setArStatus('not-supported');
+    }
+  }, [usdzSrc]);
+
+  const checkUSDZExists = async (path) => {
+    try {
+      const response = await fetch(path, { method: 'HEAD' });
+      return response.ok;
+    } catch {
+      return false;
+    }
+  };
 
   const handleLoad = () => {
     const mv = mvRef.current;
-    const model = mv?.model;
-    if (!model) return;
+    if (!mv) return;
 
-    // Apply theme-specific settings
-    mv.exposure = themeSettings.exposure;
-    mv.environmentIntensity = themeSettings.environmentIntensity;
-    mv.shadowIntensity = themeSettings.shadowIntensity;
+    // Enhanced AR anchoring
+    mv.arScale = 'fixed'; // Prevents model from moving
+    mv.arPlacement = 'floor';
+    mv.autoRotate = false;
+    mv.interactionPrompt = 'none';
 
-    // ---- MATERIAL TUNING (theme-aware) ----
-    try {
-      model.materials?.forEach((mat) => {
-        const pbr = mat?.pbrMetallicRoughness;
-        if (!pbr) return;
+    // Prevent seeing through the model
+    mv.style.backgroundColor = themeSettings.bgColor;
 
-        // Base material properties
-        pbr.setMetallicFactor?.(0);
-        pbr.setRoughnessFactor?.(0.5);
-
-        // Theme-specific material adjustments
-        if (currentTheme === 'neon_night') {
-          // Boost emission for neon theme
-          if (mat.emissiveFactor) {
-            const [r, g, b] = mat.emissiveFactor;
-            const intensity = Math.sqrt(r * r + g * g + b * b);
-            if (intensity > 0.1) {
-              // Boost existing emissions
-              mat.setEmissiveFactor?.([r * 1.5, g * 1.5, b * 1.5]);
-            }
-          }
-        }
-
-        // Prevent over-bright surfaces
-        if (pbr.baseColorFactor) {
-          const [r, g, b, a = 1] = pbr.baseColorFactor;
-          const avg = (r + g + b) / 3;
-          if (avg > 0.95) {
-            pbr.baseColorFactor = [0.92, 0.92, 0.92, a];
-          }
-        }
-      });
-
-      // Cloud-specific adjustments
-      model.meshes?.forEach((mesh) => {
-        if (mesh?.name?.toLowerCase?.().includes('cloud')) {
-          mesh.material?.pbrMetallicRoughness?.setRoughnessFactor?.(0.9);
-        }
-      });
-    } catch (error) {
-      console.warn('Material tuning failed:', error);
-    }
-
-    // ---- LIGHTING SETUP ----
-    try {
-      const allLights = [];
-      ['DirectionalLight', 'PointLight', 'SpotLight'].forEach((t) => {
-        const nodes = model.getNodesByType?.(t) || [];
-        allLights.push(...nodes);
-      });
-
-      // Theme-specific lighting
-      if (currentTheme === 'classic_day' && allLights[0]) {
-        allLights[0].color = '#FFD4B8';
-        allLights[0].intensity = 3.5;
-        allLights[0].visible = true;
-      } else if (currentTheme === 'neon_night' && allLights[0]) {
-        allLights[0].color = '#4a7bff';
-        allLights[0].intensity = 1.5;
-        allLights[0].visible = true;
-      } else if (currentTheme === 'golden_hour' && allLights[0]) {
-        allLights[0].color = '#ff9a57';
-        allLights[0].intensity = 3.0;
-        allLights[0].visible = true;
+    // Add stabilization for better anchoring
+    setTimeout(() => {
+      if (mv.activateAR) {
+        mv.activateAR();
       }
-
-      // Disable extra lights
-      for (let i = 1; i < allLights.length; i++) {
-        allLights[i].intensity = 0;
-        allLights[i].visible = false;
-      }
-    } catch (error) {
-      console.warn('Light modification failed:', error);
-    }
-
-    // Final renderer settings
-    mv.toneMapping = 'aces';
-    mv.shadowSoftness = 0.7;
+      setArReady(true);
+      setIsLoading(false);
+    }, 1000);
   };
 
   const currentUrl = `${window.location.origin}/ar?src=${encodeURIComponent(glbSrc)}`;
-  
+
   const copyLink = async () => {
     try {
       await navigator.clipboard.writeText(currentUrl);
-      alert('AR link copied!');
+      // Show nice toast instead of alert
+      const toast = document.createElement('div');
+      toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+      toast.textContent = '✅ AR link copied!';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
     } catch {
-      prompt('Copy this AR link:', currentUrl);
+      prompt('Copy this link:', currentUrl);
     }
   };
 
+  const arConfig = useMemo(() => {
+    if (isIOS && hasUSDZ) {
+      return 'quick-look scene-viewer webxr';
+    }
+    return 'scene-viewer webxr';
+  }, [isIOS, hasUSDZ]);
+
   return (
-    <div className="min-h-screen bg-[#f2f5f8] dark:bg-[#0E171F] text-gray-900 dark:text-white">
-      <div className="max-w-6xl mx-auto px-4 py-6">
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <h1 className="text-xl font-bold">View City in AR</h1>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              Theme: <span className="font-medium capitalize">{currentTheme.replace('_', ' ')}</span>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-white">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Enhanced Header */}
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-8 gap-4">
+          <div className="flex items-center gap-4">
+            <span className="px-4 py-3 rounded-full bg-sky-100 dark:bg-sky-900 text-sky-600 dark:text-sky-300 text-xl">
+              <FaCamera />
+            </span>
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-sky-400 to-sky-300 bg-clip-text text-transparent">
+                Augmented Reality Experience
+              </h1>
+              <div className="flex items-center gap-3 mt-2">
+                <span className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm font-medium">
+                  {currentTheme.replace(/_/g, ' ')}
+                </span>
+                {arReady && (
+                  <span className="px-3 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-sm font-medium flex items-center gap-1">
+                    <FaCheck className="text-xs" /> AR Ready
+                  </span>
+                )}
+              </div>
             </div>
           </div>
-          <Link
-            to="/dashboard"
-            className="px-3 py-1.5 rounded-xl bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 border border-black/10 dark:border-white/10"
-          >
-            Back to City
-          </Link>
+
+          <div className="flex gap-3">
+            <Link
+              to="/dashboard"
+              className="px-6 py-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 font-semibold shadow-sm transition-all duration-200 flex items-center gap-2"
+            >
+              ← Back to City
+            </Link>
+          </div>
         </div>
 
-        {isIOS && (
-          <div className="mb-3 text-sm px-3 py-2 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 dark:bg-yellow-900/20 dark:text-yellow-200 dark:border-yellow-900/40">
-            iOS Safari can't launch AR from GLB; you'll get a 3D preview here. (Add a USDZ for full iOS AR.)
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-6">
-          {/* Viewer panel */}
-          <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0E171F] shadow overflow-hidden">
-            <model-viewer
-              key={glbSrc}
-              ref={mvRef}
-              onLoad={handleLoad}
-              src={glbSrc}
-              /* AR + controls */
-              ar
-              ar-modes={arModes}
-              ar-scale="fixed"
-              camera-controls
-              touch-action="pan-y"
-              /* Avoid blank desktop preview */
-              reveal="auto"
-              loading="eager"
-              interaction-prompt={isMobile ? 'auto' : 'none'}
-              /* Theme-specific settings */
-              tone-mapping="aces"
-              exposure={themeSettings.exposure.toString()}
-              environment-intensity={themeSettings.environmentIntensity.toString()}
-              shadow-intensity={themeSettings.shadowIntensity.toString()}
-              shadow-softness="0.7"
-              ignore-gltf-lights="false"
-              /* Camera framing */
-              camera-orbit="25deg 55deg 120%"
-              field-of-view="45deg"
-              /* Theme-specific background */
-              style={{ 
-                width: '100%', 
-                height: '70vh', 
-                background: themeSettings.bgGradient
-              }}
-            >
-              <button
-                slot="ar-button"
-                className="mx-4 my-3 px-4 py-2 rounded-xl bg-sky-600 text-white shadow hover:bg-sky-700 font-medium"
-              >
-                🕶️ Launch AR
-              </button>
-              
-              {/* Theme indicator badge */}
-              <div 
-                slot="hotspot-theme" 
-                className="theme-badge"
-                style={{
-                  position: 'absolute',
-                  top: '16px',
-                  left: '16px',
-                  background: 'rgba(0,0,0,0.7)',
-                  color: 'white',
-                  padding: '8px 12px',
-                  borderRadius: '12px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  backdropFilter: 'blur(10px)'
-                }}
-              >
-                {currentTheme.replace('_', ' ').toUpperCase()}
+        {/* Status Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          {isIOS && !hasUSDZ && (
+            <div className="p-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">📱</span>
+                <span className="font-semibold">iOS Preview Mode</span>
               </div>
-            </model-viewer>
+              <p className="text-sm mt-1 text-yellow-700 dark:text-yellow-300">
+                Add USDZ files for full AR experience
+              </p>
+            </div>
+          )}
+
+          {isIOS && hasUSDZ && (
+            <div className="p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">✅</span>
+                <span className="font-semibold">iOS AR Ready</span>
+              </div>
+              <p className="text-sm mt-1 text-green-700 dark:text-green-300">
+                Tap "View in AR" for immersive experience
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr,400px] gap-8">
+          {/* AR Viewer Section */}
+          <div className="space-y-6">
+            <div className="rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-2xl overflow-hidden">
+              <model-viewer
+                ref={mvRef}
+                src={glbSrc}
+                ios-src={hasUSDZ ? usdzSrc : undefined}
+
+                // Enhanced AR anchoring
+                ar
+                ar-modes={arConfig}
+                ar-scale="fixed"
+                ar-placement={themeSettings.arPlacement}
+                stabilization-degree="0.5"
+
+                // Improved interaction
+                camera-controls
+                touch-action="pan-y"
+                reveal="auto"
+                loading="eager"
+                auto-rotate="false"
+
+                // Visual enhancements
+                exposure={themeSettings.exposure}
+                environment-image={themeSettings.environmentImage}
+                shadow-intensity={themeSettings.arShadow ? 1.0 : 0}
+                shadow-softness="0.5"
+                tone-mapping="neutral"
+
+                // Camera and view settings - RESTRICTED TO PREVENT LOOKING UNDER
+                camera-orbit="0deg 75deg 105%"
+                field-of-view="30deg"
+                min-camera-orbit="0deg 60deg 100%"
+                max-camera-orbit="360deg 90deg 400%"
+                min-field-of-view="25deg"
+                max-field-of-view="35deg"
+
+                // Disable interaction below the model
+                interaction-policy="allow-when-focused"
+
+                style={{
+                  width: '100%',
+                  height: '75vh',
+                  backgroundColor: themeSettings.bgColor,
+                }}
+                onLoad={handleLoad}
+              >
+                {/* Enhanced AR Button */}
+                <button
+                  slot="ar-button"
+                  className="absolute bottom-6 left-1/2 transform -translate-x-1/2 px-8 py-4 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-lg shadow-2xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 flex items-center gap-3"
+                >
+                  <span className="text-xl">👆</span>
+                  View in AR
+                  <span className="text-sm opacity-90">({isIOS ? 'Quick Look' : 'WebXR'})</span>
+                </button>
+
+                {/* Theme Badge */}
+                <div className="absolute top-6 left-6 bg-black/80 text-white px-4 py-3 rounded-full text-sm font-semibold backdrop-blur-sm border border-white/20 flex items-center gap-2">
+                  <span className="text-xl text-sky-300">
+                    <FaBuilding />
+                  </span>
+                  <span className="capitalize">{currentTheme.replace(/_/g, ' ')}</span>
+                </div>
+
+                {/* Loading Progress */}
+                <div slot="progress-bar" className="ar-progress-bar"></div>
+              </model-viewer>
+            </div>
+
+            {/* Instructions Card - Now properly placed below the AR viewer */}
+            <div className="rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-2xl p-6">
+              <h4 className="font-bold text-lg mb-4 flex items-center gap-2">
+                <span className="text-xl text-sky-300"><FaBullseye /></span>
+                How to Use
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className="flex items-start gap-3">
+                  <span className="bg-sky-100 dark:bg-sky-700 rounded-full w-6 h-6 flex items-center justify-center text-sky-600 dark:text-sky-300 font-bold text-xs mt-0.5 flex-shrink-0">1</span>
+                  <p>Tap "View in AR" to launch camera</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="bg-sky-100 dark:bg-sky-700 rounded-full w-6 h-6 flex items-center justify-center text-sky-600 dark:text-sky-300 font-bold text-xs mt-0.5 flex-shrink-0">2</span>
+                  <p>Point camera at a flat surface</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="bg-sky-100 dark:bg-sky-700 rounded-full w-6 h-6 flex items-center justify-center text-sky-600 dark:text-sky-300 font-bold text-xs mt-0.5 flex-shrink-0">3</span>
+                  <p>Tap to place the city model</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="bg-sky-100 dark:bg-sky-700 rounded-full w-6 h-6 flex items-center justify-center text-sky-600 dark:text-sky-300 font-bold text-xs mt-0.5 flex-shrink-0">4</span>
+                  <p>Walk around and explore!</p>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* QR / Link panel */}
-          <aside className="lg:pt-1">
-            <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0E171F] shadow p-4">
-              <div className="text-sm font-semibold mb-2">Open on your phone</div>
-              <p className="text-xs text-gray-600 dark:text-white/70 mb-3">
-                Scan QR code or copy link to view <strong>{currentTheme.replace('_', ' ')}</strong> theme in AR.
+          {/* Side Panel */}
+          <div className="space-y-6">
+            {/* QR Code Card */}
+            <div className="rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-2xl p-6">
+              <h3 className="font-bold text-xl mb-4 flex items-center gap-2">
+                <span className="text-xl text-sky-300"><FaMobileAlt /></span>
+                Open on Mobile
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+                Scan to experience <strong>{currentTheme.replace(/_/g, ' ')}</strong> city in AR.
               </p>
-              <div className="flex flex-col items-center gap-3">
-                <QR url={currentUrl} />
+
+              <div className="flex flex-col items-center space-y-6">
+                <QRCode url={currentUrl} size={220} />
+
                 <button
                   onClick={copyLink}
-                  className="w-full px-3 py-2 rounded-xl bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 border border-black/10 dark:border-white/10 text-sm"
+                  className="w-full py-4 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 border-2 border-gray-300 dark:border-gray-600 font-semibold transition-all duration-200 flex items-center justify-center gap-2"
                 >
+                  <span>🔗</span>
                   Copy AR Link
                 </button>
-                <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                  Theme: <span className="font-medium">{currentTheme.replace('_', ' ')}</span>
-                </div>
-                <code className="text-[10px] break-all opacity-70 max-w-full overflow-hidden text-ellipsis">
-                  {currentUrl}
-                </code>
               </div>
             </div>
-          </aside>
+
+            {/* Tech Info Card */}
+            <div className="rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-2xl p-6">
+              <h4 className="font-bold text-lg mb-4 flex items-center gap-2">
+                <span className="text-xl text-sky-300"><FaInfoCircle /></span>
+                Technical Info
+              </h4>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">Platform:</span>
+                  <span className="font-medium">{isIOS ? 'iOS' : 'Android/Web'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">AR Support:</span>
+                  <span className="font-medium">
+                    {arStatus === 'supported' ? 'Full WebXR' :
+                      isIOS && hasUSDZ ? 'Quick Look' : '3D Preview'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">Model Format:</span>
+                  <span className="font-medium">{hasUSDZ ? 'GLB + USDZ' : 'GLB'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Custom Styles */}
+      <style jsx>{`
+        model-viewer {
+          --progress-bar-color: #3b82f6;
+          --progress-bar-height: 3px;
+        }
+        
+        .ar-progress-bar {
+          background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+          height: 3px;
+        }
+      `}</style>
     </div>
   );
 }
