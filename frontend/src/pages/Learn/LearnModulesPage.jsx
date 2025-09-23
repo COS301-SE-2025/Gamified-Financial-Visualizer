@@ -4,21 +4,6 @@ import { motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import LearnLayout from '../../pages/Learn/LearnLayout';
 import CourseCard from '../../components/cards/CoursesCard';
-import banner1 from '../../assets/Images/learn_banners/Budget.png' ;
-import banner2 from '../../assets/Images/learn_banners/Investment.png';
-import banner3 from '../../assets/Images/learn_banners/credit.png';
-import banner4 from '../../assets/Images/learn_banners/Fomo.png';
-import banner5 from '../../assets/Images/learn_banners/retrenchment.png';
-import banner6 from '../../assets/Images/banners/pixelGirl.gif';
-
-const bannerImages = {
-  1: banner1,
-  2: banner2,
-  3: banner3,
-  4: banner4,
-  5: banner5,
-  6: banner6
-};
 
 /* --------------------------- Reusable Dropdown --------------------------- */
 /** Achievements-style portaled dropdown (keyboard + outside click safe) */
@@ -357,7 +342,7 @@ const LearningPage = () => {
                 lessons={module.lesson_count}
                 topic={module.topic}
                 difficulty={module.difficulty}
-                image={bannerImages[module.module_banner_id] || banner1}
+                image={`/assets/Images/${module.banner_image_path}`} 
                 moduleId={module.module_id}
               />
             ))}
