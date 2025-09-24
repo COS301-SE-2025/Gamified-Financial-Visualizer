@@ -5,7 +5,7 @@ import {
   FaBullseye, FaGraduationCap, FaMedal, FaUsers, FaQuestionCircle,
   FaFileImport, FaChartLine, FaPiggyBank, FaPlus, FaTrophy,
   FaBook, FaCheckCircle, FaBookOpen, FaUserFriends, FaSearch,
-  FaVideo, FaListAlt, FaChevronDown, FaBell
+  FaVideo, FaListAlt, FaChevronDown, FaBell, FaBars, FaTimes
 } from 'react-icons/fa';
 import logo from '../assets/Images/Logo1.png';
 import avatar from '../assets/Images/avatars/LightPost.png';
@@ -14,7 +14,7 @@ import NotificationsPanel from '../components/notifications/NotificationsPanel';
 const menuItems = [
   {
     label: 'Home',
-    icon: <FaHome className="mr-1" />,
+    icon: <FaHome className="text-lg" />,
     items: [{
       label: 'Dashboard',
       sub: 'Your personal dashboard',
@@ -24,7 +24,7 @@ const menuItems = [
   },
   {
     label: 'Accounts',
-    icon: <FaWallet className="mr-1" />,
+    icon: <FaWallet className="text-lg" />,
     items: [
       {
         label: 'Transactions',
@@ -54,7 +54,7 @@ const menuItems = [
   },
   {
     label: 'Goals',
-    icon: <FaBullseye className="mr-1" />,
+    icon: <FaBullseye className="text-lg" />,
     items: [
       {
         label: 'Your Goals',
@@ -72,7 +72,7 @@ const menuItems = [
   },
   {
     label: 'Learn',
-    icon: <FaGraduationCap className="mr-1" />,
+    icon: <FaGraduationCap className="text-lg" />,
     items: [
       {
         label: 'Modules',
@@ -96,7 +96,7 @@ const menuItems = [
   },
   {
     label: 'Achievements',
-    icon: <FaMedal className="mr-1" />,
+    icon: <FaMedal className="text-lg" />,
     items: [
       {
         label: 'Achievements',
@@ -120,7 +120,7 @@ const menuItems = [
   },
   {
     label: 'Community',
-    icon: <FaUsers className="mr-1" />,
+    icon: <FaUsers className="text-lg" />,
     items: [
       {
         label: 'Social',
@@ -150,7 +150,7 @@ const menuItems = [
   },
    {
     label: 'Support',
-    icon: <FaQuestionCircle className="mr-1" />,
+    icon: <FaQuestionCircle className="text-lg" />,
     items: [
       {
         label: 'Overview',
@@ -180,10 +180,11 @@ const Navbar = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [performance, setPerformance] = useState(null);
   const [notifications, setNotifications] = useState(0);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [user, setUser] = useState(() => {
     const userData = localStorage.getItem('user');
     return userData ? JSON.parse(userData) : {
-      username: 'kevin_park',
+      username: 'sarah_williams',
       tier: 'Silver',
       avatar,
       id: null
@@ -191,10 +192,12 @@ const Navbar = () => {
   });
   const navigate = useNavigate();
   const location = useLocation();
+  const sidebarRef = useRef(null);
 
   const handleLogout = () => {
     localStorage.removeItem('user');
     navigate('/landing');
+    closeAll();
   };
 
   const toggleMenu = (label) => {
@@ -215,11 +218,52 @@ const Navbar = () => {
     setProfileOpen(false);
   };
 
-  const closeAll = () => {
+  const toggleMobileSidebar = () => {
+    setMobileSidebarOpen(!mobileSidebarOpen);
     setActiveMenu(null);
     setProfileOpen(false);
     setShowNotifications(false);
   };
+
+  const closeAll = () => {
+    setActiveMenu(null);
+    setProfileOpen(false);
+    setShowNotifications(false);
+    setMobileSidebarOpen(false);
+  };
+
+  // Handle navigation for mobile sidebar
+  const handleMobileNavigation = (to) => {
+    navigate(to);
+    setTimeout(() => {
+      closeAll();
+    }, 100);
+  };
+
+  // Close sidebar when route changes
+  useEffect(() => {
+    closeAll();
+  }, [location.pathname]);
+
+  // Close sidebar when clicking outside on mobile
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (mobileSidebarOpen && 
+          sidebarRef.current && 
+          !sidebarRef.current.contains(event.target) && 
+          !event.target.closest('.mobile-menu-btn')) {
+        closeAll();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [mobileSidebarOpen]);
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -262,16 +306,194 @@ const Navbar = () => {
     return () => ro.disconnect();
   }, []);
 
-  return (
+  // Mobile sidebar component
+  const MobileSidebar = () => (
     <>
-      <nav ref={navRef} className="bg-white shadow px-6 py-2 flex items-center justify-between relative z-[9999] dark:bg-gray-800">
-        {/* Logo */}
-        <div className="flex items-center gap-2">
-          <img src={logo} alt="Logo" className="w-16 h-16" />
-          <h1 className="text-xl font-bold text-[#83AB55]">Gamified Finance</h1>
+      {/* Overlay */}
+      <div 
+        className={`fixed inset-0 bg-black bg-opacity-50 z-[9998] transition-opacity duration-300 lg:hidden ${
+          mobileSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={closeAll}
+      />
+      
+      {/* Sidebar */}
+      <div 
+        ref={sidebarRef}
+        className={`fixed left-0 top-0 h-full w-80 bg-white shadow-xl z-[9999] transform transition-transform duration-300 ease-in-out lg:hidden mobile-sidebar ${
+          mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        {/* Sidebar Header - User Info */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <img
+              src={performance?.avatar_image_path
+                ? `/assets/Images/${performance.avatar_image_path}`
+                : avatar}
+              alt="avatar"
+              className="w-12 h-12 rounded-full object-cover border-2 border-gray-200"
+            />
+            <div>
+              <p className="text-sm font-medium text-gray-900">{user.username}</p>
+              <p className="text-xs text-gray-500">{user.tier}</p>
+            </div>
+          </div>
+          <button 
+            onClick={closeAll}
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            <FaTimes className="text-gray-600 text-lg" />
+          </button>
         </div>
 
-        {/* Main Navigation */}
+       
+
+        {/* Sidebar Content */}
+        <div className="h-full overflow-y-auto pb-20">
+          <div className="p-4">
+            {/* Navigation Menu */}
+            <nav className="space-y-2">
+              {menuItems.map((menu) => (
+                <div key={menu.label} className="relative">
+                  {menu.items.length === 1 ? (
+                    <button
+                      onClick={() => handleMobileNavigation(menu.items[0].to)}
+                      className={`flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-colors w-full text-left ${
+                        location.pathname === menu.items[0].to
+                          ? 'bg-green-50 text-[#83AB55] border border-green-100' 
+                          : 'text-gray-700 hover:bg-gray-50 hover:text-[#83AB55]'
+                      }`}
+                    >
+                      <span className="text-lg">{menu.icon}</span>
+                      <span>{menu.label}</span>
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => toggleMenu(menu.label)}
+                        className={`flex items-center justify-between w-full p-3 rounded-lg text-sm font-medium transition-colors ${
+                          menu.items.some(item => location.pathname.startsWith(item.to)) || activeMenu === menu.label
+                            ? 'bg-green-50 text-[#83AB55] border border-green-100'
+                            : 'text-gray-700 hover:bg-gray-50 hover:text-[#83AB55]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-lg">{menu.icon}</span>
+                          <span>{menu.label}</span>
+                        </div>
+                        <FaChevronDown 
+                          className={`text-xs transition-transform ${
+                            activeMenu === menu.label ? 'rotate-180' : ''
+                          }`} 
+                        />
+                      </button>
+
+                      {activeMenu === menu.label && (
+                        <div className="ml-6 mt-2 space-y-2 border-l-2 border-green-100 pl-3">
+                          {menu.items.map((item) => (
+                            <button
+                              key={item.label}
+                              onClick={() => handleMobileNavigation(item.to)}
+                              className={`flex items-center gap-3 p-2 rounded-lg text-sm transition-colors w-full text-left ${
+                                location.pathname.startsWith(item.to)
+                                  ? 'text-[#83AB55] font-medium bg-green-25'
+                                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                              }`}
+                            >
+                              <span className="text-md">{item.icon}</span>
+                              <div className="flex-1 text-left">
+                                <p className="font-medium">{item.label}</p>
+                                <p className="text-xs text-gray-500 mt-1">{item.sub}</p>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              ))}
+            </nav>
+
+            {/* Bottom Actions */}
+            <div className="mt-6 pt-4 border-t border-gray-200 space-y-2">
+              <button
+                onClick={() => handleMobileNavigation('/profile')}
+                className={`flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-colors w-full text-left ${
+                  location.pathname.startsWith('/profile')
+                    ? 'bg-green-50 text-[#83AB55] border border-green-100'
+                    : 'text-gray-700 hover:bg-gray-50 hover:text-[#83AB55]'
+                }`}
+              >
+                <FaUser className="text-lg" />
+                <span>Profile</span>
+              </button>
+              <button
+                onClick={() => handleMobileNavigation('/profile/settings')}
+                className={`flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-colors w-full text-left ${
+                  location.pathname === '/profile/settings'
+                    ? 'bg-green-50 text-[#83AB55] border border-green-100'
+                    : 'text-gray-700 hover:bg-gray-50 hover:text-[#83AB55]'
+                }`}
+              >
+                <FaCog className="text-lg" />
+                <span>Settings</span>
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors text-left border border-transparent hover:border-red-100"
+              >
+                <FaSignOutAlt className="text-lg" />
+                <span>Logout</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+
+  return (
+    <>
+      <nav ref={navRef} className="bg-white shadow px-4 sm:px-6 py-3 flex items-center justify-between relative z-[9999] dark:bg-gray-800">
+        {/* Left Section - Logo and Mobile Menu */}
+        <div className="flex items-center gap-2">
+          {/* Mobile Menu Button */}
+          <button 
+            onClick={toggleMobileSidebar}
+            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors mobile-menu-btn"
+          >
+            {mobileSidebarOpen ? (
+              <FaTimes className="text-xl text-gray-700" />
+            ) : (
+              <FaBars className="text-xl text-gray-700" />
+            )}
+          </button>
+          
+          {/* Logo - Hidden on mobile, shown on desktop */}
+          <div className="hidden lg:flex items-center gap-2">
+            <img src={logo} alt="Logo" className="w-12 h-12 sm:w-16 sm:h-16" />
+            <h1 className="text-lg sm:text-xl font-bold text-[#83AB55]">Gamified Finance</h1>
+          </div>
+
+          {/* User Info - Show on mobile instead of logo */}
+          <div className="lg:hidden flex items-center gap-3">
+            <img
+              src={performance?.avatar_image_path
+                ? `/assets/Images/${performance.avatar_image_path}`
+                : avatar}
+              alt="avatar"
+              className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+            />
+            <div className="text-left">
+              <p className="text-sm font-medium text-gray-900">{user.username}</p>
+              <p className="text-xs text-gray-500">{user.tier}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop Navigation - Hidden on mobile */}
         <div className="hidden lg:flex gap-6 items-center z-10000">
           {menuItems.map((menu) => (
             <div key={menu.label} className="relative">
@@ -340,8 +562,8 @@ const Navbar = () => {
           ))}
         </div>
 
-        {/* Right Side Icons */}
-        <div className="flex items-center gap-4 z-10000">
+        {/* Right Side Icons - Desktop Only */}
+        <div className="hidden lg:flex items-center gap-4 z-10000">
           {/* Notifications */}
           <div className="relative">
             <button
@@ -422,6 +644,21 @@ const Navbar = () => {
           </div>
         </div>
 
+        {/* Notifications Button - Mobile Only */}
+        <div className="lg:hidden relative">
+          <button
+            onClick={toggleNotifications}
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+          >
+            <FaBell className="text-xl text-gray-700" />
+            {notifications > 0 && (
+              <span className="absolute -top-1 -right-1 bg-[#72C1F5] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                {notifications}
+              </span>
+            )}
+          </button>
+        </div>
+
         {/* Click outside to close dropdowns */}
         {(activeMenu !== null || profileOpen || showNotifications) && (
           <div
@@ -431,11 +668,14 @@ const Navbar = () => {
         )}
       </nav>
 
+      {/* Mobile Sidebar */}
+      <MobileSidebar />
+
       {/* HUD layer lives right under the navbar */}
       <div
         id="hud-root"
         className="fixed left-0 right-0 z-40"
-        style={{ top: 'var(--app-header-h, 88px)' }}  // fallback 88px
+        style={{ top: 'var(--app-header-h, 88px)' }}
       />
 
       {/* Notifications Panel */}
@@ -447,4 +687,5 @@ const Navbar = () => {
     </>
   );
 };
+
 export default Navbar;
