@@ -82,6 +82,8 @@ export default function GameLobby({
     const [mode, setMode] = useState(defaultMode)
     const [players, setPlayers] = useState(defaultPlayers)
     const [laps, setLaps] = useState(defaultLaps)
+  const [gamePhase, setGamePhase] = useState('lobby');
+  const [activePlayer, setActivePlayer] = useState(0);
 
     // character picker
     const [character, setCharacter] = useState(ALL_CHARACTERS[3]) // Cowboy
@@ -111,6 +113,7 @@ export default function GameLobby({
     const token = user.token;
     const [lobbyId, setLobbyId] = useState(null);
 
+    /*
     useEffect(() => {
         const socket = getSocket(token, user?.id);
         setSocket(socket);
@@ -120,7 +123,7 @@ export default function GameLobby({
 
         return () => socket.off("connect_error", error);
     }, [token, user]);
-
+*/
     const lapOptions = [5, 10, 15, 20]
     const [playersInLobby, setPlayersInLobby] = useState([]);
 
@@ -217,10 +220,12 @@ export default function GameLobby({
                     isPrivate: false
                 })
             });
-
             if (response.success) {
-                console.log('Lobby created:', response.lobby);
-                setLobbyId(response.lobby);
+                console.log('Lobby created:', response.lobby.id);
+                setLobbyId(response.lobby.id);
+                localStorage.removeItem('lobbyId');
+                localStorage.setItem('lobbyId', response.lobby.id);
+                
                 setRoomCode(response.lobby.code);
                 onCreateRoom?.(response.lobby);
                 setShowCreate(false);
@@ -246,11 +251,12 @@ export default function GameLobby({
 
             if (response.success) {
                 console.log('Joined lobby:', response.lobby);
+                localStorage.removeItem('lobbyId');
+                localStorage.setItem('lobbyId', response.lobby);
                 onJoinWithCode?.(response.lobby);
-
             }
 
-             socket.emit('lobby:start-game'); 
+             //socket.emit('lobby:start-game'); 
             // update lobby
             await handleGetMyLobby();
         } catch (err) {
@@ -389,8 +395,9 @@ export default function GameLobby({
 
     const start = async () => {
        // if (!canStart) return;
+       if(gamePhase !== 'lobby') return;
         try {
-        onStart?.({ mode, players, laps }, character.key);
+       // onStart?.({ mode, players, laps }, character.key);
 
             const res = await fetch('http://localhost:5000/api/game/game/start', {
                 method: 'POST',
@@ -398,18 +405,20 @@ export default function GameLobby({
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    user_id: user.id,
+                    user_id: Number(user.id),
                     lobbyId: lobbyId
                 }),
             });
             // set game id
             const result = await res.json();
             if(result.success) {
-           logger.info('Game started:', result.gameId);
+         //  logger.info('Game started:', result.gameId);
                 // clear gameId
                 localStorage.removeItem('gameId');
                localStorage.setItem('gameId', result.gameId); 
              //   socket.emit('lobby:start-game');  // backend will pick up userId from socket.data
+             await fetchGameState();
+
                 setCountdown(true);
             }  
             
@@ -431,6 +440,27 @@ export default function GameLobby({
         }
         
     };
+
+    const fetchGameState = async () => {
+  try {
+    const gameId = localStorage.getItem('gameId');
+    const res = await fetch(`http://localhost:5000/api/game/state/${gameId}`, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${user.token}` }
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      // Update the game state, players, etc.
+      setPlayers(data.gameState.players);
+      setGamePhase(data.gameState.gamePhase);
+      setActivePlayer(data.gameState.currentPlayerId);
+    }
+  } catch (error) {
+    console.error('Error fetching game state:', error);
+  }
+};
+
 
     const done = () => onStart?.({ mode, players, laps }, character.key)
 

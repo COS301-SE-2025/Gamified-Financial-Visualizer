@@ -312,9 +312,26 @@ const CommunityGameRoom = () => {
 const [socket, setSocket] = useState(null);
    const user = JSON.parse(localStorage.getItem('user'));
     const token = user?.token;
-
+  const lobbyId = localStorage.getItem('lobbyId');
 
   const [players, setPlayers] = useState([]);
+ const apiCall = async (endpoint, options = {}) => {
+       // console.log('API Call:', endpoint, options);
+        const response = await fetch(`http://localhost:5000/api/game${endpoint}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            ...options,
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'API call failed');
+        }
+
+        return response.json();
+    };
 
   const fetchGameState = async () => {
   try {
@@ -335,10 +352,14 @@ const [socket, setSocket] = useState(null);
   }
 };
 
-useEffect(() => {
-  if (gameId) {
-    fetchGameState();
-  }
+useEffect( () => {
+  const fetchData = async () => {
+    if (gameId) {
+       fetchGameState();
+    }
+  };
+
+  fetchData();
 }, [gameId, user]);
 
   // Initialize players and reset business ownership
@@ -535,16 +556,18 @@ useEffect(() => {
 
     // Emit socket event for multiplayer
    // socket.emit('startGame');
-  };
+   // call start game api
+
+  }
 
   const createRoom = () => {
     if (!username) return alert('Please enter a username');
-    socket.emit('createRoom', { host: 'currentPlayer', username, settings: gameSettings });
+  //  socket.emit('createRoom', { host: 'currentPlayer', username, settings: gameSettings });
   };
 
   const joinRoom = () => {
-    if (!username || !roomCode) return alert('Please enter both username and room code');
-    socket.emit('joinRoom', { roomCode, username, playerId: 'currentPlayer' });
+    if (!username || !roomCode) return console.error('Please enter both username and room code');
+  //  socket.emit('joinRoom', { roomCode, username, playerId: 'currentPlayer' });
   };
 
   const restartGame = () => {

@@ -39,6 +39,7 @@ export class GameEngine extends EventEmitter {
     };
 
     this.games.set(gameId, gameState);
+
     return gameState;
   }
 
@@ -63,7 +64,7 @@ export class GameEngine extends EventEmitter {
     };
 
     game.players.set(player.id, newPlayer);
-    this.emit('player-joined', { gameId, player: newPlayer });
+   // this.emit('player-joined', { gameId, player: newPlayer });
     return true;
   }
 
@@ -82,6 +83,7 @@ export class GameEngine extends EventEmitter {
     const randomizedIds = this.shuffleArray(playerIds);
     game.currentPlayerId = randomizedIds[ 0 ];
 
+    /*
     this.io.emit('game-started', { gameId, turnOrder: randomizedIds });
     this.io.to(`game:${gameId}`).emit('game-started', {
       gameId,
@@ -93,7 +95,7 @@ export class GameEngine extends EventEmitter {
       players: game.players,
       activePlayer: game.currentPlayerId
       });
-
+*/
     return true;
   }
 
@@ -143,7 +145,7 @@ export class GameEngine extends EventEmitter {
     player.position = newPosition;
     const landedBlock = game.board.blocks[ newPosition ];
 
-    this.emit('player-moved', { gameId, playerId, oldPosition, newPosition, landedBlock });
+   // this.emit('player-moved', { gameId, playerId, oldPosition, newPosition, landedBlock });
     this.handleBlockLanding(gameId, playerId, landedBlock);
 
     return true;
@@ -184,7 +186,7 @@ export class GameEngine extends EventEmitter {
     }
 
     const card = deck.pop()!;
-    this.emit('card-drawn', { gameId, playerId, card });
+ //   this.emit('card-drawn', { gameId, playerId, card });
     this.applyCardEffect(gameId, playerId, card);
     discard.push(card);
   }

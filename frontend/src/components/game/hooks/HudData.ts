@@ -89,7 +89,7 @@ export function useHudData(gameId: string | null, socket?: any) {
   const refreshBalance = useCallback(async () => {
     if (!gameId || !userId || !token) return;
     const qs = `?gameId=${encodeURIComponent(gameId)}&user_id=${userId}`;
-    const data = await getJSON(API(`/game/balance-sheet${qs}`), token);
+    const data = await getJSON(API(`/game/balance-sheet/${qs}`), token);
     if (data.success) setBalance(data.balanceSheet as BalanceSheet);
   }, [gameId, userId, token]);
 

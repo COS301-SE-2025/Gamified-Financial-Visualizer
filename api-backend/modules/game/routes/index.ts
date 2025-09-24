@@ -271,7 +271,7 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
     }
   });
 
-
+/*
   router.post('/lobby/start', async (req, res) => {
     try {
       const { user_id } = req.body;
@@ -285,7 +285,7 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
       res.status(400).json({ error: e.message });
     }
   });
-
+*/
   /**
    * GET /api/game/state/:gameId
    * Get current game state (for reconnection, spectating)
@@ -404,12 +404,20 @@ router.post('/game/start', async (req, res) => {
     const { user_id, lobbyId } = req.body;
     // const gameId = lobbyManager.startGame(Number(user_id));
     const gameId = lobbyManager.startGameFromLobby(String(lobbyId), Number(user_id));
-    if (!gameId) return res.status(409).json({ error:'Cannot start game' });
+    if (!gameId) {
+      logger.error('Failed to start game for lobby:', lobbyId);
+       res.status(409).json({ error:'Cannot start game' });
+       return;
+    }
     logger.info("Game Id:", gameId);
     const lobby = lobbyManager.getLobby(String(lobbyId));
  //   const lobby = lobbyManager.getLobbyByPlayer(Number(user_id));
     logger.info('Starting game for lobby:', lobby?.code);
-    if (!lobby) return res.status(404).json({ error:'Lobby not found' });
+    if (!lobby) {
+      logger.error('Lobby not found for starting game:', lobbyId);
+     res.status(404).json({ error:'Lobby not found' });
+      return;
+    }
     const gameEngine = lobbyManager.getGameEngine()
     const gameState = gameEngine.getGameState(gameId);
     logger.info('Game state at start:', gameState);

@@ -100,7 +100,7 @@ export class GameLobbyManager extends EventEmitter {
     this.playerToLobby.set(hostId, lobbyId);
 
     logger.info(`Lobby ${lobbyId} created by user ${hostId} with code ${joinCode}`);
-    this.emit('lobby-created', lobby);
+   // this.emit('lobby-created', lobby);
 
     return lobby;
   }
@@ -149,7 +149,7 @@ export class GameLobbyManager extends EventEmitter {
     this.playerToLobby.set(playerId, lobbyId);
 
     logger.info(`User ${playerId} joined lobby ${lobbyId}`);
-    this.emit('player-joined-lobby', { lobby, player });
+  //  this.emit('player-joined-lobby', { lobby, player });
 
     return lobby;
   }
@@ -186,7 +186,7 @@ export class GameLobbyManager extends EventEmitter {
     lobby.lastActivity = new Date();
 
     logger.info(`Player ${playerId} selected character ${characterId} in lobby ${lobbyId}`);
-    this.emit('player-character-selected', { lobby, playerId, character });
+  //  this.emit('player-character-selected', { lobby, playerId, character });
 
     return true;
   }
@@ -236,7 +236,7 @@ export class GameLobbyManager extends EventEmitter {
         lobby.hostId = newHost.id;
 
         logger.info(`User ${newHost.id} promoted to host of lobby ${lobbyId}`);
-        this.emit('host-changed', { lobby, newHost });
+   //     this.emit('host-changed', { lobby, newHost });
       } else {
         // Close empty lobby
         this.closeLobby(lobbyId);
@@ -267,7 +267,7 @@ export class GameLobbyManager extends EventEmitter {
     player.isReady = !player.isReady;
     lobby.lastActivity = new Date();
 
-    this.emit('player-ready-changed', { lobby, playerId, isReady: player.isReady });
+//    this.emit('player-ready-changed', { lobby, playerId, isReady: player.isReady });
     return true;
   }
 
@@ -324,7 +324,6 @@ export class GameLobbyManager extends EventEmitter {
       // Create game
       gameId = this.generateGameId();
       const gameState = this.gameEngine.createGame(gameId, playerId, lobby.settings.gameMode, lobby.settings.maxLaps || 5);
-      gameState.gamePhase = 'playing'; // Set initial phase to playing
       // Add all players to the game
       for (const lobbyPlayer of lobby.players.values()) {
         const gamePlayer: Player = {
@@ -347,6 +346,8 @@ export class GameLobbyManager extends EventEmitter {
         this.gameEngine.addPlayer(gameId, gamePlayer);
       }
 
+      gameState.gamePhase = 'playing'; // Set initial phase to playing
+
       // Start the actual game
       this.gameEngine.startGame(gameId);
 
@@ -355,7 +356,7 @@ export class GameLobbyManager extends EventEmitter {
       lobby.gameId = gameId;
       lobby.lastActivity = new Date();
       logger.info(`Game ${gameId} started from lobby ${lobbyId}`);
-      this.emit('game-started-from-lobby', { lobby, gameId });
+     // this.emit('game-started-from-lobby', { lobby, gameId });
 
     } finally {
       this.lobbyLocks.delete(lobbyId);
@@ -371,6 +372,7 @@ export class GameLobbyManager extends EventEmitter {
     try {
       const lobby = this.lobbies.get(lobbyId);
       if (!lobby ||  lobby.status !== 'waiting') {
+        logger.error(`Lobby not found or not in waiting status: ${lobbyId}`);
         return null;
       }
 
@@ -390,7 +392,6 @@ export class GameLobbyManager extends EventEmitter {
       // Create game
       gameId = this.generateGameId();
       const gameState = this.gameEngine.createGame(gameId, playerId, lobby.settings.gameMode, lobby.settings.maxLaps || 5);
-      gameState.gamePhase = 'playing'; // Set initial phase to playing
       // Add all players to the game
       for (const lobbyPlayer of lobby.players.values()) {
         const gamePlayer: Player = {
@@ -414,6 +415,8 @@ export class GameLobbyManager extends EventEmitter {
       }
 
       // Start the actual game
+            gameState.gamePhase = 'playing'; // Set initial phase to playing
+
       this.gameEngine.startGame(gameId);
 
       // Update lobby status
@@ -421,7 +424,7 @@ export class GameLobbyManager extends EventEmitter {
       lobby.gameId = gameId;
       lobby.lastActivity = new Date();
       logger.info(`Game ${gameId} started from lobby ${lobbyId}`);
-      this.emit('game-started-from-lobby', { lobby, gameId });
+    //  this.emit('game-started-from-lobby', { lobby, gameId });
 
     } finally {
       this.lobbyLocks.delete(lobbyId);
@@ -496,7 +499,7 @@ export class GameLobbyManager extends EventEmitter {
     this.lobbies.delete(lobbyId);
 
     logger.info(`Lobby ${lobbyId} closed`);
-    this.emit('lobby-closed', { lobbyId });
+ //   this.emit('lobby-closed', { lobbyId });
   }
 
   /**
