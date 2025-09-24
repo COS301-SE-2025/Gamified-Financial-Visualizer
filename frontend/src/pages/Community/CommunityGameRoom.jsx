@@ -10,9 +10,8 @@ import { FaInfoCircle, FaMoneyBillWave, FaStore, FaHome, FaUniversity, FaTree, F
 import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 import { useGLTF } from '@react-three/drei';
+import { useHudData } from '../../components/game/hooks/HudData';
 
-// Connect to Socket.IO server (adjust URL as needed)
-const socket = io('http://localhost:3000', { autoConnect: false });
 useGLTF.preload('/game/Monopoly_Game.glb');
 
 // Game simulation logic (moved from MockGameSimulation)
@@ -307,29 +306,66 @@ const CommunityGameRoom = () => {
   const [gameLog, setGameLog] = useState([]);
   const [roomCode, setRoomCode] = useState('F1N4NC3');
   const [username, setUsername] = useState('Player' + Math.floor(Math.random() * 1000));
-
+ const [gameId, setGameId] = useState(localStorage.getItem('gameId'))
   const navigate = useNavigate();
   const gameContainerRef = useRef(null);
+const [socket, setSocket] = useState(null);
+   const user = JSON.parse(localStorage.getItem('user'));
+    const token = user?.token;
 
-  // Initialize players and reset business ownership
-  const [players, setPlayers] = useState(() => {
-    const initialPlayers = [
-      { id: 'p1', name: 'lily_rose', characterKey: 'Green_girl', pos: 0, laps: 0, cash: 10000, assetsValue: 1500, loanBalance: 500, salary: 2000, businesses: [], flags: {}, inventory: {} },
-      { id: 'p2', name: 'kevin_park', characterKey: 'Cowboy', pos: 0, laps: 0, cash: 10000, assetsValue: 2000, loanBalance: 1000, salary: 2200, businesses: [], flags: {}, inventory: {} },
-      { id: 'p3', name: 'nile_waters', characterKey: 'Mr_suit', pos: 0, laps: 0, cash: 10000, assetsValue: 1200, loanBalance: 0, salary: 1800, businesses: [], flags: {}, inventory: {} },
-      { id: 'p4', name: 'man_person', characterKey: 'Kimono_girl', pos: 0, laps: 0, cash: 10000, assetsValue: 1800, loanBalance: 800, salary: 2100, businesses: [], flags: {}, inventory: {} },
-    ];
 
-    // Reset business ownership
-    Object.values(BOARD_TILES).forEach(tile => {
-      if (tile.type === 'business') {
-        tile.owner = null;
-      }
+  const [players, setPlayers] = useState([]);
+
+  const fetchGameState = async () => {
+  try {
+    const res = await fetch(`http://localhost:5000/api/game/state/${gameId}`, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${user.token}` }
     });
 
-    return initialPlayers;
-  });
+    const data = await res.json();
+    if (data.success) {
+      // Set state for game data
+      setPlayers(data.gameState.players);
+      setGamePhase(data.gameState.gamePhase);
+      setActivePlayer(data.gameState.currentPlayerId);
+    }
+  } catch (error) {
+    console.error('Error fetching game state:', error);
+  }
+};
 
+useEffect(() => {
+  if (gameId) {
+    fetchGameState();
+  }
+}, [gameId, user]);
+
+  // Initialize players and reset business ownership
+  
+/*
+   useEffect(() => {
+    // Initialize socket connection
+     if (!user) return; 
+
+    const socketConnection = io('http://localhost:5000', {
+      auth: { token: user?.token, userId: user?.id }
+    });
+    
+    setSocket(socketConnection);
+
+    // Listen for game state updates
+    socketConnection.on('gameStateUpdated', (data) => {
+      setPlayers(data.players);
+      setActivePlayer(data.activePlayer);
+    });
+
+    return () => {
+      socketConnection.disconnect();
+    };
+  }, [user]);
+
+ */
   // Lock page scroll only while playing
   useEffect(() => {
     if (gamePhase === 'playing') {
@@ -498,7 +534,7 @@ const CommunityGameRoom = () => {
     setShowTileSidebar(false);
 
     // Emit socket event for multiplayer
-    socket.emit('startGame');
+   // socket.emit('startGame');
   };
 
   const createRoom = () => {
@@ -521,7 +557,7 @@ const CommunityGameRoom = () => {
   };
 
   const currentPlayer = players[activePlayer];
-  const netWorth = calculateNet(currentPlayer);
+ // const netWorth = calculateNet(currentPlayer);
   const playersSummary = players.map(p => ({
     id: p.id,
     name: p.name,
@@ -541,6 +577,7 @@ const CommunityGameRoom = () => {
     );
   }
 
+  
   return (
     <>
       {/* Slight spacer so content starts just under the fixed navbar */}
@@ -595,8 +632,7 @@ const CommunityGameRoom = () => {
             <GameHUD
               playerName={currentPlayer?.name}
               playerNumber={activePlayer + 1}
-              netWorth={netWorth}
-              timePlaying={`Turn ${gameLog.length}`}
+              netWorth={currentPlayer?.netWorth}
               goalLaps={currentPlayer?.laps}
               totalLaps={gameSettings.laps}
               businessWorth={currentPlayer?.assetsValue}

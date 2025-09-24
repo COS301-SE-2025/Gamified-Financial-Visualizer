@@ -109,6 +109,7 @@ export default function GameLobby({
     const [socket, setSocket] = useState(null);
     const user = JSON.parse(localStorage.getItem('user'));
     const token = user.token;
+    const [lobbyId, setLobbyId] = useState(null);
 
     useEffect(() => {
         const socket = getSocket(token, user?.id);
@@ -183,7 +184,7 @@ export default function GameLobby({
 
     // API Functions
     const apiCall = async (endpoint, options = {}) => {
-        console.log('API Call:', endpoint, options);
+       // console.log('API Call:', endpoint, options);
         const response = await fetch(`http://localhost:5000/api/game${endpoint}`, {
             headers: {
                 'Content-Type': 'application/json',
@@ -219,6 +220,7 @@ export default function GameLobby({
 
             if (response.success) {
                 console.log('Lobby created:', response.lobby);
+                setLobbyId(response.lobby);
                 setRoomCode(response.lobby.code);
                 onCreateRoom?.(response.lobby);
                 setShowCreate(false);
@@ -245,8 +247,10 @@ export default function GameLobby({
             if (response.success) {
                 console.log('Joined lobby:', response.lobby);
                 onJoinWithCode?.(response.lobby);
+
             }
 
+             socket.emit('lobby:start-game'); 
             // update lobby
             await handleGetMyLobby();
         } catch (err) {
@@ -341,7 +345,7 @@ export default function GameLobby({
     useEffect(() => {
   
 
-        //fetchLobby();
+        fetchLobby();
     }, [user]);
 
     const handleLeaveLobby = async () => {
@@ -388,25 +392,40 @@ export default function GameLobby({
         try {
         onStart?.({ mode, players, laps }, character.key);
 
-            const res = await fetch('http://localhost:5000/api/game/lobby/start', {
+            const res = await fetch('http://localhost:5000/api/game/game/start', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    user_id: user?.id,
+                    user_id: user.id,
+                    lobbyId: lobbyId
                 }),
             });
             // set game id
             const result = await res.json();
             if(result.success) {
-                console.log('Game started:', result.gameId);
+           logger.info('Game started:', result.gameId);
                 // clear gameId
                 localStorage.removeItem('gameId');
                localStorage.setItem('gameId', result.gameId); 
-                socket.emit('lobby:start-game');  // backend will pick up userId from socket.data
+             //   socket.emit('lobby:start-game');  // backend will pick up userId from socket.data
                 setCountdown(true);
-            }   
+            }  
+            
+            // // Move sockets
+            // const socketIds = Array.from(lobby.players.values()).map(p => p.socketId).filter(Boolean);
+            // for (const sid of socketIds) {
+            //     const s = io.sockets.sockets.get(sid);
+            //     if (!s) continue;
+            //     await s.leave(`lobby:${lobby.id}`);
+            //     await s.join(`game:${gameId}`);
+            // }
+        
+            // // Broadcast started
+            // const gameState = lobbyManager.getGameEngine().getGameState(gameId);
+            // io.to(`game:${gameId}`).emit('game:started', { gameId, gameState });
+            
         } catch (err) {
             console.error('Error starting game:', err);
         }

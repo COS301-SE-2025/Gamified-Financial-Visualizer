@@ -3,11 +3,19 @@ import * as BoardData from '../data/BoardData';
 import { EventEmitter } from 'events';
 import pool from "../../../config/db";
 import { logger } from "../../../config/logger";
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 
 
 export class GameEngine extends EventEmitter {
-  private games = new Map<string, GameState>();
+  private io : Server;
+
+  constructor(io: Server) {
+    super();
+    this.io = io;  // Store io for event emission
+    this.games = new Map<string, GameState>();
+  }
+
+  private games: Map<string, GameState>;
 
   private chanceCards = BoardData.CHANCE_CARDS;
   private communityCards = BoardData.COMMUNITY_CARDS;
@@ -61,11 +69,12 @@ export class GameEngine extends EventEmitter {
 
   startGame(gameId: string): boolean {
     const game = this.games.get(gameId);
-    if (!game || game.gamePhase !== 'waiting' || game.players.size < 2) {
+    if (!game || game.players.size < 1) {// set for 1 for now
       return false;
     }
 
     game.gamePhase = 'playing';
+    logger.info(`Game ${gameId} started with players: ${game.gamePhase}`);
     game.startedAt = new Date();
 
     // Randomize turn order
@@ -73,7 +82,18 @@ export class GameEngine extends EventEmitter {
     const randomizedIds = this.shuffleArray(playerIds);
     game.currentPlayerId = randomizedIds[ 0 ];
 
-    this.emit('game-started', { gameId, turnOrder: randomizedIds });
+    this.io.emit('game-started', { gameId, turnOrder: randomizedIds });
+    this.io.to(`game:${gameId}`).emit('game-started', {
+      gameId,
+      turnOrder: randomizedIds,
+      gamePhase: game.gamePhase,
+    });
+
+    this.io.to(`game:${gameId}`).emit('gameStateUpdated', {
+      players: game.players,
+      activePlayer: game.currentPlayerId
+      });
+
     return true;
   }
 

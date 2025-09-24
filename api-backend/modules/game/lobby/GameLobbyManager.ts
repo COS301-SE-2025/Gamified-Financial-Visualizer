@@ -324,7 +324,7 @@ export class GameLobbyManager extends EventEmitter {
       // Create game
       gameId = this.generateGameId();
       const gameState = this.gameEngine.createGame(gameId, playerId, lobby.settings.gameMode, lobby.settings.maxLaps || 5);
-
+      gameState.gamePhase = 'playing'; // Set initial phase to playing
       // Add all players to the game
       for (const lobbyPlayer of lobby.players.values()) {
         const gamePlayer: Player = {
@@ -354,7 +354,6 @@ export class GameLobbyManager extends EventEmitter {
       lobby.status = 'in_game';
       lobby.gameId = gameId;
       lobby.lastActivity = new Date();
-
       logger.info(`Game ${gameId} started from lobby ${lobbyId}`);
       this.emit('game-started-from-lobby', { lobby, gameId });
 
@@ -365,6 +364,70 @@ export class GameLobbyManager extends EventEmitter {
   }
 
 
+  startGameFromLobby(lobbyId: string, playerId: number): string | null {
+    if (!lobbyId || this.lobbyLocks.has(lobbyId)) return null;
+    this.lobbyLocks.add(lobbyId);
+    let gameId: string | null = null;
+    try {
+      const lobby = this.lobbies.get(lobbyId);
+      if (!lobby ||  lobby.status !== 'waiting') {
+        return null;
+      }
+
+      // Check minimum players
+      if (lobby.players.size < 1) { // changed to 1 for testing
+        throw new Error('Need at least 1 player to start');
+      }
+
+      // Check if all players are ready
+      const allReady = Array.from(lobby.players.values())
+        .every(player => player.isReady);
+
+      if (!allReady) {
+        throw new Error('All players must be ready');
+      }
+
+      // Create game
+      gameId = this.generateGameId();
+      const gameState = this.gameEngine.createGame(gameId, playerId, lobby.settings.gameMode, lobby.settings.maxLaps || 5);
+      gameState.gamePhase = 'playing'; // Set initial phase to playing
+      // Add all players to the game
+      for (const lobbyPlayer of lobby.players.values()) {
+        const gamePlayer: Player = {
+          id: lobbyPlayer.id,
+          username: lobbyPlayer.username,
+          socketId: lobbyPlayer.socketId,
+          position: 0,
+          cash: 5000,
+          assets: [],
+          loans: [],
+          cards: [],
+          lapsCompleted: 0,
+          salary: 2000,
+          isActive: true,
+          isBankrupt: false,
+          character: lobbyPlayer.character, // Include character
+          statusEffects: [] // Add default empty statusEffects
+        };
+
+        this.gameEngine.addPlayer(gameId, gamePlayer);
+      }
+
+      // Start the actual game
+      this.gameEngine.startGame(gameId);
+
+      // Update lobby status
+      lobby.status = 'in_game';
+      lobby.gameId = gameId;
+      lobby.lastActivity = new Date();
+      logger.info(`Game ${gameId} started from lobby ${lobbyId}`);
+      this.emit('game-started-from-lobby', { lobby, gameId });
+
+    } finally {
+      this.lobbyLocks.delete(lobbyId);
+      return gameId;
+    }
+  }
 
   /**
    * Get lobby by player ID

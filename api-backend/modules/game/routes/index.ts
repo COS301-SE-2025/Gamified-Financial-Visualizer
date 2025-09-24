@@ -275,7 +275,7 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
   router.post('/lobby/start', async (req, res) => {
     try {
       const { user_id } = req.body;
-      const gameId = lobbyManager.startGame(user_id);
+      const gameId = lobbyManager.startGame(Number(user_id));
       if (!gameId) {
         res.status(409).json({ error: 'Cannot start game (not host / not ready / too few players)' });
         return;
@@ -293,7 +293,7 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
   router.get('/state/:gameId', async (req: Request, res: Response) => {
     try {
       const { gameId } = req.params;
-      const { user_id } = req.query;
+     // const { user_id } = req.query;
 
       const gameEngine = lobbyManager.getGameEngine();
       const gameState = gameEngine.getGameState(String(gameId));
@@ -304,9 +304,9 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
       }
 
       // Check if user is part of this game
-      const isPlayer = gameState.players.has(Number(user_id));
-      const lobby = Array.from(lobbyManager[ 'lobbies' ].values())
-        .find(l => l.gameId === gameId);
+      // const isPlayer = gameState.players.has(Number(user_id));
+      // const lobby = Array.from(lobbyManager[ 'lobbies' ].values())
+      //   .find(l => l.gameId === gameId);
 
 
       // Return sanitized game state
@@ -329,7 +329,8 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
           isBankrupt: player.isBankrupt,
           netWorth: player.cash +
             player.assets.reduce((sum, asset) => sum + (asset.purchasePrice * asset.sellbackMultiplier), 0) -
-            player.loans.reduce((sum, loan) => sum + loan.amount, 0)
+            player.loans.reduce((sum, loan) => sum + loan.amount, 0),
+          character: player.character?.id,
         })),
         board: gameState.board,
         startedAt: gameState.startedAt,
@@ -338,9 +339,7 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
 
       res.json({
         success: true,
-        gameState: publicGameState,
-        isPlayer,
-        isSpectator: !isPlayer
+        gameState: publicGameState
       });
 
     } catch (error: any) {
@@ -399,6 +398,38 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
       res.status(500).json({ error: 'Internal server error' });
     }
   });
+
+router.post('/game/start', async (req, res) => {
+  try {
+    const { user_id, lobbyId } = req.body;
+    // const gameId = lobbyManager.startGame(Number(user_id));
+    const gameId = lobbyManager.startGameFromLobby(String(lobbyId), Number(user_id));
+    if (!gameId) return res.status(409).json({ error:'Cannot start game' });
+    logger.info("Game Id:", gameId);
+    const lobby = lobbyManager.getLobby(String(lobbyId));
+ //   const lobby = lobbyManager.getLobbyByPlayer(Number(user_id));
+    logger.info('Starting game for lobby:', lobby?.code);
+    if (!lobby) return res.status(404).json({ error:'Lobby not found' });
+    const gameEngine = lobbyManager.getGameEngine()
+    const gameState = gameEngine.getGameState(gameId);
+    logger.info('Game state at start:', gameState);
+
+  if (!gameState) {
+    logger.error('Game state not found for gameId:', gameId);
+    res.status(404).json({ error: 'Game not found' });
+    return;
+  }
+
+  // Transition game phase to 'playing'
+  gameState.gamePhase = 'playing';
+
+
+    res.json({ success:true, gameId });
+  } catch (e:any) {
+    logger.error('Error starting game:', e);
+    res.status(400).json({ error:e.message });
+  }
+});
 
 
   router.post('/game/leave', async (req: Request, res: Response) => {
