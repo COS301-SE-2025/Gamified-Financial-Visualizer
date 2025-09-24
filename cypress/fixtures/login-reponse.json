@@ -1,0 +1,10 @@
+{
+  "status": "success",
+  "data": {
+    "user": {
+      "username": "testuser",
+      "id": "1"
+    },
+    "token": "fake-jwt-token"
+  }
+}

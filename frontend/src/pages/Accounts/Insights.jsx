@@ -23,7 +23,7 @@ import {
   LineChart, Line, CartesianGrid, Area
 } from 'recharts';
 
-import GaugeChart from 'react-gauge-chart';
+// import GaugeChart from 'react-gauge-chart';
 import CalendarHeatmap from 'react-calendar-heatmap';
 import { format } from 'date-fns';
 
@@ -925,98 +925,8 @@ const InsightsPage = () => {
               )}
             </div>
 
-
-            <div className="flex flex-col items-center">
-              {/* Gauge */}
-              <div style={{ width: 280, maxWidth: "100%" }}>
-                <GaugeChart
-                  id="financial-sentiment-gauge"
-                  nrOfLevels={4}
-                  percent={sentimentToPercent(sentiment?.sentiment)}
-                  colors={["#FF8A8A","#FFC541","#7FDD53", "#5FBFFF"]} // matches SENTIMENT_ORDER left→right
-                  arcWidth={0.3}
-                  arcPadding={0.02}
-                  cornerRadius={3}
-                  textColor="#6b7280"
-                  needleColor="#4b5563"
-                  needleBaseColor="#4b5563"
-                  formatTextValue={() => sentiment?.sentiment ?? "—"}
-                  animate
-                  animateDuration={900}
-                />
-              </div>
-
-              {/* Legend */}
-              <div className="flex justify-between w-full max-w-xs mt-4">
-                {SENTIMENT_ORDER.map((label) => (
-                  <div key={label} className="flex flex-col items-center">
-                    <div
-                      className="w-4 h-4 rounded-full mb-1"
-                      style={{
-                        backgroundColor:
-                          label === "Anxious" ? "#FF8A8A" :
-                            label === "Unstable" ? "#FFC541" :
-                              label === "Stable" ? "#7FDD53" :
-                                "#5FBFFF"
-                      }}
-                    />
-                    <span className="text-xs dark:text-gray-200 text-gray-600">{label}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Summary */}
-              {sentiment?.summaryText && (
-                <p className="mt-4 text-sm dark:text-gray-200 text-gray-700 text-center max-w-2xl">{sentiment.summaryText}</p>
-              )}
-
-              {/* Quick highlights (first 3) */}
-              {!!sentiment?.insights?.length && (
-                <ul className="mt-4 text-sm dark:text-gray-200 text-gray-700 space-y-1">
-                  {sentiment.insights.slice(0, 3).map((i, idx) => (
-                    <li key={idx}>• {i}</li>
-                  ))}
-                </ul>
-              )}
-
-              {/* Adaptive callout based on sentiment */}
-              <div className="mt-6 w-full">
-                {sentiment?.sentiment === "Anxious" && (
-                  <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">
-                    <p>Your savings rate is low while impulse spending is high.</p>
-                    <p className="font-medium mt-1">Action: Set up spending limits and automate savings.</p>
-                  </div>
-                )}
-                {sentiment?.sentiment === "Unstable" && (
-                  <div className="p-3 rounded-lg bg-yellow-50 text-yellow-600 text-sm">
-                    <p>Your burn rate is higher than recommended.</p>
-                    <p className="font-medium mt-1">Action: Review recurring expenses and subscriptions.</p>
-                  </div>
-                )}
-                {sentiment?.sentiment === "Stable" && (
-                  <div className="p-3 rounded-lg bg-green-50 text-green-600 text-sm">
-                    <p>Your finances are in good shape.</p>
-                    <p className="font-medium mt-1">Action: Consider increasing investments for long-term goals.</p>
-                  </div>
-                )}
-                {sentiment?.sentiment === "Confident" && (
-                  <div className="p-3 rounded-lg bg-blue-50 text-blue-600 text-sm">
-                    <p>Excellent financial health and goal progress!</p>
-                    <p className="font-medium mt-1">Action: Explore advanced investment strategies.</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Optional: show a few tips */}
-              {!!sentiment?.tips?.length && (
-                <div className="mt-4 w-full">
-                  <h4 className="text-sm font-semibold text-gray-800 mb-1">Tips</h4>
-                  <ul className="text-sm dark:text-gray-200 text-gray-700 list-disc pl-5 space-y-1">
-                    {sentiment.tips.slice(0, 3).map((t, i) => <li key={i}>{t}</li>)}
-                  </ul>
-                </div>
-              )}
-            </div>
+{/* 
+ */}
 
           </div>
 

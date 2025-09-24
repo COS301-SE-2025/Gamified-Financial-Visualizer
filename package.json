@@ -23,7 +23,6 @@
     "pg": "^8.16.0",
     "react-calendar-heatmap": "^1.10.0",
     "react-confetti": "^6.4.0",
-    "react-gauge-chart": "^0.5.1",
     "react-hot-toast": "^2.5.2",
     "react-icons": "^5.5.0",
     "react-spinners": "^0.17.0",
@@ -44,7 +43,10 @@
     "test:services": "jest services --setupFilesAfterEnv=./api-backend/tests/jest-setup.ts",
     "test:watch": "jest --watch --setupFilesAfterEnv=./api-backend/tests/jest-setup.ts",
     "test:cov": "jest --coverage --setupFilesAfterEnv=./api-backend/tests/jest-setup.ts",
-    "build": "npm run build --workspace=frontend"
+    "build": "npm run build --workspace=frontend",
+    "e2e:open": "cypress open",
+    "e2e:run": "cypress run",
+    "e2e:ci": "cypress run --record"
   },
   "jest": {
     "preset": "ts-jest/presets/default-esm",
@@ -90,6 +92,7 @@
     "@types/uuid": "^10.0.0",
     "autoprefixer": "^10.4.21",
     "concurrently": "^8.2.2",
+    "cypress": "^15.3.0",
     "jest": "^29.7.0",
     "nodemon": "^3.1.10",
     "postcss": "^8.5.3",
