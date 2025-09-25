@@ -529,6 +529,10 @@ useEffect( () => {
   }, [gamePhase, everyoneDone]);
 
   const startFromLobby = (settings, character) => {
+        setGamePhase('playing');
+console.log('Starting game with settings:')
+
+
     // Proper reset with business ownership clearing
     const resetPlayers = players.map(p => ({
       ...p,
@@ -551,13 +555,12 @@ useEffect( () => {
     setGameSettings(settings);
     setActivePlayer(0);
     setGameLog(['Game started!']);
-    setGamePhase('playing');
     setShowTileSidebar(false);
 
     // Emit socket event for multiplayer
    // socket.emit('startGame');
    // call start game api
-
+   console.log('Starting game with settings:', settings);
   }
 
   const createRoom = () => {

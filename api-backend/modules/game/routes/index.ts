@@ -299,6 +299,7 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
       const gameState = gameEngine.getGameState(String(gameId));
 
       if (!gameState) {
+        logger.error('Game state not found for gameId:', gameId);
         res.status(404).json({ error: 'Game not found' });
         return;
       }
