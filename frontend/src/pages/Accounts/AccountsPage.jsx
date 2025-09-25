@@ -23,38 +23,53 @@ const AccountsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [transactionsPerPage] = useState(10);
 
-  // Account pagination
+  // Account pagination - adjust for mobile
   const [currentAccountPage, setCurrentAccountPage] = useState(1);
-  const [accountsPerPage] = useState(2);
+  const [accountsPerPage, setAccountsPerPage] = useState(2); // Will be adjusted based on screen size
+
+  // Adjust accounts per page based on screen size
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) { // Mobile
+        setAccountsPerPage(1); // Show one account at a time on mobile for horizontal scrolling
+      } else if (window.innerWidth < 1024) { // Tablet
+        setAccountsPerPage(2);
+      } else { // Desktop
+        setAccountsPerPage(2);
+      }
+    };
+
+    handleResize(); // Set initial value
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Get current accounts
   const indexOfLastAccount = currentAccountPage * accountsPerPage;
   const indexOfFirstAccount = indexOfLastAccount - accountsPerPage;
   const currentAccounts = accounts.slice(indexOfFirstAccount, indexOfLastAccount);
 
-
-
   // Get current transactions with search filtering
-const filteredTransactions = transactions.filter(txn => {
-  if (!searchQuery) return true;
-  const query = searchQuery.toLowerCase();
-  return (
-    (txn.name && txn.name.toLowerCase().includes(query)) ||
-    (txn.category && txn.category.toLowerCase().includes(query)) ||
-    (txn.amount && txn.amount.toString().toLowerCase().includes(query))
-  );
-});
+  const filteredTransactions = transactions.filter(txn => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      (txn.name && txn.name.toLowerCase().includes(query)) ||
+      (txn.category && txn.category.toLowerCase().includes(query)) ||
+      (txn.amount && txn.amount.toString().toLowerCase().includes(query))
+    );
+  });
 
-  const pageLimit = 17; // Number of page buttons to show
+  const pageLimit = 17;
   const totalPages = Math.ceil(filteredTransactions.length / transactionsPerPage);
-  const [pageWindowStart, setPageWindowStart] = useState(0); // Index of first page in window
+  const [pageWindowStart, setPageWindowStart] = useState(0);
 
-const indexOfLastTransaction = currentPage * transactionsPerPage;
-const indexOfFirstTransaction = indexOfLastTransaction - transactionsPerPage;
-const currentTransactions = filteredTransactions.slice(
-  indexOfFirstTransaction,
-  indexOfLastTransaction
-);
+  const indexOfLastTransaction = currentPage * transactionsPerPage;
+  const indexOfFirstTransaction = indexOfLastTransaction - transactionsPerPage;
+  const currentTransactions = filteredTransactions.slice(
+    indexOfFirstTransaction,
+    indexOfLastTransaction
+  );
 
   // Change account page
   const paginateAccounts = (pageNumber) => {
@@ -202,7 +217,7 @@ const currentTransactions = filteredTransactions.slice(
     }
   };
 
-  // handle the clicking of a specific account 
+  // Handle the clicking of a specific account 
   const handleCardClick = (account) => {
     setActiveAccount(account);
     if (account.account_id) {
@@ -338,49 +353,96 @@ const currentTransactions = filteredTransactions.slice(
     }
   };
 
-  // In your parent component
-const handleEditTransaction = async (id, updates) => {
-  try {
-    const response = await fetch(`http://localhost:5000/api/transactions/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updates)
-    });
-    
-    if (!response.ok) throw new Error('Failed to update transaction');
-    
-    const data = await response.json();
-    return data.transaction; // Return the updated transaction
-    
-    // Alternatively, if you're managing state in the parent:
-    // setTransactions(prev => prev.map(t => t.id === id ? {...t, ...updates} : t));
-  } catch (error) {
-    throw error;
-  }
-};
+  const handleEditTransaction = async (id, updates) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/transactions/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      });
+      
+      if (!response.ok) throw new Error('Failed to update transaction');
+      
+      const data = await response.json();
+      return data.transaction;
+    } catch (error) {
+      throw error;
+    }
+  };
 
-const handleDeleteTransaction = async (id) => {
-  try {
-    const response = await fetch(`http://localhost:5000/api/transactions/${id}`, {
-      method: 'DELETE'
-    });
-    
-    if (!response.ok) throw new Error('Failed to delete transaction');
-    
-    // Update local state if needed
-    setTransactions(prev => prev.filter(t => t.id !== id));
-  } catch (error) {
-    throw error;
-  }
-};
+  const handleDeleteTransaction = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/transactions/${id}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) throw new Error('Failed to delete transaction');
+      
+      setTransactions(prev => prev.filter(t => t.id !== id));
+    } catch (error) {
+      throw error;
+    }
+  };
 
   const transactionHeading = activeAccount
     ? `${activeAccount.account_name || activeAccount.accountName} Transactions`
     : 'Recent Transactions';
+
   return (
-    <div className="flex gap-6 px-6 py-6 bg-[#F8F9FA] min-h-screen dark:bg-gray-900">
-      {/* Left Panel */}
-      <div className="w-[360px] flex-shrink-0">
+    <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 px-4 lg:px-6 py-4 lg:py-6 bg-[#F8F9FA] min-h-screen dark:bg-gray-900">
+      {/* Mobile: Accounts Section at Top */}
+      <div className="lg:hidden w-full">
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="text-xl font-semibold text-[#1C3C78] dark:text-[#88D1FF]">Accounts</h2>
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-1 px-3 py-1 bg-[#D8F5C5] dark:bg-[#AAD977] text-[#76B947] dark:text-white text-xs font-semibold rounded-full hover:bg-[#c8ecb4] dark:hover:bg-[#A1E358] transition-colors"
+          >
+            <FaPlus className="text-xs" /> Add
+          </button>
+        </div>
+        <p className="text-xs text-gray-500 mb-3">Click an account to view its transactions</p>
+
+        {/* Mobile Horizontal Scroll for Accounts */}
+        <div className="relative">
+          <div className="flex space-x-4 overflow-x-auto pb-4 hide-scrollbar">
+            {accounts.map((acc, idx) => (
+              <div key={acc.account_id || idx} className="flex-shrink-0 w-64">
+                <AccountCard
+                  bank={acc.bank_name}
+                  accountName={acc.account_name}
+                  type={acc.account_type}
+                  available={acc.account_balance}
+                  balance={acc.balance || '0.00'}
+                  currency={acc.currency || 'ZAR'}
+                  isActive={activeAccount?.account_id === acc.account_id}
+                  onClick={() => handleCardClick(acc)}
+                  onDelete={() => handleDeleteAccount(idx)}
+                  onEdit={() => handleEditAccount(idx)}
+                  isMobile={true}
+                />
+              </div>
+            ))}
+          </div>
+          
+          {/* Mobile account indicators */}
+          {accounts.length > 1 && (
+            <div className="flex justify-center space-x-1 mt-2">
+              {accounts.map((_, idx) => (
+                <div
+                  key={idx}
+                  className={`w-2 h-2 rounded-full ${
+                    idx === currentAccountPage - 1 ? 'bg-[#1C3C78]' : 'bg-gray-300'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Desktop: Left Panel */}
+      <div className="hidden lg:block w-full lg:w-[360px] flex-shrink-0">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-semibold text-[#1C3C78] dark:text-[#88D1FF]">Accounts</h2>
           <button
@@ -392,7 +454,7 @@ const handleDeleteTransaction = async (id) => {
         </div>
         <p className="gap-6 pb-3 mb-2 text-sm text-gray-500">Click an account to view its transactions</p>
 
-        {/* Render currentAccounts */}
+        {/* Desktop Account Cards */}
         <div className="space-y-4">
           {currentAccounts.map((acc, idx) => (
             <AccountCard
@@ -405,17 +467,13 @@ const handleDeleteTransaction = async (id) => {
               currency={acc.currency || 'ZAR'}
               isActive={activeAccount?.account_id === acc.account_id}
               onClick={() => handleCardClick(acc)}
-              onDelete={() => handleDeleteAccount(
-                indexOfFirstAccount + idx
-              )}
-              onEdit={() => handleEditAccount(
-                indexOfFirstAccount + idx
-              )}
+              onDelete={() => handleDeleteAccount(indexOfFirstAccount + idx)}
+              onEdit={() => handleEditAccount(indexOfFirstAccount + idx)}
             />
           ))}
         </div>
 
-        {/* Account Pagination Controls */}
+        {/* Desktop Account Pagination */}
         {accounts.length > accountsPerPage && (
           <div className="flex justify-between items-center mt-4">
             <button
@@ -441,25 +499,25 @@ const handleDeleteTransaction = async (id) => {
         )}
       </div>
 
-      {/* Right Panel */}
-      <div className="flex-1 space-y-6">
+      {/* Right Panel - Transactions */}
+      <div className="flex-1 space-y-4 lg:space-y-6">
         {/* Search */}
-        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] dark:border-[#88BC46] rounded-full bg-white dark:bg-gray-800 shadow-sm">
-          <FaSearch className="text-[#76B947] dark:text-[#88BC46] mr-2" />
+        <div className="flex items-center w-full px-3 lg:px-4 py-2 border border-[#76B947] dark:border-[#88BC46] rounded-full bg-white dark:bg-gray-800 shadow-sm">
+          <FaSearch className="text-[#76B947] dark:text-[#88BC46] mr-2 text-sm" />
           <input
             type="text"
             placeholder="Search your transactions..."
-            className="w-full outline-none bg-transparent text-sm text-[#76B947] dark:border-[#88BC46] placeholder-[#76B947]/70 dark:text-[#88BC46]"
+            className="w-full outline-none bg-transparent text-xs lg:text-sm text-[#76B947] dark:border-[#88BC46] placeholder-[#76B947]/70 dark:text-[#88BC46]"
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
-              setCurrentPage(1); // Reset to first page when searching
+              setCurrentPage(1);
             }}
           />
         </div>
 
-        {/* Transactions */}
-        <div ref={transactionsRef}>
+        {/* Transactions Table */}
+        <div ref={transactionsRef} className="mobile-table-container">
           <RecentTransactionsTable
             account={activeAccount}
             transactions={currentTransactions}
@@ -470,51 +528,52 @@ const handleDeleteTransaction = async (id) => {
             onEdit={handleEditTransaction}
             onDelete={handleDeleteTransaction}
             onRefresh={handleRefreshTransactions}
+            isMobile={true}
           />
         </div>
 
         {/* Transaction Pagination */}
-     {filteredTransactions.length > transactionsPerPage && (
-        <div className="flex justify-center mt-4 items-center gap-1">
-          {/* Prev Window */}
-          {pageWindowStart > 0 && (
-            <button
-              onClick={() => setPageWindowStart(pageWindowStart - pageLimit)}
-              className="px-2 py-1 bg-gray-300 rounded"
-            >
-             < FaChevronLeft className='text-[#FFFFFF]'/>
-            </button>
-          )}
-
-          {/* Page Buttons */}
-          {Array.from({ length: Math.min(pageLimit, totalPages - pageWindowStart) }).map((_, i) => {
-            const pageNumber = pageWindowStart + i + 1;
-            return (
+        {filteredTransactions.length > transactionsPerPage && (
+          <div className="flex justify-center mt-4 items-center gap-1">
+            {/* Prev Window */}
+            {pageWindowStart > 0 && (
               <button
-                key={pageNumber}
-                onClick={() => paginate(pageNumber)}
-                className={`px-3 py-1 rounded ${
-                  currentPage === pageNumber 
-                    ? 'bg-[#B1E1FF] dark:bg-[#9BD8FF] text-white' 
-                    : 'bg-gray-200 dark:bg-gray-700 dark:text-gray-300'
-                }`}
+                onClick={() => setPageWindowStart(pageWindowStart - pageLimit)}
+                className="px-2 py-1 bg-gray-300 rounded"
               >
-                {pageNumber}
+                <FaChevronLeft className='text-[#FFFFFF] text-xs'/>
               </button>
-            );
-          })}
+            )}
 
-          {/* Next Window */}
-          {pageWindowStart + pageLimit < totalPages && (
-            <button
-              onClick={() => setPageWindowStart(pageWindowStart + pageLimit)}
-              className="px-2 py-1 bg-gray-300 rounded"
-            >
-              <FaChevronRight className='text-[#FFFFFF]'/>
-            </button>
-          )}
-        </div>
-      )}
+            {/* Page Buttons */}
+            {Array.from({ length: Math.min(pageLimit, totalPages - pageWindowStart) }).map((_, i) => {
+              const pageNumber = pageWindowStart + i + 1;
+              return (
+                <button
+                  key={pageNumber}
+                  onClick={() => paginate(pageNumber)}
+                  className={`px-2 lg:px-3 py-1 rounded text-xs lg:text-sm ${
+                    currentPage === pageNumber 
+                      ? 'bg-[#B1E1FF] dark:bg-[#9BD8FF] text-white' 
+                      : 'bg-gray-200 dark:bg-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  {pageNumber}
+                </button>
+              );
+            })}
+
+            {/* Next Window */}
+            {pageWindowStart + pageLimit < totalPages && (
+              <button
+                onClick={() => setPageWindowStart(pageWindowStart + pageLimit)}
+                className="px-2 py-1 bg-gray-300 rounded"
+              >
+                <FaChevronRight className='text-[#FFFFFF] text-xs'/>
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Modals */}
