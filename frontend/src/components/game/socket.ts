@@ -3,7 +3,9 @@ import { io, Socket } from "socket.io-client";
 
 let socket: Socket | null = null;
 
-const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+const BASE_URL = process.env.REACT_APP_API_URL;
+
+// const BASE_URL = "http://localhost:3000"; // for local dev
 
 // socket singleton
 export function getSocket(token: string, userId: number) {
