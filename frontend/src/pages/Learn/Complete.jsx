@@ -7,7 +7,7 @@ import banner1 from '../../assets/Images/banners/pixelAllyway.jpeg';
 import banner2 from '../../assets/Images/learn_banners/Investment.png';
 import banner3 from '../../assets/Images/learn_banners/Budget.png';
 import banner4 from '../../assets/Images/learn_banners/Budget.png';
-import banner5 from '../../assets/Images/learn_banners/Budget.png'; // fixed double slash
+import banner5 from '../../assets/Images/learn_banners/Budget.png';
 import banner6 from '../../assets/Images/learn_banners/Budget.png';
 import { FaFilter, FaSearch, FaCheckCircle, FaChevronDown } from 'react-icons/fa';
 
@@ -130,15 +130,16 @@ const TopicDropdown = ({
         aria-expanded={open}
         onClick={() => setOpen(o => !o)}
         onKeyDown={onKey}
-        className="w-full rounded-lg px-4 py-2 border border-gray-300 dark:border-gray-600
+        className="w-full rounded-lg px-3 py-2 border border-gray-300 dark:border-gray-600
                    bg-white dark:bg-gray-800 text-left text-gray-900 dark:text-white
                    flex items-center justify-between shadow-sm
-                   focus:outline-none focus:ring-2 focus:ring-[#5FBFFF] dark:focus:ring-[#93C5FD]"
+                   focus:outline-none focus:ring-2 focus:ring-[#5FBFFF] dark:focus:ring-[#93C5FD]
+                   text-sm"
       >
-        <span className={`${selected ? '' : 'text-gray-400 dark:text-gray-400'}`}>
+        <span className={`${selected ? '' : 'text-gray-400 dark:text-gray-400'} truncate`}>
           {selected ? selected.label : placeholder}
         </span>
-        <FaChevronDown className="ml-3 text-gray-400 dark:text-gray-500" />
+        <FaChevronDown className="ml-2 text-gray-400 dark:text-gray-500 flex-shrink-0" />
       </button>
 
       {open && createPortal(
@@ -264,26 +265,26 @@ const LearningCompletePage = () => {
 
   return (
     <LearnLayout>
-      <div className="max-w-6xl mx-auto px-6 py-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 gap-3 md:gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Completed Courses</h1>
-            <p className="text-gray-600 dark:text-gray-400">Review the courses you've successfully completed</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-1">Completed Courses</h1>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Review the courses you've successfully completed</p>
           </div>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#7FDD5320] dark:bg-[#14532D] text-[#7FDD53] dark:text-[#86EFAC]">
+            <span className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs font-medium bg-[#7FDD5320] dark:bg-[#14532D] text-[#7FDD53] dark:text-[#86EFAC]">
               <FaCheckCircle className="mr-1" /> {filteredModules.length} Completed
             </span>
           </div>
         </div>
 
-        {/* Search and Filter Section */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-6">
-            {/* Search */}
-            <div className="flex items-center w-full px-4 py-2 border border-[#5FBFFF] dark:border-[#93C5FD] rounded-full bg-white dark:bg-gray-800 shadow-sm">
-              <FaSearch className="text-[#5FBFFF] dark:text-[#93C5FD] mr-2" />
+        {/* Search and Filter Section - Always side by side */}
+        <div className="mb-6 md:mb-8">
+          <div className="flex flex-row gap-3 items-center justify-between mb-4 sm:mb-6">
+            {/* Search - Takes up remaining space */}
+            <div className="flex items-center flex-1 px-3 py-2 border border-[#5FBFFF] dark:border-[#93C5FD] rounded-full bg-white dark:bg-gray-800 shadow-sm">
+              <FaSearch className="text-[#5FBFFF] dark:text-[#93C5FD] mr-2 text-sm" />
               <input
                 type="text"
                 placeholder="Search your completed courses..."
@@ -293,13 +294,13 @@ const LearningCompletePage = () => {
               />
             </div>
             
-            {/* Filters toggle */}
+            {/* Filters toggle - Fixed width */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-[#5FBFFF] dark:border-[#93C5FD] rounded-lg shadow-sm hover:bg-[#5FBFFF10] dark:hover:bg-[#1E3A8A30] transition-colors"
+              className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border border-[#5FBFFF] dark:border-[#93C5FD] rounded-lg shadow-sm hover:bg-[#5FBFFF10] dark:hover:bg-[#1E3A8A30] transition-colors flex-shrink-0"
             >
-              <FaFilter className="text-[#5FBFFF] dark:text-[#93C5FD]" />
-              <span className="text-[#5FBFFF] dark:text-[#93C5FD]">Filters</span>
+              <FaFilter className="text-[#5FBFFF] dark:text-[#93C5FD] text-sm" />
+              <span className="text-sm text-[#5FBFFF] dark:text-[#93C5FD] hidden sm:inline">Filters</span>
             </button>
           </div>
   
@@ -310,16 +311,16 @@ const LearningCompletePage = () => {
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.2 }}
-              className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 mb-6"
+              className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 mb-4 sm:mb-6"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 {/* Difficulty pills */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Difficulty</label>
                   <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => setDifficultyFilter('all')}
-                      className={`px-3 py-1 rounded-full text-sm ${
+                      className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm ${
                         difficultyFilter === 'all' 
                           ? 'bg-[#5FBFFF] dark:bg-[#1E40AF] text-white' 
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -329,7 +330,7 @@ const LearningCompletePage = () => {
                     </button>
                     <button
                       onClick={() => setDifficultyFilter('beginner')}
-                      className={`px-3 py-1 rounded-full text-sm ${
+                      className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm ${
                         difficultyFilter === 'beginner' 
                           ? 'bg-[#7FDD53] dark:bg-[#166534] text-white' 
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -339,7 +340,7 @@ const LearningCompletePage = () => {
                     </button>
                     <button
                       onClick={() => setDifficultyFilter('intermediate')}
-                      className={`px-3 py-1 rounded-full text-sm ${
+                      className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm ${
                         difficultyFilter === 'intermediate' 
                           ? 'bg-[#FFC541] dark:bg-[#854D0E] text-white' 
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -349,7 +350,7 @@ const LearningCompletePage = () => {
                     </button>
                     <button
                       onClick={() => setDifficultyFilter('advanced')}
-                      className={`px-3 py-1 rounded-full text-sm ${
+                      className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm ${
                         difficultyFilter === 'advanced' 
                           ? 'bg-[#F68D2B] dark:bg-[#9A3412] text-white' 
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -379,7 +380,7 @@ const LearningCompletePage = () => {
 
         {/* Courses Grid */}
         {filteredModules.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {filteredModules.map((module) => (
               <CourseCard
                 key={module.module_id}
@@ -395,12 +396,12 @@ const LearningCompletePage = () => {
             ))}
           </div>
         ) : (
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-8 text-center border border-gray-200 dark:border-gray-700">
-            <div className="mx-auto w-16 h-16 flex items-center justify-center bg-[#5FBFFF20] dark:bg-[#1E40AF30] rounded-full mb-4">
-              <FaSearch className="text-[#5FBFFF] dark:text-[#93C5FD] text-xl" />
+          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 sm:p-8 text-center border border-gray-200 dark:border-gray-700">
+            <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center bg-[#5FBFFF20] dark:bg-[#1E40AF30] rounded-full mb-3 sm:mb-4">
+              <FaSearch className="text-[#5FBFFF] dark:text-[#93C5FD] text-lg sm:text-xl" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No courses found</h3>
-            <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+            <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">No courses found</h3>
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 max-w-md mx-auto">
               {searchTerm ? 
                 `No completed courses match your search for "${searchTerm}". Try adjusting your filters.` : 
                 "You haven't completed any courses yet. Start learning to see them here!"}
