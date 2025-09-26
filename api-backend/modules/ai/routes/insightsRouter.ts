@@ -666,7 +666,7 @@ router.get('/trends/:userId', async (req, res) => {
       };
 
       // Fetch trends data from the database
-      const trends = await axios.post(`${AI_URL}/insights/trends/`,
+      const trends = await axios.post(`${AI_URL}/insights/trends`,
          userData
       );
 
