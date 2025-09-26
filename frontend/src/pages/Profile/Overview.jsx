@@ -8,7 +8,9 @@ import profileBanner from '../../assets/Images/banners/pixelBalcony.gif';
 
 import avatar4 from '../../assets/Images/avatars/Totoro.png';
 
-const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
 
 // Format amount cleanly (e.g., 7500 or 7500.14)
 const formatAmount = (amount) => {

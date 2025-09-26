@@ -7,7 +7,9 @@ import silverMedal from '../../assets/Images/medals/silverMedal.png';
 import bronzeMedal from '../../assets/Images/medals/bronzeMedal.png';
 import avatar from '../../assets/Images/avatars/Ramen.png';
 
-const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
 
 
 // Utility for top 3 medals

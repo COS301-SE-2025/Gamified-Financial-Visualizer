@@ -23,7 +23,9 @@ import library from '../../assets/Building Images/Classic Day/library.png';
 import civicOffices from '../../assets/Building Images/Classic Day/civic-offices.png';
 import cafe from '../../assets/Building Images/Classic Day/cafe.png';
 
-const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
 
 
 /* ===========================

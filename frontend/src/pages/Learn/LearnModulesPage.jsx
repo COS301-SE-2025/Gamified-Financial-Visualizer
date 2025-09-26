@@ -11,7 +11,9 @@ import banner4 from '../../assets/Images/learn_banners/Fomo.png';
 import banner5 from '../../assets/Images/learn_banners/retrenchment.png';
 import banner6 from '../../assets/Images/banners/pixelGirl.gif';
 
-const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
 
 const bannerImages = {
   1: banner1,

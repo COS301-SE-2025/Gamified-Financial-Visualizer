@@ -31,7 +31,9 @@ import badge23 from '../../assets/Images/badges/start-up.png';
 import badge24 from '../../assets/Images/badges/support.png';
 import badge26 from '../../assets/Images/badges/accepted.png';
 
-const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
 
 // Deterministic title → { color, badge } (case-insensitive)
 const TITLE_META = {
