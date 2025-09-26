@@ -4,7 +4,7 @@ import classifierRoutes from './routes/classifierRouter';
 import insightsRoutes from './routes/insightsRouter';
 import { logger } from '../../config/logger';
 
-const AI_URL = process.env.REACT_APP_AI_URL || 'https://gamified-finance-ai-avf0gsfrf5a4b9cj.southafricanorth-01.azurewebsites.net';
+const AI_URL = process.env.AI_SERVICE_URL  || 'https://gamified-finance-ai-avf0gsfrf5a4b9cj.southafricanorth-01.azurewebsites.net';
 // const AI_URL = 'http://localhost:6000'; 
 
 
