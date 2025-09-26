@@ -399,43 +399,56 @@ const CompleteAchievement = () => {
   
   return (
     <AchievementsLayout>
-      <div className="space-y-6 px-6 pt-10 pb-6 -mt-8">
-        <div className="bg-gradient-to-r from-[#B1E1FF20] to-[#7FDD5320] rounded-xl p-6 mb-6 shadow-sm border border-gray-100 dark:border-gray-700">
+      <div className="space-y-6 px-4 sm:px-6 pt-6 sm:pt-10 pb-6 -mt-4 sm:-mt-8">
+        <div className="bg-gradient-to-r from-[#B1E1FF20] to-[#7FDD5320] rounded-xl p-4 sm:p-6 mb-4 sm:mb-6 shadow-sm border border-gray-100 dark:border-gray-700">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 dark:text-gray-200">Completed Achievements</h1>
-            <p className="text-gray-600 dark:text-gray-300">Great work! Review what you’ve finished.</p>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 dark:text-gray-200">Completed Achievements</h1>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">Great work! Review what you've finished.</p>
 
-            <div className="flex items-center text-sm text-gray-500 mt-3">
-              <span className="inline-block w-3 h-3 bg-[#88BC46] rounded-full mr-1"></span>
-              <span className="mr-3">Financial</span>
-              <span className="inline-block w-3 h-3 bg-[#5FBFFF] rounded-full mr-1"></span>
-              <span className="mr-3">Learning</span>
-              <span className="inline-block w-3 h-3 bg-[#ED5E52] rounded-full mr-1"></span>
-              <span>Community</span>
+            <div className="flex flex-wrap items-center text-xs sm:text-sm text-gray-500 mt-3 gap-2 sm:gap-3">
+              <span className="flex items-center">
+                <span className="inline-block w-3 h-3 bg-[#88BC46] rounded-full mr-1"></span>
+                <span>Financial</span>
+              </span>
+              <span className="flex items-center">
+                <span className="inline-block w-3 h-3 bg-[#5FBFFF] rounded-full mr-1"></span>
+                <span>Learning</span>
+              </span>
+              <span className="flex items-center">
+                <span className="inline-block w-3 h-3 bg-[#ED5E52] rounded-full mr-1"></span>
+                <span>Community</span>
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Search & Filters (Learning style) */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-6">
-            <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white dark:bg-gray-800 shadow-sm dark:border-[#AAD977]">
-              <FaSearch className="text-[#76B947] dark:text-[#AAD977] mr-2" />
-              <input
-                type="text"
-                placeholder="Search achievements..."
-                className="w-full outline-none bg-transparent text-sm text-[#76B947] dark:text-[#AAD977] placeholder-[#76B947]/70 dark:placeholder-[#AAD977]/70"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+        {/* Search & Filters - Updated for mobile */}
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center justify-between mb-4 sm:mb-6">
+            {/* Combined search bar and filter button for mobile */}
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="flex-1 sm:flex-none sm:w-64 lg:w-72 px-3 sm:px-4 py-2 sm:py-2 border border-[#76B947] rounded-full bg-white dark:bg-gray-800 shadow-sm dark:border-[#AAD977]">
+                <div className="flex items-center">
+                  <FaSearch className="text-[#76B947] dark:text-[#AAD977] mr-2 text-sm sm:text-base" />
+                  <input
+                    type="text"
+                    placeholder="Search achievements..."
+                    className="w-full outline-none bg-transparent text-xs sm:text-sm text-[#76B947] dark:text-[#AAD977] placeholder-[#76B947]/70 dark:placeholder-[#AAD977]/70"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+              </div>
+              
+              {/* Filter button - smaller and inline with search on mobile */}
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-gray-800 border border-[#76B947] dark:border-[#AAD977] rounded-lg shadow-sm hover:bg-lime-100 dark:hover:bg-gray-700 transition-colors min-w-[60px] sm:min-w-auto"
+              >
+                <FaFilter className="text-[#76B947] dark:text-[#AAD977] text-sm sm:text-base" />
+                <span className="text-[#76B947] dark:text-[#AAD977] text-xs sm:text-sm hidden xs:inline">Filters</span>
+              </button>
             </div>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-gray-800 border border-[#76B947] dark:border-[#AAD977] rounded-lg shadow-sm hover:bg-lime-100 dark:hover:bg-gray-700 transition-colors"
-            >
-              <FaFilter className="text-[#76B947] dark:text-[#AAD977]" />
-              <span className="text-[#76B947] dark:text-[#AAD977]">Filters</span>
-            </button>
           </div>
 
           {showFilters && (
@@ -444,12 +457,12 @@ const CompleteAchievement = () => {
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.2 }}
-              className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 mb-6"
+              className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 mb-4 sm:mb-6"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Group</label>
-                  <div className="flex flex-wrap gap-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Group</label>
+                  <div className="flex flex-wrap gap-1 sm:gap-2">
                     {[
                       { key: 'all', label: 'All' },
                       { key: 'blue', label: 'Learning' },
@@ -459,7 +472,7 @@ const CompleteAchievement = () => {
                       <button
                         key={key}
                         onClick={() => setGroupFilter(key)}
-                        className={`px-3 py-1 rounded-full text-sm ${groupFilter === key
+                        className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm ${groupFilter === key
                             ? key === 'blue'
                               ? 'bg-[#B1E1FF] dark:bg-[#5FBFFF] text-white'
                               : key === 'green'
@@ -477,7 +490,7 @@ const CompleteAchievement = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort by</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort by</label>
                   <SortDropdown
                     name="sortBy"
                     value={sortBy}
@@ -497,16 +510,16 @@ const CompleteAchievement = () => {
           )}
         </div>
 
-        {/* Grid */}
+        {/* Grid - Fixed to show 2 columns on mobile */}
         {viewList.length ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
             {viewList.map((ach) => (
               <AchievementCard key={ach.achievement_id ?? ach.achievement_title} achievement={ach} />
             ))}
           </div>
         ) : (
-          <div className="col-span-full text-center py-10">
-            <p className="text-gray-500">No completed achievements match your filters.</p>
+          <div className="col-span-full text-center py-8 sm:py-10">
+            <p className="text-sm sm:text-base text-gray-500">No completed achievements match your filters.</p>
           </div>
         )}
       </div>

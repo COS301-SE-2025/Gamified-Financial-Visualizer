@@ -27,8 +27,8 @@ const LearnLayout = ({ children }) => {
 
         {/* Page Content */}
         <div className="flex">
-          <div className="flex-1 flex flex-col h-full pr-6">
-            <div className="px-6 pb-6">
+          <div className="flex-1 flex flex-col h-full pr-0 sm:pr-6">
+            <div className="px-4 sm:px-6 pb-4 sm:pb-6">
               {children}
             </div>
           </div>
