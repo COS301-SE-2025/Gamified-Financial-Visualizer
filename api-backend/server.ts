@@ -35,6 +35,9 @@ const PORT = process.env.PORT || 3000;
 
 const corsOrigins = [
   'https://gamified-finance-visualizer-c5djg3fhcnhqfyfj.canadacentral-01.azurewebsites.net',  // Frontend URL (Azure)
+  'http://localhost:3000', // for local dev
+  'http://localhost:8080', // for local dev alternative port
+  'http://localhost:80',
   process.env.CORS_ORIGIN     // Use environment variable from docker-compose
 ].filter((origin): origin is string => Boolean(origin));
 
