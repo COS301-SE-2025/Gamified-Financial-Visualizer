@@ -75,23 +75,24 @@ const Overview = () => {
   const [userId] = useState(() => JSON.parse(localStorage.getItem('user'))?.id ?? null);
 
   useEffect(() => {
-    if (!userId) return;
-    fetch(`http://localhost:5000/api/auth/profile/post-images/${userId}?page=${postPage}&pageSize=${POSTS_PER_PAGE}`)
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then(json => {
-        const data = json?.data;
-        setPostImages(data?.posts || []);
-        setPostTotalPages(data?.totalPages || 1);
-        if (postPage > (data?.totalPages || 1)) setPostPage(data?.totalPages || 1);
-      })
-      .catch(err => {
-        console.error('Failed to load post images:', err);
-        setPostImages([]); setPostTotalPages(1);
-      });
-  }, [userId, postPage]);
+  if (!userId) return;
+  fetch(`http://localhost:5000/api/auth/profile/post-images/${userId}?page=${postPage}&pageSize=${POSTS_PER_PAGE}`)
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    })
+    .then(json => {
+      const data = json?.data;
+      console.log('Post data received:', data?.posts); // Add this line
+      setPostImages(data?.posts || []);
+      setPostTotalPages(data?.totalPages || 1);
+      if (postPage > (data?.totalPages || 1)) setPostPage(data?.totalPages || 1);
+    })
+    .catch(err => {
+      console.error('Failed to load post images:', err);
+      setPostImages([]); setPostTotalPages(1);
+    });
+}, [userId, postPage]);
 
 
   return (
@@ -399,18 +400,54 @@ const Overview = () => {
         {postImages.length === 0 ? (
           <p className="text-sm text-gray-500 italic text-center">No posts yet.</p>
         ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {postImages.map((p) => (
               <div
                 key={p.post_id}
-                className="relative group overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+                className="relative group overflow-hidden rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 bg-gray-50 dark:bg-gray-700"
               >
-                <img
-                  src={`/assets/Images/${p.image_path}`}
-                  alt={`post-${p.post_id}`}
-                  className="w-full h-full object-cover aspect-square transition-transform duration-300 group-hover:scale-105"
-                  onError={(e) => { e.currentTarget.src = '/assets/Images/badges/default.png'; }}
-                />
+                {/* Image Container with proper 16:9 aspect ratio */}
+                <div className="relative overflow-hidden bg-gray-200 dark:bg-gray-600 aspect-video">
+                  <img
+                    src={`/assets/Images/${p.image_path}`}
+                    alt={`post-${p.post_id}`}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    onError={(e) => { e.currentTarget.src = '/assets/Images/badges/default.png'; }}
+                  />
+
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
+                    <div className="opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                      <div className="flex gap-2">
+                        <span className="bg-black bg-opacity-50 text-white p-2 rounded-full">
+                          <FaHeart className="w-4 h-4" />
+                        </span>
+                        <span className="bg-black bg-opacity-50 text-white p-2 rounded-full">
+                          <FaRegComment className="w-4 h-4" />
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Description - using the content field from your post data */}
+                <div className="p-4">
+                  {/* <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-3">
+                    {p.caption || p.content || p.description || "No description available"}
+                  </p> */}
+
+                  {/* Post metadata */}
+                  <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
+                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                      <FaHeart className="w-3 h-3 text-red-500" />
+                      <span>{p.likes || 0}</span>
+                    </div>
+
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {p.created_at ? new Date(p.created_at).toLocaleDateString() : ''}
+                    </p>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -418,25 +455,25 @@ const Overview = () => {
 
         {/* Pagination controls */}
         {postTotalPages > 1 && (
-          <div className="flex items-center justify-between mt-4">
+          <div className="flex items-center justify-between mt-6">
             <button
               onClick={() => setPostPage(p => Math.max(1, p - 1))}
               disabled={postPage === 1}
-              className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border dark:border-gray-600
-                ${postPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm border dark:border-gray-600
+          ${postPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
             >
               <FaChevronLeft /> Prev
             </button>
 
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <span className="text-sm text-gray-500 dark:text-gray-400">
               Page {postPage} of {postTotalPages}
             </span>
 
             <button
               onClick={() => setPostPage(p => Math.min(postTotalPages, p + 1))}
               disabled={postPage === postTotalPages}
-              className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border dark:border-gray-600
-                ${postPage === postTotalPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm border dark:border-gray-600
+          ${postPage === postTotalPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
             >
               Next <FaChevronRight />
             </button>

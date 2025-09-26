@@ -600,7 +600,7 @@ const BudgetPage = () => {
         )}
 
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Budget Management</h2>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Monthly Budget Management</h2>
           <button
             onClick={handleCreate}
             className="flex items-center gap-2 px-5 py-2.5 bg-[#AAD977] text-white text-sm font-medium rounded-lg hover:bg-[#6d9140] transition shadow-sm"

@@ -1,26 +1,18 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import AccountsLayout from './AccountsLayout';
 import {
-  FaChartBar,
-  FaUsers,
-  FaTrophy,
-  FaPiggyBank,
-  FaRunning,
-  FaArrowUp,
-  FaArrowDown,
   FaCheckCircle,
   FaTimesCircle,
   FaRobot,
   FaPaperPlane,
   FaLightbulb,
-  FaExchangeAlt, FaChartLine, FaTags
 } from 'react-icons/fa';
 
 import {
   ComposedChart, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, ReferenceLine,
   PieChart, Pie, Cell, LabelList,
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
-  LineChart, Line, CartesianGrid, Area
+  Line, CartesianGrid,
 } from 'recharts';
 
 import GaugeChart from 'react-gauge-chart';
@@ -182,7 +174,6 @@ function getAccounts(api) {
   return Array.from(new Set((api.insights || []).map((i) => i.accountName))).sort();
 }
 
-
 const comparisonData = {
   categorySpending: [
     { category: 'Groceries', userSpent: 2100, avgSpent: 1600, status: 'higher' },
@@ -218,7 +209,6 @@ const comparisonData = {
     quizScore: { percentile: 20, direction: 'top' }
   }
 };
-
 
 const InsightsPage = () => {
   const userData = JSON.parse(localStorage.getItem('user') || '{}');
@@ -390,7 +380,6 @@ const InsightsPage = () => {
     });
   }, [categoryApi, selectedAccount, selectedCategories, viewPercent, showAvg]);
 
-
   const CATEGORY_COLORS = useMemo(() => makeCategoryColors(selectedCategories), [selectedCategories]);
   const accounts = useMemo(() => getAccounts(apiData), [apiData]);
 
@@ -406,7 +395,6 @@ const InsightsPage = () => {
     return buildMonthlyData(apiData, viewMode, account || null) || [];
   }, [apiData, viewMode, account]);
 
-
   const radarStats = useMemo(() => {
     const items = radarData?.radar || [];
     const byAxis = new Map(items.map(p => [p.axis, p]));
@@ -421,7 +409,6 @@ const InsightsPage = () => {
       };
     });
   }, [radarData]);
-
 
   const getAiAnalysis = async (userPrompt) => {
     setIsLoading(true);
@@ -451,7 +438,6 @@ const InsightsPage = () => {
     });
     setIsLoading(false);
   };
-
 
   // Polished tooltip
   function ChartTooltip({ active, payload, label }) {
@@ -630,7 +616,6 @@ const InsightsPage = () => {
           ? "fill-blue-400"
           : "fill-blue-600";
 
-
   // state + ref near top of component
   const heatmapRef = React.useRef(null);
   const [tip, setTip] = React.useState({ show: false, text: "", x: 0, y: 0 });
@@ -688,7 +673,6 @@ const InsightsPage = () => {
       </>
     );
   };
-
 
   // state near top of component
   const [catOpen, setCatOpen] = useState(false);
@@ -864,52 +848,50 @@ const InsightsPage = () => {
             </div>
           </div>
           <p className="mt-5 text-sm text-gray-600 dark:text-gray-200 p-3 rounded-lg">
-             Keep up the good work! You're making better financial decisions than most users in your demographic.
+            Keep up the good work! You're making better financial decisions than most users in your demographic.
           </p>
         </div>
 
 
         {/* AI-Generated Monthly Summary */}
-       <div className="bg-white dark:bg-gray-800 dark:text-gray-200 text-black p-6 rounded-xl shadow-lg">
-            <div className="flex justify-between items-start">
-              <div>
-                <h2 className="text-xl font-bold mb-3 text-black dark:text-gray-200">AI-Generated Financial Summary</h2>
-                <p className="opacity-90 max-w-2xl dark:text-gray-200 leading-relaxed text-black">
-                  Based on your June activity: Your savings rate improved by 2% from last month,
-                  but dining expenses increased by 18%. You're on track to complete your emergency
-                  fund goal 3 weeks early.
-                </p>
-              </div>
-              <div className="bg-[#7FDD53]/20 p-3 rounded-full text-[#7FDD53]">
-                <FaRobot size={24} />
-              </div>
+        <div className="bg-white dark:bg-gray-800 dark:text-gray-200 text-black p-6 rounded-xl shadow-lg">
+          <div className="flex justify-between items-start">
+            <div>
+              <h2 className="text-xl font-bold mb-3 text-black dark:text-gray-200">AI-Generated Financial Summary</h2>
+              <p className="opacity-90 max-w-2xl dark:text-gray-200 leading-relaxed text-black">
+                Based on your June activity: Your savings rate improved by 2% from last month,
+                but dining expenses increased by 18%. You're on track to complete your emergency
+                fund goal 3 weeks early.
+              </p>
+            </div>
+            <div className="bg-[#7FDD53]/20 p-3 rounded-full text-[#7FDD53]">
+              <FaRobot size={24} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+            {/* Financial Health Score Box */}
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border-2 border-[#7FDD53]/30">
+              <p className="text-sm text-gray-600 mb-1 dark:text-gray-200">Financial Health Score</p>
+              <p className="text-2xl font-bold text-[#7FDD53]">82/100</p>
+              <p className="text-xs mt-1 text-[#7FDD53]">↑ 5 points from May</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-              {/* Financial Health Score Box */}
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border-2 border-[#7FDD53]/30">
-                <p className="text-sm text-gray-600 mb-1 dark:text-gray-200">Financial Health Score</p>
-                <p className="text-2xl font-bold text-[#7FDD53]">82/100</p>
-                <p className="text-xs mt-1 text-[#7FDD53]">↑ 5 points from May</p>
-              </div>
-              
-              {/* Savings Potential Box */}
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border-2 border-[#5FBFFF]/30">
-                <p className="text-sm text-gray-600 mb-1 dark:text-gray-200 ">Savings Potential</p>
-                <p className="text-2xl font-bold text-[#5FBFFF]">R1,200/mo</p>
-                <p className="text-xs mt-1 text-[#5FBFFF]">Through budget optimization</p>
-              </div>
-              
-              {/* Goal Projection Box */}
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border-2 border-[#FF8A8A]/30">
-                <p className="text-sm text-gray-600 mb-1 dark:text-gray-200">Goal Projection</p>
-                <p className="text-2xl font-bold text-[#FF8A8A]">2.1 years</p>
-                <p className="text-xs mt-1 text-[#FF8A8A]">To financial independence</p>
-              </div>
+            {/* Savings Potential Box */}
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border-2 border-[#5FBFFF]/30">
+              <p className="text-sm text-gray-600 mb-1 dark:text-gray-200 ">Savings Potential</p>
+              <p className="text-2xl font-bold text-[#5FBFFF]">R1,200/mo</p>
+              <p className="text-xs mt-1 text-[#5FBFFF]">Through budget optimization</p>
             </div>
-       </div>
 
-
+            {/* Goal Projection Box */}
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border-2 border-[#FF8A8A]/30">
+              <p className="text-sm text-gray-600 mb-1 dark:text-gray-200">Goal Projection</p>
+              <p className="text-2xl font-bold text-[#FF8A8A]">2.1 years</p>
+              <p className="text-xs mt-1 text-[#FF8A8A]">To financial independence</p>
+            </div>
+          </div>
+        </div>
 
         {/* 2-Column Layout for Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -933,7 +915,7 @@ const InsightsPage = () => {
                   id="financial-sentiment-gauge"
                   nrOfLevels={4}
                   percent={sentimentToPercent(sentiment?.sentiment)}
-                  colors={["#FF8A8A","#FFC541","#7FDD53", "#5FBFFF"]} // matches SENTIMENT_ORDER left→right
+                  colors={["#FF8A8A", "#FFC541", "#7FDD53", "#5FBFFF"]} // matches SENTIMENT_ORDER left→right
                   arcWidth={0.3}
                   arcPadding={0.02}
                   cornerRadius={3}
@@ -1022,211 +1004,210 @@ const InsightsPage = () => {
 
           {/* Monthly Spending by Category Bar Chart */}
           <div className="bg-white dark:bg-gray-800  p-6 rounded-xl shadow-md border dark:border-gray-800 border-gray-200 mb-8">
-              {/* Section Heading */}
-              <div className="flex flex-wrap justify-between items-center mb-6">
-                <h2 className="text-xl font-bold dark:text-gray-200 text-gray-800 mb-4">Monthly Spending by Category</h2>
+            {/* Section Heading */}
+            <div className="flex flex-wrap justify-between items-center mb-6">
+              <h2 className="text-xl font-bold dark:text-gray-200 text-gray-800 mb-4">Monthly Spending by Category</h2>
 
-                {/* Account select and Percent View toggle */}
-                <div className="flex flex-wrap gap-4 items-center">
-                  {/* Account Select Dropdown */}
-                  <div>
-                    <label htmlFor="account-select" className="block text-sm font-medium dark:text-gray-200 text-gray-700 mb-2">
-                      Account
-                    </label>
-                    <select
-                      id="account-select"
-                      value={selectedAccount}
-                      onChange={(e) => setSelectedAccount(e.target.value)}
-                      className="border dark:border-gray-700 dark:bg-gray-700 border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              {/* Account select and Percent View toggle */}
+              <div className="flex flex-wrap gap-4 items-center">
+                {/* Account Select Dropdown */}
+                <div>
+                  <label htmlFor="account-select" className="block text-sm font-medium dark:text-gray-200 text-gray-700 mb-2">
+                    Account
+                  </label>
+                  <select
+                    id="account-select"
+                    value={selectedAccount}
+                    onChange={(e) => setSelectedAccount(e.target.value)}
+                    className="border dark:border-gray-700 dark:bg-gray-700 border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  >
+                    <option value="all">All Accounts</option>
+                    {accounts.map((a) => (
+                      <option key={a} value={a}>{a}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Percent View Toggle */}
+                <div>
+                  <label className="block text-sm font-medium dark:text-gray-200 text-gray-700 mb-2">Scale</label>
+                  <div className="inline-flex rounded-md overflow-hidden border dark:border-gray-700 border-gray-300">
+                    <button
+                      type="button"
+                      disabled={!showAvg}
+                      onClick={() => setViewPercent(false)}
+                      className={`px-3 py-1.5 text-sm ${!viewPercent ? "bg-indigo-100 text-indigo-700" : "bg-white dark:bg-gray-700 dark:text-gray-200 text-gray-700"} ${showAvg ? "opacity-50 cursor-not-allowed" : ""}`}
+                      title={showAvg ? "Disable Global Avg to use % view" : ""}
                     >
-                      <option value="all">All Accounts</option>
-                      {accounts.map((a) => (
-                        <option key={a} value={a}>{a}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Percent View Toggle */}
-                  <div>
-                    <label className="block text-sm font-medium dark:text-gray-200 text-gray-700 mb-2">Scale</label>
-                    <div className="inline-flex rounded-md overflow-hidden border dark:border-gray-700 border-gray-300">
-                      <button
-                        type="button"
-                        disabled={!showAvg}
-                        onClick={() => setViewPercent(false)}
-                        className={`px-3 py-1.5 text-sm ${!viewPercent ? "bg-indigo-100 text-indigo-700" : "bg-white dark:bg-gray-700 dark:text-gray-200 text-gray-700"} ${showAvg ? "opacity-50 cursor-not-allowed" : ""}`}
-                        title={showAvg ? "Disable Global Avg to use % view" : ""}
-                      >
-                        Amount
-                      </button>
-                      <button
-                        type="button"
-                        disabled={!showAvg}
-                        onClick={() => setViewPercent(true)}
-                        className={`px-3 py-1.5 text-sm border-l border-gray-300 ${viewPercent ? "bg-indigo-100 text-indigo-700" : "bg-white text-gray-700"} ${showAvg ? "opacity-50 cursor-not-allowed" : ""}`}
-                        title={showAvg ? "Disable Global Avg to use % view" : ""}
-                      >
-                        %
-                      </button>
-                    </div>
+                      Amount
+                    </button>
+                    <button
+                      type="button"
+                      disabled={!showAvg}
+                      onClick={() => setViewPercent(true)}
+                      className={`px-3 py-1.5 text-sm border-l border-gray-300 ${viewPercent ? "bg-indigo-100 text-indigo-700" : "bg-white text-gray-700"} ${showAvg ? "opacity-50 cursor-not-allowed" : ""}`}
+                      title={showAvg ? "Disable Global Avg to use % view" : ""}
+                    >
+                      %
+                    </button>
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Category Multi-select (collapsible) */}
-              <div className="w-full">
-                <div className="flex items-center justify-between mb-4">
-                  <label className="block text-sm font-medium dark:text-gray-200 text-gray-700">Categories</label>
+            {/* Category Multi-select (collapsible) */}
+            <div className="w-full">
+              <div className="flex items-center justify-between mb-4">
+                <label className="block text-sm font-medium dark:text-gray-200 text-gray-700">Categories</label>
+                <button
+                  type="button"
+                  onClick={() => setCatOpen(v => !v)}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-md bg-gray-100 dark:bg-gray-700 dark:text-gray-200 text-gray-700 hover:bg-gray-200"
+                  aria-expanded={catOpen}
+                  aria-controls="category-panel"
+                >
+                  {catOpen ? "Hide" : "Show"} ({selectedCategories.length} selected)
+                  <svg
+                    className={`h-4 w-4 transition-transform dark:text-gray-200 ${catOpen ? "rotate-180" : ""}`}
+                    viewBox="0 0 20 20" fill="currentColor"
+                  >
+                    <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Collapsible Panel */}
+              <div
+                id="category-panel"
+                className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${catOpen ? "max-h-[480px] opacity-100 mt-3" : "max-h-0 opacity-0"}`}
+              >
+                {/* Controls */}
+                <div className="flex flex-wrap items-center gap-4 mb-4">
                   <button
                     type="button"
-                    onClick={() => setCatOpen(v => !v)}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-md bg-gray-100 dark:bg-gray-700 dark:text-gray-200 text-gray-700 hover:bg-gray-200"
-                    aria-expanded={catOpen}
-                    aria-controls="category-panel"
+                    onClick={selectAll}
+                    className="px-3 py-1.5 text-xs rounded-md bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
                   >
-                    {catOpen ? "Hide" : "Show"} ({selectedCategories.length} selected)
-                    <svg
-                      className={`h-4 w-4 transition-transform dark:text-gray-200 ${catOpen ? "rotate-180" : ""}`}
-                      viewBox="0 0 20 20" fill="currentColor"
-                    >
-                      <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" />
-                    </svg>
+                    Select all (filtered)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearAll}
+                    className="px-3 py-1.5 text-xs rounded-md bg-gray-100 dark:bg-gray-700 dark:text-gray-200 text-gray-700 hover:bg-gray-200"
+                  >
+                    Clear
                   </button>
                 </div>
 
-                {/* Collapsible Panel */}
-                <div
-                  id="category-panel"
-                  className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${catOpen ? "max-h-[480px] opacity-100 mt-3" : "max-h-0 opacity-0"}`}
-                >
-                  {/* Controls */}
-                  <div className="flex flex-wrap items-center gap-4 mb-4">
-                    <button
-                      type="button"
-                      onClick={selectAll}
-                      className="px-3 py-1.5 text-xs rounded-md bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
-                    >
-                      Select all (filtered)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={clearAll}
-                      className="px-3 py-1.5 text-xs rounded-md bg-gray-100 dark:bg-gray-700 dark:text-gray-200 text-gray-700 hover:bg-gray-200"
-                    >
-                      Clear
-                    </button>
-                  </div>
-
-                  {/* Chips */}
-                  <div className="flex flex-wrap gap-4 max-w-[640px]">
-                    {filteredCategories.map((category) => {
-                      const active = selectedCategories.includes(category);
-                      return (
-                        <button
-                          key={category}
-                          type="button"
-                          onClick={() => toggleCat(category)}
-                          className={`px-4 py-1 text-sm rounded-lg flex items-center ${active ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 dark:bg-gray-700 dark:text-gray-200 text-gray-700"}`}
-                          title={category}
-                        >
-                          <span
-                            className="w-2 h-2 rounded-full mr-2"
-                            style={{ backgroundColor: CATEGORY_COLORS[category] || "#ddd" }}
-                          />
-                          {category.charAt(0).toUpperCase() + category.slice(1)}
-                        </button>
-                      );
-                    })}
-                    {filteredCategories.length === 0 && (
-                      <span className="text-sm dark:text-gray-200text-gray-500">No categories match your search.</span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Compact Summary Row when collapsed */}
-                {!catOpen && selectedCategories.length > 0 && (
-                  <div className="mt-3 flex flex-wrap items-center gap-2 text-xs dark:text-gray-200  text-gray-600">
-                    <span className="opacity-70 ">Selected:</span>
-                    {selectedCategories.slice(0, 6).map(c => (
-                      <span key={c} className="px-2 py-0.5 rounded-full  dark:bg-gray-700 bg-gray-100">{c}</span>
-                    ))}
-                    {selectedCategories.length > 6 && (
-                      <span className="opacity-70">+{selectedCategories.length - 6} more</span>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Chart */}
-              <div className="h-80 mt-6">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={filteredData}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                    {...(viewPercent && !showAvg ? { stackOffset: "expand" } : {})}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis dataKey="month" />
-                    <YAxis tickFormatter={(v) => (viewPercent && !showAvg ? `${Math.round(Number(v) * 100)}%` : ZAR(v))} />
-                    <Tooltip
-                      content={({ active, payload, label }) => {
-                        if (!active || !payload || !payload.length) return null;
-                        const row = filteredData.find((d) => d.month === label);
-                        if (!row) return null;
-
-                        const isPct = viewPercent && !showAvg;
-                        return (
-                          <div className="rounded-xl border dark:bg-gray-700 border-gray-200 bg-white/90 backdrop-blur px-3 py-2 shadow">
-                            <div className="text-xs dark:text-gray-200 text-gray-500 mb-1">{label}</div>
-                            {payload.filter((p) => selectedCategories.includes(p.dataKey)).map((p) => {
-                              const cat = p.dataKey;
-                              const userVal = Number(p.value ?? 0);
-                              const avgVal = Number(row.averages?.[cat] ?? 0);
-
-                              const avgPct = row.avgSelectedTotal > 0 ? (avgVal / row.avgSelectedTotal) * 100 : 0;
-                              const userDisplay = isPct ? `${Math.round(userVal * 100)}%` : ZAR(userVal);
-                              const avgDisplay = isPct ? `${Math.round(avgPct)}%` : ZAR(avgVal);
-
-                              return (
-                                <div key={cat} className="flex items-center  gap-2 text-sm">
-                                  <span
-                                    className="inline-block h-2 w-2 rounded-full"
-                                    style={{ background: p.color }}
-                                  />
-                                  <span className="text-gray-600 dark:text-gray-200">{cat.charAt(0).toUpperCase() + cat.slice(1)}</span>
-                                  <span className="ml-auto font-medium dark:text-gray-200 text-gray-800">{userDisplay}</span>
-                                  <span className="ml-2 text-xs dark:text-gray-200 text-gray-500">Avg: {avgDisplay}</span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        );
-                      }}
-                    />
-                    <Legend />
-                    {selectedCategories.map((category) => (
-                      <Bar
+                {/* Chips */}
+                <div className="flex flex-wrap gap-4 max-w-[640px]">
+                  {filteredCategories.map((category) => {
+                    const active = selectedCategories.includes(category);
+                    return (
+                      <button
                         key={category}
-                        dataKey={category}
-                        name={category.charAt(0).toUpperCase() + category.slice(1)}
-                        stackId="user"
-                        fill={CATEGORY_COLORS[category]}
-                        radius={[4, 4, 0, 0]}
-                        isAnimationActive={false}
-                      />
-                    ))}
-                  </BarChart>
-                </ResponsiveContainer>
+                        type="button"
+                        onClick={() => toggleCat(category)}
+                        className={`px-4 py-1 text-sm rounded-lg flex items-center ${active ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 dark:bg-gray-700 dark:text-gray-200 text-gray-700"}`}
+                        title={category}
+                      >
+                        <span
+                          className="w-2 h-2 rounded-full mr-2"
+                          style={{ backgroundColor: CATEGORY_COLORS[category] || "#ddd" }}
+                        />
+                        {category.charAt(0).toUpperCase() + category.slice(1)}
+                      </button>
+                    );
+                  })}
+                  {filteredCategories.length === 0 && (
+                    <span className="text-sm dark:text-gray-200text-gray-500">No categories match your search.</span>
+                  )}
+                </div>
               </div>
 
-              {/* Legend hint */}
-              {showAvg && (
-                <div className="mt-3 text-xs dark:text-gray-200 text-gray-500">
-                  The dashed line shows the global average total for your selected categories each month.
+              {/* Compact Summary Row when collapsed */}
+              {!catOpen && selectedCategories.length > 0 && (
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs dark:text-gray-200  text-gray-600">
+                  <span className="opacity-70 ">Selected:</span>
+                  {selectedCategories.slice(0, 6).map(c => (
+                    <span key={c} className="px-2 py-0.5 rounded-full  dark:bg-gray-700 bg-gray-100">{c}</span>
+                  ))}
+                  {selectedCategories.length > 6 && (
+                    <span className="opacity-70">+{selectedCategories.length - 6} more</span>
+                  )}
                 </div>
               )}
-          </div>
+            </div>
 
+            {/* Chart */}
+            <div className="h-80 mt-6">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={filteredData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  {...(viewPercent && !showAvg ? { stackOffset: "expand" } : {})}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="month" />
+                  <YAxis tickFormatter={(v) => (viewPercent && !showAvg ? `${Math.round(Number(v) * 100)}%` : ZAR(v))} />
+                  <Tooltip
+                    content={({ active, payload, label }) => {
+                      if (!active || !payload || !payload.length) return null;
+                      const row = filteredData.find((d) => d.month === label);
+                      if (!row) return null;
+
+                      const isPct = viewPercent && !showAvg;
+                      return (
+                        <div className="rounded-xl border dark:bg-gray-700 border-gray-200 bg-white/90 backdrop-blur px-3 py-2 shadow">
+                          <div className="text-xs dark:text-gray-200 text-gray-500 mb-1">{label}</div>
+                          {payload.filter((p) => selectedCategories.includes(p.dataKey)).map((p) => {
+                            const cat = p.dataKey;
+                            const userVal = Number(p.value ?? 0);
+                            const avgVal = Number(row.averages?.[cat] ?? 0);
+
+                            const avgPct = row.avgSelectedTotal > 0 ? (avgVal / row.avgSelectedTotal) * 100 : 0;
+                            const userDisplay = isPct ? `${Math.round(userVal * 100)}%` : ZAR(userVal);
+                            const avgDisplay = isPct ? `${Math.round(avgPct)}%` : ZAR(avgVal);
+
+                            return (
+                              <div key={cat} className="flex items-center  gap-2 text-sm">
+                                <span
+                                  className="inline-block h-2 w-2 rounded-full"
+                                  style={{ background: p.color }}
+                                />
+                                <span className="text-gray-600 dark:text-gray-200">{cat.charAt(0).toUpperCase() + cat.slice(1)}</span>
+                                <span className="ml-auto font-medium dark:text-gray-200 text-gray-800">{userDisplay}</span>
+                                <span className="ml-2 text-xs dark:text-gray-200 text-gray-500">Avg: {avgDisplay}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    }}
+                  />
+                  <Legend />
+                  {selectedCategories.map((category) => (
+                    <Bar
+                      key={category}
+                      dataKey={category}
+                      name={category.charAt(0).toUpperCase() + category.slice(1)}
+                      stackId="user"
+                      fill={CATEGORY_COLORS[category]}
+                      radius={[4, 4, 0, 0]}
+                      isAnimationActive={false}
+                    />
+                  ))}
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Legend hint */}
+            {showAvg && (
+              <div className="mt-3 text-xs dark:text-gray-200 text-gray-500">
+                The dashed line shows the global average total for your selected categories each month.
+              </div>
+            )}
+          </div>
 
           {/* Income vs Expense Bar Chart */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border dark:border-gray-800 border-gray-200">
@@ -1305,84 +1286,83 @@ const InsightsPage = () => {
 
           {/* Net Worth Pie Chart */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border dark:border-gray-800 border-gray-200">
-              {/* Section Heading */}
-              <h2 className="text-xl font-bold dark:text-gray-200 text-gray-800 mb-4">Account Distribution</h2>
+            {/* Section Heading */}
+            <h2 className="text-xl font-bold dark:text-gray-200 text-gray-800 mb-4">Account Distribution</h2>
 
-              {/* Description for the chart */}
-              <p className="text-sm dark:text-gray-200 text-gray-600 mb-4">
-                This chart shows the distribution of your wealth across different account types. You can see how much of your total net worth is allocated to your checking, savings, and investment accounts.
-              </p>
+            {/* Description for the chart */}
+            <p className="text-sm dark:text-gray-200 text-gray-600 mb-4">
+              This chart shows the distribution of your wealth across different account types. You can see how much of your total net worth is allocated to your checking, savings, and investment accounts.
+            </p>
 
-              {/* Pie Chart */}
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={wealth?.breakdown ?? []}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={75}
-                      outerRadius={120}
-                      paddingAngle={2}
-                      onMouseEnter={(_, index) => setActivePieIndex(index)}
-                      onMouseLeave={() => setActivePieIndex(null)}
-                    >
-                      {wealth?.breakdown.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={
-                            index === 0 ? COLORS.checking :
-                            index === 1 ? COLORS.savings :
-                            COLORS.investment
-                          }
-                          stroke="#fff"
-                          strokeWidth={activePieIndex === index ? 3 : 1}
-                          opacity={activePieIndex === null || activePieIndex === index ? 1 : 0.6}
-                        />
-                      ))}
-                      <LabelList
-                        dataKey="name"
-                        position="outside"
-                        formatter={(value) => `${value}`}
-                        fill="#4b5563"
-                        fontSize={12}
-                      />
-                    </Pie>
-                    <text
-                      x="50%"
-                      y="50%"
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      className="text-xl font-bold dark:text-gray-200 text-gray-800"
-                    >
-                      R{totalNetWorth.toLocaleString()}
-                    </text>
-                    <Tooltip content={<CustomPieTooltip />} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-
-              {/* Legend */}
-              <div className="mt-4 flex justify-center gap-4 flex-wrap">
-                {wealth?.breakdown.map((account, index) => (
-                  <div key={index} className="flex items-center">
-                    <div
-                      className="w-3 h-3 rounded-full mr-2"
-                      style={{
-                        backgroundColor:
+            {/* Pie Chart */}
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={wealth?.breakdown ?? []}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={75}
+                    outerRadius={120}
+                    paddingAngle={2}
+                    onMouseEnter={(_, index) => setActivePieIndex(index)}
+                    onMouseLeave={() => setActivePieIndex(null)}
+                  >
+                    {wealth?.breakdown.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={
                           index === 0 ? COLORS.checking :
-                          index === 1 ? COLORS.savings :
-                          COLORS.investment
-                      }}
-                    ></div>
-                    <span className="text-sm">{account.name}</span>
-                  </div>
-                ))}
-              </div>
-          </div>
+                            index === 1 ? COLORS.savings :
+                              COLORS.investment
+                        }
+                        stroke="#fff"
+                        strokeWidth={activePieIndex === index ? 3 : 1}
+                        opacity={activePieIndex === null || activePieIndex === index ? 1 : 0.6}
+                      />
+                    ))}
+                    <LabelList
+                      dataKey="name"
+                      position="outside"
+                      formatter={(value) => `${value}`}
+                      fill="#4b5563"
+                      fontSize={12}
+                    />
+                  </Pie>
+                  <text
+                    x="50%"
+                    y="50%"
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    className="text-xl font-bold dark:text-gray-200 text-gray-800"
+                  >
+                    R{totalNetWorth.toLocaleString()}
+                  </text>
+                  <Tooltip content={<CustomPieTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
 
+            {/* Legend */}
+            <div className="mt-4 flex justify-center gap-4 flex-wrap">
+              {wealth?.breakdown.map((account, index) => (
+                <div key={index} className="flex items-center">
+                  <div
+                    className="w-3 h-3 rounded-full mr-2"
+                    style={{
+                      backgroundColor:
+                        index === 0 ? COLORS.checking :
+                          index === 1 ? COLORS.savings :
+                            COLORS.investment
+                    }}
+                  ></div>
+                  <span className="text-sm">{account.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
 
           {/* Radar Chart */}
           <div className="bg-white dark:bg-gray-800  p-6 rounded-xl shadow-md border dark:border-gray-800 border-gray-200 ">
@@ -1445,7 +1425,7 @@ const InsightsPage = () => {
                   Monthly trends this year so far, including spending volatility and month-over-month changes.
                 </p>
               </div>
-              
+
               <div className="bg-indigo-50 rounded-lg px-3 py-2 text-indigo-700 text-xs font-medium">
                 Your spending characteristics: <span className="font-semibold">{trend?.behavioralTags.join(", ")}</span>
               </div>
@@ -1464,10 +1444,9 @@ const InsightsPage = () => {
                           : [...selectedCats, cat].slice(-5)
                       )
                     }
-                    className={`px-3 py-1.5 rounded-lg text-xs transition-colors ${
-                      active ? "bg-indigo-100 text-indigo-700 border border-indigo-200"
+                    className={`px-3 py-1.5 rounded-lg text-xs transition-colors ${active ? "bg-indigo-100 text-indigo-700 border border-indigo-200"
                         : "bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-700 text-gray-600 border border-gray-100"
-                    }`}
+                      }`}
                   >
                     {cat}
                   </button>
@@ -1512,7 +1491,7 @@ const InsightsPage = () => {
                                 <span className="ml-auto font-medium dark:text-gray-200 text-gray-800">{ZAR(p.value)}</span>
                               </div>
                             ))}
-                          
+
                           {row?.anomalies > 0 && (
                             <div className="mt-2 pt-2 border-t border-gray-100 text-xs text-red-600">
                               <div className="flex items-center gap-1 mb-1">
@@ -1553,7 +1532,7 @@ const InsightsPage = () => {
                     }}
                   />
                   <Legend />
-                  
+
                   <Bar
                     yAxisId="rightVol"
                     dataKey="volatility"
@@ -1573,7 +1552,7 @@ const InsightsPage = () => {
                     ))}
                   </Bar>
                   <ReferenceLine y={0} yAxisId="rightDelta" stroke="#d1d5db" strokeDasharray="4 4" />
-                  
+
                   <Line
                     yAxisId="left"
                     type="monotone"
@@ -1585,7 +1564,7 @@ const InsightsPage = () => {
                     connectNulls
                     isAnimationActive={false}
                   />
-                  
+
                   <Line
                     yAxisId="left"
                     type="monotone"
@@ -1598,7 +1577,7 @@ const InsightsPage = () => {
                     connectNulls
                     isAnimationActive={false}
                   />
-                  
+
                   {selectedCats.map((cat, i) => (
                     <Line
                       key={cat}
@@ -1700,7 +1679,7 @@ const InsightsPage = () => {
                   gutterSize={2}
                   classForValue={() => ""}
                   transformDayElement={transformDayElement}
-                  weekdayLabelClass="text-[0.625rem] dark:text-gray-200 text-gray-500" 
+                  weekdayLabelClass="text-[0.625rem] dark:text-gray-200 text-gray-500"
                   monthLabelClass="text-[0.625rem] dark:bg-gray-700 dark:text-gray-200 text-gray-500"
                 />
               </div>
@@ -1725,8 +1704,6 @@ const InsightsPage = () => {
               </span>
             </div>
           </div>
-
-
         </div>
       </div>
     </AccountsLayout >
