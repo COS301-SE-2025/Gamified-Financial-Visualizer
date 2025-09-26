@@ -27,7 +27,8 @@ jobs:
 
     - name: Build and push AI Service
       run: |
-        docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/gamified-financial-visualizer-ai-service:latest ./api-backend/modules/ai --target production
+        docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/gamified-financial-visualizer-ai-service:latest ./api-backend/modules/ai --target production \
+              --build-arg HF_TOKEN=${{ secrets.HF_TOKEN }}
         docker push ${{ secrets.ACR_LOGIN_SERVER }}/gamified-financial-visualizer-ai-service:latest
   
     - name: Build and push Frontend
