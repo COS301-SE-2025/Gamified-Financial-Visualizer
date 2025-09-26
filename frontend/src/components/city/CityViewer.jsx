@@ -9,7 +9,8 @@ import {
 } from 'react-icons/gi'
 import {
   FaCoins, FaBolt, FaUsers, FaChartLine, FaHeartbeat, FaBook, FaUtensils,
-  FaHome, FaShieldAlt, FaGem, FaStar, FaRegStar, FaBell
+  FaHome, FaShieldAlt, FaGem, FaStar, FaRegStar, FaBell,
+  FaPalette
 } from 'react-icons/fa'
 import { FiSliders, FiX, FiChevronDown, FiMove } from 'react-icons/fi'
 
@@ -129,16 +130,16 @@ const THEME_PRESETS = {
   },
 
   rainy_evening: {
-    exposure: 0.75,
+    exposure: 0.5,
     bg: '#a8b0b8',
     fog: {
       type: 'linear',
       color: '#8a98a8',
-      near: 40,
-      far: 180
+      near: 30,
+      far: 150
     },
     rain: true,
-    rainIntensity: 1.5  // Increased rain intensity
+    rainIntensity: 2.5  // Increased rain intensity
   },
 
   sunset_pink: {
@@ -222,7 +223,7 @@ function ThemePanel({ open, setOpen, theme, setTheme, mode, setMode }) {
           className="fixed top-24 right-4 z-[10] px-3 py-2 rounded-xl bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-gray-100 shadow border border-black/10 backdrop-blur"
           aria-label="Open lighting panel"
         >
-          <span className="inline-flex items-center gap-2"><FiSliders /> Lighting & Theme</span>
+          <span className="inline-flex items-center gap-2"><FaPalette /> Themes</span>
         </button>
       )}
 
@@ -267,10 +268,6 @@ function ThemePanel({ open, setOpen, theme, setTheme, mode, setMode }) {
                 {CITY_SCENES[key].name}
               </button>
             ))}
-          </div>
-
-          <div className="px-3 pb-3 text-[11px] text-gray-500 dark:text-gray-400 flex items-center gap-1">
-            <FiChevronDown /> Close to see the nav bar
           </div>
         </div>
       )}
@@ -623,8 +620,19 @@ const BUILDING_BINDINGS = {
 =========================== */
 function GameModal({ open, onClose, data, theme }) {
   if (!open || !data) return null
-  const { icon, label, description, rating = 4, level = { current: 1, max: 3 }, sizeLabel = '5×5',
-    headline = { label: 'Profit', value: '—', icon: <FaCoins /> }, effects = [], cta, upgrade } = data
+  const {
+    key, // Get the key directly from data
+    icon,
+    label,
+    description,
+    rating = 4,
+    level = { current: 1, max: 3 },
+    sizeLabel = '5×5',
+    headline = { label: 'Profit', value: '—', icon: <FaCoins /> },
+    effects = [],
+    cta,
+    upgrade
+  } = data
 
   const Stars = () => {
     const full = Math.max(0, Math.min(5, Math.floor(rating)))
@@ -643,12 +651,8 @@ function GameModal({ open, onClose, data, theme }) {
     return themeImages[buildingKey] || FALLBACK_IMAGES[buildingKey];
   };
 
-  // Find the building key from the data (you'll need to pass this)
-  const buildingKey = data.key || Object.keys(BUILDING_BINDINGS).find(
-    key => BUILDING_BINDINGS[key].label === label
-  );
-
-  const themedImage = buildingKey ? getThemedImage(buildingKey, theme) : null;
+  // Use the key directly from data instead of searching
+  const themedImage = key ? getThemedImage(key, theme) : null;
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
@@ -658,13 +662,13 @@ function GameModal({ open, onClose, data, theme }) {
           <div className="text-lg font-extrabold tracking-wide">{label}</div>
           <button onClick={onClose} className="px-3 py-1 rounded-lg bg-white/15 hover:bg-white/25">✕</button>
         </div>
-        {/* ... modal header ... */}
+
         <div className="bg-[#f6f3ea] p-5">
           <div className="grid gap-4 md:grid-cols-[280px_1fr]">
             <div className="bg-white rounded-2xl border border-black/5 shadow p-3">
               {/* the tooltip image */}
               <div className="h-40 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden">
-                {data?.image ? (
+                {themedImage ? (
                   <img
                     src={themedImage}
                     alt={label}
@@ -684,6 +688,7 @@ function GameModal({ open, onClose, data, theme }) {
               </div>
               <div className="mt-1 text-[11px] text-gray-500">Размер: {sizeLabel}</div>
             </div>
+
             <div className="space-y-4">
               <p className="text-sm text-gray-700">{description}</p>
               <div className="flex items-center gap-3">
@@ -695,6 +700,7 @@ function GameModal({ open, onClose, data, theme }) {
                   <div className="text-2xl font-bold text-gray-800">{headline.value}</div>
                 </div>
               </div>
+
               <div className="grid sm:grid-cols-3 gap-3">
                 {effects.map((e, i) => (
                   <div key={i} className={`flex items-center gap-2 rounded-xl border shadow-sm px-3 py-2 bg-white ${e.tone === 'neg' ? 'border-rose-200' : e.tone === 'warn' ? 'border-amber-200' : 'border-emerald-200'
@@ -707,6 +713,7 @@ function GameModal({ open, onClose, data, theme }) {
                   </div>
                 ))}
               </div>
+
               <div className="flex items-center justify-between bg-white rounded-2xl border border-black/5 shadow px-4 py-3">
                 <div className="flex items-center gap-6 text-sm">
                   <div className="flex items-center gap-2">
@@ -722,11 +729,6 @@ function GameModal({ open, onClose, data, theme }) {
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <a href={cta?.link || '#'} onClick={onClose} className="px-4 py-2 rounded-xl bg-sky-600 text-white hover:bg-sky-700 shadow">
-                    {cta?.label || 'Manage'}
-                  </a>
-                </div>
               </div>
             </div>
           </div>
@@ -741,54 +743,155 @@ function GameModal({ open, onClose, data, theme }) {
 =========================== */
 function RainSystem({ intensity = 1.0 }) {
   const rainRef = useRef()
-  const rainCount = Math.floor(200 * intensity)
+  const rainCount = Math.floor(800 * intensity) // Increased density
 
   useFrame((state, delta) => {
     if (!rainRef.current) return
 
-    // Animate all rain drops
     rainRef.current.children.forEach((drop, i) => {
-      drop.position.y -= (0.5 + Math.random() * 1.5) * 30 * delta
+      // Faster falling with variation
+      drop.position.y -= (1.5 + Math.random() * 2.5) * 80 * delta * intensity
+
+      // Slight horizontal movement for wind effect
+      drop.position.x += Math.sin(state.clock.elapsedTime * 3 + i) * 0.4 * intensity
+      drop.position.z += Math.cos(state.clock.elapsedTime * 2 + i) * 0.3 * intensity
 
       // Reset when drop falls below ground
-      if (drop.position.y < -10) {
-        drop.position.y = 100 + Math.random() * 50
-        drop.position.x = Math.random() * 200 - 100
-        drop.position.z = Math.random() * 200 - 100
+      if (drop.position.y < -30) {
+        drop.position.y = 200 + Math.random() * 150
+        drop.position.x = Math.random() * 600 - 300
+        drop.position.z = Math.random() * 600 - 300
       }
     })
   })
 
   return (
     <group ref={rainRef}>
+      {/* Main rain drops */}
       {Array.from({ length: rainCount }).map((_, i) => (
         <mesh
-          key={i}
+          key={`rain-${i}`}
           position={[
-            Math.random() * 200 - 100,
-            Math.random() * 100 + 30,
-            Math.random() * 200 - 100
+            Math.random() * 600 - 300,
+            Math.random() * 300 + 100,
+            Math.random() * 600 - 300
           ]}
         >
-          <cylinderGeometry args={[0.015, 0.015, 0.3, 4]} />
-          <meshBasicMaterial color="#a0c8e0" transparent opacity={0.7} />
+          {/* rain drop sizes */}
+          <cylinderGeometry args={[0.08, 0.08, 1.5, 4]} />
+          <meshBasicMaterial color="#e0f0ff" transparent opacity={0.5} />
         </mesh>
       ))}
 
-      {/* Distant rain particles for atmosphere */}
+      {/* Distant rain particles */}
       <points>
         <bufferGeometry>
           <bufferAttribute
             attach="attributes-position"
-            count={Math.floor(300 * intensity)}
-            array={new Float32Array(Array.from({ length: Math.floor(300 * intensity) * 3 },
-              () => [Math.random() * 400 - 200, Math.random() * 200, Math.random() * 400 - 200]).flat())}
+            count={Math.floor(800 * intensity)}
+            array={new Float32Array(Array.from({ length: Math.floor(800 * intensity) * 3 },
+              () => [
+                Math.random() * 800 - 400,
+                Math.random() * 400,
+                Math.random() * 800 - 400
+              ]).flat())}
             itemSize={3}
           />
         </bufferGeometry>
-        <pointsMaterial size={2} color="#a0c8e0" transparent opacity={0.4} />
+        <pointsMaterial
+          size={3.0}
+          color="#c0e0ff"
+          transparent
+          opacity={0.6}
+          sizeAttenuation={false}
+        />
       </points>
     </group>
+  )
+}
+
+function RainSplashes({ intensity = 1.0 }) {
+  const splashRef = useRef()
+  const splashCount = Math.floor(200 * intensity)
+
+  useFrame((state) => {
+    if (!splashRef.current) return
+
+    splashRef.current.children.forEach((splash, i) => {
+      // Animate splash scale for popping effect
+      const scale = 0.3 + Math.sin(state.clock.elapsedTime * 20 + i) * 0.2
+      splash.scale.setScalar(scale)
+
+      // Random repositioning to simulate continuous splashing
+      if (Math.random() < 0.05) {
+        splash.position.x = Math.random() * 400 - 200
+        splash.position.z = Math.random() * 400 - 200
+      }
+    })
+  })
+
+  return (
+    <group ref={splashRef}>
+      {Array.from({ length: splashCount }).map((_, i) => (
+        <mesh
+          key={i}
+          position={[
+            Math.random() * 400 - 200,
+            0.1, // Just above ground
+            Math.random() * 400 - 200
+          ]}
+          rotation={[-Math.PI / 2, 0, 0]} // Face upward
+        >
+          <circleGeometry args={[0.5, 12]} />
+          <meshBasicMaterial
+            color="#e0f0ff"
+            transparent
+            opacity={0.8}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
+function HeavyRainSystem({ intensity = 1.0 }) {
+  return (
+    <>
+      {/* Close rain layer */}
+      <RainSystem intensity={intensity} />
+
+      {/* Mid-distance rain layer */}
+      <RainSystem intensity={intensity * 0.8} />
+
+      {/* Distant rain layer */}
+      <group position={[50, 0, 50]}> {/* Offset for variety */}
+        <RainSystem intensity={intensity * 0.6} />
+      </group>
+
+      {/* Extra particle layer for density */}
+      <points>
+        <bufferGeometry>
+          <bufferAttribute
+            attach="attributes-position"
+            count={Math.floor(2000 * intensity)}
+            array={new Float32Array(Array.from({ length: Math.floor(2000 * intensity) * 3 },
+              () => [
+                Math.random() * 1000 - 500,
+                Math.random() * 500,
+                Math.random() * 1000 - 500
+              ]).flat())}
+            itemSize={3}
+          />
+        </bufferGeometry>
+        <pointsMaterial
+          size={1.8}
+          color="#a0d0ff"
+          transparent
+          opacity={0.4}
+        />
+      </points>
+    </>
   )
 }
 
@@ -1247,6 +1350,11 @@ export default function CityViewer() {
       });
     }
 
+    // Preserve the key if it exists in staticBinding
+    if (staticBinding.key) {
+      merged.key = staticBinding.key;
+    }
+
     return merged;
   }
 
@@ -1255,6 +1363,10 @@ export default function CityViewer() {
     const staticBinding = BUILDING_BINDINGS[target.key] || { label: target.label }
     const server = buildingsById.get(target.key)
     const merged = mergeBinding(staticBinding, server)
+
+    // Add the building key to the merged data
+    merged.key = target.key
+
     setSelected(merged)
     setOpen(true)
   }
@@ -1311,7 +1423,12 @@ export default function CityViewer() {
         )}
 
         {/* Rain System for Rainy Evening */}
-        {preset.rain && <RainSystem intensity={preset.rainIntensity || 1.0} />}
+        {preset.rain && (
+          <>
+            <HeavyRainSystem intensity={preset.rainIntensity || 2.5} />
+            <RainSplashes intensity={preset.rainIntensity || 2.5} />
+          </>
+        )}
 
         <Suspense fallback={<Loader />}>
           <CityModel

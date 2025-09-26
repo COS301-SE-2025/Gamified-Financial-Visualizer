@@ -11,9 +11,9 @@ import NobuhleImg from '../../assets/Team Profiles/Nobuhle.png';
 import AundreaImg from '../../assets/Team Profiles/Aundrea.png';
 
 // Testimonial imports
-import avatar1 from '../../assets/Images/avatars/BeachShore.png';
-import avatar2 from '../../assets/Images/avatars/CityBuilding.png';
-import avatar3 from '../../assets/Images/avatars/Lily.png';
+import avatar1 from '../../assets/Images/avatars/Skull.png';
+import avatar2 from '../../assets/Images/avatars/Lily.png';
+import avatar3 from '../../assets/Images/avatars/Totoro.png';
 
 // Banner header images 
 import heroGif from '../../assets/Images/banners/pixelOffice.gif';
@@ -165,19 +165,19 @@ export default function LandingPage() {
     // testimonials
     const testimonials = [
         {
-            name: "yummy",
+            name: "kevin_park",
             role: "Financial Beginner",
             quote: "I went from avoiding my finances to checking them daily thanks to the game elements!",
             avatar: avatar1
         },
         {
-            name: "mike_t",
+            name: "sarah_williams",
             role: "Small Business Owner",
             quote: "The goal quests helped me finally organize my business finances in a way that stuck.",
             avatar: avatar2
         },
         {
-            name: "lily_luna",
+            name: "satoshi_nak",
             role: "College Student",
             quote: "Earning badges for saving money made budgeting actually fun for the first time.",
             avatar: avatar3
@@ -275,7 +275,7 @@ export default function LandingPage() {
                             onClick={() => window.location.href = '/login'}
                         >
                             <span className="flex items-center gap-2">
-                                Continue Playing <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+                                Login <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
                             </span>
                         </Button>
                     </motion.div>
@@ -327,7 +327,7 @@ export default function LandingPage() {
                             onClick={() => window.location.href = '/register'}
                         >
                             <span className="flex items-center gap-2">
-                                Start Your Quest <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+                                Register Now <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
                             </span>
                         </Button>
                     </motion.div>
@@ -667,11 +667,11 @@ export default function LandingPage() {
                                         className="bg-gradient-to-r from-[#4B6343] to-[#AAD977] hover:from-[#4B6343] hover:to-[#AAD977] text-white px-6 py-3 font-bold shadow-md hover:shadow-lg transition-all"
                                         onClick={() => window.location.href = '/register'}
                                     >
-                                        Start Your Quest
+                                        Register
                                     </Button>
                                     <Button
                                         variant="outline"
-                                        className="border-lime-500 text-lime-600 hover:bg-lime-500 hover:text-white px-6 py-3 font-medium"
+                                        className="border-lime-600 text-lime-600 hover:bg-[#6b905f] hover:text-white px-6 py-3 font-medium"
                                         onClick={() => window.location.href = '/features'}
                                     >
                                         Explore Features
@@ -839,7 +839,6 @@ export default function LandingPage() {
                             { name: "Node.js", icon: "nodejs", description: "Runtime environment" },
                             { name: "PostgreSQL", icon: "postgresql", description: "Database" },
                             { name: "Python", icon: "python", description: "Backend services" },
-                            { name: "Unity", icon: "unity", description: "AR engine" },
                             { name: "Figma", icon: "figma", description: "Design tool" },
                             { name: "TypeScript", icon: "typescript", description: "Typed JavaScript" },
                             { name: "Express.js", icon: "express", description: "Web framework" },
@@ -852,8 +851,9 @@ export default function LandingPage() {
                             { name: "Pytorch", icon: "pytorch", description: "AI model" },
                             { name: "Tensorflow", icon: "tensorflow", description: "AI model" },
                             { name: "Supabase", icon: "supabase", description: "Deployment" },
-                            { name: "Kafka", icon: "kafka", description: "Event Bus" },
-                            { name: "Redis", icon: "redis", description: "Caching" }
+                            { name: "Blender", icon: "blender", description: "3D Modeling" },
+                            { name: "Redis", icon: "redis", description: "Caching" },
+                            { name: "Azure", icon: "azure", description: "Deployment" }
                         ].map((tech, i) => (
                             <motion.div
                                 key={i}
@@ -1004,7 +1004,7 @@ export default function LandingPage() {
                             onClick={() => window.location.href = '/register'}
                         >
                             <span className="flex items-center gap-2">
-                                Start Your Free Quest <FaArrowRight />
+                                Register Now <FaArrowRight />
                             </span>
                         </Button>
                         {/* <Button

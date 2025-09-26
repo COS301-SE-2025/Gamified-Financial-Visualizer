@@ -33,7 +33,7 @@ const menuItems = [
         icon: <FaWallet className="text-[#B4CB98]" />
       },
       {
-        label: 'Budgets',
+        label: 'Monthly Budgets',
         sub: 'Create and track',
         to: '/transactions/budget',
         icon: <FaPiggyBank className="text-[#B4CB98]" />

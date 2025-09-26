@@ -254,7 +254,7 @@ const LearningPage = () => {
             {/* Filter Button */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-gray-800 border border-[#76B947] dark:border-[#AAD977] rounded-lg shadow-sm hover:bg-lime-100 dark:hover:bg-gray-700 transition-colors flex-shrink-0"
+              className="flex items-center justify-center gap-2 px-2 sm:px-4 py-2 sm:py-3 bg-white dark:bg-gray-800 border border-[#76B947] dark:border-[#AAD977] rounded-lg shadow-sm hover:bg-lime-100 dark:hover:bg-gray-700 transition-colors flex-shrink-0"
             >
               <FaFilter className="text-[#76B947] dark:text-[#AAD977] text-sm sm:text-base" />
               <span className="text-[#76B947] dark:text-[#AAD977] text-sm sm:text-base whitespace-nowrap">
@@ -286,7 +286,7 @@ const LearningPage = () => {
                         className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm ${
                           difficultyFilter === level
                             ? level === 'beginner'
-                              ? 'bg-[#B1E1FF] dark:bg-[#5FBFFF] text-white'
+                              ? 'bg-[#95cdf0] dark:bg-[#5FBFFF] text-white'
                               : level === 'intermediate'
                               ? 'bg-[#FFD18C] dark:bg-[#FFC541] text-white'
                               : level === 'advanced'
