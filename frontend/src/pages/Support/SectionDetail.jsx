@@ -469,9 +469,9 @@ const SectionDetail = () => {
 
     if (!info) {
         return (
-            <div className="max-w-6xl mx-auto p-6 text-center bg-white rounded-3xl shadow-md border-l-8 border-red-500">
-                <p className="text-red-500 font-bold text-xl">404 - Quest Not Found!</p>
-                <p className="text-gray-600">This area doesn't exist in your adventure map.</p>
+            <div className="max-w-4xl mx-auto p-4 sm:p-6 text-center bg-white dark:bg-gray-800 rounded-xl shadow-md border-l-4 sm:border-l-8 border-red-500">
+                <p className="text-red-500 font-bold text-lg sm:text-xl">404 - Quest Not Found!</p>
+                <p className="text-gray-600 dark:text-gray-300 text-sm sm:text-base">This area doesn't exist in your adventure map.</p>
             </div>
         );
     }
@@ -485,115 +485,157 @@ const SectionDetail = () => {
     };
 
     return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-        <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-md dark:shadow-gray-700/50 border-l-8 border-t-2 border-r-2 border-b-2 dark:border-gray-700 relative overflow-hidden"
-            style={{ borderLeftColor: info.color }}
-        >
-            <AnimatePresence>
-                {showXpAnimation && (
-                    <motion.div
-                        className="absolute inset-0 flex items-center justify-center z-20"
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1.5, opacity: 1 }}
-                        exit={{ scale: 0, opacity: 0 }}
-                        transition={{ duration: 0.8 }}
-                    >
-                        <div className="text-[#f59e0b] text-3xl font-bold">+{info.xpReward} XP</div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            <motion.button
-                whileHover={{ x: -3 }}
-                onClick={handleBackClick}
-                className="absolute top-6 left-6 text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition flex items-center gap-1 z-10"
+        <div className="w-full max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
+            <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                className="bg-white dark:bg-gray-800 p-4 sm:p-6 lg:p-8 rounded-xl shadow-md dark:shadow-gray-700/50 border-l-4 sm:border-l-8 border-t border-r border-b dark:border-gray-700 relative overflow-hidden"
+                style={{ borderLeftColor: info.color }}
             >
-                <FaArrowLeft /> Back to Map
-            </motion.button>
-
-            <div className="flex flex-col items-center text-center mt-4 space-y-4 relative z-10">
-                <div
-                    className="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl mb-3"
-                    style={{ backgroundColor: `${info.color}20`, color: info.color }}
-                >
-                    {info.icon}
-                </div>
-                <h2 className="text-3xl font-bold text-gray-800 dark:text-white">{info.title}</h2>
-                <p className="text-gray-600 dark:text-gray-300 max-w-lg whitespace-pre-line">{info.content}</p>
-            </div>
-
-            <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
-                {info.features.map((feature, index) => (
-                    <motion.div
-                        key={index}
-                        whileHover={{ y: -5 }}
-                        className="bg-white dark:bg-gray-700 p-5 rounded-xl border-l-4 shadow-sm dark:shadow-gray-600/20"
-                        style={{ borderLeftColor: info.color }}
-                    >
-                        <div className="flex items-center gap-3 mb-3">
-                            <div
-                                className="w-10 h-10 rounded-lg flex items-center justify-center"
-                                style={{ backgroundColor: `${info.color}20`, color: info.color }}
-                            >
-                                {feature.icon}
-                            </div>
-                            <h3 className="font-bold text-gray-800 dark:text-white">{feature.title}</h3>
-                        </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">{feature.description}</p>
-                    </motion.div>
-                ))}
-            </div>
-
-            <div className="mt-10 bg-[#f8fafc] dark:bg-gray-700 p-6 rounded-xl">
-                <h3 className="font-bold text-lg text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-                    <FaStar className="text-[#f59e0b]" /> XP Earning Opportunities
-                </h3>
-                <div className="space-y-3">
-                    {info.xpOpportunities.map((opp, index) => (
-                        <div
-                            key={index}
-                            className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-gray-600"
+                <AnimatePresence>
+                    {showXpAnimation && (
+                        <motion.div
+                            className="absolute inset-0 flex items-center justify-center z-20"
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1.5, opacity: 1 }}
+                            exit={{ scale: 0, opacity: 0 }}
+                            transition={{ duration: 0.8 }}
                         >
-                            <div className="flex items-center gap-3">
+                            <div className="text-[#f59e0b] text-xl sm:text-3xl font-bold">+{info.xpReward} XP</div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Back Button */}
+                <motion.button
+                    whileHover={{ x: -3 }}
+                    onClick={handleBackClick}
+                    className="absolute top-4 sm:top-6 left-4 sm:left-6 text-xs sm:text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition flex items-center gap-1 z-10"
+                >
+                    <FaArrowLeft size={14} className="sm:w-auto" /> 
+                    <span className="hidden sm:inline">Back to Map</span>
+                    <span className="sm:hidden">Back</span>
+                </motion.button>
+
+                {/* Header Section - Wider and better spaced */}
+                <div className="flex flex-col items-center text-center mt-8 sm:mt-6 space-y-4 sm:space-y-6 relative z-10 px-2 sm:px-0">
+                    <div
+                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex items-center justify-center text-3xl sm:text-4xl mb-2"
+                        style={{ backgroundColor: `${info.color}20`, color: info.color }}
+                    >
+                        {info.icon}
+                    </div>
+                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 dark:text-white leading-tight">
+                        {info.title}
+                    </h2>
+                    <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 max-w-3xl leading-relaxed whitespace-pre-line">
+                        {info.content}
+                    </p>
+                </div>
+
+                {/* Features Grid - Wider and better spaced */}
+                <div className="mt-8 sm:mt-10 lg:mt-12 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
+                    {info.features.map((feature, index) => (
+                        <motion.div
+                            key={index}
+                            whileHover={{ y: -5, scale: 1.02 }}
+                            className="bg-white dark:bg-gray-700 p-5 sm:p-6 rounded-xl border-l-4 shadow-sm dark:shadow-gray-600/20 hover:shadow-md transition-all duration-200"
+                            style={{ borderLeftColor: info.color }}
+                        >
+                            <div className="flex items-start gap-4 mb-4">
                                 <div
-                                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
+                                    className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center text-lg sm:text-xl flex-shrink-0"
                                     style={{ backgroundColor: `${info.color}20`, color: info.color }}
                                 >
-                                    {index + 1}
+                                    {feature.icon}
                                 </div>
-                                <div>
-                                    <p className="text-sm font-medium text-gray-800 dark:text-white">{opp.action}</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">{opp.frequency}</p>
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="font-bold text-gray-800 dark:text-white text-lg sm:text-xl mb-2">
+                                        {feature.title}
+                                    </h3>
+                                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed">
+                                        {feature.description}
+                                    </p>
                                 </div>
                             </div>
-                            <span className="text-sm font-bold" style={{ color: info.color }}>{opp.xp}</span>
-                        </div>
+                        </motion.div>
                     ))}
                 </div>
-            </div>
 
-            <div className="mt-8 p-5 rounded-xl border-2 border-dashed dark:border-gray-600" style={{ borderColor: info.color }}>
-                <div className="flex items-start gap-3">
-                    <div
-                        className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white"
-                        style={{ backgroundColor: info.color }}
-                    >
-                        <FaLightbulb />
-                    </div>
-                    <div>
-                        <h4 className="font-bold text-gray-800 dark:text-white mb-1">Pro Tip</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">{info.proTip}</p>
+                {/* XP Opportunities Section - Wider */}
+                <div className="mt-8 sm:mt-10 lg:mt-12 bg-[#f8fafc] dark:bg-gray-700 p-5 sm:p-6 lg:p-8 rounded-xl">
+                    <h3 className="font-bold text-xl sm:text-2xl text-gray-800 dark:text-white mb-6 flex items-center gap-3">
+                        <FaStar className="text-[#f59e0b]" size={24} /> 
+                        XP Earning Opportunities
+                    </h3>
+                    <div className="space-y-4">
+                        {info.xpOpportunities.map((opp, index) => (
+                            <div
+                                key={index}
+                                className="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-600 last:border-b-0"
+                            >
+                                <div className="flex items-center gap-4 flex-1">
+                                    <div
+                                        className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+                                        style={{ backgroundColor: `${info.color}20`, color: info.color }}
+                                    >
+                                        {index + 1}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-base sm:text-lg font-medium text-gray-800 dark:text-white">
+                                            {opp.action}
+                                        </p>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                            {opp.frequency}
+                                        </p>
+                                    </div>
+                                </div>
+                                <span className="text-lg sm:text-xl font-bold whitespace-nowrap ml-4" style={{ color: info.color }}>
+                                    {opp.xp}
+                                </span>
+                            </div>
+                        ))}
                     </div>
                 </div>
-            </div>
 
-            
-        </motion.div>
-    </div>
-);
+                {/* Pro Tip Section - Wider */}
+                <div className="mt-6 sm:mt-8 p-5 sm:p-6 rounded-xl border-2 border-dashed dark:border-gray-600" style={{ borderColor: info.color }}>
+                    <div className="flex items-start gap-4">
+                        <div
+                            className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-white text-lg sm:text-xl"
+                            style={{ backgroundColor: info.color }}
+                        >
+                            <FaLightbulb size={20} />
+                        </div>
+                        <div className="flex-1">
+                            <h4 className="font-bold text-gray-800 dark:text-white mb-2 text-lg sm:text-xl">Pro Tip</h4>
+                            <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+                                {info.proTip}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Upcoming Features Section */}
+                {info.upcomingFeatures && (
+                    <div className="mt-6 sm:mt-8 p-5 sm:p-6 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800">
+                        <h4 className="font-bold text-gray-800 dark:text-white mb-4 text-lg sm:text-xl">Coming Soon 🚀</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {info.upcomingFeatures.map((feature, index) => (
+                                <div key={index} className="flex items-center gap-3">
+                                    <div className="w-2 h-2 bg-gray-400 rounded-full flex-shrink-0"></div>
+                                    <span className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
+                                        {feature}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </motion.div>
+        </div>
+    );
 };
+
 export default SectionDetail;

@@ -6,7 +6,7 @@ import { FaSearch, FaFilter, FaChevronDown } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 
-// Badge images
+// Badge images (unchanged)
 import badge1 from '../../assets/Images/badges/coin.png';
 import badge2 from '../../assets/Images/badges/banknote.png';
 import badge3 from '../../assets/Images/badges/target.png';
@@ -34,7 +34,7 @@ import badge24 from '../../assets/Images/badges/support.png';
 import badge25 from '../../assets/Images/badges/team.png';
 import badge26 from '../../assets/Images/badges/accepted.png';
 
-// Deterministic title → { color, badge } mapping (case-insensitive)
+// Deterministic title → { color, badge } mapping (case-insensitive) - unchanged
 const TITLE_META = {
   // Blue (Learning)
   'avid scholar': { color: 'blue', badge: badge10 },
@@ -109,7 +109,7 @@ const detectColorKey = (title) => {
   return 'red';
 };
 
-// Safe helpers
+// Safe helpers - unchanged
 const parseJsonSafe = (val) => {
   if (!val) return {};
   if (typeof val === 'object') return val;
@@ -155,27 +155,27 @@ const AchievementCard = ({ achievement }) => {
   return (
     <div
       onClick={() => navigate(`/achievements/${encodeURIComponent(achievement_title)}`)}
-      className={`cursor-pointer border-2 ${border} rounded-xl p-4 bg-white dark:bg-gray-800 flex flex-col items-center gap-3 hover:shadow-md transition-shadow ${bg}`}
+      className={`cursor-pointer border-2 ${border} rounded-xl p-3 bg-white dark:bg-gray-800 flex flex-col items-center gap-2 hover:shadow-md transition-shadow ${bg} min-h-[180px]`}
       title="Click to view details and sub-achievements"
       data-achievement-id={achievement_id}
     >
       <div className="relative">
-        <img src={image} alt={achievement_title} className="w-16 h-16 object-contain dark:text-gray-200" />
+        <img src={image} alt={achievement_title} className="w-12 h-12 object-contain dark:text-gray-200" />
         {percent === 100 && (
-          <div className="absolute -top-1 -right-1 bg-yellow-400 rounded-full w-5 h-5 flex items-center justify-center dark:text-gray-300">
+          <div className="absolute -top-1 -right-1 bg-yellow-400 rounded-full w-4 h-4 flex items-center justify-center dark:text-gray-300">
             <span className="text-xs font-bold">✓</span>
           </div>
         )}
       </div>
 
-      <div className="text-center">
-        <h3 className={`text-sm font-semibold ${text} dark:text-gray-200`}>{achievement_title}</h3>
-        <p className="text-xs text-gray-500 mt-1 line-clamp-2 dark:text-gray-300">
+      <div className="text-center flex-1">
+        <h3 className={`text-xs font-semibold ${text} dark:text-gray-200 line-clamp-2 leading-tight`}>{achievement_title}</h3>
+        <p className="text-xs text-gray-500 mt-1 line-clamp-2 dark:text-gray-300 leading-tight">
           {achievement_description || 'Complete tasks to earn this achievement'}
         </p>
       </div>
 
-      <div className="w-full mt-1">
+      <div className="w-full">
         <div className="flex justify-between text-xs font-medium mb-1 dark:text-gray-300">
           <span className={`${text}`}>{toNum(points_awarded, 0)} XP</span>
           {toNum(child_task_count, 0) > 0 && (
@@ -184,18 +184,19 @@ const AchievementCard = ({ achievement }) => {
             </span>
           )}
         </div>
-        <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-700">
-          <div className={`${fill} h-2 rounded-full`} style={{ width: `${percent}%` }} />
+        <div className="h-1.5 bg-gray-200 rounded-full dark:bg-gray-700">
+          <div className={`${fill} h-1.5 rounded-full`} style={{ width: `${percent}%` }} />
         </div>
       </div>
 
-      <div className="text-xs text-gray-500 mt-1 dark:text-gray-400">
+      <div className="text-xs text-gray-500 dark:text-gray-400">
         {percent === 100 ? 'Completed!' : 'Click for details'}
       </div>
     </div>
   );
 };
 
+// SortDropdown component remains unchanged
 const SortDropdown = ({ name, value, onChange, options, placeholder = 'Select...', offsetY = 12, placement = 'auto' }) => {
   const [open, setOpen] = React.useState(false);
   const [highlight, setHighlight] = React.useState(0);
@@ -422,53 +423,61 @@ const AchievementsPage = () => {
     return arr;
   }, [achievements, searchTerm, groupFilter, sortBy]);
 
-  
-
   return (
     <AchievementsLayout>
-      <div className="space-y-6 px-6 pt-10 pb-6 -mt-8">
-        {/* Banner */}
-        <div className="bg-gradient-to-r from-[#B1E1FF20] to-[#7FDD5320] rounded-xl p-6 mb-6 shadow-sm border border-gray-100">
+      <div className="space-y-4 sm:space-y-6 px-4 sm:px-6 pt-6 sm:pt-10 pb-4 sm:pb-6 -mt-4 sm:-mt-8">
+        {/* Banner - mobile responsive */}
+        <div className="bg-gradient-to-r from-[#B1E1FF20] to-[#7FDD5320] rounded-xl p-4 sm:p-6 mb-4 sm:mb-6 shadow-sm border border-gray-100">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 dark:text-gray-200">All Your Achievements</h1>
-            <p className="text-gray-600 dark:text-gray-300">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 dark:text-gray-200">All Your Achievements</h1>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
               Track your progress. Click any card to view details and sub-tasks.
             </p>
 
-            <div className="flex items-center text-sm text-gray-500 mt-3">
-              <span className="inline-block w-3 h-3 bg-[#88BC46] rounded-full mr-1"></span>
-              <span className="mr-3">Financial</span>
-              <span className="inline-block w-3 h-3 bg-[#5FBFFF] rounded-full mr-1"></span>
-              <span className="mr-3">Learning</span>
-              <span className="inline-block w-3 h-3 bg-[#ED5E52] rounded-full mr-1"></span>
-              <span>Community</span>
+            {/* Legend - stacked on mobile, inline on larger screens */}
+            <div className="flex flex-col sm:flex-row sm:items-center text-xs sm:text-sm text-gray-500 mt-3 space-y-1 sm:space-y-0">
+              <div className="flex items-center mr-3">
+                <span className="inline-block w-2 h-2 sm:w-3 sm:h-3 bg-[#88BC46] rounded-full mr-1"></span>
+                <span>Financial</span>
+              </div>
+              <div className="flex items-center mr-3">
+                <span className="inline-block w-2 h-2 sm:w-3 sm:h-3 bg-[#5FBFFF] rounded-full mr-1"></span>
+                <span>Learning</span>
+              </div>
+              <div className="flex items-center">
+                <span className="inline-block w-2 h-2 sm:w-3 sm:h-3 bg-[#ED5E52] rounded-full mr-1"></span>
+                <span>Community</span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Search & Filters — styled like the Learning page */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-6">
-            {/* Search */}
-            <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white dark:bg-gray-800 shadow-sm dark:border-[#AAD977]">
-              <FaSearch className="text-[#76B947] dark:text-[#AAD977] mr-2" />
-              <input
-                type="text"
-                placeholder="Search achievements..."
-                className="w-full outline-none bg-transparent text-sm text-[#76B947] dark:text-[#AAD977] placeholder-[#76B947]/70 dark:placeholder-[#AAD977]/70"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
+        {/* Search & Filters - filter button next to search input */}
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center justify-between mb-4 sm:mb-6">
+            {/* Search and Filter buttons in one row on mobile */}
+            <div className="flex gap-3 w-full">
+              {/* Search - takes most of the space */}
+              <div className="flex items-center flex-1 px-3 py-2 border border-[#76B947] rounded-full bg-white dark:bg-gray-800 shadow-sm dark:border-[#AAD977]">
+                <FaSearch className="text-[#76B947] dark:text-[#AAD977] mr-2 text-sm" />
+                <input
+                  type="text"
+                  placeholder="Search achievements..."
+                  className="w-full outline-none bg-transparent text-xs sm:text-sm text-[#76B947] dark:text-[#AAD977] placeholder-[#76B947]/70 dark:placeholder-[#AAD977]/70"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
 
-            {/* Filters toggle */}
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-gray-800 border border-[#76B947] dark:border-[#AAD977] rounded-lg shadow-sm hover:bg-lime-100 dark:hover:bg-gray-700 transition-colors"
-            >
-              <FaFilter className="text-[#76B947] dark:text-[#AAD977]" />
-              <span className="text-[#76B947] dark:text-[#AAD977]">Filters</span>
-            </button>
+              {/* Filters toggle - smaller button next to search */}
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border border-[#76B947] dark:border-[#AAD977] rounded-lg shadow-sm hover:bg-lime-100 dark:hover:bg-gray-700 transition-colors whitespace-nowrap"
+              >
+                <FaFilter className="text-[#76B947] dark:text-[#AAD977] text-sm" />
+                <span className="text-[#76B947] dark:text-[#AAD977] text-xs sm:text-sm hidden xs:inline">Filters</span>
+              </button>
+            </div>
           </div>
 
           {showFilters && (
@@ -477,15 +486,15 @@ const AchievementsPage = () => {
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.2 }}
-              className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 mb-6"
+              className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 mb-4 sm:mb-6"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Group pills */}
+              <div className="grid grid-cols-1 gap-4 sm:gap-6">
+                {/* Group pills - centered on mobile */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Group
                   </label>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
                     {[
                       { key: 'all', label: 'All' },
                       { key: 'blue', label: 'Learning' },
@@ -495,7 +504,7 @@ const AchievementsPage = () => {
                       <button
                         key={key}
                         onClick={() => setGroupFilter(key)}
-                        className={`px-3 py-1 rounded-full text-sm ${groupFilter === key
+                        className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm ${groupFilter === key
                             ? key === 'blue'
                               ? 'bg-[#B1E1FF] dark:bg-[#5FBFFF] text-white'
                               : key === 'green'
@@ -512,9 +521,9 @@ const AchievementsPage = () => {
                   </div>
                 </div>
 
-                {/* Sort */}
+                {/* Sort - full width on mobile */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Sort by
                   </label>
                   <SortDropdown
@@ -536,15 +545,15 @@ const AchievementsPage = () => {
           )}
         </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        {/* Grid - more columns on mobile with smaller cards */}
+        <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
           {viewList?.length ? (
             viewList.map((ach) => (
               <AchievementCard key={ach?.achievement_id} achievement={ach} />
             ))
           ) : (
-            <div className="col-span-full text-center py-10">
-              <p className="text-gray-500">No achievements match your filters.</p>
+            <div className="col-span-full text-center py-8 sm:py-10">
+              <p className="text-sm sm:text-base text-gray-500">No achievements match your filters.</p>
             </div>
           )}
         </div>

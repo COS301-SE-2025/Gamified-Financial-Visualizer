@@ -18,7 +18,7 @@ const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Selec
   const menuRef = useRef(null);
   const [menuStyle, setMenuStyle] = useState({});
 
-  // Only select if there's an actual match
+  // Only select if there’s an actual match
   const selectedIndex = options.findIndex(o => String(o.value) === String(value));
   const selected = selectedIndex >= 0 ? options[selectedIndex] : null;
 
@@ -53,14 +53,10 @@ const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Selec
         Math.min(maxHCap, (placeBelow ? spaceBelow : spaceAbove) - offset)
       );
 
-      const width = Math.min(rect.width, window.innerWidth - viewportPadding * 2); // Ensure it fits on mobile
+      const width = rect.width; // keep same width as the field
 
       let left = rect.left;
-      // Ensure dropdown doesn't go off-screen on mobile
-      if (left + width > window.innerWidth - viewportPadding) {
-        left = window.innerWidth - width - viewportPadding;
-      }
-      left = Math.max(viewportPadding, left);
+      left = Math.max(viewportPadding, Math.min(left, window.innerWidth - viewportPadding - width));
 
       let top;
       if (placeBelow) {
@@ -128,14 +124,13 @@ const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Selec
         aria-expanded={open}
         onClick={() => setOpen(o => !o)}
         onKeyDown={onKey}
-        className="w-full rounded-xl px-4 py-3 md:py-2 border dark:border-gray-600 shadow dark:shadow-none
-                   bg-white dark:bg-gray-700 text-left text-gray-900 dark:text-white flex items-center justify-between
-                   text-base md:text-sm" // Larger touch targets on mobile
+        className="w-full rounded-xl px-4 py-2 border dark:border-gray-600 shadow dark:shadow-none
+                   bg-white dark:bg-gray-700 text-left text-gray-900 dark:text-white flex items-center justify-between"
       >
-        <span className={`${selected ? '' : 'text-gray-400 dark:text-gray-400'} truncate`}>
+        <span className={`${selected ? '' : 'text-gray-400 dark:text-gray-400'}`}>
           {selected ? selected.label : placeholder}
         </span>
-        <FaChevronDown className="ml-3 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+        <FaChevronDown className="ml-3 text-gray-400 dark:text-gray-500" />
       </button>
 
       {open && createPortal(
@@ -147,13 +142,12 @@ const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Selec
           onKeyDown={onKey}
           onWheel={(e) => e.stopPropagation()}
           className="rounded-xl border border-gray-200 dark:border-gray-600
-                     bg-white dark:bg-gray-700 shadow-lg overflow-y-auto
-                     text-base md:text-sm" // Larger text on mobile
+                     bg-white dark:bg-gray-700 shadow-lg overflow-y-auto"
         >
           <style>{`.dropdown-overscroll { overscroll-behavior: contain; }`}</style>
           <div className="dropdown-overscroll">
             {options.length === 0 && (
-              <li className="px-3 h-10 md:h-8 flex items-center text-gray-500 dark:text-gray-300">No options</li>
+              <li className="px-3 h-8 flex items-center text-sm text-gray-500 dark:text-gray-300">No options</li>
             )}
             {options.map((opt, idx) => (
               <li
@@ -163,7 +157,7 @@ const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Selec
                 aria-selected={String(opt.value) === String(value)}
                 onMouseEnter={() => setHighlight(idx)}
                 onClick={() => commit(idx)}
-                className={`px-3 h-10 md:h-8 flex items-center cursor-pointer
+                className={`px-3 h-8 flex items-center text-sm cursor-pointer
                             ${idx === highlight ? 'bg-gray-100 dark:bg-gray-600' : ''}
                             ${String(opt.value) === String(value) ? 'font-medium text-[#1b5e20]' : 'text-gray-800 dark:text-gray-100'}`}
               >
@@ -189,6 +183,7 @@ const bannerOptions = [
   { apiId: 5, label: 'Ally', src: goal5 },
   { apiId: 6, label: 'Students', src: goal6 },
 ];
+
 
 const GoalCreatePage = () => {
   const [showConfirm, setShowConfirm] = useState(false);
@@ -293,11 +288,11 @@ const GoalCreatePage = () => {
 
   return (
     <GoalsViewLayout>
-      <form onSubmit={handleSubmit} className="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-4 md:p-6 rounded-2xl shadow dark:shadow-lg space-y-6 border border-gray-100 dark:border-gray-700">
+      <form onSubmit={handleSubmit} className="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-2xl shadow dark:shadow-lg space-y-6 border border-gray-100 dark:border-gray-700">
         {/* Basic Information */}
         <div className="space-y-2">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Create a Goal</h3>
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Goal Name</label>
               <input
@@ -306,7 +301,7 @@ const GoalCreatePage = () => {
                 placeholder="e.g. Vacation Fund"
                 value={form.name}
                 onChange={handleChange}
-                className="rounded-xl px-4 py-3 md:py-2 border dark:border-gray-600 shadow dark:shadow-none focus:outline-none w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-base md:text-sm"
+                className="rounded-xl px-4 py-2 border dark:border-gray-600 shadow dark:shadow-none focus:outline-none w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
             <div>
@@ -318,7 +313,7 @@ const GoalCreatePage = () => {
                 value={form.amount}
                 onChange={handleChange}
                 min="0"
-                className="rounded-xl px-4 py-3 md:py-2 border dark:border-gray-600 shadow dark:shadow-none w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-base md:text-sm"
+                className="rounded-xl px-4 py-2 border dark:border-gray-600 shadow dark:shadow-none w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
           </div>
@@ -336,7 +331,7 @@ const GoalCreatePage = () => {
                 value={form.startDate}
                 onChange={handleChange}
                 min={today}
-                className="rounded-xl px-4 py-3 md:py-2 border dark:border-gray-600 shadow dark:shadow-none w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-base md:text-sm"
+                className="rounded-xl px-4 py-2 border dark:border-gray-600 shadow dark:shadow-none w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
             <div>
@@ -347,7 +342,7 @@ const GoalCreatePage = () => {
                 value={form.endDate}
                 onChange={handleChange}
                 min={form.startDate || today}
-                className="rounded-xl px-4 py-3 md:py-2 border dark:border-gray-600 shadow dark:shadow-none w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-base md:text-sm"
+                className="rounded-xl px-4 py-2 border dark:border-gray-600 shadow dark:shadow-none w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
 
@@ -374,7 +369,7 @@ const GoalCreatePage = () => {
         {/* Category */}
         <div className="space-y-2">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Category</h3>
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Goal Category</label>
               <CategoryDropdown
@@ -399,28 +394,24 @@ const GoalCreatePage = () => {
             Choose an image to represent your goal
           </p>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-4">
             {bannerOptions.map((opt) => {
-              const selected = form.image === opt.apiId;
+              const selected = form.imageId === opt.apiId;
               return (
                 <button
                   key={opt.apiId}
                   type="button"
-                  onClick={() => setForm(f => ({ ...f, image: opt.apiId }))}
+                  onClick={() => setForm(f => ({ ...f, imageId: opt.apiId }))}
                   className={`relative rounded-xl overflow-hidden border-2 transition focus:outline-none
-                    ${selected ? 'border-green-400 dark:border-green-500' : 'border-transparent hover:border-gray-300 dark:hover:border-gray-600'}`}
+            ${selected ? 'border-green-400 dark:border-green-500' : 'border-transparent hover:border-gray-300 dark:hover:border-gray-600'}`}
                   aria-pressed={selected}
                 >
-                  <img 
-                    src={opt.src} 
-                    alt={opt.label} 
-                    className="w-full h-20 md:h-24 object-cover" 
-                  />
+                  <img src={opt.src} alt={opt.label} className="w-full h-24 object-cover" />
                   <div className="p-2 text-center text-xs font-medium text-gray-700 dark:text-gray-300">
                     {opt.label}
                   </div>
                   {selected && (
-                    <span className="absolute top-1 right-1 md:top-2 md:right-2 inline-flex items-center justify-center w-5 h-5 md:w-6 md:h-6 rounded-full bg-green-500 text-white text-xs">
+                    <span className="absolute top-2 right-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-500 text-white text-xs">
                       ✓
                     </span>
                   )}
@@ -430,13 +421,14 @@ const GoalCreatePage = () => {
           </div>
         </div>
 
+
         {/* Submit */}
-        <div className="pt-4 text-center md:text-right">
+        <div className="pt-4 text-right">
           <button
             type="button"
             onClick={() => (datesValid ? setShowConfirm(true) : null)}
             disabled={!datesValid}
-            className={`px-8 py-3 rounded-full font-medium transition-all dark:bg-gray-700 dark:text-gray-300 w-full md:w-auto
+            className={`px-8 py-3 rounded-full font-medium transition-all dark:bg-gray-700 dark:text-gray-300
               ${datesValid
                 ? 'bg-gradient-to-r from-[#B4CB98] to-[#AAD977] text-white hover:from-[#AAD977] hover:to-[#B4CB98]'
                 : 'bg-gray-300 text-gray-600 cursor-not-allowed'}`}
@@ -445,27 +437,27 @@ const GoalCreatePage = () => {
           </button>
 
           {form.startDate && form.endDate && form.endDate < form.startDate && (
-            <p className="mt-2 text-sm text-red-500">End date can't be before start date.</p>
+            <p className="mt-2 text-sm text-red-500">End date can’t be before start date.</p>
           )}
         </div>
       </form>
 
       {/* Confirmation Modal */}
       {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg dark:shadow-xl w-full max-w-md text-center space-y-4 border border-gray-200 dark:border-gray-700">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg dark:shadow-xl w-[90%] max-w-md text-center space-y-4 border border-gray-200 dark:border-gray-700">
             <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Confirm Goal Creation</h2>
             <p className="text-sm text-gray-600 dark:text-gray-400">Are you sure you want to create this goal?</p>
-            <div className="flex flex-col sm:flex-row justify-center gap-3 pt-2">
+            <div className="flex justify-center gap-4 pt-2">
               <button
                 onClick={handleSubmit}
-                className="px-5 py-2 bg-[#AAD977] dark:bg-[#7FDD53] text-white rounded-full hover:bg-[#B4CB98] dark:hover:bg-[#86EFAC] flex-1"
+                className="px-5 py-2 bg-[#AAD977] dark:bg-[#7FDD53] text-white rounded-full hover:bg-[#B4CB98] dark:hover:bg-[#86EFAC]"
               >
                 Yes, Create
               </button>
               <button
                 onClick={() => setShowConfirm(false)}
-                className="px-5 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 flex-1"
+                className="px-5 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600"
               >
                 Cancel
               </button>
