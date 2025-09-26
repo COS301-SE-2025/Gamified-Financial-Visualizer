@@ -6,6 +6,7 @@ import {
   FaFileImport, FaChartLine, FaPiggyBank, FaPlus, FaTrophy,
   FaBook, FaCheckCircle, FaBookOpen, FaUserFriends, FaSearch,
   FaVideo, FaListAlt, FaChevronDown, FaBell, FaBars, FaTimes
+  FaVideo, FaListAlt, FaChevronDown, FaBell, FaBars, FaTimes
 } from 'react-icons/fa';
 import logo from '../assets/Images/Logo1.png';
 import avatar from '../assets/Images/avatars/LightPost.png';
@@ -33,7 +34,7 @@ const menuItems = [
         icon: <FaWallet className="text-[#B4CB98]" />
       },
       {
-        label: 'Budgets',
+        label: 'Monthly Budgets',
         sub: 'Create and track',
         to: '/transactions/budget',
         icon: <FaPiggyBank className="text-[#B4CB98]" />
@@ -178,6 +179,7 @@ const Navbar = () => {
   const [activeMenu, setActiveMenu] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [performance, setPerformance] = useState(null);
   const [notifications, setNotifications] = useState(0);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -568,25 +570,29 @@ const Navbar = () => {
           <div className="relative">
             <button
               onClick={toggleNotifications}
-              className="p-1 rounded-full hover:bg-gray-100 transition-colors dark:hover:bg-gray-700"
+              className="p-1 sm:p-2 rounded-full hover:bg-gray-100 transition-colors dark:hover:bg-gray-700"
+              aria-label="Notifications"
             >
-              <FaBell className="text-xl text-gray-700 hover:text-[#83AB55] dark:text-gray-200" />
+              <FaBell className="text-lg sm:text-xl text-gray-700 hover:text-[#83AB55] dark:text-gray-200" />
               {notifications > 0 && (
                 <span className="absolute -top-1 -right-1 bg-[#72C1F5] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {notifications}
+                  {notifications > 99 ? '99+' : notifications}
                 </span>
               )}
             </button>
           </div>
 
-          {/* User Profile */}
-          <div className="relative z-[9999]">
+          {/* User Profile - Desktop */}
+          <div className="hidden sm:relative sm:block z-[9999]">
             <button
               onClick={toggleProfile}
               className="flex items-center gap-2 cursor-pointer"
+              aria-label="User menu"
             >
-              <div className="text-right">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-200">{user.username}</p>
+              <div className="text-right hidden md:block">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate max-w-[120px]">
+                  {user.username}
+                </p>
                 <p className="text-xs text-gray-400">{user.tier}</p>
               </div>
               <img
@@ -594,9 +600,9 @@ const Navbar = () => {
                   ? `/assets/Images/${performance.avatar_image_path}`
                   : avatar}
                 alt="avatar"
-                className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
               />
-              <FaChevronDown className={`text-xs text-gray-500 transition-transform ${profileOpen ? 'rotate-180' : ''
+              <FaChevronDown className={`text-xs text-gray-500 transition-transform hidden sm:block ${profileOpen ? 'rotate-180' : ''
                 }`} />
             </button>
 
@@ -642,6 +648,23 @@ const Navbar = () => {
               </div>
             )}
           </div>
+
+          {/* Mobile Profile Icon */}
+          <div className="sm:hidden relative">
+            <button
+              onClick={toggleProfile}
+              className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+              aria-label="User menu"
+            >
+              <img
+                src={performance?.avatar_image_path
+                  ? `/assets/Images/${performance.avatar_image_path}`
+                  : avatar}
+                alt="avatar"
+                className="w-8 h-8 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
+              />
+            </button>
+          </div>
         </div>
 
         {/* Notifications Button - Mobile Only */}
@@ -662,7 +685,7 @@ const Navbar = () => {
         {/* Click outside to close dropdowns */}
         {(activeMenu !== null || profileOpen || showNotifications) && (
           <div
-            className="fixed inset-0 z-40 bg-black bg-opacity-10 z-10000"
+            className="fixed inset-0 z-30 bg-black bg-opacity-10"
             onClick={closeAll}
           />
         )}
@@ -676,16 +699,18 @@ const Navbar = () => {
         id="hud-root"
         className="fixed left-0 right-0 z-40"
         style={{ top: 'var(--app-header-h, 88px)' }}
+        style={{ top: 'var(--app-header-h, 88px)' }}
       />
 
       {/* Notifications Panel */}
       {showNotifications && (
-        <div className="fixed right-4 top-16 z-[9999]">
+        <div className="fixed right-2 sm:right-4 top-16 z-[9999] w-full max-w-sm sm:max-w-md">
           <NotificationsPanel onClose={() => setShowNotifications(false)} />
         </div>
       )}
     </>
   );
 };
+
 
 export default Navbar;

@@ -1,26 +1,18 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import AccountsLayout from './AccountsLayout';
 import {
-  FaChartBar,
-  FaUsers,
-  FaTrophy,
-  FaPiggyBank,
-  FaRunning,
-  FaArrowUp,
-  FaArrowDown,
   FaCheckCircle,
   FaTimesCircle,
   FaRobot,
   FaPaperPlane,
   FaLightbulb,
-  FaExchangeAlt, FaChartLine, FaTags
 } from 'react-icons/fa';
 
 import {
   ComposedChart, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, ReferenceLine,
   PieChart, Pie, Cell, LabelList,
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
-  LineChart, Line, CartesianGrid, Area
+  Line, CartesianGrid,
 } from 'recharts';
 
 import GaugeChart from 'react-gauge-chart';
@@ -1113,6 +1105,9 @@ const InsightsPage = () => {
                             const avgPct = row.avgSelectedTotal > 0 ? (avgVal / row.avgSelectedTotal) * 100 : 0;
                             const userDisplay = isPct ? `${Math.round(userVal * 100)}%` : ZAR(userVal);
                             const avgDisplay = isPct ? `${Math.round(avgPct)}%` : ZAR(avgVal);
+                            const avgPct = row.avgSelectedTotal > 0 ? (avgVal / row.avgSelectedTotal) * 100 : 0;
+                            const userDisplay = isPct ? `${Math.round(userVal * 100)}%` : ZAR(userVal);
+                            const avgDisplay = isPct ? `${Math.round(avgPct)}%` : ZAR(avgVal);
 
                             return (
                               <div key={cat} className="flex items-center gap-2 text-xs">
@@ -1384,7 +1379,7 @@ const InsightsPage = () => {
                     className={`px-2 py-1 rounded-lg text-xs transition-colors ${
                       active ? "bg-indigo-100 text-indigo-700 border border-indigo-200"
                         : "bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-700 text-gray-600 border border-gray-100"
-                    }`}
+                      }`}
                   >
                     {cat.substring(0, 10)}
                     {cat.length > 10 ? '...' : ''}
@@ -1429,7 +1424,7 @@ const InsightsPage = () => {
                                 <span className="ml-auto font-medium dark:text-gray-200 text-gray-800 text-xs">{ZAR(p.value)}</span>
                               </div>
                             ))}
-                          
+
                           {row?.anomalies > 0 && (
                             <div className="mt-1 pt-1 border-t border-gray-100 text-xs text-red-600">
                               <div className="flex items-center gap-1">
@@ -1474,7 +1469,7 @@ const InsightsPage = () => {
                     connectNulls
                     isAnimationActive={false}
                   />
-                  
+
                   <Line
                     yAxisId="left"
                     type="monotone"
@@ -1487,7 +1482,7 @@ const InsightsPage = () => {
                     connectNulls
                     isAnimationActive={false}
                   />
-                  
+
                   {selectedCats.map((cat, i) => (
                     <Line
                       key={cat}

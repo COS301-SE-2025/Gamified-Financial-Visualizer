@@ -37,7 +37,8 @@ const GoalsDetailPage = () => {
     }
   }, [goalId]);
 
-  if (!goal) return <div className="flex justify-center mt-6 dark:text-gray-300">Goal not found</div>;
+  
+  if (!goal) return <div className="flex justify-center mt-6 dark:text-gray-300"></div>;
 
   // Calculate progress percentage
   let percentage = Math.round((goal.current_amount / goal.target_amount) * 100);

@@ -159,6 +159,9 @@ const GoalsPage = () => {
 
             {/* Latest Accomplished Goal */}
             <div className="bg-white rounded-2xl shadow-md p-4 min-h-[280px] dark:bg-gray-800">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3 dark:text-gray-200">
+                Recently Completed
+              </h3>
               {latest ? (
                 <GoalCard
                   goalId={latest.goal_id}
@@ -190,7 +193,6 @@ const GoalsPage = () => {
               <h3 className="text-sm font-semibold text-gray-700 mb-3 dark:text-gray-200">
                 Your Goals
               </h3>
-
               <div className="grid grid-cols-1 gap-6">
                 {visibleGoals.map(renderGoalCard)}
                 {visibleGoals.length === 0 && (

@@ -498,14 +498,6 @@ const contentType = res.headers.get('content-type');
 
                     <div className="flex justify-between">
                       <button
-                        onClick={handleDiscard}
-                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center"
-                        disabled={isImporting}
-                      >
-                        <FaTimes className="mr-2" />
-                        Cancel
-                      </button>
-                      <button
                         onClick={handleImport}
                         className={`px-6 py-2 rounded-lg text-white transition flex items-center ${
                         (files.length > 0 || url) && selectedAccount && selectedBank 

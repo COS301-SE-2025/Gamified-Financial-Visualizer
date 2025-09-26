@@ -28,7 +28,7 @@ const Settings = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [passwordChanged, setPasswordChanged] = useState(false);
+  const [setPasswordChanged] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -294,9 +294,6 @@ const Settings = () => {
         <h3 className="font-semibold text-[#88BC46] dark:text-[#AAD977] text-lg mb-3 sm:mb-4">Preferences</h3>
         {[
           { label: 'Dark Mode', state: theme, action: toggleTheme },
-          { label: 'Enable In-App Notifications', state: notifications, action: () => setNotifications(!notifications) },
-          { label: 'Enable Out-of-App Notifications', state: outAppNotifications, action: () => setOutAppNotifications(!outAppNotifications) },
-          { label: 'Two Factor Verification', state: verified, action: () => setVerified(!verified) }
         ].map(({ label, state, action }, i) => (
           <div key={i} className="flex items-center justify-between mb-3 sm:mb-4">
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300 pr-2">{label}</p>

@@ -1,8 +1,8 @@
-// src/pages/game/MockGameSimulation.jsx
 import React, { useEffect, useMemo, useState } from 'react';
 import GameLobby from '../game/lobby/GameLobby';
 import GameBoardViewer from '../game/GameBoardViewer';
 import GameHUD from '../game/hud/GameHUD';
+import GameLoader from './GameLoader';
 import HUDPortal from '../game/hud/HUDPortal';
 import BoardTileModal from '../game/BoardTileModal';
 import { BOARD_TILES, BOARD_ORDER } from '../../components/game/data/boardTiles';
@@ -14,7 +14,7 @@ function applyTileEffect(player, tile, allPlayers = []) {
   if (!tile || !tile.action) return { text: `Landed on ${tile?.label || 'unknown tile'}`, delta: 0 };
 
   const a = tile.action;
-  
+
   // Handle business ownership and rent
   if (tile.type === 'business' && tile.owner && tile.owner !== player.id) {
     const owner = allPlayers.find(p => p.id === tile.owner);
@@ -23,14 +23,14 @@ function applyTileEffect(player, tile, allPlayers = []) {
       if (player.cash >= rent) {
         player.cash -= rent;
         owner.cash += rent;
-        return { 
-          text: `Paid ${currency}${rent.toLocaleString()} rent to ${owner.name} for ${tile.label}`, 
-          delta: -rent 
+        return {
+          text: `Paid ${currency}${rent.toLocaleString()} rent to ${owner.name} for ${tile.label}`,
+          delta: -rent
         };
       } else {
-        return { 
-          text: `Cannot afford rent for ${tile.label}`, 
-          delta: 0 
+        return {
+          text: `Cannot afford rent for ${tile.label}`,
+          delta: 0
         };
       }
     }
@@ -170,23 +170,30 @@ export default function MockGameSimulation() {
   const [settings, setSettings] = useState({ players: 4, laps: 5 });
   const [active, setActive] = useState(0);
   const [isMoving, setIsMoving] = useState(false);
+  const [loadingPhase, setLoadingPhase] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+
+   // Debug logging
+  useEffect(() => {
+    console.log('Current phase:', phase, 'Loading phase:', loadingPhase, 'Progress:', loadingProgress);
+  }, [phase, loadingPhase, loadingProgress]);
 
   // Initialize players and reset business ownership
   const [players, setPlayers] = useState(() => {
     const initialPlayers = [
-      { id: 'p1', name: 'lily_rose',  characterKey: 'Green_girl',  pos: 0, laps: 0, cash: 10000, assetsValue: 1500, loanBalance: 500,  salary: 2000, businesses: [], flags: {}, inventory: {} },
-      { id: 'p2', name: 'kevin_park', characterKey: 'Cowboy',      pos: 0, laps: 0, cash: 10000, assetsValue: 2000, loanBalance: 1000, salary: 2200, businesses: [], flags: {}, inventory: {} },
-      { id: 'p3', name: 'nile_waters',characterKey: 'Mr_suit',     pos: 0, laps: 0, cash: 10000, assetsValue: 1200, loanBalance: 0,    salary: 1800, businesses: [], flags: {}, inventory: {} },
-      { id: 'p4', name: 'man_person', characterKey: 'Kimono_girl', pos: 0, laps: 0, cash: 10000, assetsValue: 1800, loanBalance: 800,  salary: 2100, businesses: [], flags: {}, inventory: {} },
+      { id: 'p1', name: 'lily_rose', characterKey: 'Green_girl', pos: 0, laps: 0, cash: 10000, assetsValue: 1500, loanBalance: 500, salary: 2000, businesses: [], flags: {}, inventory: {} },
+      { id: 'p2', name: 'kevin_park', characterKey: 'Cowboy', pos: 0, laps: 0, cash: 10000, assetsValue: 2000, loanBalance: 1000, salary: 2200, businesses: [], flags: {}, inventory: {} },
+      { id: 'p3', name: 'nile_waters', characterKey: 'Mr_suit', pos: 0, laps: 0, cash: 10000, assetsValue: 1200, loanBalance: 0, salary: 1800, businesses: [], flags: {}, inventory: {} },
+      { id: 'p4', name: 'man_person', characterKey: 'Kimono_girl', pos: 0, laps: 0, cash: 10000, assetsValue: 1800, loanBalance: 800, salary: 2100, businesses: [], flags: {}, inventory: {} },
     ];
-    
+
     // Reset business ownership
     Object.values(BOARD_TILES).forEach(tile => {
       if (tile.type === 'business') {
         tile.owner = null;
       }
     });
-    
+
     return initialPlayers;
   });
 
@@ -214,12 +221,12 @@ export default function MockGameSimulation() {
 
     setTimeout(() => {
       setPlayers(prevPlayers => {
-        const updatedPlayers = prevPlayers.map(p => ({ 
-          ...p, 
+        const updatedPlayers = prevPlayers.map(p => ({
+          ...p,
           flags: { ...p.flags },
-          businesses: [...p.businesses] 
+          businesses: [...p.businesses]
         }));
-        
+
         const currentPlayer = updatedPlayers[active];
         if (!currentPlayer) return updatedPlayers;
 
@@ -320,36 +327,62 @@ export default function MockGameSimulation() {
     }
   }, [phase, everyoneDone]);
 
-  const startFromLobby = (gameSettings) => {
-    // Proper reset with business ownership clearing
-    const resetPlayers = players.map(p => ({
-      ...p,
-      pos: 0,
-      laps: 0,
-      cash: 10000,
-      businesses: [],
-      flags: {},
-      inventory: {}
-    }));
-
-    // Clear business ownership
-    Object.values(BOARD_TILES).forEach(tile => {
-      if (tile.type === 'business') {
-        tile.owner = null;
-      }
-    });
-
-    setPlayers(resetPlayers);
-    setSettings(gameSettings);
+  const restart = () => {
+    setPhase('lobby');
+    setAuto(false);
     setActive(0);
-    setLog(['Game started!']);
+    setLog([]);
+    setLoadingPhase(false);
+    setLoadingProgress(0);
+  };
+
+  const startFromLobby = (gameSettings) => {
+    
+    setLoadingPhase(true);
+    setLoadingProgress(0);
+    
+    // Simulate loading progress
+    const progressInterval = setInterval(() => {
+      setLoadingProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(progressInterval);
+          
+          // Reset game state after loading completes
+          const resetPlayers = players.map(p => ({
+            ...p,
+            pos: 0,
+            laps: 0,
+            cash: 10000,
+            businesses: [],
+            flags: {},
+            inventory: {}
+          }));
+
+          Object.values(BOARD_TILES).forEach(tile => {
+            if (tile.type === 'business') {
+              tile.owner = null;
+            }
+          });
+
+          setPlayers(resetPlayers);
+          setSettings(gameSettings);
+          setActive(0);
+          setLog(['Game started!']);
+          
+          // Don't set phase to 'playing' here - let GameLoader handle the countdown
+          return 100;
+        }
+        return prev + Math.random() * 15 + 5;
+      });
+    }, 300);
+  };
+
+  const handleLoaderComplete = () => {
+    setLoadingPhase(false);
     setPhase('playing');
   };
 
-  const restart = () => {
-    setPhase('lobby');
-  };
-
+  // render logic
   if (phase === 'lobby') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
@@ -364,6 +397,17 @@ export default function MockGameSimulation() {
           onRefreshGames={() => Promise.resolve([])}
         />
       </div>
+    );
+  }
+
+  if (loadingPhase) {
+    return (
+      <GameLoader
+        players={players}
+        gameSettings={settings}
+        loadingProgress={loadingProgress}
+        onComplete={handleLoaderComplete}
+      />
     );
   }
 
@@ -443,9 +487,8 @@ export default function MockGameSimulation() {
               <button
                 onClick={() => setAuto(!auto)}
                 disabled={everyoneDone}
-                className={`px-3 py-2 rounded-xl ${
-                  auto ? 'bg-gray-500' : 'bg-emerald-500'
-                } text-white font-semibold shadow hover:opacity-90 disabled:opacity-50`}
+                className={`px-3 py-2 rounded-xl ${auto ? 'bg-gray-500' : 'bg-emerald-500'
+                  } text-white font-semibold shadow hover:opacity-90 disabled:opacity-50`}
               >
                 {auto ? 'Pause' : 'Auto Play'}
               </button>
