@@ -1,9 +1,10 @@
-import { GameState, Player, Card, Block, Board, Asset } from '../types/GameTypes';
+import { GameState, Player, Card, Block, Board, Asset, Character } from '../types/GameTypes';
 import * as BoardData from '../data/BoardData';
 import { EventEmitter } from 'events';
 import pool from "../../../config/db";
 import { logger } from "../../../config/logger";
 import { Server, Socket } from "socket.io";
+import { randInt } from 'three/src/math/MathUtils';
 
 
 export class GameEngine extends EventEmitter {
@@ -42,6 +43,49 @@ export class GameEngine extends EventEmitter {
 
     return gameState;
   }
+
+
+addBot(gameId: string, spec: BotSpec) {
+  const game = this.games.get(gameId);
+  if (!game) return false;
+
+  game.players.set(spec.id as number, {
+    id: spec.id as number,                     // can also keep string 'bot_1' if your map is <string, Player>
+    username: spec.username,
+    socketId: '',                              // no socket for HTTP mode
+    position: 0,
+    cash: 5000,
+    assets: [],
+    loans: [],
+    cards: [],
+    lapsCompleted: 0,
+    salary: 2000,
+    isActive: true,
+    isBankrupt: false,
+    skipNextTurn: false,
+    characterKey: spec.characterKey,
+    statusEffects: [],
+    isBot: true,                               // add this optional flag on your Player type
+  } as any);
+
+  return true;
+}
+
+ensureBots(gameId: string, desiredTotal = 4) {
+  const game = this.games.get(gameId);
+  if (!game) return;
+  const humanIds = Array.from(game.players.values()).filter(p => !('isBot' in p && p.isBot)).map(p => p.id);
+  const takenChars = new Set(Array.from(game.players.values()).map(p => p.characterKey).filter(Boolean));
+  const need = Math.max(0, desiredTotal - game.players.size);
+
+  let botIdx = 1;
+  for (let i = 0; i < need; i++) {
+    const char = BOT_CHAR_POOL.find(c => !takenChars.has(c)) ?? BOT_CHAR_POOL[i % BOT_CHAR_POOL.length];
+    takenChars.add(String(char));
+    this.addBot(gameId, { id: Math.floor(Math.random() * 1e9), username: `Bot ${botIdx}`, characterKey: char });
+    botIdx++;
+  }
+}
 
   addPlayer(gameId: string, player: Player): boolean {
     const game = this.games.get(gameId);
@@ -1087,3 +1131,7 @@ function pruneExpiredEffects(state: GameState, player: Player) {
   const now = state.turnCounter;
   player.statusEffects = (player.statusEffects ?? []).filter(e => now <= e.expiresTurn);
 }
+
+type BotSpec = { id: string|number; username: string; characterKey: string };
+
+const BOT_CHAR_POOL = ['Green_girl','Mr_suit','Cowboy','Kimono_girl','Lilac_girl','Ninja.001'];

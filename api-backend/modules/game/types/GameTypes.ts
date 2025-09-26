@@ -1,7 +1,7 @@
 export interface Player {
   id: number;
   username: string;
-  socketId: string;
+  socketId?: string;
   position: number;
   cash: number;
   assets: Asset[];
@@ -13,7 +13,9 @@ export interface Player {
   isBankrupt: boolean;
   skipNextTurn?: boolean;
   character?: Character;
+  characterKey?: string; // key to identify character model
   statusEffects: StatusEffect[];
+  isBot?: boolean;
 }
 
 export interface StatusEffect {

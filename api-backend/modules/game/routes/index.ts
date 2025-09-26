@@ -332,10 +332,12 @@ export function registerGameRoutes(app: Application, lobbyManager: GameLobbyMana
             player.assets.reduce((sum, asset) => sum + (asset.purchasePrice * asset.sellbackMultiplier), 0) -
             player.loans.reduce((sum, loan) => sum + loan.amount, 0),
           character: player.character?.id,
+          isBot: player.isBot ?? false,
         })),
         board: gameState.board,
         startedAt: gameState.startedAt,
         finishedAt: gameState.finishedAt
+        
       };
 
       res.json({

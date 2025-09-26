@@ -333,9 +333,9 @@ const [socket, setSocket] = useState(null);
         return response.json();
     };
 
-  const fetchGameState = async () => {
+  const fetchGameState = async (gameIdd) => {
   try {
-    const res = await fetch(`http://localhost:5000/api/game/state/${gameId}`, {
+    const res = await fetch(`http://localhost:5000/api/game/state/${gameIdd}`, {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${user.token}` }
     });
@@ -355,7 +355,7 @@ const [socket, setSocket] = useState(null);
 useEffect( () => {
   const fetchData = async () => {
     if (gameId) {
-       fetchGameState();
+    fetchGameState(gameId);
     }
   };
 
@@ -529,12 +529,11 @@ useEffect( () => {
   }, [gamePhase, everyoneDone]);
 
   const startFromLobby = (settings, character) => {
-        setGamePhase('playing');
-console.log('Starting game with settings:')
-
-
+      setGamePhase('playing');
+localStorage.removeItem('gamePhase');
+localStorage.setItem('gamePhase', 'playing');
     // Proper reset with business ownership clearing
-    const resetPlayers = players.map(p => ({
+    let resetPlayers = players.map(p => ({
       ...p,
       pos: 0,
       laps: 0,
@@ -556,11 +555,14 @@ console.log('Starting game with settings:')
     setActivePlayer(0);
     setGameLog(['Game started!']);
     setShowTileSidebar(false);
+ //   localStorage.setItem('gamePhase', 'playing');
 
     // Emit socket event for multiplayer
    // socket.emit('startGame');
    // call start game api
-   console.log('Starting game with settings:', settings);
+   if(localStorage.getItem('gameId')){
+   fetchGameState(localStorage.getItem('gameId'));
+   }
   }
 
   const createRoom = () => {
@@ -608,10 +610,10 @@ console.log('Starting game with settings:')
     <>
       {/* Slight spacer so content starts just under the fixed navbar */}
       <div style={{ height: 'calc(var(--app-header-h, 75px) - 70px)' }} />
-
-      {gamePhase === 'lobby' ? (
-        // Lobby: scroll locally if tall
-        <div className="px-6 h-[calc(100vh-var(--app-header-h,75px)- 70px)] overflow-auto pb-[max(24px,env(safe-area-inset-bottom))]">
+      {
+        gamePhase === 'lobby' && !localStorage.getItem('gameId') ? (
+          // Lobby: scroll locally if tall
+            <div className="px-6 h-[calc(100vh-var(--app-header-h,75px)- 70px)] overflow-auto pb-[max(24px,env(safe-area-inset-bottom))]">
           <GameLobby
             defaultMode="multiplayer"
             defaultPlayers={4}
@@ -626,7 +628,7 @@ console.log('Starting game with settings:')
             availableGames={[]}
           />
         </div>
-      ) : gamePhase === 'playing' ? (
+      ) : localStorage.getItem('gameId') ? (
         // Playing: fill viewport minus navbar (and safe area)
         <div
           ref={gameContainerRef}

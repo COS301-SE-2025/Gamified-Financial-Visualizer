@@ -157,7 +157,7 @@ export default function GameLobby({
                 }),
             });
             if (res.success) {
-                //  onSaveCharacter?.(character.key);
+                onSaveCharacter?.(character.key);
             }
         } catch (err) {
             console.error(err);
@@ -417,8 +417,7 @@ export default function GameLobby({
                 localStorage.removeItem('gameId');
                localStorage.setItem('gameId', result.gameId); 
              //   socket.emit('lobby:start-game');  // backend will pick up userId from socket.data
-             await fetchGameState();
-
+                await fetchGameState();
                 setCountdown(true);
             }  
             

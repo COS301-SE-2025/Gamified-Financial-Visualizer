@@ -408,6 +408,7 @@ export class GameLobbyManager extends EventEmitter {
           isActive: true,
           isBankrupt: false,
           character: lobbyPlayer.character, // Include character
+          characterKey: lobbyPlayer.character?.id, // Set characterKey for model identification
           statusEffects: [] // Add default empty statusEffects
         };
 
@@ -415,8 +416,8 @@ export class GameLobbyManager extends EventEmitter {
       }
 
       // Start the actual game
-            gameState.gamePhase = 'playing'; // Set initial phase to playing
-
+      gameState.gamePhase = 'playing'; // Set initial phase to playing
+      this.gameEngine.ensureBots(gameId);
       this.gameEngine.startGame(gameId);
 
       // Update lobby status
