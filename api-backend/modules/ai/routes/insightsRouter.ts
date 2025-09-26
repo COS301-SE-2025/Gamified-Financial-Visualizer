@@ -538,7 +538,11 @@ router.get("/sentiment/user/:userId/:month", async (req, res) => {
       // send JSON to Python endpoint
       const { data } = await axios.post(
          `${AI_URL}/insights/user/${userId}/${month}`,
-         userData
+         userData,
+         {
+            timeout: 120000, // 12 seconds timeout
+            validateStatus: (status) => status < 500 // Accept all HTTP status codes
+         }
       );
 
       res.status(200).json(data);
@@ -667,7 +671,11 @@ router.get('/trends/:userId', async (req, res) => {
 
       // Fetch trends data from the database
       const trends = await axios.post(`${AI_URL}/insights/trends`,
-         userData
+         userData,
+         {
+            timeout: 120000, // 2 minutes
+            validateStatus: (status) => status < 500
+         }
       );
 
       if (!trends.data) {
