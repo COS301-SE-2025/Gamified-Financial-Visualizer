@@ -3,6 +3,11 @@ import { createPortal } from 'react-dom';
 import { FaTrash, FaEdit, FaPlus, FaChevronDown } from 'react-icons/fa';
 import AddTransactionModal from '../modals/AddTransactionModal';
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
+
 /* -------------------------- Helpers / Normalizers -------------------------- */
 
 const toTitleCase = (str = '') =>
@@ -297,7 +302,7 @@ const RecentTransactionsTable = ({
     const fetchCategories = async () => {
       setCategoriesLoading(true);
       try {
-        const response = await fetch('http://localhost:5000/api/transactions/categories');
+        const response = await fetch(`${BASE_URL}/api/transactions/categories`);
         const data = await response.json().catch(() => ({}));
         const list = Array.isArray(data?.data) ? data.data : [];
         setCategories(list);
@@ -405,7 +410,7 @@ const RecentTransactionsTable = ({
     try {
       setBusy(true);
       setError('');
-      const resp = await fetch(`http://localhost:5000/api/transactions/${id}`, {
+      const resp = await fetch(`${BASE_URL}/api/transactions/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -453,7 +458,7 @@ const RecentTransactionsTable = ({
     try {
       setBusy(true);
       setError('');
-      const response = await fetch(`http://localhost:5000/api/transactions/${transactionId}`, { method: 'DELETE' });
+      const response = await fetch(`${BASE_URL}/api/transactions/${transactionId}`, { method: 'DELETE' });
       let json = null;
       try { json = await response.json(); } catch {}
       if (!response.ok) {

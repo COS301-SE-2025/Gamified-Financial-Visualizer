@@ -11,6 +11,8 @@ import logo from '../assets/Images/Logo1.png';
 import avatar from '../assets/Images/avatars/LightPost.png';
 import NotificationsPanel from '../components/notifications/NotificationsPanel';
 
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+
 const menuItems = [
   {
     label: 'Home',
@@ -269,7 +271,7 @@ const Navbar = () => {
     const fetchNotifications = async () => {
       try {
         if (user?.id) {
-          const res = await fetch(`http://localhost:5000/api/notifications/${user.id}`);
+          const res = await fetch(`${BASE_URL}/api/notifications/${user.id}`);
           const data = await res.json();
           setNotifications(data.data?.length || 0);
         }
@@ -278,7 +280,7 @@ const Navbar = () => {
       }
     };
 
-    fetch(`http://localhost:5000/api/community/performance-summary/${user.id}`)
+    fetch(`${BASE_URL}/api/community/performance-summary/${user.id}`)
       .then(res => res.json())
       .then(data => setPerformance(data?.data))
       .catch(err => console.error('Community performance summary error:', err));

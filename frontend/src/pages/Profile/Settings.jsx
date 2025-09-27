@@ -4,6 +4,10 @@ import { FaCheckCircle, FaTimesCircle, FaEye, FaEyeSlash } from 'react-icons/fa'
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
 const Settings = () => {
   const user = JSON.parse(localStorage.getItem('user'));
   const userId = user?.id;
@@ -71,7 +75,7 @@ const Settings = () => {
   // fetch settings 
   const fetchSettings = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/auth/${userId}/settings`);
+      const res = await fetch(`${BASE_URL}/api/auth/${userId}/settings`);
       const data = await res.json();
       if (res.ok) {
         setUsername(data.username);
@@ -96,7 +100,7 @@ const Settings = () => {
   // fetch avatars form database
   const fetchAvatars = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/auth/avatars');
+      const res = await fetch(`${BASE_URL}/api/auth/avatars`);
       const data = await res.json();
       setAvatarList(data.data);
     } catch (err) {
@@ -127,7 +131,7 @@ const Settings = () => {
     if (!usernameCriteria.length || !usernameCriteria.pattern) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/auth/${userId}/settings`, {
+      const res = await fetch(`${BASE_URL}/api/auth/${userId}/settings`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username }),
@@ -167,7 +171,7 @@ const Settings = () => {
   // save preferences handleer
   const handleSavePreferences = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/auth/${userId}/settings`, {
+      const res = await fetch(`${BASE_URL}/api/auth/${userId}/settings`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -198,7 +202,7 @@ const Settings = () => {
     if (!passwordsMatch) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/auth/${userId}/change-password`, {
+      const res = await fetch(`${BASE_URL}/api/auth/${userId}/change-password`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ currentPassword, newPassword, confirmPassword }),
@@ -451,7 +455,7 @@ const Settings = () => {
               <button onClick={() => setShowConfirm(false)} className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md">Cancel</button>
               <button onClick={async () => {
                 try {
-                  const res = await fetch(`http://localhost:5000/api/auth/${userId}`, { method: 'DELETE' });
+                  const res = await fetch(`${BASE_URL}/api/auth/${userId}`, { method: 'DELETE' });
                   if (res.ok) {
                     localStorage.clear();
                     navigate('/landing');

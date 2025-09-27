@@ -7,6 +7,10 @@ import CommunityLayout from '../../pages/Community/CommunityLayout';
 
 import { FaChartLine, FaArrowLeft, FaCrown, FaEye, FaMedal, FaUserMinus, FaPaperPlane, FaTimes, FaCheck } from 'react-icons/fa';
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
 const CommunityMemberPage = () => {
   const user = JSON.parse(localStorage.getItem('user'));
   const { username } = useParams();
@@ -29,7 +33,7 @@ const CommunityMemberPage = () => {
     if (!username) return;
     (async () => {
       try {
-        const r = await fetch(`http://localhost:5000/api/community/userID/${username}`);
+        const r = await fetch(`${BASE_URL}/api/community/userID/${username}`);
         const { data } = await r.json();
         setUserID(data);
       } catch (e) {
@@ -44,14 +48,14 @@ const CommunityMemberPage = () => {
     (async () => {
       try {
         const [bar, perf, learn, achs, recA, comms, lvl, stat] = await Promise.all([
-          fetch(`http://localhost:5000/api/auth/top-bar/${userID}`),
-          fetch(`http://localhost:5000/api/auth/profile/performance-stats/${userID}`),
-          fetch(`http://localhost:5000/api/learning/summary/${userID}`),
-          fetch(`http://localhost:5000/api/achievements/user/${userID}`),
-          fetch(`http://localhost:5000/api/auth/profile/recent-achievements/${userID}`),
-          fetch(`http://localhost:5000/api/auth/profile/communities/${userID}`),
-          fetch(`http://localhost:5000/api/auth/profile/level-progress/${userID}`),
-          fetch(`http://localhost:5000/api/community/friends/status/${user.id}/${userID}`)
+          fetch(`${BASE_URL}/api/auth/top-bar/${userID}`),
+          fetch(`${BASE_URL}/api/auth/profile/performance-stats/${userID}`),
+          fetch(`${BASE_URL}/api/learning/summary/${userID}`),
+          fetch(`${BASE_URL}/api/achievements/user/${userID}`),
+          fetch(`${BASE_URL}/api/auth/profile/recent-achievements/${userID}`),
+          fetch(`${BASE_URL}/api/auth/profile/communities/${userID}`),
+          fetch(`${BASE_URL}/api/auth/profile/level-progress/${userID}`),
+          fetch(`${BASE_URL}/api/community/friends/status/${user.id}/${userID}`)
         ]);
         const [barData, perfData, summaryData,
           achRes, recArch, commRes, lvlRes, statusRes] = await Promise.all([
@@ -75,7 +79,7 @@ const CommunityMemberPage = () => {
 
   const handleFriendRequest = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/community/friends/request/${user.id}/${userID}`, {
+      const res = await fetch(`${BASE_URL}/api/community/friends/request/${user.id}/${userID}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -103,7 +107,7 @@ const CommunityMemberPage = () => {
   const respondRequest = async (action) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/community/friends/update`,
+        `${BASE_URL}/api/community/friends/update`,
         {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
@@ -132,7 +136,7 @@ const CommunityMemberPage = () => {
   const removeFriend = async () => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/community/friends/remove/${user.id}/${userID}`,
+        `${BASE_URL}/api/community/friends/remove/${user.id}/${userID}`,
         { method: 'DELETE' }
       );
       if (!res.ok) throw new Error('Remove failed');

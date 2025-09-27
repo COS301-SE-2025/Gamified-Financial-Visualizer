@@ -10,6 +10,10 @@ import { getCategories, createTransaction, getTransaction } from '../../transact
 import { cp } from 'fs';
 import { ExtractorContext } from '../strategies/strategy_context';
 
+const AI_URL = process.env.AI_SERVICE_URL  || 'https://gamified-finance-ai-avf0gsfrf5a4b9cj.southafricanorth-01.azurewebsites.net';
+// const AI_URL = 'http://localhost:6000'; 
+
+
 const upload = multer({ dest: '/tmp/uploads' });
 const router = express.Router();
 
@@ -46,7 +50,7 @@ router.post('/upload-statement', upload.single('statement'), async (req, res) =>
     logger.info(`Extracted ${transactions.length} transactions from ${file.originalname}`);
 
     // 3. classify
-    const { data } = await axios.post('http://localhost:6000/classifier/predict-batch', { transactions });
+    const { data } = await axios.post(`${AI_URL}/classifier/predict-batch`, { transactions });
     const results = data as Array<{ category: string; source: string }>;
     if (!Array.isArray(results) || results.length !== transactions.length) {
       logger.error('Classifier mismatch', { expected: transactions.length, got: results.length });
@@ -183,7 +187,7 @@ router.post('/feedback', async (req, res) => {
   });
 
   try {
-    const { data } = await axios.post('http://localhost:6000/classifier/feedback-train', { feedback: payload });
+    const { data } = await axios.post(`${AI_URL}/classifier/feedback-train`, { feedback: payload });
     const feedbackResponse = data as { status: string };
     res.json({ status: feedbackResponse.status });
     logger.info(`Feedback processed, retraining started: ${feedbackResponse.status}`);

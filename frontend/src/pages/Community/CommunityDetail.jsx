@@ -14,6 +14,10 @@ import banner3 from '../../assets/Images/banners/pixelStore.gif';
 import { FaTrophy } from 'react-icons/fa';
 
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
 const bannerOptions = [
   { id: 1, label: 'Pixel Students', src: banner },
   { id: 2, label: 'Pixel Ally', src: banner1 },
@@ -38,7 +42,7 @@ const CommunityDetail = () => {
   useEffect(() => {
     const fetchCommunityData = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/community/${title}`);
+        const response = await fetch(`${BASE_URL}/api/community/${title}`);
         if (!response.ok) {
           throw new Error('Failed to fetch community data');
         }
@@ -56,7 +60,7 @@ const CommunityDetail = () => {
 
     const fetchPendingInvites = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/community/membership/requests/${communityId}`);
+        const response = await fetch(`${BASE_URL}/api/community/membership/requests/${communityId}`);
         if (!response.ok) throw new Error('Failed to fetch pending invites');
         const data = await response.json();
         return data;
@@ -97,7 +101,7 @@ const CommunityDetail = () => {
 
   useEffect(() => {
     if (!isEditing) return;
-    fetch(`http://localhost:5000/api/community/friends/${currentUser.id}`)
+    fetch(`${BASE_URL}/api/community/friends/${currentUser.id}`)
       .then(r => r.json())
       .then(json => setFriends(json.data || []))
       .catch(console.error);
@@ -113,7 +117,7 @@ const CommunityDetail = () => {
   const handleAddMember = async (friend) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/community/${communityData.community_id}/members/${friend.user_id}`,
+        `${BASE_URL}/api/community/${communityData.community_id}/members/${friend.user_id}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
@@ -143,7 +147,7 @@ const CommunityDetail = () => {
 
   const deleteChallenge = async (challengeId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/community/challenges/${challengeId}`, {
+      const res = await fetch(`${BASE_URL}/api/community/challenges/${challengeId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json'
@@ -205,7 +209,7 @@ const CommunityDetail = () => {
                 await Promise.all(
                   members.map((m) =>
                     fetch(
-                      `http://localhost:5000/api/community/friends/request/${currentUser.id}/${m.user_id}`,
+                      `${BASE_URL}/api/community/friends/request/${currentUser.id}/${m.user_id}`,
                       {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' }
@@ -213,7 +217,7 @@ const CommunityDetail = () => {
                     )
                   )
                   ,
-                  fetch(`http://localhost:5000/api/community/membership/request`, {
+                  fetch(`${BASE_URL}/api/community/membership/request`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -253,7 +257,7 @@ const CommunityDetail = () => {
 
   const removeMember = async (userId) => {
     const res = await fetch(
-      `http://localhost:5000/api/community/${communityData.community_id}/members/${userId}`,
+      `${BASE_URL}/api/community/${communityData.community_id}/members/${userId}`,
       { method: 'DELETE' }
     );
     if (!res.ok) throw new Error('Remove failed');
@@ -267,7 +271,7 @@ const CommunityDetail = () => {
     };
 
     const res = await fetch(
-      `http://localhost:5000/api/community/${communityData.community_id}`,
+      `${BASE_URL}/api/community/${communityData.community_id}`,
       {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -289,7 +293,7 @@ const CommunityDetail = () => {
   const handleAccept = async (userId) => {
 
     try {
-      const response = await fetch(`http://localhost:5000/api/community/membership/respond/`, {
+      const response = await fetch(`${BASE_URL}/api/community/membership/respond/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ community_id: communityData.community_id, user_id: userId, response: 'accept' }),
@@ -305,7 +309,7 @@ const CommunityDetail = () => {
 
   const handleReject = async (userId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/community/membership/respond/`, {
+      const response = await fetch(`${BASE_URL}/api/community/membership/respond/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ community_id: communityId, user_id: userId, response: 'reject' }),

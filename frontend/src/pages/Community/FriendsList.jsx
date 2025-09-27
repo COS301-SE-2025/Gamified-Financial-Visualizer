@@ -5,6 +5,10 @@ import { FaSearch, FaEye, FaUserMinus, FaPaperPlane } from 'react-icons/fa';
 import CommunityLayout from '../../pages/Community/CommunityLayout';
 import CommunityHeader from '../../layouts/headers/CommunityHeader';
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
 const FriendsList = () => {
   const [yourFriends, setYourFriends] = useState([]);
   const [recommended, setRecommended] = useState([]);
@@ -22,9 +26,9 @@ const FriendsList = () => {
     const fetchFriendsAndRecommendations = async () => {
       try {
         const [friendsRes, recsRes, members] = await Promise.all([
-          fetch(`http://localhost:5000/api/community/friends/${user.id}`),
-          fetch(`http://localhost:5000/api/community/friends/recommendations/${user.id}`),
-          fetch(`http://localhost:5000/api/community/friends/all/members`)
+          fetch(`${BASE_URL}/api/community/friends/${user.id}`),
+          fetch(`${BASE_URL}/api/community/friends/recommendations/${user.id}`),
+          fetch(`${BASE_URL}/api/community/friends/all/members`)
         ]);
 
         const friendsData = await friendsRes.json();
@@ -55,7 +59,7 @@ const FriendsList = () => {
     const currentUser = JSON.parse(localStorage.getItem('user'));
     openModal(`Send a friend request to @${user.username}?`, user, async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/community/friends/request/${currentUser.id}/${user.user_id}`, {
+        const res = await fetch(`${BASE_URL}/api/community/friends/request/${currentUser.id}/${user.user_id}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
         });
@@ -86,7 +90,7 @@ const FriendsList = () => {
     const currentUser = JSON.parse(localStorage.getItem('user'));
     openModal(`Remove @${user.username} from your friends list?`, user, async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/community/friends`, {
+        const res = await fetch(`${BASE_URL}/api/community/friends`, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

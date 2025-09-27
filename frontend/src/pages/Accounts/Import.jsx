@@ -1,11 +1,15 @@
-import React, { useState , useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import AccountsLayout from './AccountsLayout';
-import { 
-  FaUpload, FaFilePdf, FaLink, FaTrash, FaQuestionCircle, 
-  FaSpinner, FaCheckCircle, FaTimes, FaArrowLeft, 
+import {
+  FaUpload, FaFilePdf, FaLink, FaTrash, FaQuestionCircle,
+  FaSpinner, FaCheckCircle, FaTimes, FaArrowLeft,
   FaExclamationTriangle, FaSave, FaLock, FaFolderOpen,
   FaGlobe, FaDownload, FaArrowRight, FaFileAlt, FaExclamationCircle
 } from 'react-icons/fa';
+
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
 
 const ImportPage = () => {
   const userData = JSON.parse(localStorage.getItem('user') || '{}');
@@ -111,18 +115,22 @@ const ImportPage = () => {
         form.append('statement', files[0]);
         form.append('accountId', selectedAccount);
         form.append('password', password);
-        form.append('bankName', selectedBank.toLowerCase());    
-              
-        res = await fetch(
-          `http://localhost:5000/api/classifier/upload-statement`,
-          { method: 'POST',
-           headers: { 'Accept': 'application/json' }, 
-           body: form
-         }
+        form.append('bankName', selectedBank.toLowerCase());
+
+        res = await Promise.race([ fetch(
+          `${BASE_URL}/api/classifier/upload-statement`,
+          {
+            method: 'POST',
+            headers: { 'Accept': 'application/json' },
+            body: form
+          }), new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Request timed out')), 180000)
+          )
+        ]
         );
       } else {
         res = await fetch(
-          `http://localhost:5000/api/classifier/upload-statement-url`,
+          `${BASE_URL}/api/classifier/upload-statement-url`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -135,12 +143,14 @@ const ImportPage = () => {
           }
         );
       }
-const contentType = res.headers.get('content-type');
+
+
+      const contentType = res.headers.get('content-type');
 
       if (!contentType || !contentType.includes('application/json')) {
-  const text = await res.text();
-  throw new Error(`Expected JSON, got: ${text.slice(0, 100)}`);
-}
+        const text = await res.text();
+        throw new Error(`Expected JSON, got: ${text.slice(0, 100)}`);
+      }
 
       body = await res.json();
       if (!res.ok) throw new Error(body.error || 'Upload failed');
@@ -206,7 +216,7 @@ const contentType = res.headers.get('content-type');
 
     try {
       const res = await fetch(
-        `http://localhost:5000/api/classifier/confirm-statement`,
+        `${BASE_URL}/api/classifier/confirm-statement`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -233,10 +243,10 @@ const contentType = res.headers.get('content-type');
 
       setImportSuccess(true);
       setShowReview(false);
-                
+
       if (payload.feedbacks.length) {
         fetch(
-          `http://localhost:5000/api/classifier/feedback`,
+          `${BASE_URL}/api/classifier/feedback`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -251,17 +261,17 @@ const contentType = res.headers.get('content-type');
     }
   };
 
-  const hasChanges = transactions.some(tx => 
+  const hasChanges = transactions.some(tx =>
     tx.category !== tx.originalCategory || tx.type !== tx.originalType
   );
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/accounts/user/${userId}`)
+    fetch(`${BASE_URL}/api/accounts/user/${userId}`)
       .then(r => r.json())
       .then(j => setAccounts(j.data))
       .catch(() => setAccounts([]));
 
-    fetch(`http://localhost:5000/api/transactions/categories`)
+    fetch(`${BASE_URL}/api/transactions/categories`)
       .then(r => r.json())
       .then(j => setCategories(j.data))
       .catch(() => setCategories([]));
@@ -391,7 +401,7 @@ const contentType = res.headers.get('content-type');
                   {/* File Upload */}
                   <div className="mb-8">
                     <h2 className="text-lg font-semibold text-gray-800 mb-3">Upload Statement</h2>
-                    
+
                     <div
                       className={`border-2 border-dashed rounded-xl p-8 mb-4 text-center transition-all ${isDragging ? 'border-sky-400 bg-blue-50' : 'border-gray-300 hover:border-sky-300'}`}
                       onDragEnter={handleDragEnter}
@@ -499,11 +509,10 @@ const contentType = res.headers.get('content-type');
                     <div className="flex justify-between">
                       <button
                         onClick={handleImport}
-                        className={`px-6 py-2 rounded-lg text-white transition flex items-center ${
-                        (files.length > 0 || url) && selectedAccount && selectedBank 
-                          ? 'bg-sky-500 hover:bg-sky-600' 
-                          : 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
-                      }`}
+                        className={`px-6 py-2 rounded-lg text-white transition flex items-center ${(files.length > 0 || url) && selectedAccount && selectedBank
+                            ? 'bg-sky-500 hover:bg-sky-600'
+                            : 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
+                          }`}
                         disabled={!(files.length === 1 || url) || !selectedAccount || !selectedBank || isImporting}
                       >
                         {isImporting ? (
@@ -533,61 +542,60 @@ const contentType = res.headers.get('content-type');
                     </p>
                   </div>
 
-                <div className="overflow-x-auto mb-6">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-700">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Category</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                      {transactions.map((transaction) => (
-                        <tr key={transaction.id}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                            {transaction.date}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                            {transaction.description}
-                          </td>
-                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${
-                            transaction.amount < 0 
-                              ? 'text-red-600 dark:text-red-400' 
-                              : 'text-green-600 dark:text-green-400'
-                          }`}>
-                            {transaction.amount < 0 ? `-$${Math.abs(transaction.amount).toFixed(2)}` : `$${transaction.amount.toFixed(2)}`}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                            <select
-                              value={transaction.category}
-                              onChange={(e) => handleCategoryChange(transaction.id, Number(e.target.value))}
-                              className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-700 dark:text-white"
-                            >
-                              {categories.map(category => (
-                                <option key={category.category_id} value={category.category_id}>{category.category_name}</option>
-                              ))}
-                            </select>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                            <select
-                              value={transaction.transaction_type}
-                              onChange={(e) => handleTypeChange(transaction.id, e.target.value)}
-                              className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-700 dark:text-white"
-                            >
-                              {transactionTypes.map(type => (
-                                <option key={type} value={type}>{type}</option>
-                              ))}
-                            </select>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  
+                  <div className="overflow-x-auto mb-6">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <thead className="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Category</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        {transactions.map((transaction) => (
+                          <tr key={transaction.id}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                              {transaction.date}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                              {transaction.description}
+                            </td>
+                            <td className={`px-6 py-4 whitespace-nowrap text-sm ${transaction.amount < 0
+                                ? 'text-red-600 dark:text-red-400'
+                                : 'text-green-600 dark:text-green-400'
+                              }`}>
+                              {transaction.amount < 0 ? `-$${Math.abs(transaction.amount).toFixed(2)}` : `$${transaction.amount.toFixed(2)}`}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                              <select
+                                value={transaction.category}
+                                onChange={(e) => handleCategoryChange(transaction.id, Number(e.target.value))}
+                                className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-700 dark:text-white"
+                              >
+                                {categories.map(category => (
+                                  <option key={category.category_id} value={category.category_id}>{category.category_name}</option>
+                                ))}
+                              </select>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                              <select
+                                value={transaction.transaction_type}
+                                onChange={(e) => handleTypeChange(transaction.id, e.target.value)}
+                                className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-700 dark:text-white"
+                              >
+                                {transactionTypes.map(type => (
+                                  <option key={type} value={type}>{type}</option>
+                                ))}
+                              </select>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
 
                   <div className="border-t pt-6">
                     <div className="flex justify-between items-center">

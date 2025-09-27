@@ -5,6 +5,10 @@ import AddAccountModal from '../../components/modals/AddAccountModal';
 import EditAccountModal from '../../components/modals/EditAccountModal';
 import RecentTransactionsTable from '../../components/tables/RecentTransactionsTable';
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
 const AccountsPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -107,7 +111,7 @@ const AccountsPage = () => {
     try {
       setError(null);
 
-      const res = await fetch(`http://localhost:5000/api/transactions/user/${userId}`);
+      const res = await fetch(`${BASE_URL}/api/transactions/user/${userId}`);
       if (!res.ok) throw new Error('Failed to fetch user transactions');
 
       const data = await res.json();
@@ -139,7 +143,7 @@ const AccountsPage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/transactions/categories');
+        const response = await fetch(`${BASE_URL}/api/transactions/categories`);
         if (!response.ok) throw new Error('Failed to fetch categories');
         const data = await response.json();
         setCategories(data.data || []);
@@ -163,7 +167,7 @@ const AccountsPage = () => {
         setError(null);
 
         // Fetch accounts
-        const accountsResponse = await fetch(`http://localhost:5000/api/accounts/user/${userId}`);
+        const accountsResponse = await fetch(`${BASE_URL}/api/accounts/user/${userId}`);
         if (!accountsResponse.ok) throw new Error('Failed to fetch accounts');
         const accountsData = await accountsResponse.json();
         setAccounts(accountsData.data || []);
@@ -189,7 +193,7 @@ const AccountsPage = () => {
     try {
       setError(null);
 
-      const res = await fetch(`http://localhost:5000/api/transactions/accounts/${accountId}`);
+      const res = await fetch(`${BASE_URL}/api/transactions/accounts/${accountId}`);
       if (!res.ok) throw new Error('Failed to fetch transactions');
 
       const data = await res.json();
@@ -236,7 +240,7 @@ const AccountsPage = () => {
     }
     try {
       setError(null);
-      const response = await fetch('http://localhost:5000/api/accounts', {
+      const response = await fetch('${BASE_URL}/api/accounts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -272,7 +276,7 @@ const AccountsPage = () => {
     }
     try {
       setError(null);
-      const response = await fetch(`http://localhost:5000/api/accounts/${accountId}`, {
+      const response = await fetch(`${BASE_URL}/api/accounts/${accountId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId }),
@@ -311,7 +315,7 @@ const AccountsPage = () => {
     }
     try {
       setError(null);
-      const response = await fetch(`http://localhost:5000/api/accounts/${accountId}`, {
+      const response = await fetch(`${BASE_URL}/api/accounts/${accountId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ account_name: updatedAccount.accountName }),
@@ -354,36 +358,40 @@ const AccountsPage = () => {
   };
 
   // In your parent component
-  const handleEditTransaction = async (id, updates) => {
-    try {
-      const response = await fetch(`http://localhost:5000/api/transactions/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates)
-      });
-      
-      if (!response.ok) throw new Error('Failed to update transaction');
-      
-      const data = await response.json();
-      return data.transaction;
-    } catch (error) {
-      throw error;
-    }
-  };
+const handleEditTransaction = async (id, updates) => {
+  try {
+    const response = await fetch(`${BASE_URL}/api/transactions/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+    
+    if (!response.ok) throw new Error('Failed to update transaction');
+    
+    const data = await response.json();
+    return data.transaction; // Return the updated transaction
+    
+    // Alternatively, if you're managing state in the parent:
+    // setTransactions(prev => prev.map(t => t.id === id ? {...t, ...updates} : t));
+  } catch (error) {
+    throw error;
+  }
+};
 
-  const handleDeleteTransaction = async (id) => {
-    try {
-      const response = await fetch(`http://localhost:5000/api/transactions/${id}`, {
-        method: 'DELETE'
-      });
-      
-      if (!response.ok) throw new Error('Failed to delete transaction');
-      
-      setTransactions(prev => prev.filter(t => t.id !== id));
-    } catch (error) {
-      throw error;
-    }
-  };
+const handleDeleteTransaction = async (id) => {
+  try {
+    const response = await fetch(`${BASE_URL}/api/transactions/${id}`, {
+      method: 'DELETE'
+    });
+    
+    if (!response.ok) throw new Error('Failed to delete transaction');
+    
+    // Update local state if needed
+    setTransactions(prev => prev.filter(t => t.id !== id));
+  } catch (error) {
+    throw error;
+  }
+};
 
   const transactionHeading = activeAccount
     ? `${activeAccount.account_name || activeAccount.accountName} Transactions`

@@ -5,6 +5,27 @@ import { createPortal } from 'react-dom';
 import LearnLayout from '../../pages/Learn/LearnLayout';
 import CourseCard from '../../components/cards/CoursesCard';
 
+import banner1 from '../../assets/Images/learn_banners/Budget.png' ;
+import banner2 from '../../assets/Images/learn_banners/Investment.png';
+import banner3 from '../../assets/Images/learn_banners/credit.png';
+import banner4 from '../../assets/Images/learn_banners/Fomo.png';
+import banner5 from '../../assets/Images/learn_banners/retrenchment.png';
+import banner6 from '../../assets/Images/banners/pixelGirl.gif';
+
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
+const bannerImages = {
+  1: banner1,
+  2: banner2,
+  3: banner3,
+  4: banner4,
+  5: banner5,
+  6: banner6
+};
+
+
 /* --------------------------- Reusable Dropdown --------------------------- */
 /** Achievements-style portaled dropdown (keyboard + outside click safe) */
 const CategoryDropdown = ({
@@ -197,7 +218,7 @@ const LearningPage = () => {
   useEffect(() => {
     const fetchModules = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/learning');
+        const response = await fetch(`${BASE_URL}/api/learning`);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         setModulesData(data.data);
