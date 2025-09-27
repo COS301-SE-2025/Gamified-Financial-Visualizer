@@ -22,11 +22,13 @@ const Settings = () => {
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState(0);
   const [avatarList, setAvatarList] = useState([]);
+  const [selectedBanner, setSelectedBanner] = useState(0);
+  const [bannerList, setBannerList] = useState([]);
   const [showConfirm, setShowConfirm] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [passwordChanged, setPasswordChanged] = useState(false);
+  const [setPasswordChanged] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -73,16 +75,17 @@ const Settings = () => {
       const data = await res.json();
       if (res.ok) {
         setUsername(data.username);
-        
+
         // Only update theme from backend if localStorage doesn't have a preference
         const localStorageTheme = localStorage.getItem('theme');
         if (!localStorageTheme) {
           setTheme(data.preferences?.theme === 'dark');
         }
-        
+
         setNotifications(data.preferences?.in_app_notifications_enabled ?? true);
         setOutAppNotifications(data.outOfAppEnabled ?? false);
         setSelectedAvatar(data.preferences?.avatar_id || 1);
+        setSelectedBanner(data.preferences?.banner_id || 1); // This will properly set the selected banner
         setVerified(data.twoFactorEnabled ?? false);
       }
     } catch (err) {
@@ -101,9 +104,22 @@ const Settings = () => {
     }
   };
 
+  // Fetch banners from database
+  const fetchBanners = async () => {
+    try {
+      const res = await fetch('http://localhost:5000/api/auth/banners');
+      const data = await res.json();
+      setBannerList(data.data);
+    } catch (err) {
+      console.error('Failed to load banners:', err);
+    }
+  };
+
+
   useEffect(() => {
     fetchSettings();
     fetchAvatars();
+    fetchBanners(); // Fetch banners on component mount
   }, [userId]);
 
   // username change hanlder 
@@ -143,6 +159,11 @@ const Settings = () => {
     setSelectedAvatar(avatarId);
   };
 
+  // Handle banner change
+  const handleBannerChange = (bannerId) => {
+    setSelectedBanner(bannerId);
+  };
+
   // save preferences handleer
   const handleSavePreferences = async () => {
     try {
@@ -155,6 +176,7 @@ const Settings = () => {
           outOfAppEnabled: outAppNotifications,
           twoFactorEnabled: verified,
           avatar_id: selectedAvatar,
+          banner_id: selectedBanner, // Send selected banner_id to the backend
         }),
       });
 
@@ -270,9 +292,6 @@ const Settings = () => {
         <h3 className="font-semibold text-[#88BC46] dark:text-[#AAD977] text-lg mb-4">Preferences</h3>
         {[
           { label: 'Dark Mode', state: theme, action: toggleTheme },
-          { label: 'Enable In-App Notifications', state: notifications, action: () => setNotifications(!notifications) },
-          { label: 'Enable Out-of-App Notifications', state: outAppNotifications, action: () => setOutAppNotifications(!outAppNotifications) },
-          { label: 'Two Factor Verification', state: verified, action: () => setVerified(!verified) }
         ].map(({ label, state, action }, i) => (
           <div key={i} className="flex items-center justify-between mb-4">
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</p>
@@ -283,8 +302,8 @@ const Settings = () => {
                 onChange={action} 
                 className="sr-only peer" 
               />
-              <div className="w-11 h-6 bg-gray-200 peer-checked:bg-[#88BC46] rounded-full transition-all duration-300"></div>
-              <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-md transform peer-checked:translate-x-5 transition-transform duration-300"></div>
+              <div className="w-11 h-6 bg-gray-200 peer-checked:bg-[#88BC46] rounded-full transition-all duration-300 dark:bg-gray-700"></div>
+              <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-md transform peer-checked:translate-x-5 transition-transform duration-300 dark:bg-gray-500 "></div>
             </label>
           </div>
         ))}
@@ -300,7 +319,7 @@ const Settings = () => {
               placeholder="Current Password" 
               value={currentPassword} 
               onChange={(e) => setCurrentPassword(e.target.value)} 
-              className="input w-full dark:text-gray-300" 
+              className="input w-full dark:text-gray-300 dark:bg-gray-700" 
             />
             <button 
               onClick={() => setShowCurrentPassword(!showCurrentPassword)}
@@ -315,7 +334,7 @@ const Settings = () => {
               placeholder="New Password" 
               value={newPassword} 
               onChange={(e) => setNewPassword(e.target.value)} 
-              className="input w-full dark:text-gray-300" 
+              className="input w-full dark:text-gray-300 dark:bg-gray-700" 
             />
             <button 
               onClick={() => setShowNewPassword(!showNewPassword)}
@@ -330,7 +349,7 @@ const Settings = () => {
               placeholder="Confirm New Password" 
               value={confirmPassword} 
               onChange={(e) => setConfirmPassword(e.target.value)} 
-              className="input w-full dark:text-gray-300" 
+              className="input w-full dark:text-gray-300 dark:bg-gray-700 " 
             />
             <button 
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -357,7 +376,7 @@ const Settings = () => {
             !Object.values(passwordStatus).every(Boolean) ||
             !passwordsMatch
           }
-          className={`px-4 py-2 rounded-md mt-2 text-white ${
+          className={`px-4 py-2 rounded-md mt-2 text-white dark:bg-gray-700 dark:text-white ${
             !currentPassword.length ||
             !Object.values(passwordStatus).every(Boolean) ||
             !passwordsMatch
@@ -380,6 +399,28 @@ const Settings = () => {
               } transition-all duration-200`}>
               <img src={`/assets/Images/${avatar.avatar_image_path}`} alt={`avatar-${avatar.avatar_id}`}
                 className="w-14 h-14 object-cover rounded-full" />
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Banner Section - Fixed */}
+      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-6">
+        <h3 className="font-semibold mb-4 text-[#88BC46] dark:text-[#AAD977]">Change Banner</h3>
+        <div className="flex flex-wrap gap-3">
+          {bannerList.map((banner) => (
+            <button
+              key={banner.banner_id}
+              onClick={() => handleBannerChange(banner.banner_id)}
+              className={`rounded-xl overflow-hidden border-4 ${
+                selectedBanner === banner.banner_id ? 'border-[#88BC46]' : 'border-transparent'
+              } transition-all duration-200`}
+            >
+              <img
+                src={`/assets/Images/${banner.banner_image_path}`}
+                alt={`banner-${banner.banner_id}`}
+                className="w-28 h-16 object-cover rounded-xl"
+              />
             </button>
           ))}
         </div>

@@ -614,19 +614,6 @@ const ChallengeCreate = () => {
                   className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2"
                 />
               </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
-                  <FaMedal /> XP Reward
-                </label>
-                <input
-                  type="number"
-                  name="xpReward"
-                  value={formData.xpReward}
-                  onChange={handleChange}
-                  min="0"
-                  className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2"
-                />
-              </div>
             </div>
 
             {/* Dates */}
@@ -654,7 +641,7 @@ const ChallengeCreate = () => {
                   value={formData.endDate}
                   min={today}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                 />
               </div>
             </div>

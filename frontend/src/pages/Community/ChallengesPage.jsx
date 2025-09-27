@@ -115,7 +115,7 @@ const ChallengesPage = () => {
         <img
           src={bannerSrc}
           alt="Challenge Banner"
-          className="absolute -top-8 left-4 w-20 h-20 rounded-full object-cover border-4 border-white shadow"
+          className="absolute -top-8 left-4 w-20 h-20 rounded-full object-cover border-4 border-white shadow dark:border-gray-700"
         />
 
         <div className="flex justify-between items-start">
@@ -124,7 +124,7 @@ const ChallengesPage = () => {
               <FaCoins className="inline mr-1 text-[#FBBF24]" />
               {challenge.title}
             </h4>
-            <p className="text-xs font-semibold text-[#72C1F5] bg-[#E0F2FE] rounded-full px-3 py-1 inline-block w-fit mb-1">
+            <p className="text-xs font-semibold text-[#72C1F5] bg-[#E0F2FE] rounded-full px-3 py-1 inline-block w-fit mb-1 dark:bg-[#88D1FF] dark:text-[#4B82A2]">
               {challenge.community}
             </p>
 

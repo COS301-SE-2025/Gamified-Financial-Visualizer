@@ -46,9 +46,7 @@ const ChallengeDetail = () => {
     if (!challengeData) {
         return (
             <CommunityLayout>
-                <div className="max-w-6xl mx-auto p-6 text-center text-gray-500 dark:text-gray-400">
-                    Loading challenge…
-                </div>
+                
             </CommunityLayout>
         );
     }
@@ -139,7 +137,11 @@ const ChallengeDetail = () => {
                                 alt={`participant-${idx}`}
                             />
                         ))}
-                        <span className="text-sm text-[#6B7280] dark:text-gray-400 self-center ml-2">+ {challengeData.participantsCount - challengeData.participants.length} others</span>
+                        {(challengeData.participantsCount - challengeData.participants.length) > 0 && (
+                            <span className="text-sm text-[#6B7280] dark:text-gray-400 self-center ml-2">
+                                + {challengeData.participantsCount - challengeData.participants.length} others
+                            </span>
+                        )}
                     </div>
                 </div>
 

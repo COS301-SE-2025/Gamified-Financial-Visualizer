@@ -128,7 +128,7 @@ const GoalsPage = () => {
       <div className="flex flex-col gap-6 px-4 sm:px-6 py-6 w-full max-w-screen-2xl mx-auto">
         {/* Search bar (top) */}
         <div className="w-full">
-          <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm dark:bg-gray-800">
+          <div className="flex items-center w-full px-4 py-2 border border-[#76B947] dark:border-[#AAD977] rounded-full bg-white shadow-sm dark:bg-gray-800">
             <FaSearch className="text-[#76B947] mr-2" />
             <input
               type="text"
@@ -138,7 +138,7 @@ const GoalsPage = () => {
                 setPage(1);
               }}
               placeholder="Search your goals..."
-              className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70"
+              className="w-full outline-none bg-transparent text-sm text-[#76B947] dark:text-[#AAD977] placeholder-[#76B947]/70"
             />
           </div>
         </div>
@@ -159,6 +159,9 @@ const GoalsPage = () => {
 
             {/* Latest Accomplished Goal */}
             <div className="bg-white rounded-2xl shadow-md p-4 min-h-[280px] dark:bg-gray-800">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3 dark:text-gray-200">
+                Recently Completed
+              </h3>
               {latest ? (
                 <GoalCard
                   goalId={latest.goal_id}
@@ -190,7 +193,6 @@ const GoalsPage = () => {
               <h3 className="text-sm font-semibold text-gray-700 mb-3 dark:text-gray-200">
                 Your Goals
               </h3>
-
               <div className="grid grid-cols-1 gap-6">
                 {visibleGoals.map(renderGoalCard)}
                 {visibleGoals.length === 0 && (

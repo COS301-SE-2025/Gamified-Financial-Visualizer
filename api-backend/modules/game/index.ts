@@ -8,7 +8,7 @@ import { logger }     from '../../config/logger';
 
 export function registerGameModule(app: Application, io: Server) {
   // Initialize core game services
-  const gameEngine = new GameEngine();
+  const gameEngine = new GameEngine(io);
   const lobbyManager = new GameLobbyManager(gameEngine);
 
   // Register REST API routes

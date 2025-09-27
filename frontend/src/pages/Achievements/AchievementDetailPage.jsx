@@ -74,6 +74,32 @@ const colorMap = {
   green: { hex: '#88BC46', gradient: 'linear-gradient(to right, #88BC46, #CBEEA5)', bg: 'bg-lime-50', text: 'text-lime-600' },
 };
 
+// Drop-in dark palette
+const colorMapDark = {
+  red: {
+    // a muted “tomato/brick”
+    hex: '#fe9994ff',                                   // main accent
+    gradient: 'linear-gradient(to right, #fb927dff, #fbe5adff)',
+    bg: 'bg-[rgba(184,93,88,0.15)]',                  // soft tinted surface
+    text: 'text-rose-300'                             // readable on dark bg
+  },
+  blue: {
+    // a calm “steel blue”
+    hex: '#5A7FA6',
+    gradient: 'linear-gradient(to right, #5FBFFF, #B1E1FF)',
+    bg: 'bg-[rgba(90,127,166,0.15)]',
+    text: 'text-sky-300'
+  },
+  green: {
+    // a dusky “olive/sage”
+    hex: '#6F8F4E',
+    gradient: 'linear-gradient(to right, #88BC46, #CBEEA5)',
+    bg: 'bg-[rgba(111,143,78,0.15)]',
+    text: 'text-lime-300'
+  }
+};
+
+
 const getBadgeImage = (title = '') => {
   const m = lookupMeta(title);
   if (m?.badge) return m.badge;
@@ -121,14 +147,14 @@ const BadgeTaskCard = ({ task, colorInfo, image }) => {
           </div>
           <div className="mt-2">
             <div className="flex justify-between text-sm mb-1">
-              <span className="text-gray-600">Progress</span>
+              <span className="text-gray-600 dark:text-gray-300">Progress</span>
               <span className="font-medium">({Math.round(progressPercent)}%)</span>
             </div>
-            <div className="w-full bg-gray-200 h-2.5 rounded-full">
-              <div className="h-2.5 rounded-full" style={{ width: `${progressPercent}%`, background: colorInfo.gradient }} />
+            <div className="w-full bg-gray-200 h-2.5 rounded-full dark:bg-gray-700">
+              <div className="h-2.5 rounded-full " style={{ width: `${progressPercent}%`, background: colorInfo.gradient }} />
             </div>
           </div>
-          {task.description && <p className="text-sm text-gray-600 mt-2">{task.description}</p>}
+          {task.description && <p className="text-sm text-gray-600 mt-2 dark:text-gray-300">{task.description}</p>}
         </div>
       </div>
     </div>
@@ -150,7 +176,8 @@ const AchievementDetailPage = () => {
   // Display meta based on mapping (keeps styling)
   const title = achievement?.achievement_title || String(id || '');
   const colorKey = detectColorKey(title);
-  const colorInfo = colorMap[colorKey];
+  const isDark = document.documentElement.classList.contains('dark');
+  const colorInfo = (isDark ? colorMapDark : colorMap)[colorKey];
   const badgeImage = getBadgeImage(title);
 
   useEffect(() => {

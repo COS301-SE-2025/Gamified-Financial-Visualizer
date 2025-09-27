@@ -22,6 +22,9 @@ const CommunityMemberPage = () => {
   const [summary, setSummary] = useState(null);
   const [friendship, setFriendship] = useState(null);
 
+  // Check if the current user is viewing their own profile
+  const isViewingOwnProfile = user?.username === username;
+
   useEffect(() => {
     if (!username) return;
     (async () => {
@@ -123,6 +126,7 @@ const CommunityMemberPage = () => {
   };
 
   const cancelRequest = async () => {
+    // Implement the cancel request functionality if needed
   }
 
   const removeFriend = async () => {
@@ -150,7 +154,8 @@ const CommunityMemberPage = () => {
   const statusF = friendship?.status;
   const isInitiator = friendship?.isInitiator;
 
-  if (!statusF) {
+  // Don't show friend buttons if viewing own profile or if already friends
+  if (!isViewingOwnProfile && !statusF) {
     friendButtons = (
       <button onClick={handleFriendRequest}
         className="flex items-center gap-1 px-4 py-2 text-sm rounded-full bg-[#FFD18C] text-white shadow hover:bg-[#f9b54c] transition"
@@ -178,7 +183,7 @@ const CommunityMemberPage = () => {
           </button>
         </>
       );
-  } else /* accepted */ {
+  } else if (statusF === 'accepted' && !isViewingOwnProfile) {  // Show remove button only for others, not your own profile
     friendButtons = (
       <button onClick={removeFriend} className="flex items-center gap-1 px-4 py-2 text-sm rounded-full bg-[#FA8B81] text-white shadow hover:bg-[#f56a5a] transition">
         <FaUserMinus /> Remove Friend
@@ -226,7 +231,7 @@ const CommunityMemberPage = () => {
         <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow flex flex-col gap-4 mt-14">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full border-4 border-yellow-400 dark:border-[#FFD18C] dark:bg-[#FFD18C] dark:text-[#CF6108] font-bold flex items-center justify-center shadow-sm">
+              <div className="w-10 h-10 rounded-full border-4 border-yellow-400 dark:border-[#FFD18C]  dark:text-[#CF6108] font-bold flex items-center justify-center shadow-sm">
                 {levelProgress?.level_number ?? '—'}
               </div>
               <div>
@@ -236,7 +241,7 @@ const CommunityMemberPage = () => {
                   : 'Loading...'}</p>
               </div>
             </div>
-            <div className="w-10 h-10 rounded-full bg-[#f8e5b5] dark:bg-[#FFD18C] dark:text-[#CF6108] font-bold flex items-center justify-center shadow-sm">
+            <div className="w-10 h-10 rounded-full bg-[#f8e5b5]  dark:text-[#CF6108] font-bold flex items-center justify-center shadow-sm">
               {levelProgress?.next_level ?? '—'}
             </div>
           </div>
@@ -244,7 +249,7 @@ const CommunityMemberPage = () => {
           <div className="relative mt-2">
             <div className="w-full h-6 bg-yellow-100 dark:bg-[#FFD18C] dark:text-[#CF6108] rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-yellow-400 to-[#FFCE51] dark:bg-[#FFD18C] dark:text-[#CF6108] rounded-full"
+                className="h-full bg-gradient-to-r from-yellow-400 to-[#FFFD18C] dark:text-[#CF6108] rounded-full"
                 style={{
                   width: levelProgress
                     ? `${Math.min(
@@ -381,7 +386,7 @@ const CommunityMemberPage = () => {
                       ))}
                     </div>
                     <Link to={`/community/details/${community.community_name.toLowerCase().replace(/\s+/g, '_')}`}>
-                      <button className="flex items-center gap-2 bg-[#AAD977] text-white font-medium text-sm px-4 py-1.5 rounded-full hover:bg-[#83AB55] transition-all">
+                      <button className="flex items-center gap-2 bg-[#AAD977] text-white font-medium text-sm px-4 py-1.5 rounded-full hover:bg-[#83AB55] transition-all dark:bg-[#BBE48E]">
                         <FaEye /> View
                       </button>
                     </Link>

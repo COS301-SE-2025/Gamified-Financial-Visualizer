@@ -263,7 +263,7 @@ const CommunityCreate = () => {
                       onClick={() => handleInvite(friend)}
                       className="bg-[#AAD977] text-white px-3 py-1 rounded-full text-xs hover:bg-[#83AB55]"
                     >
-                      Invite
+                      Invite 
                     </button>
                   </div>
                 ))}

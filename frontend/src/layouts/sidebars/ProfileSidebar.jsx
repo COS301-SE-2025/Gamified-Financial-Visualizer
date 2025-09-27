@@ -39,7 +39,24 @@ const AccountsPerformanceHeader = () => {
   }, []);
 
   return (
-    <div className="flex flex-wrap justify-between gap-6 items-start w-full mb-6">
+     <div className="w-full mb-6">
+           {/* Mobile Only: Clean Header */}
+           <div className="lg:hidden">
+             {/* Page Title at Top Left Corner */}
+             <div className="mb-4">
+               <div className="flex items-center gap-2 text-[#B4DFA4] dark:text-[#88BC46]">
+                 <FaUsers className="text-2xl" />
+                 <h1 className="text-2xl font-light dark:text-white">Profile</h1>
+               </div>
+               <div className="mb-6">
+               <p className="text-base text-gray-600 dark:text-gray-300">
+                 Manage your personal details, track XP, and monitor progress toward your goals and achievements.
+               </p>
+             </div>
+             </div>
+           </div>
+
+    <div className="hidden lg:flex flex-wrap justify-between gap-6 items-start w-full mb-6">
       {/* Left Label */}
       <div className="text-center lg:text-left">
         <div className="flex items-center justify-center lg:justify-start gap-2 text-[#B4DFA4]">
@@ -72,16 +89,16 @@ const AccountsPerformanceHeader = () => {
           {/* Progress Bar */}
           <div className="w-full">
             <p className="text-sm font-medium text-[#7FBCE9] mb-1">Overall Performance</p>
-            <div className="relative h-4 w-full rounded-full bg-[#f5f5f5] overflow-hidden">
+            <div className="relative h-4 w-full rounded-full bg-[#f5f5f5] overflow-hidden dark:bg-gray-700">
               <div
-                className="h-full rounded-full"
+                className="h-full rounded-full "
                 style={{
                   width: `${performanceSummary?.performance_score/500 *100}%`,
                   background: 'linear-gradient(to right, #4FC3F7, #B3E5FC)'
                 }}
               />
               <div
-                className="absolute top-1/2 w-5 h-5 bg-[#B3E5FC] rounded-full border-2 border-white shadow-md"
+                className="absolute top-1/2 w-5 h-5 bg-[#B3E5FC] rounded-full border-2 border-white shadow-md "
                 style={{
                   left: `calc(${performanceSummary?.performance_score/500 *100}% - 10px)`,
                   transform: 'translateY(-50%)'
@@ -122,6 +139,7 @@ const AccountsPerformanceHeader = () => {
         </div>
 
       </div>
+    </div>
     </div>
   );
 };
