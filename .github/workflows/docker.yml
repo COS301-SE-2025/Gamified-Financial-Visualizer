@@ -67,20 +67,20 @@ jobs:
     - name: Restart API Backend Service
       uses: azure/CLI@v2
       with:
-        azcliversion: 2.30.0
+        azcliversion: latest
         inlineScript: |
           az webapp restart --name gamified-finance-backend --resource-group gamified-finance-visualizer
 
     - name: Restart AI Service
       uses: azure/CLI@v2
       with:
-        azcliversion: 2.30.0
+        azcliversion: latest
         inlineScript: |
           az webapp restart --name gamified-finance-ai --resource-group gamified-finance-visualizer
           
     - name: Restart Frontend Service
       uses: azure/CLI@v2
       with:
-        azcliversion: 2.30.0
+        azcliversion: latest
         inlineScript: |
           az webapp restart --name gamified-finance-visualizer --resource-group gamified-finance-visualizer
