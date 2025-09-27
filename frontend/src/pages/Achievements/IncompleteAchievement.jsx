@@ -118,9 +118,14 @@ const AchievementCard = ({ achievement }) => {
   const navigate = useNavigate();
 
   const {
-    achievement_id, achievement_title, points_awarded,
-    progress_value, trigger_condition_json, achievement_description,
-    completed_task_count, child_task_count
+    achievement_id,
+    achievement_title,
+    points_awarded,
+    progress_value,
+    trigger_condition_json,
+    achievement_description,
+    completed_task_count,
+    child_task_count
   } = achievement;
 
   const cond = parseJsonSafe(trigger_condition_json);
@@ -133,40 +138,71 @@ const AchievementCard = ({ achievement }) => {
   const { border, fill, text, bg } = colorMap[colorKey] ?? colorMap.red;
   const image = getBadgeImage(achievement_title);
 
+  // Detect if mobile (you can pass this as prop or use context)
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768); // 768px is typical md breakpoint
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   return (
     <div
       onClick={() => navigate(`/achievements/${encodeURIComponent(achievement_title)}`)}
-      className={`cursor-pointer border-2 ${border} rounded-xl p-4 bg-white dark:bg-gray-800 flex flex-col items-center gap-3 hover:shadow-md transition-shadow ${bg}`}
+      className={`cursor-pointer border-2 ${border} rounded-xl p-3 bg-white dark:bg-gray-800 flex ${
+        isMobile ? 'flex-row items-start gap-3' : 'flex-col items-center gap-2'
+      } hover:shadow-md transition-shadow ${bg} ${isMobile ? 'min-h-0' : 'min-h-[140px]'}`} // CHANGED: Remove min-height on mobile, reduce on desktop
       title="Click to view details and sub-achievements"
       data-achievement-id={achievement_id}
     >
-      <div className="relative">
-        <img src={image} alt={achievement_title} className="w-16 h-16 object-contain" />
+      <div className={`relative ${isMobile ? 'flex-shrink-0' : ''}`}>
+        <img 
+          src={image} 
+          alt={achievement_title} 
+          className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} object-contain dark:text-gray-200`} 
+        />
+        {percent === 100 && (
+          <div className="absolute -top-1 -right-1 bg-yellow-400 rounded-full w-4 h-4 flex items-center justify-center dark:text-gray-300">
+            <span className="text-xs font-bold">✓</span>
+          </div>
+        )}
       </div>
 
-      <div className="text-center">
-        <h3 className={`text-sm font-semibold ${text} dark:text-gray-200`}>{achievement_title}</h3>
-        <p className="text-xs text-gray-500 mt-1 line-clamp-2 dark:text-gray-300">
+      <div className={`${isMobile ? 'flex-1 min-w-0' : 'text-center flex-1'}`}>
+        <h3 className={`text-xs font-semibold ${text} dark:text-gray-200 ${
+          isMobile ? 'line-clamp-1 leading-tight' : 'line-clamp-2 leading-tight'
+        }`}>
+          {achievement_title}
+        </h3>
+        <p className={`text-xs text-gray-500 mt-1 dark:text-gray-300 ${
+          isMobile ? 'line-clamp-2 leading-tight' : 'line-clamp-2 leading-tight'
+        }`}>
           {achievement_description || 'Complete tasks to earn this achievement'}
         </p>
-      </div>
 
-      <div className="w-full mt-1">
-        <div className="flex justify-between text-xs font-medium mb-1 dark:text-gray-300">
-          <span className={`${text}`}>{toNum(points_awarded, 0)} XP</span>
-          {toNum(child_task_count, 0) > 0 && (
-            <span className="text-gray-600 dark:text-gray-300">
-              {toNum(completed, 0)}/{toNum(total, 1)} tasks
-            </span>
-          )}
+        {/* Progress bar and XP - moved inside content area for mobile */}
+        <div className={`w-full ${isMobile ? 'mt-2' : 'mt-auto'}`}>
+          <div className="flex justify-between text-xs font-medium mb-1 dark:text-gray-300">
+            <span className={`${text}`}>{toNum(points_awarded, 0)} XP</span>
+            {toNum(child_task_count, 0) > 0 && (
+              <span className="text-gray-600">
+                {toNum(completed, 0)}/{toNum(total, 1)} tasks
+              </span>
+            )}
+          </div>
+          <div className="h-1.5 bg-gray-200 rounded-full dark:bg-gray-700">
+            <div className={`${fill} h-1.5 rounded-full`} style={{ width: `${percent}%` }} />
+          </div>
         </div>
-        <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-700">
-          <div className={`${fill} h-2 rounded-full`} style={{ width: `${percent}%` }} />
-        </div>
-      </div>
 
-      <div className="text-xs text-gray-500 mt-1 dark:text-gray-400">
-        {percent === 100 ? 'Completed!' : 'Click for details'}
+        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          {percent === 100 ? 'Completed!' : 'Click for details'}
+        </div>
       </div>
     </div>
   );
@@ -339,6 +375,19 @@ const IncompleteAchievement = () => {
   const [groupFilter, setGroupFilter] = useState('all');
   const [sortBy, setSortBy] = useState('default');
 
+   // Detect if mobile
+    const [isMobile, setIsMobile] = useState(false);
+  
+    useEffect(() => {
+      const checkMobile = () => {
+        setIsMobile(window.innerWidth < 768); // 768px is typical md breakpoint
+      };
+  
+      checkMobile();
+      window.addEventListener('resize', checkMobile);
+      return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
   useEffect(() => {
     let user = null;
     try { user = JSON.parse(localStorage.getItem('user') || 'null'); } catch { }
@@ -395,103 +444,123 @@ const IncompleteAchievement = () => {
   return (
     <AchievementsLayout>
       <div className="space-y-6 px-6 pt-10 pb-6 -mt-8">
-        <div className="bg-gradient-to-r from-[#B1E1FF20] to-[#7FDD5320] rounded-xl p-6 mb-6 shadow-sm border border-gray-100 dark:border-gray-700">
+        {/* Banner - mobile responsive */}
+         <div className="bg-gradient-to-r from-[#B1E1FF20] to-[#7FDD5320] rounded-xl p-4 sm:p-6 mb-4 sm:mb-6 shadow-sm border border-gray-100 dark:border-gray-700">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 dark:text-gray-200">Incomplete Achievements</h1>
-            <p className="text-gray-600 dark:text-gray-300">You’re close! Keep pushing to finish these.</p>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 dark:text-gray-200">Inompleted Achievements</h1>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">You’re close! Keep pushing to finish these</p>
 
-            <div className="flex items-center text-sm text-gray-500 mt-3">
-              <span className="inline-block w-3 h-3 bg-[#88BC46] rounded-full mr-1"></span>
-              <span className="mr-3">Financial</span>
-              <span className="inline-block w-3 h-3 bg-[#5FBFFF] rounded-full mr-1"></span>
-              <span className="mr-3">Learning</span>
-              <span className="inline-block w-3 h-3 bg-[#ED5E52] rounded-full mr-1"></span>
-              <span>Community</span>
+            <div className="flex flex-wrap items-center text-xs sm:text-sm text-gray-500 mt-3 gap-2 sm:gap-3">
+              <span className="flex items-center">
+                <span className="inline-block w-3 h-3 bg-[#88BC46] rounded-full mr-1"></span>
+                <span>Financial</span>
+              </span>
+              <span className="flex items-center">
+                <span className="inline-block w-3 h-3 bg-[#5FBFFF] rounded-full mr-1"></span>
+                <span>Learning</span>
+              </span>
+              <span className="flex items-center">
+                <span className="inline-block w-3 h-3 bg-[#ED5E52] rounded-full mr-1"></span>
+                <span>Community</span>
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Search & Filters (Learning style) */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-6">
-            <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white dark:bg-gray-800 shadow-sm dark:border-[#AAD977]">
-              <FaSearch className="text-[#76B947] dark:text-[#AAD977] mr-2" />
-              <input
-                type="text"
-                placeholder="Search achievements..."
-                className="w-full outline-none bg-transparent text-sm text-[#76B947] dark:text-[#AAD977] placeholder-[#76B947]/70 dark:placeholder-[#AAD977]/70"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-gray-800 border border-[#76B947] dark:border-[#AAD977] rounded-lg shadow-sm hover:bg-lime-100 dark:hover:bg-gray-700 transition-colors"
-            >
-              <FaFilter className="text-[#76B947] dark:text-[#AAD977]" />
-              <span className="text-[#76B947] dark:text-[#AAD977]">Filters</span>
-            </button>
-          </div>
-
-          {showFilters && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 mb-6"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Group</label>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { key: 'all', label: 'All' },
-                      { key: 'blue', label: 'Learning' },
-                      { key: 'green', label: 'Financial' },
-                      { key: 'red', label: 'Community' },
-                    ].map(({ key, label }) => (
+         {/* Search & Filters - filter button next to search input */}
+                <div className="mb-6 sm:mb-8">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center justify-between mb-4 sm:mb-6">
+                    {/* Search and Filter buttons in one row on mobile */}
+                    <div className="flex gap-3 w-full">
+                      {/* Search - takes most of the space */}
+                      <div className="flex items-center flex-1 px-3 py-2 border border-[#76B947] rounded-full bg-white dark:bg-gray-800 shadow-sm dark:border-[#AAD977]">
+                        <FaSearch className="text-[#76B947] dark:text-[#AAD977] mr-2 text-sm" />
+                        <input
+                          type="text"
+                          placeholder="Search achievements..."
+                          className="w-full outline-none bg-transparent text-xs sm:text-sm text-[#76B947] dark:text-[#AAD977] placeholder-[#76B947]/70 dark:placeholder-[#AAD977]/70"
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                      </div>
+        
+                      {/* Filters toggle - show "Filter" text only on website, not mobile */}
                       <button
-                        key={key}
-                        onClick={() => setGroupFilter(key)}
-                        className={`px-3 py-1 rounded-full text-sm ${groupFilter === key
-                          ? key === 'blue'
-                            ? 'bg-[#B1E1FF] dark:bg-[#5FBFFF] text-white'
-                            : key === 'green'
-                              ? 'bg-[#AAD977] dark:bg-[#76B947] text-white'
-                              : key === 'red'
-                                ? 'bg-[#FE9B90] dark:bg-[#F97156] text-white'
-                                : 'bg-[#AAD977] dark:bg-[#76B947] text-white'
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
-                          }`}
+                        onClick={() => setShowFilters(!showFilters)}
+                        className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border border-[#76B947] dark:border-[#AAD977] rounded-lg shadow-sm hover:bg-lime-100 dark:hover:bg-gray-700 transition-colors whitespace-nowrap"
                       >
-                        {label}
+                        <FaFilter className="text-[#76B947] dark:text-[#AAD977] text-sm" />
+                        {!isMobile && (
+                          <span className="text-[#76B947] dark:text-[#AAD977] text-xs sm:text-sm">Filter</span>
+                        )}
                       </button>
-                    ))}
+                    </div>
                   </div>
+        
+                  {showFilters && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 mb-4 sm:mb-6"
+                    >
+                      <div className="grid grid-cols-1 gap-4 sm:gap-6">
+                        {/* Group pills - centered on mobile */}
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Group
+                          </label>
+                          <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+                            {[
+                              { key: 'all', label: 'All' },
+                              { key: 'blue', label: 'Learning' },
+                              { key: 'green', label: 'Financial' },
+                              { key: 'red', label: 'Community' },
+                            ].map(({ key, label }) => (
+                              <button
+                                key={key}
+                                onClick={() => setGroupFilter(key)}
+                                className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm ${groupFilter === key
+                                    ? key === 'blue'
+                                      ? 'bg-[#B1E1FF] dark:bg-[#5FBFFF] text-white'
+                                      : key === 'green'
+                                        ? 'bg-[#AAD977] dark:bg-[#76B947] text-white'
+                                        : key === 'red'
+                                          ? 'bg-[#FE9B90] dark:bg-[#F97156] text-white'
+                                          : 'bg-[#AAD977] dark:bg-[#76B947] text-white'
+                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                  }`}
+                              >
+                                {label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+        
+                        {/* Sort - full width on mobile */}
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Sort by
+                          </label>
+                          <SortDropdown
+                            name="sortBy"
+                            value={sortBy}
+                            onChange={(val) => setSortBy(val)}
+                            options={[
+                              { value: 'default', label: 'Default' },
+                              { value: 'az', label: 'A–Z' },
+                              { value: 'xpDesc', label: 'XP: High → Low' },
+                              { value: 'progDesc', label: 'Progress: High → Low' },
+                            ]}
+                            placeholder="Sort by"
+                            offsetY={24}
+                          />
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort by</label>
-                  <SortDropdown
-                    name="sortBy"
-                    value={sortBy}
-                    onChange={(val) => setSortBy(val)}
-                    options={[
-                      { value: 'default', label: 'Default' },
-                      { value: 'az', label: 'A–Z' },
-                      { value: 'xpDesc', label: 'XP: High → Low' },
-                      { value: 'progDesc', label: 'Progress: High → Low' },
-                    ]}
-                    placeholder="Sort by"
-                    offsetY={24}
-                  />
-
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </div>
 
         {/* Grid */}
         {viewList.length ? (

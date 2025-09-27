@@ -100,42 +100,42 @@ const OverviewLanding = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-8 space-y-4 sm:space-y-6">
       {/* Header Card */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-md dark:shadow-gray-700/50 border-l-8 border-t-2 border-r-2 border-b-2 border-[#FFD18C] relative overflow-hidden"
+        className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-md dark:shadow-gray-700/50 border-l-8 border-t-2 border-r-2 border-b-2 border-[#FFD18C] relative overflow-hidden"
       >
-        <div className="absolute top-0 right-0 w-32 h-32 bg-[#fef9c3] dark:bg-yellow-900 rounded-full filter blur-3xl opacity-40 dark:opacity-20 -mr-10 -mt-10"></div>
+        <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-[#fef9c3] dark:bg-yellow-900 rounded-full filter blur-3xl opacity-40 dark:opacity-20 -mr-6 sm:-mr-10 -mt-6 sm:-mt-10"></div>
         
-        <div className="relative z-10 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-sky-300 mb-1">Adventure Guide</h1>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">Explore different areas of your financial journey</p>
+        <div className="relative z-10 flex flex-row justify-between items-center gap-4">
+          <div className="text-left">
+            <h1 className="text-xl sm:text-2xl font-bold text-sky-300 mb-1">Adventure Guide</h1>
+            <p className="text-gray-600 dark:text-gray-300 text-sm sm:text-base mb-3 sm:mb-4">Explore different areas of your financial journey</p>
             
-            <div className="flex gap-3">
+            <div className="flex justify-start gap-3">
               <div className="bg-[#fffbeb] dark:bg-gray-800 border border-[#fde68a] dark:border-gray-700 rounded-lg px-3 py-2 flex items-center gap-2">
-                <FaTrophy className="text-[#fbbf24]" />
-                <span className="text-[#92400e] dark:text-yellow-300 text-sm">{sections.length} areas to explore</span>
+                <FaTrophy className="text-[#fbbf24] text-sm sm:text-base" />
+                <span className="text-[#92400e] dark:text-yellow-300 text-xs sm:text-sm">{sections.length} areas to explore</span>
               </div>
             </div>
           </div>
 
-          {/* Replaced XP circle with your image */}
-          <div className="relative">
+          {/* Image - always on the side for both mobile and desktop */}
+          <div className="relative flex-shrink-0">
             <img 
               src={headerImage} 
               alt="Adventure Guide" 
-              className="w-24 h-24 rounded-full object-cover border-4 border-[#FFD18C] shadow-lg dark:shadow-gray-700/50"
+              className="w-16 h-16 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-[#FFD18C] shadow-lg dark:shadow-gray-700/50"
             />
           </div>
         </div>
       </motion.div>
 
       {/* Navigation Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {sections.map(({ id, label, icon, color, desc }) => (
           <motion.div
             key={id}
@@ -144,7 +144,7 @@ const OverviewLanding = () => {
             onHoverStart={() => setIsHovered(id)}
             onHoverEnd={() => setIsHovered(null)}
             onClick={() => handleButtonClick(`/support/overview/${id}`)}
-            className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm dark:shadow-gray-700/50 border-l-8 hover:shadow-md dark:hover:shadow-gray-600/50 transition-all relative overflow-hidden group cursor-pointer"
+            className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm dark:shadow-gray-700/50 border-l-8 hover:shadow-md dark:hover:shadow-gray-600/50 transition-all relative overflow-hidden group cursor-pointer"
             style={{ borderLeftColor: color }}
           >
             <AnimatePresence>
@@ -158,9 +158,9 @@ const OverviewLanding = () => {
               )}
             </AnimatePresence>
             
-            <div className="relative z-10 flex items-start gap-4">
+            <div className="relative z-10 flex items-start gap-3 sm:gap-4">
               <div 
-                className="w-12 h-12 rounded-xl flex items-center justify-center"
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{ 
                   backgroundColor: `${color}20`,
                   color: color
@@ -168,11 +168,11 @@ const OverviewLanding = () => {
               >
                 {icon}
               </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{label}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{desc}</p>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white truncate">{label}</h3>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">{desc}</p>
                 <motion.div 
-                  className="flex items-center mt-3 text-xs font-medium"
+                  className="flex items-center mt-2 sm:mt-3 text-xs font-medium"
                   style={{ color }}
                   initial={{ opacity: 0, x: -5 }}
                   animate={{ opacity: 1, x: 0 }}
