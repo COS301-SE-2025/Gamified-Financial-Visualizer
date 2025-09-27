@@ -39,22 +39,17 @@ RUN npm run build && \
     npm prune --production --no-audit --no-fund
 
 # Production stage
-FROM node:18-alpine AS production
+FROM node:18-slim AS production
 
 # Install security updates and dumb-init
 RUN apk update && apk upgrade && apk add --no-cache \
     dumb-init \
-    curl \
     python3 \
-    py3-pip \
-    gcc \
-    g++ \
-    musl-dev \
-    linux-headers \
-    python3-dev \
-    && rm -rf /var/cache/apk/*
+    python3-pip\
+    curl \
+    && rm -rf /var/cache/apk/lists/*
 
-RUN pip3 install --no-cache-dir --break-system-packages \
+RUN pip3 install --no-cache-dir \
     PyPDF2==3.0.1 \
     pandas==2.1.0 \
     python-dateutil==2.8.2
