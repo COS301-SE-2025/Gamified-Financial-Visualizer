@@ -46,12 +46,6 @@ RUN apk update && apk upgrade && apk add --no-cache \
     dumb-init \
     curl \
     && rm -rf /var/cache/apk/*
-
-RUN pip3 install --no-cache-dir --break-system-packages \
-    PyPDF2==3.0.1 \
-    pandas==2.1.0 \
-    python-dateutil==2.8.2 \
-    && rm -rf /root/.cache/pip
     
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
