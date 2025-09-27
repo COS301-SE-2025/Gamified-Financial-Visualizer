@@ -1,5 +1,5 @@
 # Core ML & Transformers
-torch==2.1.0
+torch==2.2.0
 transformers==4.33.2
 datasets==2.14.5
 evaluate==0.4.0
@@ -27,4 +27,3 @@ scikit-learn==1.7.0
 scipy==1.11.4
 numpy==1.26.4
 
-# pickle==0.0  # Note: 'pickle' is a built-in module, no need to install

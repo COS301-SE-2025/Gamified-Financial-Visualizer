@@ -432,7 +432,7 @@ const GoalCreatePage = () => {
             type="button"
             onClick={() => (datesValid ? setShowConfirm(true) : null)}
             disabled={!datesValid}
-            className={`px-8 py-3 rounded-full font-medium transition-all
+            className={`px-8 py-3 rounded-full font-medium transition-all dark:bg-gray-700 dark:text-gray-300
               ${datesValid
                 ? 'bg-gradient-to-r from-[#B4CB98] to-[#AAD977] text-white hover:from-[#AAD977] hover:to-[#B4CB98]'
                 : 'bg-gray-300 text-gray-600 cursor-not-allowed'}`}

@@ -715,6 +715,11 @@ export async function createBudget(
   period_end: string,
   allocations: Array<{ category_id: number; target_amount: number }>
 ) {
+
+  if (await budgetExists(budget_name, user_id)) {
+    throw new Error(`Budget ${budget_name} already exists for you!`);
+  }
+
   const insertBudgetSql = `
     INSERT INTO budgets
       (user_id, budget_name, period_start, period_end)
@@ -754,6 +759,17 @@ export async function createBudget(
     throw error;
   } finally {
     client.release();
+  }
+}
+
+async function budgetExists(budget_name: string, user_id: number) {
+  const sql = `SELECT 1 FROM budgets WHERE budget_name = $1 AND user_id = $2;`;
+  try {
+    const res = await pool.query(sql, [ budget_name, user_id ]);
+    return (res.rowCount ?? 0) > 0;
+  } catch (error) {
+    logger.error(`[TransactionService] Error checking existence of budget ${budget_name} for user ${user_id}:`, error);
+    throw error;
   }
 }
 
@@ -889,6 +905,10 @@ export async function createBudgetWithCategoryName(
       VALUES ($1, $2, $3, $4)
       RETURNING budget_id;
     `;
+
+    if(await budgetExists(budget_name, user_id)) {
+      throw new Error(`Budget ${budget_name} already exists for you!`);
+    }
     const result = await client.query(insertBudget, [ user_id, budget_name, start, end ]);
     const budget_id = result.rows[ 0 ].budget_id;
 

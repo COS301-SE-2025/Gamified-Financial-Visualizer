@@ -43,7 +43,7 @@ const GoalCard = ({ goalId, title, image, progress, target, dueDate }) => {
                 {/* View More Button */}
                 <button
                     onClick={handleViewMore}
-                    className="mt-4 px-4 py-2 bg-[#AAD977] dark:bg-[#7FDD53] text-white text-sm rounded-full shadow hover:bg-[#8BC34A] dark:hover:bg-[#6BC026] flex items-center gap-2 transition-colors"
+                    className="mt-4 px-4 py-2 bg-[#AAD977] dark:bg-[#AAD977] dark:hover:bg-[#88BC46] text-white text-sm rounded-full shadow hover:bg-[#8BC34A] dark:hover:bg-[#6BC026] flex items-center gap-2 transition-colors"
                 >
                     View More <FaArrowRight className="text-white text-xs" />
                 </button>

@@ -1,6 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaChevronDown, FaChevronUp, FaCheckCircle, FaTrophy, FaClock, FaBookOpen } from 'react-icons/fa';
+import {
+  FaChevronDown, FaChevronUp, FaCheckCircle, FaTrophy, FaClock, FaBookOpen,
+  FaChartLine, FaLightbulb, FaExclamationTriangle, FaTools, FaStar,
+  FaMoneyBillWave,
+  FaReceipt,
+  FaShoppingCart,
+  FaShield,
+  FaFileAlt,
+  FaCalculator,
+  FaHospital,
+  FaGraduationCap,
+  FaBriefcase,
+  FaHome,
+  FaKey,
+  FaPlane,
+  FaCar,
+  FaShieldAlt
+} from 'react-icons/fa';
 import LearnLayout from './LearnLayout';
 
 const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
@@ -149,27 +166,351 @@ const ModuleLessonsPage = () => {
     return totalLessons ? Math.round((completed / totalLessons) * 100) : 0;
   };
 
-  const renderLessonContent = (lesson) => {
-    return (
-      <div className="mt-4 space-y-4 animate-fadeIn">
-        <div className="prose prose-sm max-w-none text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
-          {lesson.content}
-        </div>
+const renderLessonContent = (lesson) => {
+  const formatContent = (content) => {
+    if (!content) return [];
+    
+    if (Array.isArray(content)) {
+      return content;
+    }
+    
+    if (typeof content === 'string') {
+      try {
+        if (content.trim().startsWith('[') || content.trim().startsWith('{')) {
+          return JSON.parse(content);
+        }
+      } catch (error) {
+        console.warn('JSON parsing failed, using text parsing:', error);
+      }
+      
+      return parseFormattedText(content);
+    }
+    
+    return [{ type: 'paragraph', text: String(content) }];
+  };
+
+  const parseFormattedText = (text) => {
+    if (!text) return [];
+    
+    // First, clean the text by removing the � characters and replacing with proper emoji detection
+    const cleanedText = text.replace(/�/g, '').trim();
+    
+    const lines = cleanedText.split('\n').filter(line => line.trim());
+    const sections = [];
+    let currentSection = null;
+
+    lines.forEach(line => {
+      const trimmedLine = line.trim();
+      
+      // Enhanced emoji detection - includes all your emojis and handles encoding issues
+      const emojiRegex = /^(?:[\u{1F300}-\u{1F9FF}]|[\u{1F600}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}])/u;
+      const isSectionHeader = emojiRegex.test(trimmedLine) || 
+                             trimmedLine.match(/^[💥📉📈💡🔍🛠️⚡🎯📊💰🔒🚨👑💎🌱🔥🔄📋💳🏠🧾🛒🏦🚗🏡💼🌟🚨🔧1️⃣2️⃣3️⃣📞❌✅🛡️💡🧮💯🔥🚦📱🔍🔼🔽🎯💰🧠🔄📌🚫⚖️🛠️🆘😰💑🛍️🛑💬💥📉🚀📝💔📈📅🚨👩💻🏦💸📊💵⏰💰⚠️🔑🧾💊🏥🚑🚩🎮🗓️🍷💣🗺️🌍♟️🏗️🔢⏳🏆🕵️✈️🥋🍞🍔🎟️🕒🎓💍🛋️🏋️📜🏝️💱📧✍️🏫]/);
+      
+      if (isSectionHeader || (trimmedLine.includes(':') && !trimmedLine.startsWith('•') && !trimmedLine.match(/^\d/))) {
+        if (currentSection) {
+          sections.push(currentSection);
+        }
         
-        <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
-          <button 
-            onClick={() => toggleExpand(lesson.id)}
-            className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 flex items-center transition-colors"
-          >
-            Collapse lesson
-            <FaChevronUp className="ml-1" />
-          </button>
-        </div>
-      </div>
+        currentSection = {
+          type: 'section',
+          title: trimmedLine,
+          content: []
+        };
+      }
+      // Detect bullet points
+      else if (trimmedLine.startsWith('•')) {
+        if (!currentSection) {
+          currentSection = { type: 'section', title: 'Content', content: [] };
+        }
+        
+        const bulletText = trimmedLine.substring(1).trim();
+        currentSection.content.push({
+          type: 'bullet',
+          text: bulletText
+        });
+      }
+      // Detect numbered lists
+      else if (trimmedLine.match(/^\d+\./)) {
+        if (!currentSection) {
+          currentSection = { type: 'section', title: 'Content', content: [] };
+        }
+        
+        currentSection.content.push({
+          type: 'numbered',
+          text: trimmedLine,
+          number: trimmedLine.match(/^\d+/)[0]
+        });
+      }
+      // Detect bold text lines
+      else if (trimmedLine.includes('**') && trimmedLine.length > 4) {
+        if (!currentSection) {
+          currentSection = { type: 'section', title: 'Content', content: [] };
+        }
+        
+        currentSection.content.push({
+          type: 'bold',
+          text: trimmedLine
+        });
+      }
+      // Regular text lines
+      else if (trimmedLine) {
+        if (!currentSection) {
+          currentSection = { type: 'section', title: 'Content', content: [] };
+        }
+        
+        // Check if this continues the previous paragraph
+        const lastItem = currentSection.content[currentSection.content.length - 1];
+        if (lastItem && lastItem.type === 'paragraph') {
+          lastItem.text += ' ' + trimmedLine;
+        } else {
+          currentSection.content.push({
+            type: 'paragraph',
+            text: trimmedLine
+          });
+        }
+      }
+    });
+
+    if (currentSection) {
+      sections.push(currentSection);
+    }
+
+    return sections.length > 0 ? sections : [{ type: 'paragraph', text: cleanedText }];
+  };
+
+  // Comprehensive icon mapping
+  const getIconForTitle = (title) => {
+    const lowerTitle = title.toLowerCase();
+    
+    // Vehicle & Travel
+    if (title.includes('🚗') || lowerTitle.includes('car') || lowerTitle.includes('vehicle') || lowerTitle.includes('travel')) 
+      return <FaCar className="text-[#5FBFFF] mt-0.5" />;
+    if (title.includes('✈️') || lowerTitle.includes('travel') || lowerTitle.includes('flight')) 
+      return <FaPlane className="text-[#B1E1FF] mt-0.5" />;
+    
+    // Home & Property
+    if (title.includes('🏡') || title.includes('🏠') || lowerTitle.includes('home') || lowerTitle.includes('property') || lowerTitle.includes('rent')) 
+      return <FaHome className="text-[#7FDD53] mt-0.5" />;
+    if (title.includes('🔑') || lowerTitle.includes('key') || lowerTitle.includes('access')) 
+      return <FaKey className="text-[#FFD93D] mt-0.5" />;
+    
+    // Work & Business
+    if (title.includes('💼') || lowerTitle.includes('work') || lowerTitle.includes('business') || lowerTitle.includes('job')) 
+      return <FaBriefcase className="text-[#FF6B6B] mt-0.5" />;
+    if (title.includes('🏦') || lowerTitle.includes('bank') || lowerTitle.includes('financial')) 
+      return <FaMoneyBillWave className="text-[#FFC541] mt-0.5" />;
+    
+    // Important & Priority
+    if (title.includes('🌟') || title.includes('💎') || lowerTitle.includes('important') || lowerTitle.includes('priority')) 
+      return <FaStar className="text-[#FFD93D] mt-0.5" />;
+    if (title.includes('🚨') || title.includes('⚠️') || lowerTitle.includes('warning') || lowerTitle.includes('alert') || lowerTitle.includes('risk')) 
+      return <FaExclamationTriangle className="text-[#FF8A8A] mt-0.5" />;
+    
+    // Tools & Solutions
+    if (title.includes('🔧') || title.includes('🛠️') || lowerTitle.includes('tool') || lowerTitle.includes('solution') || lowerTitle.includes('fix')) 
+      return <FaTools className="text-[#7FDD53] mt-0.5" />;
+    if (title.includes('🛡️') || lowerTitle.includes('protection') || lowerTitle.includes('security')) 
+      return <FaShieldAlt className="text-[#5FBFFF] mt-0.5" />;
+    
+    // Time & Schedule
+    if (title.includes('⏰') || title.includes('🕒') || title.includes('📅') || lowerTitle.includes('time') || lowerTitle.includes('schedule') || lowerTitle.includes('deadline')) 
+      return <FaClock className="text-[#B1E1FF] mt-0.5" />;
+    if (title.includes('💥') || lowerTitle.includes('urgent') || lowerTitle.includes('immediate')) 
+      return <FaClock className="text-[#FF6B6B] mt-0.5" />;
+    
+    // Money & Finance
+    if (title.includes('💰') || title.includes('💸') || title.includes('💵') || lowerTitle.includes('money') || lowerTitle.includes('cash') || lowerTitle.includes('finance')) 
+      return <FaMoneyBillWave className="text-[#FFC541] mt-0.5" />;
+    if (title.includes('🧾') || lowerTitle.includes('receipt') || lowerTitle.includes('invoice')) 
+      return <FaReceipt className="text-[#7FDD53] mt-0.5" />;
+    
+    // Shopping & Retail
+    if (title.includes('🛒') || title.includes('🛍️') || lowerTitle.includes('shop') || lowerTitle.includes('retail') || lowerTitle.includes('discount')) 
+      return <FaShoppingCart className="text-[#B1E1FF] mt-0.5" />;
+    
+    // Data & Charts
+    if (title.includes('📈') || title.includes('📉') || title.includes('📊') || lowerTitle.includes('data') || lowerTitle.includes('chart') || lowerTitle.includes('stat')) 
+      return <FaChartLine className="text-[#5FBFFF] mt-0.5" />;
+    
+    // Ideas & Tips
+    if (title.includes('💡') || lowerTitle.includes('tip') || lowerTitle.includes('idea') || lowerTitle.includes('pro tip')) 
+      return <FaLightbulb className="text-[#FFD93D] mt-0.5" />;
+    
+    // Education & Learning
+    if (title.includes('🎓') || title.includes('🏫') || lowerTitle.includes('learn') || lowerTitle.includes('education') || lowerTitle.includes('course')) 
+      return <FaGraduationCap className="text-[#7FDD53] mt-0.5" />;
+    
+    // Health & Medical
+    if (title.includes('💊') || title.includes('🏥') || title.includes('🚑') || lowerTitle.includes('health') || lowerTitle.includes('medical')) 
+      return <FaHospital className="text-[#FF8A8A] mt-0.5" />;
+    
+    // Default icons for common patterns
+    if (lowerTitle.includes('checklist') || lowerTitle.includes('step')) 
+      return <FaFileAlt className="text-[#5FBFFF] mt-0.5" />;
+    if (lowerTitle.includes('calculation') || lowerTitle.includes('math')) 
+      return <FaCalculator className="text-[#B1E1FF] mt-0.5" />;
+    if (lowerTitle.includes('action') || lowerTitle.includes('do this')) 
+      return <FaCheckCircle className="text-[#7FDD53] mt-0.5" />;
+    
+    return <FaFileAlt className="text-[#B1E1FF] mt-0.5" />;
+  };
+
+  // Clean title by removing all emojis and markdown
+  const cleanTitle = (title) => {
+    // Remove all Unicode emojis and specific emoji characters
+    return title
+      .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')
+      .replace(/[\u{1F600}-\u{1F64F}]/gu, '')
+      .replace(/[\u{1F680}-\u{1F6FF}]/gu, '')
+      .replace(/[\u{2600}-\u{26FF}]/gu, '')
+      .replace(/[\u{2700}-\u{27BF}]/gu, '')
+      .replace(/[💥📉📈💡🔍🛠️⚡🎯📊💰🔒🚨👑💎🌱🔥🔄📋💳🏠🧾🛒🏦🚗🏡💼🌟🚨🔧1️⃣2️⃣3️⃣📞❌✅🛡️💡🧮💯🔥🚦📱🔍🔼🔽🎯💰🧠🔄📌🚫⚖️🛠️🆘😰💑🛍️🛑💬💥📉🚀📝💔📈📅🚨👩💻🏦💸📊💵⏰💰⚠️🔑🧾💊🏥🚑🚩🎮🗓️🍷💣🗺️🌍♟️🏗️🔢⏳🏆🕵️✈️🥋🍞🍔🎟️🕒🎓💍🛋️🏋️📜🏝️💱📧✍️🏫]/g, '')
+      .replace(/\*\*/g, '')
+      .replace(/\:$/, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
+  // Process text to handle markdown-like formatting
+  const processText = (text) => {
+    if (!text) return [{ type: 'normal', text: '' }];
+    
+    const parts = [];
+    let currentText = text;
+    
+    while (currentText.includes('**')) {
+      const before = currentText.substring(0, currentText.indexOf('**'));
+      currentText = currentText.substring(currentText.indexOf('**') + 2);
+      const boldText = currentText.substring(0, currentText.indexOf('**'));
+      currentText = currentText.substring(currentText.indexOf('**') + 2);
+      
+      if (before) parts.push({ type: 'normal', text: before });
+      if (boldText) parts.push({ type: 'bold', text: boldText });
+    }
+    
+    if (currentText) parts.push({ type: 'normal', text: currentText });
+    
+    return parts.length > 0 ? parts : [{ type: 'normal', text: text }];
+  };
+
+  const renderTextContent = (text) => {
+    const parts = processText(text);
+    
+    return (
+      <span>
+        {parts.map((part, index) => 
+          part.type === 'bold' ? (
+            <strong key={index} className="text-gray-900 dark:text-gray-100 font-semibold">
+              {part.text}
+            </strong>
+          ) : (
+            <span key={index}>{part.text}</span>
+          )
+        )}
+      </span>
     );
   };
 
-  
+  const renderContentItem = (item, index) => {
+    if (typeof item === 'string') {
+      return (
+        <p key={index} className="text-gray-700 dark:text-gray-300 leading-7 mb-4 last:mb-0">
+          {renderTextContent(item)}
+        </p>
+      );
+    }
+
+    if (item.type === 'section') {
+      const cleanedTitle = cleanTitle(item.title);
+      
+      return (
+        <div key={index} className="mb-6 last:mb-0">
+          {cleanedTitle && (
+            <h4 className="font-semibold text-gray-800 dark:text-gray-200 text-base mb-4 flex items-start gap-3 pb-2 border-b border-gray-200 dark:border-gray-600">
+              {getIconForTitle(item.title)}
+              <span>{renderTextContent(cleanedTitle)}</span>
+            </h4>
+          )}
+          
+          <div className="space-y-3 ml-1">
+            {item.content.map((contentItem, contentIndex) => (
+              <div key={contentIndex} className="flex items-start gap-3">
+                {contentItem.type === 'bullet' && (
+                  <>
+                    <span className="text-[#5FBFFF] dark:text-[#7FDD53] mt-1.5 flex-shrink-0 text-xs">•</span>
+                    <span className="text-gray-700 dark:text-gray-300 leading-7 flex-1">
+                      {renderTextContent(contentItem.text)}
+                    </span>
+                  </>
+                )}
+                
+                {contentItem.type === 'numbered' && (
+                  <>
+                    <span className="text-[#5FBFFF] dark:text-[#7FDD53] font-medium mt-1 flex-shrink-0 text-sm min-w-[20px]">
+                      {contentItem.number}.
+                    </span>
+                    <span className="text-gray-700 dark:text-gray-300 leading-7 flex-1">
+                      {renderTextContent(contentItem.text.replace(/^\d+\.\s*/, ''))}
+                    </span>
+                  </>
+                )}
+                
+                {contentItem.type === 'bold' && (
+                  <div className="w-full bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 dark:border-yellow-300 p-3 rounded-r">
+                    <span className="text-gray-700 dark:text-gray-300 font-medium">
+                      {renderTextContent(contentItem.text)}
+                    </span>
+                  </div>
+                )}
+                
+                {contentItem.type === 'paragraph' && (
+                  <p className="text-gray-700 dark:text-gray-300 leading-7 flex-1">
+                    {renderTextContent(contentItem.text)}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <p key={index} className="text-gray-700 dark:text-gray-300 leading-7 mb-4 last:mb-0">
+        {renderTextContent(item.text || String(item))}
+      </p>
+    );
+  };
+
+  const contentItems = formatContent(lesson.content);
+
+  return (
+    <div className="mt-4 space-y-6 animate-fadeIn">
+      <div className="prose prose-sm max-w-none">
+        {contentItems.length === 0 ? (
+          <p className="text-gray-500 dark:text-gray-400 italic">No content available for this lesson.</p>
+        ) : (
+          contentItems.map((item, index) => (
+            <div key={index} className={`${item.type === 'section' ? 'p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg' : ''}`}>
+              {renderContentItem(item, index)}
+            </div>
+          ))
+        )}
+      </div>
+      
+      <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
+        <button 
+          onClick={() => toggleExpand(lesson.id)}
+          className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 flex items-center transition-colors"
+        >
+          Collapse lesson
+          <FaChevronUp className="ml-1" />
+        </button>
+      </div>
+    </div>
+  );
+};
 
   if (error) {
     return (
@@ -232,7 +573,7 @@ const ModuleLessonsPage = () => {
       )}
 
       <div className="max-w-6xl mx-auto px-6 py-6">
-       {/* Module Header */}
+        {/* Module Header */}
         <div className="bg-gradient-to-r from-[#B1E1FF20] to-[#7FDD5320] 
                       dark:bg-gradient-to-br dark:from-[#0F172A] dark:via-[#1E293B] dark:to-[#334155] 
                       rounded-xl p-6 mb-6 shadow-sm border border-gray-100 dark:border-gray-700/50">
@@ -271,8 +612,8 @@ const ModuleLessonsPage = () => {
             </span>
           </div>
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-            <div 
-              className="h-full rounded-full bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53]" 
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53]"
               style={{ width: `${calculateProgress()}%` }}
             ></div>
           </div>
@@ -288,11 +629,9 @@ const ModuleLessonsPage = () => {
           {lessons.map((lesson) => (
             <div
               key={lesson.id}
-              className={`bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200 ${
-                colorMap[lesson.color].border
-              } ${
-                expandedId === lesson.id ? `ring-2 ${colorMap[lesson.color].ring} shadow-md` : ''
-              }`}
+              className={`bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200 ${colorMap[lesson.color].border
+                } ${expandedId === lesson.id ? `ring-2 ${colorMap[lesson.color].ring} shadow-md` : ''
+                }`}
             >
               <div
                 className="flex justify-between items-center p-5 cursor-pointer"
@@ -350,12 +689,10 @@ const ModuleLessonsPage = () => {
               </svg>
               Module Quiz
             </h2>
-            
-            <div className={`bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200 ${
-              colorMap.purple.border
-            } ${
-              expandedId === 'quiz' ? `ring-2 ${colorMap.purple.ring} shadow-md` : ''
-            }`}>
+
+            <div className={`bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200 ${colorMap.purple.border
+              } ${expandedId === 'quiz' ? `ring-2 ${colorMap.purple.ring} shadow-md` : ''
+              }`}>
               <div
                 className="flex justify-between items-center p-5 cursor-pointer"
                 onClick={() => setExpandedId(prev => prev === 'quiz' ? null : 'quiz')}
@@ -397,7 +734,7 @@ const ModuleLessonsPage = () => {
                         <div key={qIndex} className="bg-gray-50 dark:bg-gray-700 p-5 rounded-lg border border-gray-100 dark:border-gray-600">
                           <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-3">
                             <span className="text-gray-500 dark:text-gray-400 mr-2">Q{qIndex + 1}:</span>
-                            {question.question} 
+                            {question.question}
                             <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">({question.points} point{question.points !== 1 ? 's' : ''})</span>
                           </h4>
                           <div className="space-y-3">
@@ -426,8 +763,8 @@ const ModuleLessonsPage = () => {
                         onClick={submitQuiz}
                         disabled={Object.keys(quizAnswers).length !== quizData.questions_jsonb.length}
                         className={`w-full mt-6 px-6 py-3 rounded-lg font-medium text-lg transition-all ${Object.keys(quizAnswers).length === quizData.questions_jsonb.length
-                            ? 'bg-[#5FBFFF] dark:from-[#4FAFFF] dark:to-[#A1D1FF] text-white hover:bg-[#4FAFFF] dark:hover:from-[#3F9FFF] dark:hover:to-[#91C1FF] shadow-md'
-                            : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                          ? 'bg-[#5FBFFF] dark:from-[#4FAFFF] dark:to-[#A1D1FF] text-white hover:bg-[#4FAFFF] dark:hover:from-[#3F9FFF] dark:hover:to-[#91C1FF] shadow-md'
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                           }`}
                       >
                         Submit Quiz
@@ -435,9 +772,8 @@ const ModuleLessonsPage = () => {
                     </div>
                   ) : (
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg text-center border border-gray-100 dark:border-gray-700">
-                      <div className={`text-5xl font-bold mb-3 ${
-                        quizScore >= quizData.pass_score ? 'text-[#7FDD53] dark:text-[#5FBFFF]' : 'text-[#FF8A8A] dark:text-[#F97156]'
-                      }`}>
+                      <div className={`text-5xl font-bold mb-3 ${quizScore >= quizData.pass_score ? 'text-[#7FDD53] dark:text-[#5FBFFF]' : 'text-[#FF8A8A] dark:text-[#F97156]'
+                        }`}>
                         {quizScore}/{quizData.max_score}
                       </div>
                       <div className="text-xl font-medium mb-4">

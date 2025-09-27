@@ -14,8 +14,10 @@ import http from 'http';
 import { V3 } from 'paseto';
 import './jobs/resetBudgets'; // auto-schedules your budget reset job
 // (Optional but recommended for horizontal scale)
+
 //import { createAdapter } from '@socket.io/redis-adapter';
 // please consider this as well - const { createAdapter } = require('@socket.io/redis-adapter');
+
 
 // 🔌 module registrars
 import { registerAuthModule } from './modules/auth';
@@ -50,7 +52,7 @@ app.use(cors({
 
 app.use(helmet());
 app.use(express.json());
-app.get('/ping', (req, res) => res.send('pong'));
+// app.get('/ping', (req, res) => res.send('pong'));
 
 
 
@@ -61,7 +63,7 @@ const io = new Server(httpServer, {
     methods: ['GET','POST'],
     credentials: true
   },
-  transports: ['websocket'],
+  transports:  ['websocket'], 
   pingInterval: 30000,  // default 25s
   pingTimeout: 60000,   // default 20s
 });
@@ -94,7 +96,7 @@ const { gameEngine, lobbyManager } = registerGameModule(app, io);
 const userToSocket = new Map<number, string>();
 const disconnectTimers = new Map<number, NodeJS.Timeout>();
 io.on('connection', async (socket) =>  {
- const userId = socket.data.userId as number;
+  const { userId, token } = socket.handshake.auth;
   if (!userId) {
     socket.disconnect(true);
     return;
@@ -121,6 +123,8 @@ io.on('connection', async (socket) =>  {
   logger.info(`User ${userId} connected on socket ${socket.id}`);
   socket.emit('connected', { message: 'Real-time notifications enabled' });
 
+  socket.data.userId = userId;
+  socket.data.token = token;
   // 4) Register per-socket handlers (NOTE: no io.on('connection') inside)
   registerGameSocketHandlers(io, socket, lobbyManager, gameEngine);
 

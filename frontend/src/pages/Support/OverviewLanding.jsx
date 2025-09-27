@@ -1,111 +1,107 @@
-// src/pages/Support/OverviewLanding.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
- FaFire, FaArrowRight, FaUser, FaDragon,
+  FaArrowRight, FaUser, FaDragon,
   FaScroll, FaCoins, FaShieldAlt, FaHatWizard,
   FaCrown, FaTrophy, FaGlasses, FaRobot
 } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
+import headerImage from '../../assets/Images/badges/idea.png'; // Update with your actual image path
 
 const OverviewLanding = () => {
   const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(null);
-  const [showXpAnimation, setShowXpAnimation] = useState(false);
-
-  // Mock user data
-  const userStats = {
-    xp: 150,
-    level: 3,
-    streakDays: 5,
-  };
 
   const sections = [
+    // dashboard
     { 
       id: 'dashboard', 
-      label: 'Home Dashboard', 
+      label: 'Home', 
       icon: <FaShieldAlt className="text-xl" />, 
       color: '#72C1F5',
-      desc: 'Your command center for tracking XP and quests',
-      xpReward: 5
+      desc: 'Your personal financial city with a financial account overview.',
     },
+    
+    // transactions 
     { 
       id: 'transactions', 
       label: 'Accounts', 
       icon: <FaCoins className="text-xl" />, 
       color: '#FFA726',
-      desc: 'Manage your treasury and track gold flow',
-      xpReward: 5
+      desc: 'Manage accounts, transactions and track income/expense flows.',
     },
+
+    // goals
     { 
       id: 'goals', 
       label: 'Goals', 
       icon: <FaScroll className="text-xl" />, 
       color: '#88BC46',
-      desc: 'Accept challenges and earn XP',
-      xpReward: 10
+      desc: 'Create intuitive goals and manage your finances.',
     },
+
+    // community 
     { 
       id: 'community', 
       label: 'Community', 
       icon: <FaDragon className="text-xl" />, 
       color: '#9575CD',
-      desc: 'Join forces with fellow adventurers',
-      xpReward: 8
+      desc: 'Join various communities, join challenges and make friends.',
     },
+
+    // learn
     { 
       id: 'learn', 
       label: "Learn", 
       icon: <FaHatWizard className="text-xl" />, 
       color: '#FF7043',
-      desc: 'Level up your financial magic',
-      xpReward: 15
+      desc: 'Master financial basics and advance in financial literacy.',
     },
+
+    // achievements
     { 
       id: 'achievements', 
       label: 'Achievements', 
       icon: <FaCrown className="text-xl" />, 
       color: '#FF4080',
-      desc: 'Display your hard-earned badges',
-      xpReward: 5
+      desc: 'Showcase your financial achievements and hard-earned badges.',
     },
+
+    // profile 
     { 
       id: 'profile', 
       label: 'Profile', 
       icon: <FaUser className="text-xl" />, 
       color: '#26C6DA',
-      desc: 'Customize your avatar and journey',
-      xpReward: 3
+      desc: 'Customize your avatar, banners and journey',
     },
-     {
-    id: 'ar',
-    label: 'AR World',
-    icon: <FaGlasses className="text-xl" />,
-    color: '#FFCB05',
-    desc: 'View financial data in augmented reality',
-    xpReward: 12
-  },
-  {
-    id: 'ai',
-    label: 'AI Companion',
-    icon: <FaRobot className="text-xl" />,
-    color: '#BA59FF',
-    desc: 'Chat with your smart financial assistant',
-    xpReward: 10
-  }
+
+    // ar
+    {
+      id: 'ar',
+      label: 'AR World',
+      icon: <FaGlasses className="text-xl" />,
+      color: '#FFCB05',
+      desc: 'Visualize financial data in augmented reality',
+    },
+
+    // ai
+    {
+      id: 'ai',
+      label: 'AI Companion',
+      icon: <FaRobot className="text-xl" />,
+      color: '#BA59FF',
+      desc: 'Your smart financial guide and assistant.',
+    }
   ];
 
-  const handleButtonClick = (path, xpReward) => {
-    setShowXpAnimation(xpReward);
-    setTimeout(() => {
-      navigate(path);
-      setShowXpAnimation(false);
-    }, 800);
+  const handleButtonClick = (path) => {
+    navigate(path);
   };
 
-   return (
+  return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
-      {/* XP Header Card */}
+      {/* Header Card */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -120,47 +116,34 @@ const OverviewLanding = () => {
             <p className="text-gray-600 dark:text-gray-300 mb-4">Explore different areas of your financial journey</p>
             
             <div className="flex gap-3">
-              <div className="bg-[#fff7ed] dark:bg-gray-800 border border-[#fed7aa] dark:border-gray-700 rounded-lg px-3 py-2 flex items-center gap-2">
-                <FaFire className="text-[#fb923c]" />
-                <span className="text-[#9a3412] dark:text-orange-300 text-sm">{userStats.streakDays} day streak</span>
-              </div>
               <div className="bg-[#fffbeb] dark:bg-gray-800 border border-[#fde68a] dark:border-gray-700 rounded-lg px-3 py-2 flex items-center gap-2">
                 <FaTrophy className="text-[#fbbf24]" />
-                <span className="text-[#92400e] dark:text-yellow-300 text-sm">7 areas to explore</span>
+                <span className="text-[#92400e] dark:text-yellow-300 text-sm">{sections.length} areas to explore</span>
               </div>
             </div>
           </div>
 
+          {/* Replaced XP circle with your image */}
           <div className="relative">
-            <div className="w-24 h-24 bg-white dark:bg-gray-800 border-4 border-[#FFD18C] rounded-full shadow-lg dark:shadow-gray-700/50 flex flex-col items-center justify-center">
-              <p className="text-2xl font-bold text-[#FFBF1A]">{userStats.xp}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-300">XP</p>
-            </div>
-            {showXpAnimation && (
-              <motion.div
-                className="absolute inset-0 flex items-center justify-center"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1.5, opacity: 1 }}
-                exit={{ scale: 0, opacity: 0 }}
-                transition={{ duration: 0.8 }}
-              >
-                <div className="text-[#f59e0b] text-2xl font-bold">+{showXpAnimation} XP</div>
-              </motion.div>
-            )}
+            <img 
+              src={headerImage} 
+              alt="Adventure Guide" 
+              className="w-24 h-24 rounded-full object-cover border-4 border-[#FFD18C] shadow-lg dark:shadow-gray-700/50"
+            />
           </div>
         </div>
       </motion.div>
 
       {/* Navigation Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {sections.map(({ id, label, icon, color, desc, xpReward }) => (
+        {sections.map(({ id, label, icon, color, desc }) => (
           <motion.div
             key={id}
             whileHover={{ y: -5 }}
             whileTap={{ scale: 0.98 }}
             onHoverStart={() => setIsHovered(id)}
             onHoverEnd={() => setIsHovered(null)}
-            onClick={() => handleButtonClick(`/support/overview/${id}`, xpReward)}
+            onClick={() => handleButtonClick(`/support/overview/${id}`)}
             className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm dark:shadow-gray-700/50 border-l-8 hover:shadow-md dark:hover:shadow-gray-600/50 transition-all relative overflow-hidden group cursor-pointer"
             style={{ borderLeftColor: color }}
           >
@@ -199,10 +182,6 @@ const OverviewLanding = () => {
                   <FaArrowRight className="ml-1" />
                 </motion.div>
               </div>
-            </div>
-            
-            <div className="absolute right-4 top-4 bg-[#fef9c3] dark:bg-yellow-900/50 text-[#e46349] dark:text-yellow-300 text-xs font-bold px-2 py-1 rounded-full border border-[#fde047] dark:border-yellow-700">
-              +{xpReward} XP
             </div>
           </motion.div>
         ))}

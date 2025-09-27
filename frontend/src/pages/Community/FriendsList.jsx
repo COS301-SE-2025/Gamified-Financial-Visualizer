@@ -177,13 +177,13 @@ const FriendsList = () => {
                   </div>
                   <div className="flex gap-2">
                     <Link to={`/community/member/${friend.username}`}>
-                      <button className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#AAD977] text-white hover:bg-[#83AB55] dark:bg-[#AAD977] dark:hover:bg-[#88BC46]">
+                      <button className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#AAD977] text-white hover:bg-[#83AB55] dark:bg-[#BBE48E] dark:hover:bg-[#88BC46]">
                         <FaEye /> View
                       </button>
                     </Link>
                     <button
                       onClick={() => handleRemoveFriend(friend)}
-                      className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#FA8B81] text-white hover:bg-[#F87171] dark:bg-[#F47466] dark:hover:bg-[#E55C4C]"
+                      className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#FA8B81] text-white hover:bg-[#F87171] dark:bg-[#FE9B90] dark:hover:bg-[#E55C4C]"
                     >
                       <FaUserMinus /> Remove
                     </button>
@@ -213,7 +213,7 @@ const FriendsList = () => {
                 </div>
                 <div className="flex gap-2">
                   <Link to={`/community/member/${person.username}`}>
-                    <button className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#AAD977] text-white hover:bg-[#83AB55] dark:bg-[#AAD977] dark:hover:bg-[#88BC46]">
+                    <button className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#AAD977] text-white hover:bg-[#83AB55] dark:bg-[#BBE48E] dark:hover:bg-[#88BC46]">
                       <FaEye /> View
                     </button>
                   </Link>

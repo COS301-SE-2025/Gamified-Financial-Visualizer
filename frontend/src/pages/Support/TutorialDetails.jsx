@@ -146,13 +146,8 @@ const tutorials = [
   }
 ];
 
-const achievements = [
-  { id: 1, name: 'First Steps', icon: <FaStar />, earned: true },
-  { id: 2, name: 'Tutorial Master', icon: <FaBookOpen />, earned: false },
-  { id: 3, name: 'Help Hero', icon: <FaMedal />, earned: false },
-  { id: 4, name: 'Finance Pro', icon: <FaMoneyBillWave />, earned: false },
-  { id: 5, name: 'Lifelong Learner', icon: <FaGraduationCap />, earned: false }
-];
+
+
 
 const ConfettiAndCoins = () => {
   return (
@@ -294,51 +289,6 @@ const TutorialDetails = () => {
             />
           ))}
         </div>
-
-        {/* Achievements Section */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-md border-t-4 border-yellow-400"
-        >
-          <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-            <FaTrophy className="text-yellow-400" /> Your Achievements
-          </h2>
-
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-            {achievements.map((achievement) => (
-              <div
-                key={achievement.id}
-                className={`p-3 rounded-xl flex flex-col items-center border-2 ${
-                  achievement.earned 
-                    ? 'border-yellow-400 bg-yellow-100 dark:bg-yellow-900/20' 
-                    : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700'
-                }`}
-              >
-                <div className={`text-2xl mb-2 ${
-                  achievement.earned 
-                    ? 'text-yellow-500' 
-                    : 'text-gray-400 dark:text-gray-500'
-                }`}>
-                  {achievement.icon}
-                </div>
-                <p className={`text-sm font-medium text-center ${
-                  achievement.earned 
-                    ? 'text-gray-800 dark:text-white' 
-                    : 'text-gray-600 dark:text-gray-400'
-                }`}>
-                  {achievement.name}
-                </p>
-                {achievement.earned ? (
-                  <span className="text-xs text-yellow-600 dark:text-yellow-400 mt-1 font-medium">Unlocked!</span>
-                ) : (
-                  <span className="text-xs text-gray-400 dark:text-gray-500 mt-1">Locked</span>
-                )}
-              </div>
-            ))}
-          </div>
-        </motion.div>
       </div>
     );
   }

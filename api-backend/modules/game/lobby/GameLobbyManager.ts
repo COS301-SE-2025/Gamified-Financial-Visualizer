@@ -1,9 +1,9 @@
 import { EventEmitter } from 'events';
 import { GameEngine } from '../engine/GameEngine';
-import { Player, Character } from '../types/GameTypes';
+import { Player, Character, Asset, Loan , Card} from '../types/GameTypes';
 import { logger } from '../../../config/logger';
 import { redisClient } from '../../../config/redis';
-  import { randomBytes } from 'crypto';
+import { randomBytes } from 'crypto';
 
 export interface Lobby {
   id: string;
@@ -36,6 +36,8 @@ export interface LobbySettings {
   isPrivate: boolean
 }
 
+
+
 export class GameLobbyManager extends EventEmitter {
   private lobbies = new Map<string, Lobby>();
   private playerToLobby = new Map<number, string>(); // Track which lobby each player is in
@@ -66,7 +68,7 @@ export class GameLobbyManager extends EventEmitter {
 
     const defaultSettings: LobbySettings = {
       gameMode: 'laps',
-      maxLaps: 10,
+      maxLaps: settings.maxLaps || 5,
       maxPlayers: 6,
       isPrivate: false,
       ...settings
@@ -98,7 +100,7 @@ export class GameLobbyManager extends EventEmitter {
     this.playerToLobby.set(hostId, lobbyId);
 
     logger.info(`Lobby ${lobbyId} created by user ${hostId} with code ${joinCode}`);
-    this.emit('lobby-created', lobby);
+   // this.emit('lobby-created', lobby);
 
     return lobby;
   }
@@ -147,7 +149,7 @@ export class GameLobbyManager extends EventEmitter {
     this.playerToLobby.set(playerId, lobbyId);
 
     logger.info(`User ${playerId} joined lobby ${lobbyId}`);
-    this.emit('player-joined-lobby', { lobby, player });
+  //  this.emit('player-joined-lobby', { lobby, player });
 
     return lobby;
   }
@@ -184,7 +186,7 @@ export class GameLobbyManager extends EventEmitter {
     lobby.lastActivity = new Date();
 
     logger.info(`Player ${playerId} selected character ${characterId} in lobby ${lobbyId}`);
-    this.emit('player-character-selected', { lobby, playerId, character });
+  //  this.emit('player-character-selected', { lobby, playerId, character });
 
     return true;
   }
@@ -234,7 +236,7 @@ export class GameLobbyManager extends EventEmitter {
         lobby.hostId = newHost.id;
 
         logger.info(`User ${newHost.id} promoted to host of lobby ${lobbyId}`);
-        this.emit('host-changed', { lobby, newHost });
+   //     this.emit('host-changed', { lobby, newHost });
       } else {
         // Close empty lobby
         this.closeLobby(lobbyId);
@@ -265,7 +267,7 @@ export class GameLobbyManager extends EventEmitter {
     player.isReady = !player.isReady;
     lobby.lastActivity = new Date();
 
-    this.emit('player-ready-changed', { lobby, playerId, isReady: player.isReady });
+//    this.emit('player-ready-changed', { lobby, playerId, isReady: player.isReady });
     return true;
   }
 
@@ -307,8 +309,8 @@ export class GameLobbyManager extends EventEmitter {
       }
 
       // Check minimum players
-      if (lobby.players.size < 2) {
-        throw new Error('Need at least 2 players to start');
+      if (lobby.players.size < 1) { // changed to 1 for testing
+        throw new Error('Need at least 1 player to start');
       }
 
       // Check if all players are ready
@@ -321,8 +323,7 @@ export class GameLobbyManager extends EventEmitter {
 
       // Create game
       gameId = this.generateGameId();
-      const gameState = this.gameEngine.createGame(gameId, playerId, lobby.settings.gameMode);
-
+      const gameState = this.gameEngine.createGame(gameId, playerId, lobby.settings.gameMode, lobby.settings.maxLaps || 5);
       // Add all players to the game
       for (const lobbyPlayer of lobby.players.values()) {
         const gamePlayer: Player = {
@@ -345,6 +346,8 @@ export class GameLobbyManager extends EventEmitter {
         this.gameEngine.addPlayer(gameId, gamePlayer);
       }
 
+      gameState.gamePhase = 'playing'; // Set initial phase to playing
+
       // Start the actual game
       this.gameEngine.startGame(gameId);
 
@@ -352,9 +355,77 @@ export class GameLobbyManager extends EventEmitter {
       lobby.status = 'in_game';
       lobby.gameId = gameId;
       lobby.lastActivity = new Date();
-
       logger.info(`Game ${gameId} started from lobby ${lobbyId}`);
-      this.emit('game-started-from-lobby', { lobby, gameId });
+     // this.emit('game-started-from-lobby', { lobby, gameId });
+
+    } finally {
+      this.lobbyLocks.delete(lobbyId);
+      return gameId;
+    }
+  }
+
+
+  startGameFromLobby(lobbyId: string, playerId: number): string | null {
+    if (!lobbyId || this.lobbyLocks.has(lobbyId)) return null;
+    this.lobbyLocks.add(lobbyId);
+    let gameId: string | null = null;
+    try {
+      const lobby = this.lobbies.get(lobbyId);
+      if (!lobby ||  lobby.status !== 'waiting') {
+        logger.error(`Lobby not found or not in waiting status: ${lobbyId}`);
+        return null;
+      }
+
+      // Check minimum players
+      if (lobby.players.size < 1) { // changed to 1 for testing
+        throw new Error('Need at least 1 player to start');
+      }
+
+      // Check if all players are ready
+      const allReady = Array.from(lobby.players.values())
+        .every(player => player.isReady);
+
+      if (!allReady) {
+        throw new Error('All players must be ready');
+      }
+
+      // Create game
+      gameId = this.generateGameId();
+      const gameState = this.gameEngine.createGame(gameId, playerId, lobby.settings.gameMode, lobby.settings.maxLaps || 5);
+      // Add all players to the game
+      for (const lobbyPlayer of lobby.players.values()) {
+        const gamePlayer: Player = {
+          id: lobbyPlayer.id,
+          username: lobbyPlayer.username,
+          socketId: lobbyPlayer.socketId,
+          position: 0,
+          cash: 5000,
+          assets: [],
+          loans: [],
+          cards: [],
+          lapsCompleted: 0,
+          salary: 2000,
+          isActive: true,
+          isBankrupt: false,
+          character: lobbyPlayer.character, // Include character
+          characterKey: lobbyPlayer.character?.id, // Set characterKey for model identification
+          statusEffects: [] // Add default empty statusEffects
+        };
+
+        this.gameEngine.addPlayer(gameId, gamePlayer);
+      }
+
+      // Start the actual game
+      gameState.gamePhase = 'playing'; // Set initial phase to playing
+      this.gameEngine.ensureBots(gameId);
+      this.gameEngine.startGame(gameId);
+
+      // Update lobby status
+      lobby.status = 'in_game';
+      lobby.gameId = gameId;
+      lobby.lastActivity = new Date();
+      logger.info(`Game ${gameId} started from lobby ${lobbyId}`);
+    //  this.emit('game-started-from-lobby', { lobby, gameId });
 
     } finally {
       this.lobbyLocks.delete(lobbyId);
@@ -429,7 +500,7 @@ export class GameLobbyManager extends EventEmitter {
     this.lobbies.delete(lobbyId);
 
     logger.info(`Lobby ${lobbyId} closed`);
-    this.emit('lobby-closed', { lobbyId });
+ //   this.emit('lobby-closed', { lobbyId });
   }
 
   /**
@@ -459,14 +530,14 @@ export class GameLobbyManager extends EventEmitter {
     return `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
-private generateJoinCode(): string {
-  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I
-  let code = '';
-  const bytes = randomBytes(6);
-  for (let i=0;i<6;i++) code += alphabet[bytes[i]%alphabet.length];
-  if (this.lobbyCodes.has(code)) return this.generateJoinCode();
-  return code;
-}
+  private generateJoinCode(): string {
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I
+    let code = '';
+    const bytes = randomBytes(6);
+    for (let i = 0; i < 6; i++) code += alphabet[ bytes[ i ] % alphabet.length ];
+    if (this.lobbyCodes.has(code)) return this.generateJoinCode();
+    return code;
+  }
 
   // Get game engine for other modules
   getGameEngine(): GameEngine {
@@ -484,4 +555,3 @@ private generateJoinCode(): string {
     return undefined;
   }
 }
-
