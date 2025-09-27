@@ -62,6 +62,9 @@ COPY --from=build --chown=nodejs:nodejs /app/node_modules ./node_modules
 COPY --from=build --chown=nodejs:nodejs /app/dist ./dist
 COPY --from=build --chown=nodejs:nodejs /app/package*.json ./
 
+COPY --chown=nodejs:nodejs modules/ai/app/classifier/services/extractors/ ./dist/modules/ai/app/classifier/services/extractors/
+
+
 # Switch to non-root user
 USER nodejs
 
