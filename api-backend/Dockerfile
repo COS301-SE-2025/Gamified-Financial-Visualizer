@@ -47,7 +47,15 @@ RUN apk update && apk upgrade && apk add --no-cache \
     curl \
     python3 \
     py3-pip \
+    py3-setuptools \
+    build-base \
     && rm -rf /var/cache/apk/*
+
+RUN pip3 install --no-cache-dir \
+    PyPDF2==3.0.1 \
+    pandas==2.1.0 \
+    python-dateutil==2.8.2 \
+    && rm -rf /root/.cache/pip
     
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
@@ -55,12 +63,14 @@ RUN addgroup -g 1001 -S nodejs && \
 
 WORKDIR /app
 
-RUN mkdir -p /tmp/uploads && chown -R nodejs:nodejs /tmp
+RUN mkdir -p /tmp/uploads && chown -R nodejs:nodejs /tmp/
 
 # Copy built application and dependencies
 COPY --from=build --chown=nodejs:nodejs /app/node_modules ./node_modules
 COPY --from=build --chown=nodejs:nodejs /app/dist ./dist
 COPY --from=build --chown=nodejs:nodejs /app/package*.json ./
+
+COPY --chown=nodejs:nodejs modules/ai/app/classifier/services/extractors/ ./dist/modules/ai/app/classifier/services/extractors/
 
 # Switch to non-root user
 USER nodejs
