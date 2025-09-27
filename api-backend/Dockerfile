@@ -51,7 +51,7 @@ RUN apk update && apk upgrade && apk add --no-cache \
     build-base \
     && rm -rf /var/cache/apk/*
 
-RUN pip3 install --no-cache-dir \
+RUN pip3 install --no-cache-dir --break-system-packages \
     PyPDF2==3.0.1 \
     pandas==2.1.0 \
     python-dateutil==2.8.2 \
