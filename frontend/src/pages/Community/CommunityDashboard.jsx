@@ -7,7 +7,6 @@ import CommunityLayout from '../../pages/Community/CommunityLayout';
 import LeaderboardPanel from '../../components/community/LeaderboardPanel';
 
 import {
-  FaBullseye,
   FaChevronLeft,
   FaChevronRight,
   FaComment,
@@ -21,7 +20,6 @@ import {
   FaCheck,
   FaTrash,
   FaTimes,
-  FaExclamationTriangle
 } from 'react-icons/fa';
 
 // Fallbacks
@@ -99,7 +97,7 @@ export default function CommunityDashboard() {
   useEffect(() => {
     if (!userId) {
       setLikedPosts([]);
-      try { localStorage.removeItem('likedPosts'); } catch {}
+      try { localStorage.removeItem('likedPosts'); } catch { }
       return;
     }
   }, [userId]);
@@ -125,7 +123,7 @@ export default function CommunityDashboard() {
   useEffect(() => {
     try {
       localStorage.setItem('likedPosts', JSON.stringify(likedPosts));
-    } catch {}
+    } catch { }
   }, [likedPosts]);
 
   // Create-post modal
@@ -239,15 +237,15 @@ export default function CommunityDashboard() {
           comments: sortCommentsAsc(
             Array.isArray(row.comments)
               ? row.comments.map(c => ({
-                  id: c.comment_id,
-                  userId: c.user_id,
-                  user: c.username,
-                  avatar: c.avatar_image_path
-                    ? `/assets/Images/${c.avatar_image_path}` // Fetch the commenter's avatar using the actual avatar path
-                    : avatarFallback,
-                  text: c.comment,
-                  createdAt: c.created_at,
-                }))
+                id: c.comment_id,
+                userId: c.user_id,
+                user: c.username,
+                avatar: c.avatar_image_path
+                  ? `/assets/Images/${c.avatar_image_path}` // Fetch the commenter's avatar using the actual avatar path
+                  : avatarFallback,
+                text: c.comment,
+                createdAt: c.created_at,
+              }))
               : []
           ),
         }));
@@ -331,12 +329,12 @@ export default function CommunityDashboard() {
       prev.map(p =>
         p.id === postId
           ? {
-              ...p,
-              comments: sortCommentsAsc([
-                ...p.comments,
-                { id: tempId, userId, user: displayName, avatar: avatarUrl, text, createdAt: createdAtISO }
-              ])
-            }
+            ...p,
+            comments: sortCommentsAsc([
+              ...p.comments,
+              { id: tempId, userId, user: displayName, avatar: avatarUrl, text, createdAt: createdAtISO }
+            ])
+          }
           : p
       )
     );
@@ -354,13 +352,13 @@ export default function CommunityDashboard() {
           prev.map(p =>
             p.id === postId
               ? {
-                  ...p,
-                  comments: sortCommentsAsc(
-                    p.comments.map(c =>
-                      c.id === tempId ? { ...c, id: newComment.comment_id, createdAt: newComment.created_at } : c
-                    )
+                ...p,
+                comments: sortCommentsAsc(
+                  p.comments.map(c =>
+                    c.id === tempId ? { ...c, id: newComment.comment_id, createdAt: newComment.created_at } : c
                   )
-                }
+                )
+              }
               : p
           )
         );
@@ -525,11 +523,12 @@ export default function CommunityDashboard() {
         </div>
 
         {/* Grid: Leaderboard + Feed */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="col-span-1">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1">
             <LeaderboardPanel />
           </div>
 
+          {/* Post section of grid */}
           <div className="md:col-span-2 space-y-6">
             {loadingFeed && (
               <div className="flex justify-center items-center space-x-2 py-4">
@@ -605,8 +604,12 @@ export default function CommunityDashboard() {
                     <div className="space-y-3">
                       <p className="text-gray-700 text-sm leading-relaxed dark:text-gray-300">{post.content}</p>
                       {post.banner && (
-                        <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-600">
-                          <img src={post.banner} alt="post banner" className="w-full h-52 object-cover" />
+                        <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-600 w-[680px] mx-auto">
+                          <img
+                            src={post.banner}
+                            alt="post banner"
+                            className="w-full rounded-xl max-h-96 object-contain bg-gray-100 dark:bg-gray-900"
+                          />
                         </div>
                       )}
                     </div>
@@ -666,21 +669,21 @@ export default function CommunityDashboard() {
                       ))}
 
                       <div className="flex items-center gap-2 mt-2">
-                      <input
-                        type="text"
-                        value={commentInputs[post.id] || ''}
-                        onChange={(e) => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })}
-                        onKeyDown={(e) => handleCommentKeyDown(e, post.id)} // NEW: Added keydown handler
-                        placeholder="Add a comment..."
-                        className="flex-1 text-sm p-2 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#72C1F5] dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400 dark:focus:ring-[#5FBFFF]"
-                      />
-                      <button
-                        onClick={() => handleAddComment(post.id)}
-                        className="w-8 h-8 rounded-full bg-[#72C1F5] text-white flex items-center justify-center hover:bg-[#5CA8D8] dark:bg-[#88D1FF] dark:hover:bg-[#1E3A8A]"
-                      >
-                        <FaPaperPlane size={12} />
-                      </button>
-                    </div>
+                        <input
+                          type="text"
+                          value={commentInputs[post.id] || ''}
+                          onChange={(e) => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })}
+                          onKeyDown={(e) => handleCommentKeyDown(e, post.id)} // NEW: Added keydown handler
+                          placeholder="Add a comment..."
+                          className="flex-1 text-sm p-2 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#72C1F5] dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400 dark:focus:ring-[#5FBFFF]"
+                        />
+                        <button
+                          onClick={() => handleAddComment(post.id)}
+                          className="w-8 h-8 rounded-full bg-[#72C1F5] text-white flex items-center justify-center hover:bg-[#5CA8D8] dark:bg-[#88D1FF] dark:hover:bg-[#1E3A8A]"
+                        >
+                          <FaPaperPlane size={12} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -760,11 +763,10 @@ export default function CommunityDashboard() {
                             return [...prev, c.community_id];
                           });
                         }}
-                        className={`px-3 py-1 rounded-full text-sm border transition ${
-                          selected
-                            ? 'bg-[#E0F2FE] text-[#065989] border-[#93C5FD]'
-                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
-                        }`}
+                        className={`px-3 py-1 rounded-full text-sm border transition ${selected
+                          ? 'bg-[#E0F2FE] text-[#065989] border-[#93C5FD]'
+                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
+                          }`}
                       >
                         {selected && <FaCheck className="inline mr-1" />} {c.community_name}
                       </button>
@@ -797,11 +799,10 @@ export default function CommunityDashboard() {
                               setSelectedBannerPreview(b.bannerPath ? `/assets/Images/${b.bannerPath}` : null);
                               setShowBannerDropdown(false);
                             }}
-                            className={`relative rounded-xl overflow-hidden border transition focus:outline-none ${
-                              selectedAchievementId === b.achievementId
-                                ? 'ring-2 ring-[#5FBFFF] border-[#5FBFFF]'
-                                : 'border-gray-200 dark:border-gray-600 hover:opacity-90'
-                            }`}
+                            className={`relative rounded-xl overflow-hidden border transition focus:outline-none ${selectedAchievementId === b.achievementId
+                              ? 'ring-2 ring-[#5FBFFF] border-[#5FBFFF]'
+                              : 'border-gray-200 dark:border-gray-600 hover:opacity-90'
+                              }`}
                           >
                             <img
                               src={b.bannerPath ? `/assets/Images/${b.bannerPath}` : bannerFallback}
@@ -822,9 +823,8 @@ export default function CommunityDashboard() {
                           <button
                             onClick={() => setBannerPage(p => clamp(p - 1, 1, totalBannerPages))}
                             disabled={bannerPage === 1}
-                            className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border dark:border-gray-600 ${
-                              bannerPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-600'
-                            }`}
+                            className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border dark:border-gray-600 ${bannerPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-600'
+                              }`}
                           >
                             <FaChevronLeft /> Prev
                           </button>
@@ -836,9 +836,8 @@ export default function CommunityDashboard() {
                           <button
                             onClick={() => setBannerPage(p => clamp(p + 1, 1, totalBannerPages))}
                             disabled={bannerPage === totalBannerPages}
-                            className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border dark:border-gray-600 ${
-                              bannerPage === totalBannerPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-600'
-                            }`}
+                            className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border dark:border-gray-600 ${bannerPage === totalBannerPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-600'
+                              }`}
                           >
                             Next <FaChevronRight />
                           </button>
@@ -882,7 +881,7 @@ export default function CommunityDashboard() {
               <div className="flex items-start gap-3">
                 <div className="shrink-0">
                   <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-600 dark:bg-red-900/30 dark:text-red-300">
-                    <FaTrash/>
+                    <FaTrash />
                   </div>
                 </div>
                 <div className="flex-1">

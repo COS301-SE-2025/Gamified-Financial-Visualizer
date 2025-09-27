@@ -2,26 +2,84 @@
 import { useState, useEffect, Suspense, useRef, useMemo } from 'react'
 import { Canvas, useThree, useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { OrbitControls, Html, useGLTF } from '@react-three/drei'
+import { OrbitControls, Html, useGLTF, useAnimations } from '@react-three/drei'
 
 import {
   GiBank, GiHospitalCross, GiCoffeeCup, GiPoliceBadge, GiHouse, GiArchiveResearch,
 } from 'react-icons/gi'
 import {
   FaCoins, FaBolt, FaUsers, FaChartLine, FaHeartbeat, FaBook, FaUtensils,
-  FaHome, FaShieldAlt, FaGem, FaStar, FaRegStar, FaBell
+  FaHome, FaShieldAlt, FaGem, FaStar, FaRegStar, FaBell,
+  FaPalette
 } from 'react-icons/fa'
-import { FiSliders, FiX, FiSun, FiMoon, FiChevronDown, FiMove } from 'react-icons/fi'
+import { FiSliders, FiX, FiChevronDown, FiMove } from 'react-icons/fi'
 
-import bank from '../../assets/Building Images/Classic Day/bank.png';
-import hospital from '../../assets/Building Images/Classic Day/hospital.png';
-import foodMarket from '../../assets/Building Images/Classic Day/food-market.png';
-import policeStation from '../../assets/Building Images/Classic Day/police-station.png';
-import homeResidence from '../../assets/Building Images/Classic Day/residence.png';
-import hotel from '../../assets/Building Images/Classic Day/hotel.png';
-import library from '../../assets/Building Images/Classic Day/library.png';
-import civicOffices from '../../assets/Building Images/Classic Day/civic-offices.png';
-import cafe from '../../assets/Building Images/Classic Day/cafe.png';
+// Classic Day
+import bankClassic from '../../assets/Building Images/Classic Day/bank.png';
+import hospitalClassic from '../../assets/Building Images/Classic Day/hospital.png';
+import foodMarketClassic from '../../assets/Building Images/Classic Day/food-market.png';
+import policeStationClassic from '../../assets/Building Images/Classic Day/police-station.png';
+import homeResidenceClassic from '../../assets/Building Images/Classic Day/residence.png';
+import hotelClassic from '../../assets/Building Images/Classic Day/hotel.png';
+import libraryClassic from '../../assets/Building Images/Classic Day/library.png';
+import civicOfficesClassic from '../../assets/Building Images/Classic Day/civic-offices.png';
+import cafeClassic from '../../assets/Building Images/Classic Day/cafe.png';
+
+// Foggy Morning
+import bankFoggy from '../../assets/Building Images/Foggy Morning/bank.png';
+import hospitalFoggy from '../../assets/Building Images/Foggy Morning/hospital.png';
+import foodMarketFoggy from '../../assets/Building Images/Foggy Morning/food-market.png';
+import policeStationFoggy from '../../assets/Building Images/Foggy Morning/police-station.png';
+import homeResidenceFoggy from '../../assets/Building Images/Foggy Morning/residence.png';
+import hotelFoggy from '../../assets/Building Images/Foggy Morning/hotel.png';
+import libraryFoggy from '../../assets/Building Images/Foggy Morning/library.png';
+import civicOfficesFoggy from '../../assets/Building Images/Foggy Morning/civic-offices.png';
+import cafeFoggy from '../../assets/Building Images/Foggy Morning/cafe.png';
+
+// Golden Hour
+import bankGolden from '../../assets/Building Images/Golden Hour/bank.png';
+import hospitalGolden from '../../assets/Building Images/Golden Hour/hospital.png';
+import foodMarketGolden from '../../assets/Building Images/Golden Hour/food-market.png';
+import policeStationGolden from '../../assets/Building Images/Golden Hour/police-station.png';
+import homeResidenceGolden from '../../assets/Building Images/Golden Hour/residence.png';
+import hotelGolden from '../../assets/Building Images/Golden Hour/hotel.png';
+import libraryGolden from '../../assets/Building Images/Golden Hour/library.png';
+import civicOfficesGolden from '../../assets/Building Images/Golden Hour/civic-offices.png';
+import cafeGolden from '../../assets/Building Images/Golden Hour/cafe.png';
+
+// Neon Night
+import bankNeon from '../../assets/Building Images/Neon Night/bank.png';
+import hospitalNeon from '../../assets/Building Images/Neon Night/hospital.png';
+import foodMarketNeon from '../../assets/Building Images/Neon Night/food-market.png';
+import policeStationNeon from '../../assets/Building Images/Neon Night/police-station.png';
+import homeResidenceNeon from '../../assets/Building Images/Neon Night/residence.png';
+import hotelNeon from '../../assets/Building Images/Neon Night/hotel.png';
+import libraryNeon from '../../assets/Building Images/Neon Night/library.png';
+import civicOfficesNeon from '../../assets/Building Images/Neon Night/civic-offices.png';
+import cafeNeon from '../../assets/Building Images/Neon Night/cafe.png';
+
+// Rainy Evening
+import bankRainy from '../../assets/Building Images/Rainy Evening/bank.png';
+import hospitalRainy from '../../assets/Building Images/Rainy Evening/hospital.png';
+import foodMarketRainy from '../../assets/Building Images/Rainy Evening/food-market.png';
+import policeStationRainy from '../../assets/Building Images/Rainy Evening/police-station.png';
+import homeResidenceRainy from '../../assets/Building Images/Rainy Evening/residence.png';
+import hotelRainy from '../../assets/Building Images/Rainy Evening/hotel.png';
+import libraryRainy from '../../assets/Building Images/Rainy Evening/library.png';
+import civicOfficesRainy from '../../assets/Building Images/Rainy Evening/civic-offices.png';
+import cafeRainy from '../../assets/Building Images/Rainy Evening/cafe.png';
+
+// Sunset Pink
+import bankSunset from '../../assets/Building Images/Sunset Pink/bank.png';
+import hospitalSunset from '../../assets/Building Images/Sunset Pink/hospital.png';
+import foodMarketSunset from '../../assets/Building Images/Sunset Pink/food-market.png';
+import policeStationSunset from '../../assets/Building Images/Sunset Pink/police-station.png';
+import homeResidenceSunset from '../../assets/Building Images/Sunset Pink/residence.png';
+import hotelSunset from '../../assets/Building Images/Sunset Pink/hotel.png';
+import librarySunset from '../../assets/Building Images/Sunset Pink/library.png';
+import civicOfficesSunset from '../../assets/Building Images/Sunset Pink/civic-offices.png';
+import cafeSunset from '../../assets/Building Images/Sunset Pink/cafe.png';
+
 
 /* ===========================
    YOUR THEMED CITY SCENES (swap GLBs)
@@ -72,16 +130,16 @@ const THEME_PRESETS = {
   },
 
   rainy_evening: {
-    exposure: 0.75,
+    exposure: 0.5,
     bg: '#a8b0b8',
     fog: {
       type: 'linear',
       color: '#8a98a8',
-      near: 40,
-      far: 180
+      near: 30,
+      far: 150
     },
     rain: true,
-    rainIntensity: 1.5  // Increased rain intensity
+    rainIntensity: 3.5  // Increased rain intensity
   },
 
   sunset_pink: {
@@ -97,7 +155,7 @@ function ThemeAtmosphere({ theme }) {
   const { scene, gl } = useThree()
   useEffect(() => {
     const preset = THEME_PRESETS[theme] || THEME_PRESETS.classic_day
-    
+
     // Background
     scene.background = new THREE.Color(preset.bg)
 
@@ -118,7 +176,7 @@ function ThemeAtmosphere({ theme }) {
     // Canvas clear color
     gl.setClearColor(scene.background, 1)
   }, [theme, scene, gl])
-  
+
   return null
 }
 
@@ -178,7 +236,7 @@ const unlockedThemes = THEME_UNLOCK_MAP[userTier] || [];
           className="fixed top-24 right-4 z-[10] px-3 py-2 rounded-xl bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-gray-100 shadow border border-black/10 backdrop-blur"
           aria-label="Open lighting panel"
         >
-          <span className="inline-flex items-center gap-2"><FiSliders /> Lighting & Theme</span>
+          <span className="inline-flex items-center gap-2"><FaPalette /> Themes</span>
         </button>
       )}
 
@@ -188,26 +246,6 @@ const unlockedThemes = THEME_UNLOCK_MAP[userTier] || [];
             <div className="font-semibold">Scene Style</div>
             <button onClick={() => setOpen(false)} className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/10" aria-label="Close">
               <FiX />
-            </button>
-          </div>
-
-          {/* Day / Night (works; if theme is single, both map to same file) */}
-          <div className="px-3 pb-2 flex items-center gap-2">
-            <button
-              onClick={() => setMode('day')}
-              className={`flex-1 flex items-center justify-center gap-2 px-2 py-1 rounded-lg border ${mode === 'day' ? 'bg-sky-600 text-white border-sky-600' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600'
-                }`}
-              aria-disabled={!themeHasBoth && CITY_SCENES[theme]?.single}
-            >
-              <FiSun /> Day
-            </button>
-            <button
-              onClick={() => setMode('night')}
-              className={`flex-1 flex items-center justify-center gap-2 px-2 py-1 rounded-lg border ${mode === 'night' ? 'bg-slate-700 text-white border-slate-700' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600'
-                }`}
-              aria-disabled={!themeHasBoth && CITY_SCENES[theme]?.single}
-            >
-              <FiMoon /> Night
             </button>
           </div>
 
@@ -304,10 +342,112 @@ const FRIENDLY_LABELS = {
   BARRA_CAFE_AL_PASO: 'Café',
 }
 
+// Map building keys to their image sets by theme
+const BUILDING_IMAGES_BY_THEME = {
+  // Classic Day
+  classic_day: {
+    Building_E001: foodMarketClassic,
+    Building_C001: bankClassic,
+    Large_Apartments: libraryClassic,
+    Building_F003: hospitalClassic,
+    Building_G004: homeResidenceClassic,
+    Building_G005: homeResidenceClassic,
+    Building_G001: homeResidenceClassic,
+    Office_2: civicOfficesClassic,
+    Building_D001: policeStationClassic,
+    Building_B001: hotelClassic,
+    BARRA_CAFE_AL_PASO: cafeClassic,
+  },
+  // Foggy Morning
+  foggy_morning: {
+    Building_E001: foodMarketFoggy,
+    Building_C001: bankFoggy,
+    Large_Apartments: libraryFoggy,
+    Building_F003: hospitalFoggy,
+    Building_G004: homeResidenceFoggy,
+    Building_G005: homeResidenceFoggy,
+    Building_G001: homeResidenceFoggy,
+    Office_2: civicOfficesFoggy,
+    Building_D001: policeStationFoggy,
+    Building_B001: hotelFoggy,
+    BARRA_CAFE_AL_PASO: cafeFoggy,
+  },
+  // Golden Hour
+  golden_hour: {
+    Building_E001: foodMarketGolden,
+    Building_C001: bankGolden,
+    Large_Apartments: libraryGolden,
+    Building_F003: hospitalGolden,
+    Building_G004: homeResidenceGolden,
+    Building_G005: homeResidenceGolden,
+    Building_G001: homeResidenceGolden,
+    Office_2: civicOfficesGolden,
+    Building_D001: policeStationGolden,
+    Building_B001: hotelGolden,
+    BARRA_CAFE_AL_PASO: cafeGolden,
+  },
+  // Neon Night
+  neon_night: {
+    Building_E001: foodMarketNeon,
+    Building_C001: bankNeon,
+    Large_Apartments: libraryNeon,
+    Building_F003: hospitalNeon,
+    Building_G004: homeResidenceNeon,
+    Building_G005: homeResidenceNeon,
+    Building_G001: homeResidenceNeon,
+    Office_2: civicOfficesNeon,
+    Building_D001: policeStationNeon,
+    Building_B001: hotelNeon,
+    BARRA_CAFE_AL_PASO: cafeNeon,
+  },
+  // Rainy Evening
+  rainy_evening: {
+    Building_E001: foodMarketRainy,
+    Building_C001: bankRainy,
+    Large_Apartments: libraryRainy,
+    Building_F003: hospitalRainy,
+    Building_G004: homeResidenceRainy,
+    Building_G005: homeResidenceRainy,
+    Building_G001: homeResidenceRainy,
+    Office_2: civicOfficesRainy,
+    Building_D001: policeStationRainy,
+    Building_B001: hotelRainy,
+    BARRA_CAFE_AL_PASO: cafeRainy,
+  },
+  // Sunset Pink
+  sunset_pink: {
+    Building_E001: foodMarketSunset,
+    Building_C001: bankSunset,
+    Large_Apartments: librarySunset,
+    Building_F003: hospitalSunset,
+    Building_G004: homeResidenceSunset,
+    Building_G005: homeResidenceSunset,
+    Building_G001: homeResidenceSunset,
+    Office_2: civicOfficesSunset,
+    Building_D001: policeStationSunset,
+    Building_B001: hotelSunset,
+    BARRA_CAFE_AL_PASO: cafeSunset,
+  },
+};
+
+// Fallback images if a specific theme image is missing
+const FALLBACK_IMAGES = {
+  Building_E001: foodMarketClassic,
+  Building_C001: bankClassic,
+  Large_Apartments: libraryClassic,
+  Building_F003: hospitalClassic,
+  Building_G004: homeResidenceClassic,
+  Building_G005: homeResidenceClassic,
+  Building_G001: homeResidenceClassic,
+  Office_2: civicOfficesClassic,
+  Building_D001: policeStationClassic,
+  Building_B001: hotelClassic,
+  BARRA_CAFE_AL_PASO: cafeClassic,
+};
+
 /* ========= Rich building bindings (modal content) -- overriden by the API later ========= */
 const BUILDING_BINDINGS = {
   Building_E001: {
-    image: foodMarket,   // <— add
     icon: <GiHouse className="text-amber-500" />,
     label: 'Food Market',
     description: 'Groceries & takeout against your food budget.',
@@ -324,7 +464,6 @@ const BUILDING_BINDINGS = {
     cta: { label: 'Manage Groceries', link: '/budgets?c=groceries' },
   },
   Building_C001: {
-    image: bank,   // <— add
     icon: <GiBank className="text-lime-500" />,
     label: 'Bank',
     description: 'Live income vs expense with net position and trends.',
@@ -341,7 +480,6 @@ const BUILDING_BINDINGS = {
     cta: { label: 'View Transactions', link: '/transactions' },
   },
   Large_Apartments: {
-    image: library,   // <— add
     icon: <GiArchiveResearch className="text-indigo-500" />,
     label: 'Library',
     description: 'Boost knowledge with short lessons and quizzes to earn XP.',
@@ -358,7 +496,6 @@ const BUILDING_BINDINGS = {
     cta: { label: 'Continue Learning', link: '/learn' },
   },
   Building_F003: {
-    image: hospital,   // <— add
     icon: <GiHospitalCross className="text-red-400" />,
     label: 'Hospital',
     description: 'Track your financial health and risk. Keep your Health EF topped up.',
@@ -375,7 +512,6 @@ const BUILDING_BINDINGS = {
     cta: { label: 'View Health Finances', link: '/goals?tag=health' },
   },
   Building_G004: {
-    image: homeResidence,   // <— add
     icon: <FaHome className="text-indigo-400" />,
     label: 'Residence',
     description: 'Home & personal care spending overview.',
@@ -392,7 +528,6 @@ const BUILDING_BINDINGS = {
     cta: { label: 'Tune Home & Care', link: '/budgets?c=home,personal' },
   },
   Building_G005: {
-    image: homeResidence,   // <— add
     icon: <FaHome className="text-indigo-400" />,
     label: 'Residence',
     description: 'Track trend vs last month and top up repairs.',
@@ -409,7 +544,6 @@ const BUILDING_BINDINGS = {
     cta: { label: 'Top Up Repairs', link: '/goals?tag=repairs' },
   },
   Building_G001: {
-    image: homeResidence,   // <— add
     icon: <FaHome className="text-indigo-400" />,
     label: 'Residence',
     description: 'Daily utilities and off-peak usage.',
@@ -426,7 +560,6 @@ const BUILDING_BINDINGS = {
     cta: { label: 'Utilities Tips', link: '/learn/utilities' },
   },
   Office_2: {
-    image: civicOffices,   // <— add
     icon: <GiPoliceBadge className="text-sky-500" />,
     label: 'Civic Offices',
     description: 'All your active goals and completion rates.',
@@ -443,7 +576,6 @@ const BUILDING_BINDINGS = {
     cta: { label: 'Manage Goals', link: '/goals' },
   },
   Building_D001: {
-    image: policeStation,   // <— add
     icon: <GiPoliceBadge className="text-cyan-600" />,
     label: 'Police Station',
     description: 'Anomalies, impulse buys and overspending warnings.',
@@ -460,7 +592,6 @@ const BUILDING_BINDINGS = {
     cta: { label: 'Review Anomalies', link: '/insights/anomalies' },
   },
   Building_B001: {
-    image: hotel,   // <— add
     icon: <FaBell className="text-rose-500" />,
     label: 'Hotel',
     description: 'Lifestyle, entertainment and subscription spending.',
@@ -477,7 +608,6 @@ const BUILDING_BINDINGS = {
     cta: { label: 'Manage Lifestyle', link: '/budgets?c=lifestyle' },
   },
   BARRA_CAFE_AL_PASO: {
-    image: cafe,   // <— add
     icon: <GiCoffeeCup className="text-amber-600" />,
     label: 'Café',
     description: 'See friends, challenges and community momentum.',
@@ -498,10 +628,21 @@ const BUILDING_BINDINGS = {
 /* ===========================
    Game-style Modal (hotel card look)
 =========================== */
-function GameModal({ open, onClose, data }) {
+function GameModal({ open, onClose, data, theme }) {
   if (!open || !data) return null
-  const { icon, label, description, rating = 4, level = { current: 1, max: 3 }, sizeLabel = '5×5',
-    headline = { label: 'Profit', value: '—', icon: <FaCoins /> }, effects = [], cta, upgrade } = data
+  const {
+    key, // Get the key directly from data
+    icon,
+    label,
+    description,
+    rating = 4,
+    level = { current: 1, max: 3 },
+    sizeLabel = '5×5',
+    headline = { label: 'Profit', value: '—', icon: <FaCoins /> },
+    effects = [],
+    cta,
+    upgrade
+  } = data
 
   const Stars = () => {
     const full = Math.max(0, Math.min(5, Math.floor(rating)))
@@ -514,6 +655,15 @@ function GameModal({ open, onClose, data }) {
     )
   }
 
+  // GET THEMED IMAGE based on current theme and building key
+  const getThemedImage = (buildingKey, currentTheme) => {
+    const themeImages = BUILDING_IMAGES_BY_THEME[currentTheme] || {};
+    return themeImages[buildingKey] || FALLBACK_IMAGES[buildingKey];
+  };
+
+  // Use the key directly from data instead of searching
+  const themedImage = key ? getThemedImage(key, theme) : null;
+
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
@@ -522,14 +672,15 @@ function GameModal({ open, onClose, data }) {
           <div className="text-lg font-extrabold tracking-wide">{label}</div>
           <button onClick={onClose} className="px-3 py-1 rounded-lg bg-white/15 hover:bg-white/25">✕</button>
         </div>
+
         <div className="bg-[#f6f3ea] p-5">
           <div className="grid gap-4 md:grid-cols-[280px_1fr]">
             <div className="bg-white rounded-2xl border border-black/5 shadow p-3">
               {/* the tooltip image */}
               <div className="h-40 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden">
-                {data?.image ? (
+                {themedImage ? (
                   <img
-                    src={data.image}
+                    src={themedImage}
                     alt={label}
                     className="h-full w-full object-cover"
                     draggable="false"
@@ -547,6 +698,7 @@ function GameModal({ open, onClose, data }) {
               </div>
               <div className="mt-1 text-[11px] text-gray-500"> {sizeLabel}</div>
             </div>
+
             <div className="space-y-4">
               <p className="text-sm text-gray-700">{description}</p>
               <div className="flex items-center gap-3">
@@ -558,6 +710,7 @@ function GameModal({ open, onClose, data }) {
                   <div className="text-2xl font-bold text-gray-800">{headline.value}</div>
                 </div>
               </div>
+
               <div className="grid sm:grid-cols-3 gap-3">
                 {effects.map((e, i) => (
                   <div key={i} className={`flex items-center gap-2 rounded-xl border shadow-sm px-3 py-2 bg-white ${e.tone === 'neg' ? 'border-rose-200' : e.tone === 'warn' ? 'border-amber-200' : 'border-emerald-200'
@@ -570,6 +723,7 @@ function GameModal({ open, onClose, data }) {
                   </div>
                 ))}
               </div>
+
               <div className="flex items-center justify-between bg-white rounded-2xl border border-black/5 shadow px-4 py-3">
                 <div className="flex items-center gap-6 text-sm">
                   <div className="flex items-center gap-2">
@@ -585,11 +739,6 @@ function GameModal({ open, onClose, data }) {
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <a href={cta?.link || '#'} onClick={onClose} className="px-4 py-2 rounded-xl bg-sky-600 text-white hover:bg-sky-700 shadow">
-                    {cta?.label || 'Manage'}
-                  </a>
-                </div>
               </div>
             </div>
           </div>
@@ -600,24 +749,29 @@ function GameModal({ open, onClose, data }) {
 }
 
 /* ===========================
-   Animated Rain System for Rainy Evening
+   Animated Rain System for Rainy Evening - IMPROVED VERSION
 =========================== */
 function RainSystem({ intensity = 1.0 }) {
   const rainRef = useRef()
-  const rainCount = Math.floor(200 * intensity)
+  // OPTIMIZATION: Reduced rain count for better performance
+  const rainCount = Math.floor(500 * intensity) // Reduced from 600 to 300
 
   useFrame((state, delta) => {
     if (!rainRef.current) return
 
-    // Animate all rain drops
     rainRef.current.children.forEach((drop, i) => {
-      drop.position.y -= (0.5 + Math.random() * 1.5) * 30 * delta
+      // SIGNIFICANTLY increased falling speed - multiplied by 200 instead of 80
+      drop.position.y -= (2.0 + Math.random() * 3.0) * 200 * delta * intensity
+
+      // Slight horizontal movement for wind effect
+      drop.position.x += Math.sin(state.clock.elapsedTime * 3 + i) * 0.3 * intensity
+      drop.position.z += Math.cos(state.clock.elapsedTime * 2 + i) * 0.2 * intensity
 
       // Reset when drop falls below ground
       if (drop.position.y < -10) {
-        drop.position.y = 100 + Math.random() * 50
-        drop.position.x = Math.random() * 200 - 100
-        drop.position.z = Math.random() * 200 - 100
+        drop.position.y = 100 + Math.random() * 80  // Increased starting height for longer fall
+        drop.position.x = Math.random() * 120 - 60
+        drop.position.z = Math.random() * 120 - 60
       }
     })
   })
@@ -626,35 +780,112 @@ function RainSystem({ intensity = 1.0 }) {
     <group ref={rainRef}>
       {Array.from({ length: rainCount }).map((_, i) => (
         <mesh
-          key={i}
+          key={`rain-${i}`}
           position={[
-            Math.random() * 200 - 100,
-            Math.random() * 100 + 30,
-            Math.random() * 200 - 100
+            Math.random() * 120 - 60,
+            Math.random() * 100 + 50,  // Higher starting position
+            Math.random() * 120 - 60
           ]}
         >
-          <cylinderGeometry args={[0.015, 0.015, 0.3, 4]} />
-          <meshBasicMaterial color="#a0c8e0" transparent opacity={0.7} />
+          <cylinderGeometry args={[0.05, 0.05, 2.0, 4]} />
+          <meshBasicMaterial color="#e0f0ff" transparent opacity={0.7} />
         </mesh>
       ))}
-
-      {/* Distant rain particles for atmosphere */}
-      <points>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            count={Math.floor(300 * intensity)}
-            array={new Float32Array(Array.from({ length: Math.floor(300 * intensity) * 3 },
-              () => [Math.random() * 400 - 200, Math.random() * 200, Math.random() * 400 - 200]).flat())}
-            itemSize={3}
-          />
-        </bufferGeometry>
-        <pointsMaterial size={2} color="#a0c8e0" transparent opacity={0.4} />
-      </points>
     </group>
   )
 }
 
+function HeavyRainSystem({ intensity = 1.0 }) {
+  return (
+    <>
+      {/* OPTIMIZATION: Use fewer layers but increase particle counts */}
+      <RainSystem intensity={intensity} />
+      
+      {/* High-altitude particle layer - OPTIMIZED: Use instancing for better performance */}
+      <RainParticles 
+        count={Math.floor(4000 * intensity)} 
+        intensity={intensity}
+        area={300}
+        heightRange={[50, 200]}
+        size={0.6}
+        opacity={0.4}
+      />
+      
+      {/* Mid-distance particle layer */}
+      <RainParticles 
+        count={Math.floor(2000 * intensity)} 
+        intensity={intensity}
+        area={200}
+        heightRange={[30, 150]}
+        size={0.4}
+        opacity={0.3}
+        position={[0, 20, 0]}
+      />
+    </>
+  )
+}
+
+// OPTIMIZED: Separate component using buffer geometry for better performance
+function RainParticles({ 
+  count, 
+  intensity, 
+  area = 200, 
+  heightRange = [50, 200], 
+  size = 0.6, 
+  opacity = 0.5,
+  position = [0, 0, 0] 
+}) {
+  const pointsRef = useRef()
+  const [positions] = useState(() => {
+    const pos = new Float32Array(count * 3)
+    for (let i = 0; i < count * 3; i += 3) {
+      pos[i] = (Math.random() - 0.5) * area
+      pos[i + 1] = Math.random() * (heightRange[1] - heightRange[0]) + heightRange[0]
+      pos[i + 2] = (Math.random() - 0.5) * area
+    }
+    return pos
+  })
+
+  useFrame((state, delta) => {
+    if (!pointsRef.current) return
+    
+    const positions = pointsRef.current.geometry.attributes.position.array
+    const speed = 150 * intensity // Faster falling speed
+    
+    for (let i = 1; i < positions.length; i += 3) {
+      positions[i] -= speed * delta * (0.8 + Math.random() * 0.4)
+      
+      // Reset when below ground
+      if (positions[i] < -10) {
+        positions[i] = Math.random() * (heightRange[1] - heightRange[0]) + heightRange[0]
+        positions[i - 1] = (Math.random() - 0.5) * area
+        positions[i + 1] = (Math.random() - 0.5) * area
+      }
+    }
+    
+    pointsRef.current.geometry.attributes.position.needsUpdate = true
+  })
+
+  return (
+    <points ref={pointsRef} position={position}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          array={positions}
+          count={count}
+          itemSize={3}
+        />
+      </bufferGeometry>
+      <pointsMaterial
+        size={size}
+        color="#c0e0ff"
+        transparent
+        opacity={opacity}
+        sizeAttenuation={true}
+      />
+    </points>
+  )
+}
 /* ===========================
    Enhanced Fog Component
 =========================== */
@@ -715,6 +946,22 @@ function CityModel({ glbPath, onPick, hideBeacons, useGltfLights = true, theme }
   const scene = gltf?.scene
   const hasScene = !!scene && typeof scene.traverse === 'function'
   const [targets, setTargets] = useState([])
+
+  // animation hook
+  const { actions, names } = useAnimations(gltf.animations, scene)
+
+  // Auto-play all animations
+  useEffect(() => {
+    if (names && names.length > 0) {
+      console.log('Available animations:', names)
+      names.forEach((name) => {
+        if (actions[name]) {
+          actions[name].play()
+          console.log('Playing:', name)
+        }
+      })
+    }
+  }, [actions, names])
 
   // Materials + optional GLB lights adjustments (two-pass)
   useEffect(() => {
@@ -935,33 +1182,61 @@ function NeonNightRig() {
   )
 }
 
-// Foggy Morning Light Rig 
+// Foggy Night with Bright Lights Rig
 function FoggyMorningRig() {
   return (
     <>
+      {/* Darker night sky with subtle blue tones */}
       <hemisphereLight
-        skyColor={'#e8f0f8'}
-        groundColor={'#d0d8e0'}
-        intensity={0.8}
+        skyColor={'#1a2238'}
+        groundColor={'#0a0f1c'}
+        intensity={0.3}
       />
 
-      {/* Softer, more diffused key light */}
+      {/* Bright, atmospheric key light mimicking artificial lights cutting through fog */}
       <directionalLight
-        color={'#e0e8f0'}
-        position={[80, 120, 80]}
-        intensity={1.8}
+        color={'#a0c8ff'}  // Cooler, brighter blue-white for night
+        position={[40, 60, 40]}
+        intensity={1.5}    // Increased intensity for light emission
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
-        shadow-camera-left={-120}
-        shadow-camera-right={120}
-        shadow-camera-top={120}
-        shadow-camera-bottom={-120}
-        shadow-bias={-0.0003}
-        shadow-normalBias={0.3}
+        shadow-camera-left={-80}
+        shadow-camera-right={80}
+        shadow-camera-top={80}
+        shadow-camera-bottom={-80}
+        shadow-bias={-0.0005}
+        shadow-normalBias={0.4}
       />
 
-      <ambientLight intensity={0.5} /> {/* Higher ambient for foggy look */}
+      {/* Additional fill lights to simulate light scattering in fog */}
+      <directionalLight
+        color={'#80a0e0'}
+        position={[-30, 50, -30]}
+        intensity={0.8}
+        castShadow={false}
+      />
+
+      {/* Strong ambient to simulate light diffusion in fog */}
+      <ambientLight intensity={0.7} color={'#304060'} />
+
+      {/* Point lights for localized bright spots */}
+      <pointLight
+        color={'#c0e0ff'}
+        position={[10, 15, 5]}
+        intensity={3.2}
+        distance={50}
+        decay={2}
+      />
+
+      {/* Optional: Add more point lights for streetlight effect */}
+      <pointLight
+        color={'#e0f0ff'}
+        position={[-15, 20, -10]}
+        intensity={3.8}
+        distance={40}
+        decay={1.5}
+      />
     </>
   )
 }
@@ -1066,6 +1341,11 @@ export default function CityViewer() {
       });
     }
 
+    // Preserve the key if it exists in staticBinding
+    if (staticBinding.key) {
+      merged.key = staticBinding.key;
+    }
+
     return merged;
   }
 
@@ -1074,6 +1354,10 @@ export default function CityViewer() {
     const staticBinding = BUILDING_BINDINGS[target.key] || { label: target.label }
     const server = buildingsById.get(target.key)
     const merged = mergeBinding(staticBinding, server)
+
+    // Add the building key to the merged data
+    merged.key = target.key
+
     setSelected(merged)
     setOpen(true)
   }
@@ -1091,7 +1375,7 @@ export default function CityViewer() {
 
   return (
     <div className="w-full h-screen bg-[#f2f5f8] dark:bg-[#0E171F]">
-      <GameModal open={open} data={selected} onClose={() => setOpen(false)} />
+      <GameModal open={open} data={selected} onClose={() => setOpen(false)} theme={theme} />
 
       <ThemePanel
         open={panelOpen}
@@ -1130,7 +1414,11 @@ export default function CityViewer() {
         )}
 
         {/* Rain System for Rainy Evening */}
-        {preset.rain && <RainSystem intensity={preset.rainIntensity || 1.0} />}
+        {preset.rain && (
+          <>
+            <HeavyRainSystem intensity={preset.rainIntensity || 1.5} />
+          </>
+        )}
 
         <Suspense fallback={<Loader />}>
           <CityModel

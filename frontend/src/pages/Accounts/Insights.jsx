@@ -1,26 +1,18 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import AccountsLayout from './AccountsLayout';
 import {
-  FaChartBar,
-  FaUsers,
-  FaTrophy,
-  FaPiggyBank,
-  FaRunning,
-  FaArrowUp,
-  FaArrowDown,
   FaCheckCircle,
   FaTimesCircle,
   FaRobot,
   FaPaperPlane,
   FaLightbulb,
-  FaExchangeAlt, FaChartLine, FaTags
 } from 'react-icons/fa';
 
 import {
   ComposedChart, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, ReferenceLine,
   PieChart, Pie, Cell, LabelList,
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
-  LineChart, Line, CartesianGrid, Area
+  Line, CartesianGrid,
 } from 'recharts';
 
 import GaugeChart from 'react-gauge-chart';
@@ -182,7 +174,6 @@ function getAccounts(api) {
   return Array.from(new Set((api.insights || []).map((i) => i.accountName))).sort();
 }
 
-
 const comparisonData = {
   categorySpending: [
     { category: 'Groceries', userSpent: 2100, avgSpent: 1600, status: 'higher' },
@@ -218,7 +209,6 @@ const comparisonData = {
     quizScore: { percentile: 20, direction: 'top' }
   }
 };
-
 
 const InsightsPage = () => {
   const userData = JSON.parse(localStorage.getItem('user') || '{}');
@@ -391,7 +381,6 @@ const InsightsPage = () => {
     });
   }, [categoryApi, selectedAccount, selectedCategories, viewPercent, showAvg]);
 
-
   const CATEGORY_COLORS = useMemo(() => makeCategoryColors(selectedCategories), [selectedCategories]);
   const accounts = useMemo(() => getAccounts(apiData), [apiData]);
 
@@ -407,7 +396,6 @@ const InsightsPage = () => {
     return buildMonthlyData(apiData, viewMode, account || null) || [];
   }, [apiData, viewMode, account]);
 
-
   const radarStats = useMemo(() => {
     const items = radarData?.radar || [];
     const byAxis = new Map(items.map(p => [p.axis, p]));
@@ -422,7 +410,6 @@ const InsightsPage = () => {
       };
     });
   }, [radarData]);
-
 
   const getAiAnalysis = async (userPrompt) => {
     setIsLoading(true);
@@ -452,7 +439,6 @@ const InsightsPage = () => {
     });
     setIsLoading(false);
   };
-
 
   // Polished tooltip
   function ChartTooltip({ active, payload, label }) {
@@ -631,7 +617,6 @@ const InsightsPage = () => {
           ? "fill-blue-400"
           : "fill-blue-600";
 
-
   // state + ref near top of component
   const heatmapRef = React.useRef(null);
   const [tip, setTip] = React.useState({ show: false, text: "", x: 0, y: 0 });
@@ -689,7 +674,6 @@ const InsightsPage = () => {
       </>
     );
   };
-
 
   // state near top of component
   const [catOpen, setCatOpen] = useState(false);
@@ -865,6 +849,7 @@ const InsightsPage = () => {
                 but dining expenses increased by 18%. You're on track to complete your emergency
                 fund goal 3 weeks early.
               </p>
+
             </div>
             <div className="bg-[#7FDD53]/20 p-3 rounded-full text-[#7FDD53]">
               <FaRobot size={24} />
@@ -877,7 +862,9 @@ const InsightsPage = () => {
               <p className="text-sm text-gray-600 mb-1 dark:text-gray-200">Financial Health Score</p>
               <p className="text-2xl font-bold text-[#7FDD53]">82/100</p>
               <p className="text-xs mt-1 text-[#7FDD53]">↑ 5 points from May</p>
+
             </div>
+
 
             {/* Savings Potential Box */}
             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border-2 border-[#5FBFFF]/30">
@@ -894,8 +881,6 @@ const InsightsPage = () => {
             </div>
           </div>
         </div>
-
-
 
         {/* 2-Column Layout for Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1036,6 +1021,7 @@ const InsightsPage = () => {
                       <option key={a} value={a}>{a}</option>
                     ))}
                   </select>
+
                 </div>
 
                 {/* Percent View Toggle */}
@@ -1215,16 +1201,164 @@ const InsightsPage = () => {
                      </>
             )}
                 </div>
+              </div>
+            </div>
 
-                {/* Legend hint */}
-                {showAvg && (
-                  <div className="mt-3 text-xs dark:text-gray-200 text-gray-500">
-                    The dashed line shows the global average total for your selected categories each month.
-                  </div>
-                )}
 
+            {/* Category Multi-select (collapsible) */}
+            <div className="w-full">
+              <div className="flex items-center justify-between mb-4">
+                <label className="block text-sm font-medium dark:text-gray-200 text-gray-700">Categories</label>
+                <button
+                  type="button"
+                  onClick={() => setCatOpen(v => !v)}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-md bg-gray-100 dark:bg-gray-700 dark:text-gray-200 text-gray-700 hover:bg-gray-200"
+                  aria-expanded={catOpen}
+                  aria-controls="category-panel"
+                >
+                  {catOpen ? "Hide" : "Show"} ({selectedCategories.length} selected)
+                  <svg
+                    className={`h-4 w-4 transition-transform dark:text-gray-200 ${catOpen ? "rotate-180" : ""}`}
+                    viewBox="0 0 20 20" fill="currentColor"
+                  >
+                    <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Collapsible Panel */}
+              <div
+                id="category-panel"
+                className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${catOpen ? "max-h-[480px] opacity-100 mt-3" : "max-h-0 opacity-0"}`}
+              >
+                {/* Controls */}
+                <div className="flex flex-wrap items-center gap-4 mb-4">
+                  <button
+                    type="button"
+                    onClick={selectAll}
+                    className="px-3 py-1.5 text-xs rounded-md bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
+                  >
+                    Select all (filtered)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearAll}
+                    className="px-3 py-1.5 text-xs rounded-md bg-gray-100 dark:bg-gray-700 dark:text-gray-200 text-gray-700 hover:bg-gray-200"
+                  >
+                    Clear
+                  </button>
+                </div>
+
+                {/* Chips */}
+                <div className="flex flex-wrap gap-4 max-w-[640px]">
+                  {filteredCategories.map((category) => {
+                    const active = selectedCategories.includes(category);
+                    return (
+                      <button
+                        key={category}
+                        type="button"
+                        onClick={() => toggleCat(category)}
+                        className={`px-4 py-1 text-sm rounded-lg flex items-center ${active ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 dark:bg-gray-700 dark:text-gray-200 text-gray-700"}`}
+                        title={category}
+                      >
+                        <span
+                          className="w-2 h-2 rounded-full mr-2"
+                          style={{ backgroundColor: CATEGORY_COLORS[category] || "#ddd" }}
+                        />
+                        {category.charAt(0).toUpperCase() + category.slice(1)}
+                      </button>
+                    );
+                  })}
+                  {filteredCategories.length === 0 && (
+                    <span className="text-sm dark:text-gray-200text-gray-500">No categories match your search.</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Compact Summary Row when collapsed */}
+              {!catOpen && selectedCategories.length > 0 && (
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs dark:text-gray-200  text-gray-600">
+                  <span className="opacity-70 ">Selected:</span>
+                  {selectedCategories.slice(0, 6).map(c => (
+                    <span key={c} className="px-2 py-0.5 rounded-full  dark:bg-gray-700 bg-gray-100">{c}</span>
+                  ))}
+                  {selectedCategories.length > 6 && (
+                    <span className="opacity-70">+{selectedCategories.length - 6} more</span>
+                  )}
+                </div>
+              )}
+            </div>
+
+
+            {/* Chart */}
+            <div className="h-80 mt-6">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={filteredData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  {...(viewPercent && !showAvg ? { stackOffset: "expand" } : {})}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="month" />
+                  <YAxis tickFormatter={(v) => (viewPercent && !showAvg ? `${Math.round(Number(v) * 100)}%` : ZAR(v))} />
+                  <Tooltip
+                    content={({ active, payload, label }) => {
+                      if (!active || !payload || !payload.length) return null;
+                      const row = filteredData.find((d) => d.month === label);
+                      if (!row) return null;
+
+                      const isPct = viewPercent && !showAvg;
+                      return (
+                        <div className="rounded-xl border dark:bg-gray-700 border-gray-200 bg-white/90 backdrop-blur px-3 py-2 shadow">
+                          <div className="text-xs dark:text-gray-200 text-gray-500 mb-1">{label}</div>
+                          {payload.filter((p) => selectedCategories.includes(p.dataKey)).map((p) => {
+                            const cat = p.dataKey;
+                            const userVal = Number(p.value ?? 0);
+                            const avgVal = Number(row.averages?.[cat] ?? 0);
+
+                            const avgPct = row.avgSelectedTotal > 0 ? (avgVal / row.avgSelectedTotal) * 100 : 0;
+                            const userDisplay = isPct ? `${Math.round(userVal * 100)}%` : ZAR(userVal);
+                            const avgDisplay = isPct ? `${Math.round(avgPct)}%` : ZAR(avgVal);
+
+                            return (
+                              <div key={cat} className="flex items-center  gap-2 text-sm">
+                                <span
+                                  className="inline-block h-2 w-2 rounded-full"
+                                  style={{ background: p.color }}
+                                />
+                                <span className="text-gray-600 dark:text-gray-200">{cat.charAt(0).toUpperCase() + cat.slice(1)}</span>
+                                <span className="ml-auto font-medium dark:text-gray-200 text-gray-800">{userDisplay}</span>
+                                <span className="ml-2 text-xs dark:text-gray-200 text-gray-500">Avg: {avgDisplay}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    }}
+                  />
+                  <Legend />
+                  {selectedCategories.map((category) => (
+                    <Bar
+                      key={category}
+                      dataKey={category}
+                      name={category.charAt(0).toUpperCase() + category.slice(1)}
+                      stackId="user"
+                      fill={CATEGORY_COLORS[category]}
+                      radius={[4, 4, 0, 0]}
+                      isAnimationActive={false}
+                    />
+                  ))}
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Legend hint */}
+            {showAvg && (
+              <div className="mt-3 text-xs dark:text-gray-200 text-gray-500">
+                The dashed line shows the global average total for your selected categories each month.
+              </div>
+            )}
           </div>
-
 
           {/* Income vs Expense Bar Chart */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border dark:border-gray-800 border-gray-200">
@@ -1394,7 +1528,6 @@ const InsightsPage = () => {
             </div>
           </div>
 
-
           {/* Radar Chart */}
           <div className="bg-white dark:bg-gray-800  p-6 rounded-xl shadow-md border dark:border-gray-800 border-gray-200 ">
             <h2 className="text-xl font-bold dark:text-gray-200 text-gray-800 mb-4">Financial Health Radar</h2>
@@ -1484,7 +1617,9 @@ const InsightsPage = () => {
                       )
                     }
                     className={`px-3 py-1.5 rounded-lg text-xs transition-colors ${active ? "bg-indigo-100 text-indigo-700 border border-indigo-200"
-                      : "bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-700 text-gray-600 border border-gray-100"
+
+                        : "bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-700 text-gray-600 border border-gray-100"
+
                       }`}
                   >
                     {cat}
@@ -1568,6 +1703,7 @@ const InsightsPage = () => {
                                   ))}
                                 </div>
                               </div>
+
                             )}
                           </div>
                         );
@@ -1606,7 +1742,7 @@ const InsightsPage = () => {
                       connectNulls
                       isAnimationActive={false}
                     />
-
+                    
                     <Line
                       yAxisId="left"
                       type="monotone"

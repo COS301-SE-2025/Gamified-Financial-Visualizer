@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../../components/AuthLayout';
 import logoImg from '../../assets/Images/Logo.png';
-import { FaEye, FaEyeSlash, FaLock } from 'react-icons/fa';
-import { motion } from 'framer-motion';
-import  {useThemeLoader, applyThemeFromPreferences }  from '../ThemeLoader.mjs';
+import { FaEye, FaEyeSlash,FaExclamationCircle } from 'react-icons/fa';
+
 const BASE_URL = "http://localhost:5000";
 
 const Login = () => {
@@ -59,11 +58,12 @@ const Login = () => {
 
   return (
     <AuthLayout reverse={false}>
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-lg lg:max-w-md">
         <div className="flex flex-col items-center mb-6 space-y-2">
           <img src={logoImg} alt="Gamified Finance" className="w-32" />
-          <h2 className="text-2xl font-bold">Login</h2>
+          <h2 className="text-2xl font-bold text-[#83AB55]">Login</h2>
         </div>
+
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-sm font-medium">Username</label>
@@ -96,12 +96,17 @@ const Login = () => {
               </button>
             </div>
           </div>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-          <button type="submit" className="btn-green">Login</button>
+          {error && (
+            <div className="text-red-500 text-sm flex items-center gap-1">
+              <FaExclamationCircle /> {error}
+            </div>
+          )}
+          <button type="submit" className="btn-green w-full">Login</button>
         </form>
+
         <p className="text-sm mt-4 text-center">
           New to Gamified Finance?{' '}
-          <Link to="/register" className="font-semibold underline">Sign Up</Link>
+          <Link to="/register" className="font-semibold underline text-[#88BC46]">Sign Up</Link>
         </p>
       </div>
     </AuthLayout>

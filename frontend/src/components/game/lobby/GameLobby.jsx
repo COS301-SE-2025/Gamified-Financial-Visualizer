@@ -75,9 +75,6 @@ export default function GameLobby({
 
     onQuickJoin,
 }) {
-
-
-
     // global settings (left cards at top)
     const [mode, setMode] = useState(defaultMode)
     const [players, setPlayers] = useState(defaultPlayers)
@@ -111,6 +108,7 @@ export default function GameLobby({
     const [socket, setSocket] = useState(null);
     const user = JSON.parse(localStorage.getItem('user'));
     const token = user.token;
+
     const [lobbyId, setLobbyId] = useState(null);
 // clear local storage gameId on mount
     useEffect(() => {
@@ -118,6 +116,7 @@ export default function GameLobby({
         localStorage.removeItem('lobbyId');
     }, []);
     /*
+
     useEffect(() => {
         const socket = getSocket(token, user?.id);
         setSocket(socket);
@@ -185,9 +184,6 @@ export default function GameLobby({
             setRoomsRefreshing(false)
         }
     }
-
-
-
 
     // API Functions
     const apiCall = async (endpoint, options = {}) => {
@@ -473,14 +469,15 @@ export default function GameLobby({
     return (
         <div className="relative p-4 md:p-6 space-y-6 min-h-screen">
             {/* header */}
+
             {/* Banner image placeholder */}
-        <div className="w-full">
-          <img
-            src={bannerImage} // replace with your import or path
-            alt="Game Banner"
-            className="w-full h-42 object-cover rounded-xl shadow-md"
-          />
-        </div>
+            <div className="w-full">
+                <img
+                    src={bannerImage} // replace with your import or path
+                    alt="Game Banner"
+                    className="w-full h-42 object-cover rounded-xl shadow-md"
+                />
+            </div>
             <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                     <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-sky-500 to-gray-200 bg-clip-text text-transparent">
@@ -490,12 +487,14 @@ export default function GameLobby({
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
-                    <button onClick={handleLeaveLobby} className="px-4 py-2 rounded-2xl border border-red-200 bg-white hover:bg-red-50 text-red-600 flex items-center gap-2">
+                    <button onClick={() => window.history.back()} className="px-4 py-2 rounded-2xl bg-red-400 hover:bg-red-500 text-white flex items-center gap-2 shadow">
                         <FaDoorOpen /> Leave Lobby
                     </button>
+
                     <button  onClick={() => window.location.href = '/community'} className="px-4 py-2 rounded-2xl bg-red-400 hover:bg-red-500 text-white flex items-center gap-2 shadow">
                         <FaSignOutAlt /> Leave Game
                     </button>
+
                     <div className="px-4 py-2 rounded-2xl text-white shadow-lg bg-[#FFCE51] flex items-center gap-2">
                         <FaCrown className="text-amber-100" /> High: {highestScore}
                     </div>
@@ -746,12 +745,6 @@ export default function GameLobby({
                     </div>
 
                     <div className="mt-5 flex items-center justify-between">
-                        <button
-                            onClick={handleLeaveLobby}
-                            className="px-4 py-2.5 rounded-2xl border border-sky-200 bg-white/90 hover:bg-white shadow-sm transition-all hover:shadow-md flex items-center gap-2"
-                        >
-                            <FaDoorOpen /> Leave
-                        </button>
                         <button
                             onClick={() => handleSaveCharacter()}
                             disabled={saving}

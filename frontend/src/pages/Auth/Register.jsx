@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../../components/AuthLayout';
 import logoImg from '../../assets/Images/Logo.png';
-import { FaLock, FaEye, FaEyeSlash, FaCheckCircle, FaTimesCircle, FaExclamationCircle } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaCheckCircle, FaTimesCircle, FaExclamationCircle } from 'react-icons/fa';
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
-
 
 const Register = () => {
   const navigate = useNavigate();
@@ -21,7 +20,7 @@ const Register = () => {
   const [submitError, setSubmitError] = useState('');
 
   const passwordCriteria = {
-    length: /^.{8,15}$/, // 8-15 characters
+    length: /^.{8,15}$/,
     lowercase: /[a-z]/,
     uppercase: /[A-Z]/,
     number: /\d/,
@@ -102,9 +101,10 @@ const Register = () => {
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-6 space-y-2">
           <img src={logoImg} alt="Gamified Finance" className="w-32" />
-          <h2 className="text-2xl font-bold">Register</h2>
+          <h2 className="text-2xl font-bold text-[#83AB55]">Register</h2>
         </div>
 
+        {/* KEEP ORIGINAL SPACING - space-y-4 */}
         <form onSubmit={handleRegister} className="space-y-4">
           {/* Full Name */}
           <div>
@@ -222,9 +222,9 @@ const Register = () => {
           <button type="submit" className="btn-green w-full">Register</button>
         </form>
 
-        <p className="text-sm mt-4 text-center">
+        <p className="text-sm mt-4  text-center">
           Already a member of Gamified Finance?{' '}
-          <Link to="/login" className="font-semibold underline">Login</Link>
+          <Link to="/login" className="font-semibold underline text-[#88BC46]">Login</Link>
         </p>
       </div>
     </AuthLayout>

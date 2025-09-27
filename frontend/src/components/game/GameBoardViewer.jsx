@@ -183,7 +183,7 @@ const CharacterPawn = React.forwardRef(function CharacterPawn(
     return (
       clips.find((c) => norm(c.name) === w)?.name ||
       clips.find((c) => norm(c.name).includes(w))?.name ||
-      (w === "walk" && (clips.find((c) => /walk|run|move/i.test(c.name))?.name)) ||
+      (w === "walk" && (clips.find((c) => /walk|run/i.test(c.name))?.name)) ||
       (w === "idle" && (clips.find((c) => /idle|stand/i.test(c.name))?.name)) ||
       clips[0].name
     );
@@ -245,19 +245,32 @@ function makePathFromBounds(bounds, tileCount = BOARD_ORDER.length, margin = 0.1
 
 /* Glue Y to board via raycast; arrival checked in XZ-plane */
 function MovementController({ pieceRef, path, targetIndex, onArrive, onMoveState, speed = 7, groundYAt, offset = [0, 0] }) {
-  const lastIdx = useRef(targetIndex);
+  const lastIdx = useRef(-1); // Start with -1 to ensure first movement triggers
+  const currentPosition = useRef(new THREE.Vector3());
 
   useFrame((_, delta) => {
     const mesh = pieceRef?.current;
     const dest = path[targetIndex];
     if (!mesh || !dest) return;
 
+    // Initialize current position if this is the first frame
+    if (lastIdx.current === -1) {
+      currentPosition.current.copy(mesh.position);
+      lastIdx.current = targetIndex;
+    }
+
+    // If target index changed, we need to start moving
+    if (lastIdx.current !== targetIndex) {
+      lastIdx.current = targetIndex;
+      onMoveState?.(true);
+    }
+
     // apply small offset so multiple pawns don't overlap
     const ox = Array.isArray(offset) ? (offset[0] || 0) : 0;
     const oz = Array.isArray(offset) ? (offset[1] || 0) : 0;
 
-    const cx = mesh.position.x;
-    const cz = mesh.position.z;
+    const cx = currentPosition.current.x;
+    const cz = currentPosition.current.z;
     const tx = dest.x + ox;
     const tz = dest.z + oz;
     const dx = tx - cx;
@@ -265,23 +278,23 @@ function MovementController({ pieceRef, path, targetIndex, onArrive, onMoveState
     const planarDist = Math.hypot(dx, dz);
 
     if (planarDist <= 0.02) {
+      // Arrived at destination
       const y = groundYAt ? groundYAt(tx, tz) : mesh.position.y;
       mesh.position.set(tx, y, tz);
-      if (lastIdx.current !== targetIndex) {
-        lastIdx.current = targetIndex;
-        onMoveState?.(false);
-        onArrive?.(targetIndex);
-      }
+      currentPosition.current.set(tx, y, tz);
+      onMoveState?.(false);
+      onArrive?.(targetIndex);
       return;
     }
 
-    onMoveState?.(true);
+    // Move towards destination
     const step = Math.min(planarDist, speed * delta);
     const nx = cx + (dx / planarDist) * step;
     const nz = cz + (dz / planarDist) * step;
     const ny = groundYAt ? groundYAt(nx, nz) : mesh.position.y;
 
     mesh.position.set(nx, ny, nz);
+    currentPosition.current.set(nx, ny, nz);
     mesh.rotation.y = Math.atan2(dx, dz);
   });
 
@@ -445,7 +458,10 @@ export default function GameBoardViewer({
                 const ox = Math.cos(angle) * radius;
                 const oz = Math.sin(angle) * radius;
 
-                const y = groundYAt(spot.x + ox, spot.z + oz);
+                // Start all pawns at the beginning position (index 0)
+                const startSpot = path[0] || { x: 0, z: 0 };
+                const y = groundYAt(startSpot.x, startSpot.z);
+
                 const ref = getPawnRef(p.key || `pawn_${i}`);
 
                 return (
@@ -455,16 +471,25 @@ export default function GameBoardViewer({
                       src={charactersGlb}
                       focus={p.character || selectedCharacter}
                       play={"Idle"}
-                      position={[spot.x + ox, y, spot.z + oz]}
+                      // Start all pawns at position 0 initially
+                      position={[startSpot.x, y, startSpot.z]}
                       scale={0.55}
                     />
                     {path.length > 0 && (
                       <MovementController
                         pieceRef={ref}
                         path={path}
-                        targetIndex={idx}
+                        targetIndex={idx} // This will now trigger movement from 0 to target
                         groundYAt={groundYAt}
                         offset={[ox, oz]}
+                        // Add these callbacks to handle animation state
+                        onMoveState={(moving) => {
+                          // You might want to track movement state per pawn
+                          console.log(`Pawn ${p.key} is ${moving ? 'moving' : 'idle'}`);
+                        }}
+                        onArrive={(arrivedIndex) => {
+                          console.log(`Pawn ${p.key} arrived at tile ${arrivedIndex}`);
+                        }}
                       />
                     )}
                   </React.Fragment>
