@@ -54,8 +54,12 @@ RUN apk update && apk upgrade && apk add --no-cache \
     python3-dev \
     poppler-utils \
     tesseract-ocr \
+    tesseract-ocr-data-eng \
     && rm -rf /var/cache/apk/*
     
+# Set Tesseract environment variable
+ENV TESSDATA_PREFIX=/usr/share/tessdata
+
 COPY backend-requirements.txt ./
 RUN pip3 install --no-cache-dir --break-system-packages -r backend-requirements.txt
 
