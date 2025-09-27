@@ -257,22 +257,22 @@ const unlockedThemes = THEME_UNLOCK_MAP[userTier] || [];
 
     return (
       <button
-        key={key}
-        onClick={() => isUnlocked && setTheme(key)}
-        disabled={!isUnlocked}
-        className={`relative px-4 py-2 rounded-lg border text-sm font-medium shadow-sm transition-all duration-200
-          ${isSelected ? 'bg-lime-600 text-white border-lime-600' :
-            isUnlocked ? 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 hover:border-lime-500 hover:shadow-md' :
-            'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400 opacity-60 cursor-not-allowed'}
-        `}
-      >
-        {CITY_SCENES[key].name}
-        {!isUnlocked && (
-          <span className="absolute top-1 right-2 text-[10px] font-semibold text-red-500 bg-white dark:bg-gray-900 px-1 rounded">
-            Locked
-          </span>
-        )}
-      </button>
+  key={key}
+  onClick={() => setTheme(key)} // Always clickable during dev
+  disabled={false} // Always enabled for dev; use !isUnlocked in production
+  className={`relative px-4 py-2 rounded-lg border text-sm font-medium shadow-sm transition-all duration-200
+    ${isSelected ? 'bg-lime-600 text-white border-lime-600' :
+      isUnlocked ? 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 hover:border-lime-500 hover:shadow-md' :
+      'bg-white/70 dark:bg-gray-700/70 border-gray-300 dark:border-gray-600 text-gray-400 hover:border-gray-400 hover:shadow-sm'}
+  `}
+>
+  {CITY_SCENES[key].name}
+  {!isUnlocked && (
+    <span className="absolute top-1 right-2 text-[10px] font-semibold text-red-500 bg-white dark:bg-gray-900 px-1 rounded">
+      Locked
+    </span>
+  )}
+</button>
     );
   })}
 </div>
