@@ -1,18 +1,27 @@
-import { GameState, Player, Card, Block, Board, Asset } from '../types/GameTypes';
+import { GameState, Player, Card, Block, Board, Asset, Character } from '../types/GameTypes';
 import * as BoardData from '../data/BoardData';
 import { EventEmitter } from 'events';
 import pool from "../../../config/db";
 import { logger } from "../../../config/logger";
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
+import { randInt } from 'three/src/math/MathUtils';
 
 
 export class GameEngine extends EventEmitter {
-  private games = new Map<string, GameState>();
+  private io : Server;
+
+  constructor(io: Server) {
+    super();
+    this.io = io;  // Store io for event emission
+    this.games = new Map<string, GameState>();
+  }
+
+  private games: Map<string, GameState>;
 
   private chanceCards = BoardData.CHANCE_CARDS;
   private communityCards = BoardData.COMMUNITY_CARDS;
 
-  createGame(gameId: string, hostPlayerId: number, gameMode: 'laps' | 'elimination'): GameState {
+  createGame(gameId: string, hostPlayerId: number, gameMode: 'laps' | 'elimination', laps: number): GameState {
     const gameState: GameState = {
       id: gameId,
       players: new Map(),
@@ -24,15 +33,59 @@ export class GameEngine extends EventEmitter {
       communityDiscard: [],
       chanceDiscard: [],
       gameMode,
-      maxLaps: gameMode === 'laps' ? 10 : undefined,
+      maxLaps: gameMode === 'laps' ? laps : 10,
       createdAt: new Date(),
       turnCounter: 0,
       turnOrder: [],
     };
 
     this.games.set(gameId, gameState);
+
     return gameState;
   }
+
+
+addBot(gameId: string, spec: BotSpec) {
+  const game = this.games.get(gameId);
+  if (!game) return false;
+
+  game.players.set(spec.id as number, {
+    id: spec.id as number,                     // can also keep string 'bot_1' if your map is <string, Player>
+    username: spec.username,
+    socketId: '',                              // no socket for HTTP mode
+    position: 0,
+    cash: 5000,
+    assets: [],
+    loans: [],
+    cards: [],
+    lapsCompleted: 0,
+    salary: 2000,
+    isActive: true,
+    isBankrupt: false,
+    skipNextTurn: false,
+    characterKey: spec.characterKey,
+    statusEffects: [],
+    isBot: true,                               // add this optional flag on your Player type
+  } as any);
+
+  return true;
+}
+
+ensureBots(gameId: string, desiredTotal = 4) {
+  const game = this.games.get(gameId);
+  if (!game) return;
+  const humanIds = Array.from(game.players.values()).filter(p => !('isBot' in p && p.isBot)).map(p => p.id);
+  const takenChars = new Set(Array.from(game.players.values()).map(p => p.characterKey).filter(Boolean));
+  const need = Math.max(0, desiredTotal - game.players.size);
+
+  let botIdx = 1;
+  for (let i = 0; i < need; i++) {
+    const char = BOT_CHAR_POOL.find(c => !takenChars.has(c)) ?? BOT_CHAR_POOL[i % BOT_CHAR_POOL.length];
+    takenChars.add(String(char));
+    this.addBot(gameId, { id: Math.floor(Math.random() * 1e9), username: `Bot ${botIdx}`, characterKey: char });
+    botIdx++;
+  }
+}
 
   addPlayer(gameId: string, player: Player): boolean {
     const game = this.games.get(gameId);
@@ -55,17 +108,18 @@ export class GameEngine extends EventEmitter {
     };
 
     game.players.set(player.id, newPlayer);
-    this.emit('player-joined', { gameId, player: newPlayer });
+   // this.emit('player-joined', { gameId, player: newPlayer });
     return true;
   }
 
   startGame(gameId: string): boolean {
     const game = this.games.get(gameId);
-    if (!game || game.gamePhase !== 'waiting' || game.players.size < 2) {
+    if (!game || game.players.size < 1) {// set for 1 for now
       return false;
     }
 
     game.gamePhase = 'playing';
+    logger.info(`Game ${gameId} started with players: ${game.gamePhase}`);
     game.startedAt = new Date();
 
     // Randomize turn order
@@ -73,7 +127,19 @@ export class GameEngine extends EventEmitter {
     const randomizedIds = this.shuffleArray(playerIds);
     game.currentPlayerId = randomizedIds[ 0 ];
 
-    this.emit('game-started', { gameId, turnOrder: randomizedIds });
+    /*
+    this.io.emit('game-started', { gameId, turnOrder: randomizedIds });
+    this.io.to(`game:${gameId}`).emit('game-started', {
+      gameId,
+      turnOrder: randomizedIds,
+      gamePhase: game.gamePhase,
+    });
+
+    this.io.to(`game:${gameId}`).emit('gameStateUpdated', {
+      players: game.players,
+      activePlayer: game.currentPlayerId
+      });
+*/
     return true;
   }
 
@@ -123,7 +189,7 @@ export class GameEngine extends EventEmitter {
     player.position = newPosition;
     const landedBlock = game.board.blocks[ newPosition ];
 
-    this.emit('player-moved', { gameId, playerId, oldPosition, newPosition, landedBlock });
+   // this.emit('player-moved', { gameId, playerId, oldPosition, newPosition, landedBlock });
     this.handleBlockLanding(gameId, playerId, landedBlock);
 
     return true;
@@ -164,7 +230,7 @@ export class GameEngine extends EventEmitter {
     }
 
     const card = deck.pop()!;
-    this.emit('card-drawn', { gameId, playerId, card });
+ //   this.emit('card-drawn', { gameId, playerId, card });
     this.applyCardEffect(gameId, playerId, card);
     discard.push(card);
   }
@@ -369,6 +435,32 @@ export class GameEngine extends EventEmitter {
     this.emit('player-bankrupt', { gameId, playerId });
   }
 
+  public async leaveGame(gameId: string, playerId: number): Promise<boolean>{
+    const game = this.games.get(gameId);
+    if (!game) return false;
+
+    if (game.gamePhase === 'waiting') {
+      game.players.delete(playerId);
+      game.turnOrder = game.turnOrder.filter(id => id !== playerId);  
+      this.emit('player-left', { gameId, playerId });
+      if (game.players.size < 2) {
+        game.gamePhase = 'waiting';
+        this.emit('game-cancelled', { gameId });
+        this.games.delete(gameId);
+      }
+    } else if (game.gamePhase === 'playing') {
+      game.players.delete(playerId);
+      game.turnOrder = game.turnOrder.filter(id => id !== playerId);
+      this.emit('player-left', { gameId, playerId });
+      if (game.players.size < 2) {
+        game.gamePhase = 'waiting';
+        this.emit('game-cancelled', { gameId });
+        this.games.delete(gameId);
+      }
+    }
+
+    return true;
+  }
 
   private async endGame(gameId: string, reason: 'laps' | 'elimination'): Promise<void> {
     const game = this.games.get(gameId)!;
@@ -838,6 +930,7 @@ export class GameEngine extends EventEmitter {
     );
     const debtValue = player.loans.reduce((sum, loan) => sum + loan.amount, 0);
     const netWorth = player.cash + assetValue - debtValue;
+    const numCards = player.cards.length;
 
     return {
       cash: player.cash,
@@ -845,7 +938,8 @@ export class GameEngine extends EventEmitter {
       debtValue,
       netWorth,
       lapsCompleted: player.lapsCompleted,
-      salary: player.salary
+      salary: player.salary,
+      inventory: numCards 
     };
   }
 
@@ -892,8 +986,48 @@ export class GameEngine extends EventEmitter {
     };
   }
 
+  public getAllPlayersStats(gameId: string) {
+    const game = this.games.get(gameId);
+    if (!game) return null;
 
+    return Array.from(game.players.values()).map(player => ({
+      id: player.id,
+      name: player.username,
+      position: player.position,
+      cash: player.cash,
+      assets: player.assets,
+      loans: player.loans,
+      cards: player.cards,
+      lapsCompleted: player.lapsCompleted,
+      salary: player.salary,
+      isActive: player.isActive,
+      isBankrupt: player.isBankrupt
+    }));
+  } 
+
+  public getPlayerCardInventory(gameId: string, playerId: number) {
+    const game = this.games.get(gameId);
+    const player = game?.players.get(playerId);
+
+    if (!game || !player) return null;
+
+    return {
+      cards: player.cards,
+      assets: player.assets,
+      loans: player.loans
+    };
+  }
+
+  public getPlayerAssets(gameId: string, playerId: number) {
+    const game = this.games.get(gameId);
+    const player = game?.players.get(playerId);
+
+    if (!game || !player) return null;
+
+    return player.assets;
+  }
 }
+
 
 type StatusEffect =
   | { type: 'slow_paced'; expiresTurn: number; multiplier: number }
@@ -997,3 +1131,7 @@ function pruneExpiredEffects(state: GameState, player: Player) {
   const now = state.turnCounter;
   player.statusEffects = (player.statusEffects ?? []).filter(e => now <= e.expiresTurn);
 }
+
+type BotSpec = { id: string|number; username: string; characterKey: string };
+
+const BOT_CHAR_POOL = ['Green_girl','Mr_suit','Cowboy','Kimono_girl','Lilac_girl','Ninja.001'];

@@ -458,9 +458,9 @@ const BudgetPage = () => {
       const response = await fetch(`http://localhost:5000/api/budget/${deleteConfirmation.budgetId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({
-            user_id: userId
-          }),
+        body: JSON.stringify({
+          user_id: userId
+        }),
       });
       const result = await response.json();
       if (result.status === 'success') {
@@ -500,51 +500,51 @@ const BudgetPage = () => {
         } else {
           setError(result.message || 'Failed to update budget');
         }
- } else {
-  const response = await fetch('http://localhost:5000/api/budget', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      user_id: userId,
-      category_id: formData.category_id,
-      allocations: [{
-        category_id: formData.category_id,
-        target_amount: formData.target_amount
-      }]
-    }),
-  });
-  const result = await response.json();
+      } else {
+        const response = await fetch('http://localhost:5000/api/budget', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: userId,
+            category_id: formData.category_id,
+            allocations: [{
+              category_id: formData.category_id,
+              target_amount: formData.target_amount
+            }]
+          }),
+        });
+        const result = await response.json();
 
-  if (result.status === 'success') {
-    // derive a friendly name from the chosen category if API didn’t send one
-    const cat = categories.find(c => c.category_id === formData.category_id);
-    const resolvedName =
-      result.data?.budget_name || result.data?.category_name || cat?.category_name || 'Untitled Budget';
+        if (result.status === 'success') {
+          // derive a friendly name from the chosen category if API didn’t send one
+          const cat = categories.find(c => c.category_id === formData.category_id);
+          const resolvedName =
+            result.data?.budget_name || result.data?.category_name || cat?.category_name || 'Untitled Budget';
 
-    const newBudget = {
-      ...result.data,
-      // make sure both fields exist for downstream UI
-      budget_name: resolvedName,
-      category_name: result.data?.category_name || resolvedName,
+          const newBudget = {
+            ...result.data,
+            // make sure both fields exist for downstream UI
+            budget_name: resolvedName,
+            category_name: result.data?.category_name || resolvedName,
 
-      // ensure numbers the card can use immediately
-      total_target:
-        Number(result.data?.total_target ??
-               result.data?.target_amount ??
-               formData.target_amount ?? 0),
+            // ensure numbers the card can use immediately
+            total_target:
+              Number(result.data?.total_target ??
+                result.data?.target_amount ??
+                formData.target_amount ?? 0),
 
-      used: Number(result.data?.used ?? 0),
+            used: Number(result.data?.used ?? 0),
 
-      created_at: result.data?.created_at ?? new Date().toISOString(),
-    };
+            created_at: result.data?.created_at ?? new Date().toISOString(),
+          };
 
-    setBudgets(prev => [newBudget, ...prev]);   // no refresh needed
-    setIsCreating(false);
-    toast.success('Budget created successfully');
-  } else {
-    setError(result.message || 'Failed to create budget');
-  }
-}
+          setBudgets(prev => [newBudget, ...prev]);   // no refresh needed
+          setIsCreating(false);
+          toast.success('Budget created successfully');
+        } else {
+          setError(result.message || 'Failed to create budget');
+        }
+      }
 
     } catch (err) {
       setError('Failed to save budget');
@@ -600,7 +600,7 @@ const BudgetPage = () => {
         )}
 
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Budget Management</h2>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Monthly Budget Management</h2>
           <button
             onClick={handleCreate}
             className="flex items-center gap-2 px-5 py-2.5 bg-[#AAD977] text-white text-sm font-medium rounded-lg hover:bg-[#6d9140] transition shadow-sm"

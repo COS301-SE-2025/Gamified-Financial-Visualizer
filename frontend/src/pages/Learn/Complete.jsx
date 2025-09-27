@@ -388,7 +388,7 @@ const LearningCompletePage = () => {
                 lessons={module.lesson_count}
                 topic={module.topic}
                 difficulty={module.difficulty}
-                image={bannerImages[module.module_banner_id] || banner1}
+                image={`/assets/Images/${module.banner_image_path}`}
                 moduleId={module.module_id}
                 completed={true}
               />

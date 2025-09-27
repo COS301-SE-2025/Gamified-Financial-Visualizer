@@ -9,6 +9,26 @@ import { error } from 'console';
 
 const router = Router();
 
+// dynanmic lani\ding page
+router.get('/landing-page', async (req: Request, res: Response) => {
+  try {
+    const cacheKey = 'community_landing_page';
+    const cachedData = await redisClient.get(cacheKey);
+
+    if (cachedData) {
+      logger.info('[Community] Serving landing page data from cache');
+       res.status(200).json({ status: 'success', data: JSON.parse(cachedData) });
+       return;
+    }
+
+    const stats = await communityService.landingPageStats();
+    await redisClient.set(cacheKey, JSON.stringify(stats), { EX: 3600 }); // Cache for 1 hour
+
+    res.status(200).json({ status: 'success', data: stats });
+  } catch (err) {
+    logger.error('[Community] Failed to fetch landing page data:', err);
+  }
+});
 // Post Feature Routes
 
 // POST community/api/social/posts
@@ -78,8 +98,8 @@ router.get('/social/feed/:userId', async (req: Request, res: Response) => {
     const userId = parseInt(req.params.userId);
     
     if (isNaN(userId)) {
-       res.status(400).json({ status: 'error', message: 'Invalid user ID' });
-       return;
+     res.status(400).json({ status: 'error', message: 'Invalid user ID' });
+     return;
     }
 
     const posts = await communityService.getFriendFeed(userId);
