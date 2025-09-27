@@ -6,7 +6,6 @@ import {
 } from 'react-icons/fa'
 
 import CharacterSelectViewer from '../CharacterSelectViewer'
-import { io } from 'socket.io-client';
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { getSocket } from '../socket';
 
@@ -80,6 +79,8 @@ export default function GameLobby({
     const [mode, setMode] = useState(defaultMode)
     const [players, setPlayers] = useState(defaultPlayers)
     const [laps, setLaps] = useState(defaultLaps)
+  const [gamePhase, setGamePhase] = useState('lobby');
+  const [activePlayer, setActivePlayer] = useState(0);
 
     // character picker
     const [character, setCharacter] = useState(ALL_CHARACTERS[3]) // Cowboy
@@ -104,20 +105,28 @@ export default function GameLobby({
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [copied, setCopied] = useState(false);
-
+    const [socket, setSocket] = useState(null);
     const user = JSON.parse(localStorage.getItem('user'));
     const token = user.token;
 
+    const [lobbyId, setLobbyId] = useState(null);
+// clear local storage gameId on mount
+    useEffect(() => {
+        localStorage.removeItem('gameId');
+        localStorage.removeItem('lobbyId');
+    }, []);
+    /*
+
     useEffect(() => {
         const socket = getSocket(token, user?.id);
-
+        setSocket(socket);
         socket.on('connect_error', (err) => {
             console.error('Socket connection failed:', err.message);
         });
 
         return () => socket.off("connect_error", error);
     }, [token, user]);
-
+*/
     const lapOptions = [5, 10, 15, 20]
     const [playersInLobby, setPlayersInLobby] = useState([]);
 
@@ -151,7 +160,7 @@ export default function GameLobby({
                 }),
             });
             if (res.success) {
-                //  onSaveCharacter?.(character.key);
+                onSaveCharacter?.(character.key);
             }
         } catch (err) {
             console.error(err);
@@ -178,7 +187,7 @@ export default function GameLobby({
 
     // API Functions
     const apiCall = async (endpoint, options = {}) => {
-        console.log('API Call:', endpoint, options);
+       // console.log('API Call:', endpoint, options);
         const response = await fetch(`http://localhost:5000/api/game${endpoint}`, {
             headers: {
                 'Content-Type': 'application/json',
@@ -206,17 +215,22 @@ export default function GameLobby({
                     user_id: user?.id,
                     username: user?.username,
                     gameMode: 'laps',
-                    maxLaps: laps,
+                    maxLaps: roomLaps,
                     maxPlayers: players,
                     isPrivate: false
                 })
             });
-
             if (response.success) {
-                console.log('Lobby created:', response.lobby);
+                console.log('Lobby created:', response.lobby.id);
+                setLobbyId(response.lobby.id);
+                localStorage.removeItem('lobbyId');
+                localStorage.setItem('lobbyId', response.lobby.id);
+                
                 setRoomCode(response.lobby.code);
                 onCreateRoom?.(response.lobby);
                 setShowCreate(false);
+                handleGetMyLobby();
+                fetchLobby();
             }
         } catch (err) {
             setError(err.message);
@@ -237,9 +251,12 @@ export default function GameLobby({
 
             if (response.success) {
                 console.log('Joined lobby:', response.lobby);
+                localStorage.removeItem('lobbyId');
+                localStorage.setItem('lobbyId', response.lobby);
                 onJoinWithCode?.(response.lobby);
             }
 
+             //socket.emit('lobby:start-game'); 
             // update lobby
             await handleGetMyLobby();
         } catch (err) {
@@ -307,9 +324,7 @@ export default function GameLobby({
             return null;
         }
     };
-
-    useEffect(() => {
-        const fetchLobby = async () => {
+      const fetchLobby = async () => {
             try {
                 const response = await apiCall('/lobby/my-lobby', {
                     method: 'POST',
@@ -333,6 +348,8 @@ export default function GameLobby({
                 console.error('Error fetching lobby:', err);
             }
         };
+    useEffect(() => {
+  
 
         fetchLobby();
     }, [user]);
@@ -346,6 +363,15 @@ export default function GameLobby({
 
             if (response.success) {
                 console.log('Left lobby successfully');
+                // remove game id
+                localStorage.removeItem('gameId');
+                onLeaveLobby?.();
+                setPlayersInLobby([]);
+                setRoomCode('');
+                setShowCreate(false);
+                setShowQuick(false);
+                setJoinCode('');
+                setError(''); // clear any previous errors
             }
         } catch (err) {
             setError(err.message);
@@ -367,12 +393,76 @@ export default function GameLobby({
         }
     };
 
-    const start = () => {
-        if (!canStart) return;
-        //  socket.emit('lobby:start-game');  // backend will pick up userId from socket.data
-        onStart?.({ mode, players, laps }, character.key);
-        setCountdown(true);
+    const start = async () => {
+       // if (!canStart) return;
+       if(gamePhase !== 'lobby') return;
+        try {
+       // onStart?.({ mode, players, laps }, character.key);
+
+            const res = await fetch('http://localhost:5000/api/game/game/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: Number(user.id),
+                    lobbyId: lobbyId
+                }),
+            });
+            // set game id
+            const result = await res.json();
+            if(result.success) {
+         //  logger.info('Game started:', result.gameId);
+                // clear gameId
+                localStorage.removeItem('gameId');
+               localStorage.setItem('gameId', result.gameId); 
+             //   socket.emit('lobby:start-game');  // backend will pick up userId from socket.data
+             //   await fetchGameState();
+                setCountdown(true);
+            }  
+            
+            // // Move sockets
+            // const socketIds = Array.from(lobby.players.values()).map(p => p.socketId).filter(Boolean);
+            // for (const sid of socketIds) {
+            //     const s = io.sockets.sockets.get(sid);
+            //     if (!s) continue;
+            //     await s.leave(`lobby:${lobby.id}`);
+            //     await s.join(`game:${gameId}`);
+            // }
+        
+            // // Broadcast started
+            // const gameState = lobbyManager.getGameEngine().getGameState(gameId);
+            // io.to(`game:${gameId}`).emit('game:started', { gameId, gameState });
+            
+        } catch (err) {
+            console.error('Error starting game:', err);
+        }
+        
     };
+
+    const fetchGameState = async () => {
+  try {
+    const gameId = localStorage.getItem('gameId');
+    if(!gameId) return;
+
+    const res = await fetch(`http://localhost:5000/api/game/state/${gameId}`, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${user.token}` }
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      // Update the game state, players, etc.
+      setPlayers(data.gameState.players);
+      setGamePhase(data.gameState.gamePhase);
+      localStorage.setItem('gamePhase', data.gameState.gamePhase);
+      setActivePlayer(data.gameState.currentPlayerId);
+    }
+  } catch (error) {
+    console.error('Error fetching game state:', error);
+  }
+};
+
 
     const done = () => onStart?.({ mode, players, laps }, character.key)
 
@@ -400,6 +490,11 @@ export default function GameLobby({
                     <button onClick={() => window.history.back()} className="px-4 py-2 rounded-2xl bg-red-400 hover:bg-red-500 text-white flex items-center gap-2 shadow">
                         <FaDoorOpen /> Leave Lobby
                     </button>
+
+                    <button  onClick={() => window.location.href = '/community'} className="px-4 py-2 rounded-2xl bg-red-400 hover:bg-red-500 text-white flex items-center gap-2 shadow">
+                        <FaSignOutAlt /> Leave Game
+                    </button>
+
                     <div className="px-4 py-2 rounded-2xl text-white shadow-lg bg-[#FFCE51] flex items-center gap-2">
                         <FaCrown className="text-amber-100" /> High: {highestScore}
                     </div>
@@ -581,7 +676,7 @@ export default function GameLobby({
                     {/* Start game */}
                     <div className="mt-2 flex items-center justify-center">
                         {/*Room code */}
-                        {roomCode && (
+                        {roomCode && roomCode.length > 5 &&  (
                             <div className="absolute top-6 right-6 flex items-center gap-2 px-3 py-1.5 rounded-xl border bg-gray-50">
                                 <FaClipboard className="text-gray-500" />
                                 <div className="font-mono">{roomCode}</div>

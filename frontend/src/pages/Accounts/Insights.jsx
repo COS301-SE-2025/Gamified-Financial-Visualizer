@@ -229,6 +229,7 @@ const InsightsPage = () => {
   const [sentiment, setSentimentData] = useState(null);
   const [trend, setTrendData] = useState(null);
   const [heatmapData, setHeatmapData] = useState(null);
+  const [showInsightsInfo, setShowInsightsInfo] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
@@ -700,32 +701,17 @@ const InsightsPage = () => {
 
   const totalNetWorth = wealth?.netWorth ?? 0;
 
-
+  const ChartLoader = ({ label }) => (
+    <div className="flex flex-col items-center justify-center h-64 text-gray-400 dark:text-gray-500">
+      <div className="relative w-12 h-12 mb-3">
+        <div className="absolute inset-0 rounded-full border-4 border-t-transparent border-gray-300 dark:border-gray-600 animate-spin" />
+        <div className="absolute inset-0 rounded-full border-4 border-t-transparent border-blue-500 animate-spin-slow" />
+      </div>
+      <div className="text-sm font-medium tracking-wide">{`Loading ${label}...`}</div>
+    </div>
+  );
   // Show loading with details about missing data
-  if (!apiData || !categoryApi || !radarData || !sentiment || !wealth || !trend || !heatmapData) {
-    const missing = [
-      !apiData && "Transactions",
-      !categoryApi && "Category Data",
-      !radarData && "Radar Insights",
-      !sentiment && "Sentiment",
-      !trend && "Trend Data",
-      !wealth && "Wealth Data",
-      !heatmapData && "Heatmap Data"
-    ].filter(Boolean);
 
-    return (
-      <AccountsLayout>
-        <div className="flex items-center justify-center h-screen">
-          <div className="text-gray-500 text-center">
-            <div>Loading insights...</div>
-            <div className="mt-2 text-sm">
-              Missing: {missing.join(", ")}
-            </div>
-          </div>
-        </div>
-      </AccountsLayout>
-    );
-  }
 
   return (
     <AccountsLayout>
@@ -863,6 +849,7 @@ const InsightsPage = () => {
                 but dining expenses increased by 18%. You're on track to complete your emergency
                 fund goal 3 weeks early.
               </p>
+
             </div>
             <div className="bg-[#7FDD53]/20 p-3 rounded-full text-[#7FDD53]">
               <FaRobot size={24} />
@@ -875,7 +862,9 @@ const InsightsPage = () => {
               <p className="text-sm text-gray-600 mb-1 dark:text-gray-200">Financial Health Score</p>
               <p className="text-2xl font-bold text-[#7FDD53]">82/100</p>
               <p className="text-xs mt-1 text-[#7FDD53]">↑ 5 points from May</p>
+
             </div>
+
 
             {/* Savings Potential Box */}
             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border-2 border-[#5FBFFF]/30">
@@ -895,111 +884,117 @@ const InsightsPage = () => {
 
         {/* 2-Column Layout for Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
           {/* Sentiment */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border dark:border-gray-800 border-gray-200 mb-8">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">Financial Sentiment</h2>
-              {sentiment?.clusterLabel && (
-                <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
-                  {sentiment.clusterLabel}
-                </span>
-              )}
+              {
+                sentiment?.clusterLabel && (
+                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
+                    {sentiment.clusterLabel}
+                  </span>
+                )
+              }
             </div>
 
 
             <div className="flex flex-col items-center">
-              {/* Gauge */}
-              <div style={{ width: 280, maxWidth: "100%" }}>
-                <GaugeChart
-                  id="financial-sentiment-gauge"
-                  nrOfLevels={4}
-                  percent={sentimentToPercent(sentiment?.sentiment)}
-                  colors={["#FF8A8A", "#FFC541", "#7FDD53", "#5FBFFF"]} // matches SENTIMENT_ORDER left→right
-                  arcWidth={0.3}
-                  arcPadding={0.02}
-                  cornerRadius={3}
-                  textColor="#6b7280"
-                  needleColor="#4b5563"
-                  needleBaseColor="#4b5563"
-                  formatTextValue={() => sentiment?.sentiment ?? "—"}
-                  animate
-                  animateDuration={900}
-                />
-              </div>
-
-              {/* Legend */}
-              <div className="flex justify-between w-full max-w-xs mt-4">
-                {SENTIMENT_ORDER.map((label) => (
-                  <div key={label} className="flex flex-col items-center">
-                    <div
-                      className="w-4 h-4 rounded-full mb-1"
-                      style={{
-                        backgroundColor:
-                          label === "Anxious" ? "#FF8A8A" :
-                            label === "Unstable" ? "#FFC541" :
-                              label === "Stable" ? "#7FDD53" :
-                                "#5FBFFF"
-                      }}
+              {!sentiment ? (
+                <ChartLoader label="Sentiment Insights" />
+              ) : (
+                <>
+                  <div style={{ width: 280, maxWidth: "100%" }}>
+                    {/* Gauge */}
+                    <GaugeChart
+                      id="financial-sentiment-gauge"
+                      nrOfLevels={4}
+                      percent={sentimentToPercent(sentiment?.sentiment)}
+                      colors={["#FF8A8A", "#FFC541", "#7FDD53", "#5FBFFF"]} // matches SENTIMENT_ORDER left→right
+                      arcWidth={0.3}
+                      arcPadding={0.02}
+                      cornerRadius={3}
+                      textColor="#6b7280"
+                      needleColor="#4b5563"
+                      needleBaseColor="#4b5563"
+                      formatTextValue={() => sentiment?.sentiment ?? "—"}
+                      animate
+                      animateDuration={900}
                     />
-                    <span className="text-xs dark:text-gray-200 text-gray-600">{label}</span>
                   </div>
-                ))}
-              </div>
 
-              {/* Summary */}
-              {sentiment?.summaryText && (
-                <p className="mt-4 text-sm dark:text-gray-200 text-gray-700 text-center max-w-2xl">{sentiment.summaryText}</p>
-              )}
 
-              {/* Quick highlights (first 3) */}
-              {!!sentiment?.insights?.length && (
-                <ul className="mt-4 text-sm dark:text-gray-200 text-gray-700 space-y-1">
-                  {sentiment.insights.slice(0, 3).map((i, idx) => (
-                    <li key={idx}>• {i}</li>
-                  ))}
-                </ul>
-              )}
+                  <div className="flex justify-between w-full max-w-xs mt-4">
+                    {SENTIMENT_ORDER.map((label) => (
+                      <div key={label} className="flex flex-col items-center">
+                        <div
+                          className="w-4 h-4 rounded-full mb-1"
+                          style={{
+                            backgroundColor:
+                              label === "Anxious" ? "#FF8A8A" :
+                                label === "Unstable" ? "#FFC541" :
+                                  label === "Stable" ? "#7FDD53" :
+                                    "#5FBFFF"
+                          }}
+                        />
+                        <span className="text-xs dark:text-gray-200 text-gray-600">{label}</span>
+                      </div>
+                    ))}
+                  </div>
 
-              {/* Adaptive callout based on sentiment */}
-              <div className="mt-6 w-full">
-                {sentiment?.sentiment === "Anxious" && (
-                  <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">
-                    <p>Your savings rate is low while impulse spending is high.</p>
-                    <p className="font-medium mt-1">Action: Set up spending limits and automate savings.</p>
-                  </div>
-                )}
-                {sentiment?.sentiment === "Unstable" && (
-                  <div className="p-3 rounded-lg bg-yellow-50 text-yellow-600 text-sm">
-                    <p>Your burn rate is higher than recommended.</p>
-                    <p className="font-medium mt-1">Action: Review recurring expenses and subscriptions.</p>
-                  </div>
-                )}
-                {sentiment?.sentiment === "Stable" && (
-                  <div className="p-3 rounded-lg bg-green-50 text-green-600 text-sm">
-                    <p>Your finances are in good shape.</p>
-                    <p className="font-medium mt-1">Action: Consider increasing investments for long-term goals.</p>
-                  </div>
-                )}
-                {sentiment?.sentiment === "Confident" && (
-                  <div className="p-3 rounded-lg bg-blue-50 text-blue-600 text-sm">
-                    <p>Excellent financial health and goal progress!</p>
-                    <p className="font-medium mt-1">Action: Explore advanced investment strategies.</p>
-                  </div>
-                )}
-              </div>
+                  {/* Summary */}
+                  {sentiment?.summaryText && (
+                    <p className="mt-4 text-sm dark:text-gray-200 text-gray-700 text-center max-w-2xl">{sentiment.summaryText}</p>
+                  )}
 
-              {/* Optional: show a few tips */}
-              {!!sentiment?.tips?.length && (
-                <div className="mt-4 w-full">
-                  <h4 className="text-sm font-semibold text-gray-800 mb-1">Tips</h4>
-                  <ul className="text-sm dark:text-gray-200 text-gray-700 list-disc pl-5 space-y-1">
-                    {sentiment.tips.slice(0, 3).map((t, i) => <li key={i}>{t}</li>)}
-                  </ul>
-                </div>
+                  {/* Quick highlights (first 3) */}
+                  {!!sentiment?.insights?.length && (
+                    <ul className="mt-4 text-sm dark:text-gray-200 text-gray-700 space-y-1">
+                      {sentiment.insights.slice(0, 3).map((i, idx) => (
+                        <li key={idx}>• {i}</li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {/* Adaptive callout based on sentiment */}
+                  <div className="mt-6 w-full">
+                    {sentiment?.sentiment === "Anxious" && (
+                      <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">
+                        <p>Your savings rate is low while impulse spending is high.</p>
+                        <p className="font-medium mt-1">Action: Set up spending limits and automate savings.</p>
+                      </div>
+                    )}
+                    {sentiment?.sentiment === "Unstable" && (
+                      <div className="p-3 rounded-lg bg-yellow-50 text-yellow-600 text-sm">
+                        <p>Your burn rate is higher than recommended.</p>
+                        <p className="font-medium mt-1">Action: Review recurring expenses and subscriptions.</p>
+                      </div>
+                    )}
+                    {sentiment?.sentiment === "Stable" && (
+                      <div className="p-3 rounded-lg bg-green-50 text-green-600 text-sm">
+                        <p>Your finances are in good shape.</p>
+                        <p className="font-medium mt-1">Action: Consider increasing investments for long-term goals.</p>
+                      </div>
+                    )}
+                    {sentiment?.sentiment === "Confident" && (
+                      <div className="p-3 rounded-lg bg-blue-50 text-blue-600 text-sm">
+                        <p>Excellent financial health and goal progress!</p>
+                        <p className="font-medium mt-1">Action: Explore advanced investment strategies.</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Optional: show a few tips */}
+                  {!!sentiment?.tips?.length && (
+                    <div className="mt-4 w-full">
+                      <h4 className="text-sm font-semibold text-gray-800 mb-1">Tips</h4>
+                      <ul className="text-sm dark:text-gray-200 text-gray-700 list-disc pl-5 space-y-1">
+                        {sentiment.tips.slice(0, 3).map((t, i) => <li key={i}>{t}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                </>
               )}
             </div>
-
           </div>
 
           {/* Monthly Spending by Category Bar Chart */}
@@ -1026,6 +1021,7 @@ const InsightsPage = () => {
                       <option key={a} value={a}>{a}</option>
                     ))}
                   </select>
+
                 </div>
 
                 {/* Percent View Toggle */}
@@ -1054,6 +1050,160 @@ const InsightsPage = () => {
                 </div>
               </div>
             </div>
+                {/* Category Multi-select (collapsible) */}
+                <div className="w-full">
+                  <div className="flex items-center justify-between mb-4">
+                    <label className="block text-sm font-medium dark:text-gray-200 text-gray-700">Categories</label>
+                    <button
+                      type="button"
+                      onClick={() => setCatOpen(v => !v)}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-md bg-gray-100 dark:bg-gray-700 dark:text-gray-200 text-gray-700 hover:bg-gray-200"
+                      aria-expanded={catOpen}
+                      aria-controls="category-panel"
+                    >
+                      {catOpen ? "Hide" : "Show"} ({selectedCategories.length} selected)
+                      <svg
+                        className={`h-4 w-4 transition-transform dark:text-gray-200 ${catOpen ? "rotate-180" : ""}`}
+                        viewBox="0 0 20 20" fill="currentColor"
+                      >
+                        <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {/* Collapsible Panel */}
+                  <div
+                    id="category-panel"
+                    className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${catOpen ? "max-h-[480px] opacity-100 mt-3" : "max-h-0 opacity-0"}`}
+                  >
+                    {/* Controls */}
+                    <div className="flex flex-wrap items-center gap-4 mb-4">
+                      <button
+                        type="button"
+                        onClick={selectAll}
+                        className="px-3 py-1.5 text-xs rounded-md bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
+                      >
+                        Select all (filtered)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={clearAll}
+                        className="px-3 py-1.5 text-xs rounded-md bg-gray-100 dark:bg-gray-700 dark:text-gray-200 text-gray-700 hover:bg-gray-200"
+                      >
+                        Clear
+                      </button>
+                    </div>
+
+                    {/* Chips */}
+                    <div className="flex flex-wrap gap-4 max-w-[640px]">
+                      {filteredCategories.map((category) => {
+                        const active = selectedCategories.includes(category);
+                        return (
+                          <button
+                            key={category}
+                            type="button"
+                            onClick={() => toggleCat(category)}
+                            className={`px-4 py-1 text-sm rounded-lg flex items-center ${active ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 dark:bg-gray-700 dark:text-gray-200 text-gray-700"}`}
+                            title={category}
+                          >
+                            <span
+                              className="w-2 h-2 rounded-full mr-2"
+                              style={{ backgroundColor: CATEGORY_COLORS[category] || "#ddd" }}
+                            />
+                            {category.charAt(0).toUpperCase() + category.slice(1)}
+                          </button>
+                        );
+                      })}
+                      {filteredCategories.length === 0 && (
+                        <span className="text-sm dark:text-gray-200text-gray-500">No categories match your search.</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Compact Summary Row when collapsed */}
+                  {!catOpen && selectedCategories.length > 0 && (
+                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs dark:text-gray-200  text-gray-600">
+                      <span className="opacity-70 ">Selected:</span>
+                      {selectedCategories.slice(0, 6).map(c => (
+                        <span key={c} className="px-2 py-0.5 rounded-full  dark:bg-gray-700 bg-gray-100">{c}</span>
+                      ))}
+                      {selectedCategories.length > 6 && (
+                        <span className="opacity-70">+{selectedCategories.length - 6} more</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Chart */}
+                <div className="h-80 mt-6">
+                   {!filteredData ? (
+              <ChartLoader label="Category Insights" />
+            ) : (
+              <>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={filteredData}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                      {...(viewPercent && !showAvg ? { stackOffset: "expand" } : {})}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis dataKey="month" />
+                      <YAxis tickFormatter={(v) => (viewPercent && !showAvg ? `${Math.round(Number(v) * 100)}%` : ZAR(v))} />
+                      <Tooltip
+                        content={({ active, payload, label }) => {
+                          if (!active || !payload || !payload.length) return null;
+                          const row = filteredData.find((d) => d.month === label);
+                          if (!row) return null;
+
+                          const isPct = viewPercent && !showAvg;
+                          return (
+                            <div className="rounded-xl border dark:bg-gray-700 border-gray-200 bg-white/90 backdrop-blur px-3 py-2 shadow">
+                              <div className="text-xs dark:text-gray-200 text-gray-500 mb-1">{label}</div>
+                              {payload.filter((p) => selectedCategories.includes(p.dataKey)).map((p) => {
+                                const cat = p.dataKey;
+                                const userVal = Number(p.value ?? 0);
+                                const avgVal = Number(row.averages?.[cat] ?? 0);
+
+                                const avgPct = row.avgSelectedTotal > 0 ? (avgVal / row.avgSelectedTotal) * 100 : 0;
+                                const userDisplay = isPct ? `${Math.round(userVal * 100)}%` : ZAR(userVal);
+                                const avgDisplay = isPct ? `${Math.round(avgPct)}%` : ZAR(avgVal);
+
+                                return (
+                                  <div key={cat} className="flex items-center  gap-2 text-sm">
+                                    <span
+                                      className="inline-block h-2 w-2 rounded-full"
+                                      style={{ background: p.color }}
+                                    />
+                                    <span className="text-gray-600 dark:text-gray-200">{cat.charAt(0).toUpperCase() + cat.slice(1)}</span>
+                                    <span className="ml-auto font-medium dark:text-gray-200 text-gray-800">{userDisplay}</span>
+                                    <span className="ml-2 text-xs dark:text-gray-200 text-gray-500">Avg: {avgDisplay}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          );
+                        }}
+                      />
+                      <Legend />
+                      {selectedCategories.map((category) => (
+                        <Bar
+                          key={category}
+                          dataKey={category}
+                          name={category.charAt(0).toUpperCase() + category.slice(1)}
+                          stackId="user"
+                          fill={CATEGORY_COLORS[category]}
+                          radius={[4, 4, 0, 0]}
+                          isAnimationActive={false}
+                        />
+                      ))}
+                    </BarChart>
+                  </ResponsiveContainer>
+                     </>
+            )}
+                </div>
+              </div>
+            </div>
+
 
             {/* Category Multi-select (collapsible) */}
             <div className="w-full">
@@ -1138,6 +1288,7 @@ const InsightsPage = () => {
                 </div>
               )}
             </div>
+
 
             {/* Chart */}
             <div className="h-80 mt-6">
@@ -1250,22 +1401,28 @@ const InsightsPage = () => {
             </div>
 
             <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={monthlyData} margin={{ top: 16, right: 20, left: 8, bottom: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={COLORS.grid} />
-                  <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#6b7280" }} />
-                  <YAxis tickFormatter={(v) => `R${Number(v).toLocaleString()}`} tick={{ fontSize: 12, fill: "#6b7280" }} />
-                  <Tooltip content={<ChartTooltip />} />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
+              {!monthlyData ? (
+                <ChartLoader label="Income vs Expense Data" />
+              ) : (
+                <>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={monthlyData} margin={{ top: 16, right: 20, left: 8, bottom: 8 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={COLORS.grid} />
+                      <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#6b7280" }} />
+                      <YAxis tickFormatter={(v) => `R${Number(v).toLocaleString()}`} tick={{ fontSize: 12, fill: "#6b7280" }} />
+                      <Tooltip content={<ChartTooltip />} />
+                      <Legend wrapperStyle={{ fontSize: 12 }} />
 
-                  <Bar dataKey="income" name="Money In" fill={COLORS.income} radius={[6, 6, 0, 0]} maxBarSize={30} />
-                  <Bar dataKey="expense" name="Money Out" fill={COLORS.expense} radius={[6, 6, 0, 0]} maxBarSize={30} />
+                      <Bar dataKey="income" name="Money In" fill={COLORS.income} radius={[6, 6, 0, 0]} maxBarSize={30} />
+                      <Bar dataKey="expense" name="Money Out" fill={COLORS.expense} radius={[6, 6, 0, 0]} maxBarSize={30} />
 
-                  {/* use avgIncome/avgExpense keys that match COLORS */}
-                  <Line type="monotone" dataKey="avgIncome" name="Avg Income" stroke={COLORS.avgIncome} strokeDasharray="6 6" strokeWidth={2} dot={false} connectNulls />
-                  <Line type="monotone" dataKey="avgExpense" name="Avg Expense" stroke={COLORS.avgExpense} strokeDasharray="6 6" strokeWidth={2} dot={false} connectNulls />
-                </ComposedChart>
-              </ResponsiveContainer>
+                      {/* use avgIncome/avgExpense keys that match COLORS */}
+                      <Line type="monotone" dataKey="avgIncome" name="Avg Income" stroke={COLORS.avgIncome} strokeDasharray="6 6" strokeWidth={2} dot={false} connectNulls />
+                      <Line type="monotone" dataKey="avgExpense" name="Avg Expense" stroke={COLORS.avgExpense} strokeDasharray="6 6" strokeWidth={2} dot={false} connectNulls />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </>
+              )}
             </div>
 
             <div className="mt-4 flex flex-wrap justify-center gap-4">
@@ -1282,6 +1439,7 @@ const InsightsPage = () => {
                 <span className="text-sm">Averages</span>
               </div>
             </div>
+
           </div>
 
           {/* Net Worth Pie Chart */}
@@ -1296,71 +1454,77 @@ const InsightsPage = () => {
 
             {/* Pie Chart */}
             <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={wealth?.breakdown ?? []}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={75}
-                    outerRadius={120}
-                    paddingAngle={2}
-                    onMouseEnter={(_, index) => setActivePieIndex(index)}
-                    onMouseLeave={() => setActivePieIndex(null)}
-                  >
-                    {wealth?.breakdown.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={
-                          index === 0 ? COLORS.checking :
-                            index === 1 ? COLORS.savings :
-                              COLORS.investment
-                        }
-                        stroke="#fff"
-                        strokeWidth={activePieIndex === index ? 3 : 1}
-                        opacity={activePieIndex === null || activePieIndex === index ? 1 : 0.6}
+              {!wealth?.breakdown ? (
+                <ChartLoader label="Wealth Breakdown" />
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={wealth?.breakdown ?? []}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={75}
+                      outerRadius={120}
+                      paddingAngle={2}
+                      onMouseEnter={(_, index) => setActivePieIndex(index)}
+                      onMouseLeave={() => setActivePieIndex(null)}
+                    >
+                      {wealth?.breakdown.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={
+                            index === 0 ? COLORS.checking :
+                              index === 1 ? COLORS.savings :
+                                COLORS.investment
+                          }
+                          stroke="#fff"
+                          strokeWidth={activePieIndex === index ? 3 : 1}
+                          opacity={activePieIndex === null || activePieIndex === index ? 1 : 0.6}
+                        />
+                      ))}
+                      <LabelList
+                        dataKey="name"
+                        position="outside"
+                        formatter={(value) => `${value}`}
+                        fill="#4b5563"
+                        fontSize={12}
                       />
-                    ))}
-                    <LabelList
-                      dataKey="name"
-                      position="outside"
-                      formatter={(value) => `${value}`}
-                      fill="#4b5563"
-                      fontSize={12}
-                    />
-                  </Pie>
-                  <text
-                    x="50%"
-                    y="50%"
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    className="text-xl font-bold dark:text-gray-200 text-gray-800"
-                  >
-                    R{totalNetWorth.toLocaleString()}
-                  </text>
-                  <Tooltip content={<CustomPieTooltip />} />
-                </PieChart>
-              </ResponsiveContainer>
+                    </Pie>
+                    <text
+                      x="50%"
+                      y="50%"
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      className="text-xl font-bold dark:text-gray-200 text-gray-800"
+                    >
+                      R{totalNetWorth.toLocaleString()}
+                    </text>
+                    <Tooltip content={<CustomPieTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
             </div>
 
             {/* Legend */}
             <div className="mt-4 flex justify-center gap-4 flex-wrap">
-              {wealth?.breakdown.map((account, index) => (
-                <div key={index} className="flex items-center">
-                  <div
-                    className="w-3 h-3 rounded-full mr-2"
-                    style={{
-                      backgroundColor:
-                        index === 0 ? COLORS.checking :
-                          index === 1 ? COLORS.savings :
-                            COLORS.investment
-                    }}
-                  ></div>
-                  <span className="text-sm">{account.name}</span>
-                </div>
-              ))}
+  {
+                wealth?.breakdown?.map((account, index) => (
+                  <div key={index} className="flex items-center">
+                    <div
+                      className="w-3 h-3 rounded-full mr-2"
+                      style={{
+                        backgroundColor:
+                          index === 0 ? COLORS.checking :
+                            index === 1 ? COLORS.savings :
+                              COLORS.investment
+                      }}
+                    ></div>
+                    <span className="text-sm">{account.name}</span>
+                  </div>
+                ))
+}
             </div>
           </div>
 
@@ -1375,44 +1539,52 @@ const InsightsPage = () => {
 
             {/* Radar Chart */}
             <div className="h-80 mb-6">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarStats}>
-                  <PolarGrid stroke={COLORS.grid} />
-                  <PolarAngleAxis dataKey="axis" tick={{ fontSize: 12 }} />
-                  <PolarRadiusAxis angle={30} domain={[0, 100]} />
-                  <Radar
-                    name="You"
-                    dataKey="user"
-                    stroke={COLORS.you}
-                    fill={COLORS.you}
-                    fillOpacity={0.35}
-                    strokeWidth={2}
-                  />
-                  <Radar
-                    name="Average"
-                    dataKey="average"
-                    stroke={COLORS.avg}
-                    fill={COLORS.avg}
-                    fillOpacity={0.2}
-                    strokeWidth={2}
-                    strokeDasharray="5 5"
-                  />
-                  <Legend />
-                  <Tooltip content={<CustomRadarTooltip />} />
-                </RadarChart>
-              </ResponsiveContainer>
+              {!radarStats ? (
+                <ChartLoader label="Financial Health Radar" />
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarStats}>
+                    <PolarGrid stroke={COLORS.grid} />
+                    <PolarAngleAxis dataKey="axis" tick={{ fontSize: 12 }} />
+                    <PolarRadiusAxis angle={30} domain={[0, 100]} />
+                    <Radar
+                      name="You"
+                      dataKey="user"
+                      stroke={COLORS.you}
+                      fill={COLORS.you}
+                      fillOpacity={0.35}
+                      strokeWidth={2}
+                    />
+                    <Radar
+                      name="Average"
+                      dataKey="average"
+                      stroke={COLORS.avg}
+                      fill={COLORS.avg}
+                      fillOpacity={0.2}
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                    />
+                    <Legend />
+                    <Tooltip content={<CustomRadarTooltip />} />
+                  </RadarChart>
+                </ResponsiveContainer>
+              )}
             </div>
 
             {/* KPI Summary */}
             <div className="mt-4 grid grid-cols-3 gap-4 text-center text-xs">
-              {radarStats.map((stat, i) => (
-                <div key={i} className="bg-gray-50 dark:bg-gray-700  p-2 rounded-lg">
-                  <p className="font-medium">{stat.axis}</p>
-                  <p className={`${stat.user > stat.average ? 'text-green-600' : 'text-red-600'}`}>
-                    {stat.user > stat.average ? '↑' : '↓'} {Math.abs(Math.round(stat.user - stat.average))}pts
-                  </p>
-                </div>
-              ))}
+              {!radarStats ? (
+                <ChartLoader label="Financial Health Radar" />
+              ) : (
+                radarStats.map((stat, i) => (
+                  <div key={i} className="bg-gray-50 dark:bg-gray-700  p-2 rounded-lg">
+                    <p className="font-medium">{stat.axis}</p>
+                    <p className={`${stat.user > stat.average ? 'text-green-600' : 'text-red-600'}`}>
+                      {stat.user > stat.average ? '↑' : '↓'} {Math.abs(Math.round(stat.user - stat.average))}pts
+                    </p>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -1445,7 +1617,9 @@ const InsightsPage = () => {
                       )
                     }
                     className={`px-3 py-1.5 rounded-lg text-xs transition-colors ${active ? "bg-indigo-100 text-indigo-700 border border-indigo-200"
+
                         : "bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-700 text-gray-600 border border-gray-100"
+
                       }`}
                   >
                     {cat}
@@ -1456,179 +1630,201 @@ const InsightsPage = () => {
 
             {/* Chart container */}
             <div className="h-80 mb-3">
-              <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={data} margin={{ top: 12, right: 24, left: 8, bottom: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                  <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#6b7280" }} />
-                  <YAxis yAxisId="left" tickFormatter={currencyTick} tick={{ fontSize: 12, fill: "#6b7280" }} />
-                  <YAxis
-                    yAxisId="rightVol"
-                    orientation="right"
-                    tickFormatter={currencyTick}
-                    tick={{ fontSize: 12, fill: "#6b7280" }}
-                  />
-                  <YAxis
-                    yAxisId="rightDelta"
-                    orientation="right"
-                    domain={[deltaMin * 1.1, deltaMax * 1.1]}
-                    hide
-                  />
+              {!data ? (
+                <ChartLoader label="Spending Trend Data" />
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart data={data} margin={{ top: 12, right: 24, left: 8, bottom: 8 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                    <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#6b7280" }} />
+                    <YAxis yAxisId="left" tickFormatter={currencyTick} tick={{ fontSize: 12, fill: "#6b7280" }} />
+                    <YAxis
+                      yAxisId="rightVol"
+                      orientation="right"
+                      tickFormatter={currencyTick}
+                      tick={{ fontSize: 12, fill: "#6b7280" }}
+                    />
+                    <YAxis
+                      yAxisId="rightDelta"
+                      orientation="right"
+                      domain={[deltaMin * 1.1, deltaMax * 1.1]}
+                      hide
+                    />
 
-                  <Tooltip
-                    formatter={tooltipFormatter}
-                    content={({ active, payload, label }) => {
-                      if (!active || !payload || !payload.length) return null;
-                      const row = data.find(d => d.month === label);
-                      return (
-                        <div className="rounded-lg border dark:bg-gray-700 dark:border-gray-700 border-gray-200 bg-white/95 backdrop-blur px-3 py-2 shadow-sm">
-                          <div className="text-xs dark:text-gray-200 text-gray-500 mb-1">{label}</div>
-                          {payload
-                            .filter(p => p.value != null)
-                            .map((p, idx) => (
-                              <div key={idx} className="flex items-center gap-2 text-sm mb-1 last:mb-0">
-                                <span className="inline-block h-2 w-2 rounded-full" style={{ background: p.color }} />
-                                <span className="text-gray-600 dark:text-gray-200">{p.name || p.dataKey}</span>
-                                <span className="ml-auto font-medium dark:text-gray-200 text-gray-800">{ZAR(p.value)}</span>
+                    <Tooltip
+                      formatter={tooltipFormatter}
+                      content={({ active, payload, label }) => {
+                        if (!active || !payload || !payload.length) return null;
+                        const row = data.find(d => d.month === label);
+                        return (
+                          <div className="rounded-lg border dark:bg-gray-700 dark:border-gray-700 border-gray-200 bg-white/95 backdrop-blur px-3 py-2 shadow-sm">
+                            <div className="text-xs dark:text-gray-200 text-gray-500 mb-1">{label}</div>
+                            {payload
+                              .filter(p => p.value != null)
+                              .map((p, idx) => (
+                                <div key={idx} className="flex items-center gap-2 text-sm mb-1 last:mb-0">
+                                  <span className="inline-block h-2 w-2 rounded-full" style={{ background: p.color }} />
+                                  <span className="text-gray-600 dark:text-gray-200">{p.name || p.dataKey}</span>
+                                  <span className="ml-auto font-medium dark:text-gray-200 text-gray-800">{ZAR(p.value)}</span>
+                                </div>
+                              ))}
+
+                            {row?.anomalies > 0 && (
+                              <div className="mt-2 pt-2 border-t border-gray-100 text-xs text-red-600">
+                                <div className="flex items-center gap-1 mb-1">
+                                  <FaTimesCircle /> {row.anomalies} anomaly{row.anomalies > 1 ? "ies" : "y"} detected
+                                </div>
+                                {Array.isArray(trend?.anomalies) && (
+                                  (() => {
+                                    const anomaliesForMonth = trend.anomalies.filter(a => a.month === label);
+                                    if (anomaliesForMonth.length) {
+                                      const highest = anomaliesForMonth.reduce((max, curr) =>
+                                        (curr.value ?? 0) > (max.value ?? 0) ? curr : max, anomaliesForMonth[0]);
+                                      return (
+                                        <span>
+                                          Highest anomaly: <span className="font-semibold">{highest.category}</span>
+                                        </span>
+                                      );
+                                    }
+                                    return null;
+                                  })()
+                                )}
                               </div>
-                            ))}
+                            )}
 
-                          {row?.anomalies > 0 && (
-                            <div className="mt-2 pt-2 border-t border-gray-100 text-xs text-red-600">
-                              <div className="flex items-center gap-1 mb-1">
-                                <FaTimesCircle /> {row.anomalies} anomaly{row.anomalies > 1 ? "ies" : "y"} detected
+                            {selectedCats.length > 0 && (
+                              <div className="mt-2 pt-2 border-t border-gray-100  dark:text-gray-200 text-xs text-gray-600">
+                                <div className="font-medium mb-1">Categories:</div>
+                                <div className="grid grid-cols-2 gap-1">
+                                  {selectedCats.map(cat => (
+                                    <div key={cat} className="truncate">
+                                      {cat}: <span className="font-semibold">{ZAR(row?.[cat])}</span>
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
-                              {Array.isArray(trend?.anomalies) && (
-                                (() => {
-                                  const anomaliesForMonth = trend.anomalies.filter(a => a.month === label);
-                                  if (anomaliesForMonth.length) {
-                                    const highest = anomaliesForMonth.reduce((max, curr) =>
-                                      (curr.value ?? 0) > (max.value ?? 0) ? curr : max, anomaliesForMonth[0]);
-                                    return (
-                                      <span>
-                                        Highest anomaly: <span className="font-semibold">{highest.category}</span>
-                                      </span>
-                                    );
-                                  }
-                                  return null;
-                                })()
-                              )}
-                            </div>
-                          )}
 
-                          {selectedCats.length > 0 && (
-                            <div className="mt-2 pt-2 border-t border-gray-100  dark:text-gray-200 text-xs text-gray-600">
-                              <div className="font-medium mb-1">Categories:</div>
-                              <div className="grid grid-cols-2 gap-1">
-                                {selectedCats.map(cat => (
-                                  <div key={cat} className="truncate">
-                                    {cat}: <span className="font-semibold">{ZAR(row?.[cat])}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    }}
-                  />
-                  <Legend />
+                            )}
+                          </div>
+                        );
+                      }}
+                    />
+                    <Legend />
 
-                  <Bar
-                    yAxisId="rightVol"
-                    dataKey="volatility"
-                    name="Volatility"
-                    fill={COLORS.vol}
-                    radius={[4, 4, 0, 0]}
-                    barSize={18}
-                  />
-                  <Bar
-                    yAxisId="rightVol"
-                    dataKey="delta"
-                    name="MoM Change"
-                    barSize={8}
-                  >
-                    {data.map((d, i) => (
-                      <Cell key={`cell-${i}`} fill={(d.delta ?? 0) >= 0 ? COLORS.deltaPos : COLORS.deltaNeg} />
-                    ))}
-                  </Bar>
-                  <ReferenceLine y={0} yAxisId="rightDelta" stroke="#d1d5db" strokeDasharray="4 4" />
+                    <Bar
+                      yAxisId="rightVol"
+                      dataKey="volatility"
+                      name="Volatility"
+                      fill={COLORS.vol}
+                      radius={[4, 4, 0, 0]}
+                      barSize={18}
+                    />
+                    <Bar
+                      yAxisId="rightVol"
+                      dataKey="delta"
+                      name="MoM Change"
+                      barSize={8}
+                    >
+                      {data.map((d, i) => (
+                        <Cell key={`cell-${i}`} fill={(d.delta ?? 0) >= 0 ? COLORS.deltaPos : COLORS.deltaNeg} />
+                      ))}
+                    </Bar>
+                    <ReferenceLine y={0} yAxisId="rightDelta" stroke="#d1d5db" strokeDasharray="4 4" />
 
-                  <Line
-                    yAxisId="left"
-                    type="monotone"
-                    dataKey="totalSpending"
-                    name="Total Spending"
-                    stroke={COLORS.total}
-                    strokeWidth={3}
-                    dot={{ r: 3 }}
-                    connectNulls
-                    isAnimationActive={false}
-                  />
-
-                  <Line
-                    yAxisId="left"
-                    type="monotone"
-                    dataKey="forecast"
-                    name="Forecast"
-                    stroke={COLORS.forecast}
-                    strokeDasharray="6 6"
-                    strokeWidth={2}
-                    dot={{ r: 3 }}
-                    connectNulls
-                    isAnimationActive={false}
-                  />
-
-                  {selectedCats.map((cat, i) => (
                     <Line
-                      key={cat}
                       yAxisId="left"
                       type="monotone"
-                      dataKey={cat}
-                      name={cat}
-                      stroke={COLORS.cats[i % COLORS.cats.length]}
-                      strokeWidth={1.75}
-                      dot={false}
+                      dataKey="totalSpending"
+                      name="Total Spending"
+                      stroke={COLORS.total}
+                      strokeWidth={3}
+                      dot={{ r: 3 }}
                       connectNulls
                       isAnimationActive={false}
                     />
-                  ))}
-                </ComposedChart>
-              </ResponsiveContainer>
+                    
+                    <Line
+                      yAxisId="left"
+                      type="monotone"
+                      dataKey="forecast"
+                      name="Forecast"
+                      stroke={COLORS.forecast}
+                      strokeDasharray="6 6"
+                      strokeWidth={2}
+                      dot={{ r: 3 }}
+                      connectNulls
+                      isAnimationActive={false}
+                    />
+
+                    {selectedCats.map((cat, i) => (
+                      <Line
+                        key={cat}
+                        yAxisId="left"
+                        type="monotone"
+                        dataKey={cat}
+                        name={cat}
+                        stroke={COLORS.cats[i % COLORS.cats.length]}
+                        strokeWidth={1.75}
+                        dot={false}
+                        connectNulls
+                        isAnimationActive={false}
+                      />
+                    ))}
+                  </ComposedChart>
+                </ResponsiveContainer>
+              )}
             </div>
 
-            <div className="text-xs dark:text-gray-200 text-gray-400 mb-4">
-              Delta = change vs last month. Volatility = spread of your expense amounts in that month.
+            <button
+  onClick={() => setShowInsightsInfo(prev => !prev)}
+  className="text-xs text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white transition-colors flex items-center gap-1 mb-2"
+>
+  <span className="text-lg font-bold">?</span>
+  <span className="underline">What do these insights mean?</span>
+</button>
+            {showInsightsInfo && (
+            <div className="text-xs dark:text-gray-200 text-gray-400 mb-4 space-y-1 leading-relaxed">
+              <div><strong>MoM Change</strong>: Month-over-Month comparison showing how your spending has increased or decreased compared to the previous month. Positive values indicate growth, while negative values suggest a drop.</div>
+              <div><strong>Volatility</strong>: Measures how spread out your expenses were in that month. High volatility means inconsistent spending across categories, while low volatility suggests stable, predictable behavior.</div>
+              <div><strong>Total Spending</strong>: The sum of all your expenses for the selected month, across all tracked categories.</div>
+              <div><strong>Forecast</strong>: A predictive estimate of your future spending based on historical trends and seasonal patterns. Dashed lines indicate projected values.</div>
+              <div><strong>Anomalies</strong>: Unusual spikes or dips in specific categories that deviate from your typical behavior. These may signal unexpected transactions, errors, or emerging habits.</div>
             </div>
+          )}        
 
             {/* Insights */}
             <div className="text-sm dark:text-gray-200 text-gray-600">
-              <ul className="space-y-2">
-                {!!trend?.categoryShift?.changed && (
-                  <li className="flex items-start">
-                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-1.5 mr-2 flex-shrink-0"></span>
-                    <span>
-                      Top category shifted from <span className="font-medium">{trend.categoryShift.previous}</span> to{" "}
-                      <span className="font-medium">{trend.categoryShift.current}</span>
-                    </span>
-                  </li>
-                )}
-                {Array.isArray(trend?.anomalies) && trend.anomalies.length > 0 && (
-                  <li className="flex items-start">
-                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-1.5 mr-2 flex-shrink-0"></span>
-                    <span>Detected {trend.anomalies.length} unusual transactions this year so far</span>
-                  </li>
-                )}
-                {!!trend?.spendingForecast?.next_month_forecast && (
-                  <li className="flex items-start">
-                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-1.5 mr-2 flex-shrink-0"></span>
-                    <span>
-                      Next-month forecast: <span className="font-medium">
-                        R{Number(trend.spendingForecast.next_month_forecast).toLocaleString()}
+              {(!trend || !trend.categoryShift) ? (
+                <ChartLoader label="Spending Trend Insights" />
+              ) : (
+                <ul className="space-y-2">
+                  {!!trend?.categoryShift?.changed && (
+                    <li className="flex items-start">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-1.5 mr-2 flex-shrink-0"></span>
+                      <span>
+                        Top category shifted from <span className="font-medium">{trend.categoryShift.previous}</span> to{" "}
+                        <span className="font-medium">{trend.categoryShift.current}</span>
                       </span>
-                    </span>
-                  </li>
-                )}
-              </ul>
+                    </li>
+                  )}
+                  {Array.isArray(trend?.anomalies) && (
+                    <li className="flex items-start">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-1.5 mr-2 flex-shrink-0"></span>
+                      <span>Detected {trend.anomalies.length} unusual transactions so far</span>
+                    </li>
+                  )}
+                  {!!trend?.spendingForecast?.next_month_forecast && (
+                    <li className="flex items-start">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-1.5 mr-2 flex-shrink-0"></span>
+                      <span>
+                        Next-month forecast: <span className="font-medium">
+                          R{Number(trend.spendingForecast.next_month_forecast).toLocaleString()}
+                        </span>
+                      </span>
+                    </li>
+                  )}
+                </ul>
+              )}
             </div>
           </div>
 
@@ -1670,39 +1866,48 @@ const InsightsPage = () => {
 
             {/* Heatmap */}
             <div className="overflow-x-auto pb-2">
-              <div className="min-w-[680px]">
-                <CalendarHeatmap
-                  startDate={startOfYear}
-                  endDate={today}
-                  values={values}
-                  showWeekdayLabels
-                  gutterSize={2}
-                  classForValue={() => ""}
-                  transformDayElement={transformDayElement}
-                  weekdayLabelClass="text-[0.625rem] dark:text-gray-200 text-gray-500"
-                  monthLabelClass="text-[0.625rem] dark:bg-gray-700 dark:text-gray-200 text-gray-500"
-                />
+           
+                <div className="mb-2 text-sm dark:text-gray-200 text-gray-600">
+                     {!values ? (
+                <ChartLoader label="Transactions Heatmap Data" />
+              ) : (
+                  <div className="min-w-[680px]">
+                    <CalendarHeatmap
+                      startDate={startOfYear}
+                      endDate={today}
+                      values={values}
+                      showWeekdayLabels
+                      gutterSize={2}
+                      classForValue={() => ""}
+                      transformDayElement={transformDayElement}
+                      weekdayLabelClass="text-[0.625rem] dark:text-gray-200 text-gray-500"
+                      monthLabelClass="text-[0.625rem] dark:bg-gray-700 dark:text-gray-200 text-gray-500"
+                    />
+                  </div>
+              )}
+                </div>
+             
+
+              {/* Legend */}
+              <div className="mt-6 flex items-center flex-wrap gap-2 text-xs dark:text-gray-200 text-gray-600">
+                <span className="opacity-70">Less</span>
+                <span className="inline-block w-3 h-3 rounded bg-blue-100 border border-gray-200" />
+                <span className="inline-block w-3 h-3 rounded bg-blue-200 border border-gray-200" />
+                <span className="inline-block w-3 h-3 rounded bg-blue-300 border border-gray-200" />
+                <span className="inline-block w-3 h-3 rounded bg-blue-400 border border-gray-200" />
+                <span className="inline-block w-3 h-3 rounded bg-blue-600 border border-gray-200" />
+                <span className="opacity-70">More</span>
+
+                <span className="ml-3 opacity-60">
+                  {mode === "amount"
+                    ? `≤ ${ZAR(thresholds[1])}, ≤ ${ZAR(thresholds[2])}, ≤ ${ZAR(
+                      thresholds[3]
+                    )}, > ${ZAR(thresholds[3])}`
+                    : `≤ ${thresholds[1]}, ≤ ${thresholds[2]}, ≤ ${thresholds[3]}, > ${thresholds[3]}`}
+                </span>
               </div>
             </div>
 
-            {/* Legend */}
-            <div className="mt-6 flex items-center flex-wrap gap-2 text-xs dark:text-gray-200 text-gray-600">
-              <span className="opacity-70">Less</span>
-              <span className="inline-block w-3 h-3 rounded bg-blue-100 border border-gray-200" />
-              <span className="inline-block w-3 h-3 rounded bg-blue-200 border border-gray-200" />
-              <span className="inline-block w-3 h-3 rounded bg-blue-300 border border-gray-200" />
-              <span className="inline-block w-3 h-3 rounded bg-blue-400 border border-gray-200" />
-              <span className="inline-block w-3 h-3 rounded bg-blue-600 border border-gray-200" />
-              <span className="opacity-70">More</span>
-
-              <span className="ml-3 opacity-60">
-                {mode === "amount"
-                  ? `≤ ${ZAR(thresholds[1])}, ≤ ${ZAR(thresholds[2])}, ≤ ${ZAR(
-                    thresholds[3]
-                  )}, > ${ZAR(thresholds[3])}`
-                  : `≤ ${thresholds[1]}, ≤ ${thresholds[2]}, ≤ ${thresholds[3]}, > ${thresholds[3]}`}
-              </span>
-            </div>
           </div>
         </div>
       </div>

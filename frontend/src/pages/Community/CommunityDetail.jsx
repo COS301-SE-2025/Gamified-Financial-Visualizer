@@ -170,6 +170,7 @@ const CommunityDetail = () => {
         </p>
         <div className="flex gap-2 justify-end">
           <button
+            disabled={isMember(currentUser.id) ? false : true}
             onClick={() => {
               toast.dismiss(t.id);
               toast.success(`Deleted "${itemName}"`);

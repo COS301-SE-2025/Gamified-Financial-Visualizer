@@ -10,9 +10,8 @@ import { FaInfoCircle, FaMoneyBillWave, FaStore, FaHome, FaUniversity, FaTree, F
 import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 import { useGLTF } from '@react-three/drei';
+import { useHudData } from '../../components/game/hooks/HudData';
 
-// Connect to Socket.IO server (adjust URL as needed)
-const socket = io('http://localhost:3000', { autoConnect: false });
 useGLTF.preload('/game/Monopoly_Game.glb');
 
 // Game simulation logic (moved from MockGameSimulation)
@@ -307,29 +306,87 @@ const CommunityGameRoom = () => {
   const [gameLog, setGameLog] = useState([]);
   const [roomCode, setRoomCode] = useState('F1N4NC3');
   const [username, setUsername] = useState('Player' + Math.floor(Math.random() * 1000));
-
+ const [gameId, setGameId] = useState(localStorage.getItem('gameId'))
   const navigate = useNavigate();
   const gameContainerRef = useRef(null);
+const [socket, setSocket] = useState(null);
+   const user = JSON.parse(localStorage.getItem('user'));
+    const token = user?.token;
+  const lobbyId = localStorage.getItem('lobbyId');
 
-  // Initialize players and reset business ownership
-  const [players, setPlayers] = useState(() => {
-    const initialPlayers = [
-      { id: 'p1', name: 'lily_rose', characterKey: 'Green_girl', pos: 0, laps: 0, cash: 10000, assetsValue: 1500, loanBalance: 500, salary: 2000, businesses: [], flags: {}, inventory: {} },
-      { id: 'p2', name: 'kevin_park', characterKey: 'Cowboy', pos: 0, laps: 0, cash: 10000, assetsValue: 2000, loanBalance: 1000, salary: 2200, businesses: [], flags: {}, inventory: {} },
-      { id: 'p3', name: 'nile_waters', characterKey: 'Mr_suit', pos: 0, laps: 0, cash: 10000, assetsValue: 1200, loanBalance: 0, salary: 1800, businesses: [], flags: {}, inventory: {} },
-      { id: 'p4', name: 'man_person', characterKey: 'Kimono_girl', pos: 0, laps: 0, cash: 10000, assetsValue: 1800, loanBalance: 800, salary: 2100, businesses: [], flags: {}, inventory: {} },
-    ];
+  const [players, setPlayers] = useState([]);
+ const apiCall = async (endpoint, options = {}) => {
+       // console.log('API Call:', endpoint, options);
+        const response = await fetch(`http://localhost:5000/api/game${endpoint}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            ...options,
+        });
 
-    // Reset business ownership
-    Object.values(BOARD_TILES).forEach(tile => {
-      if (tile.type === 'business') {
-        tile.owner = null;
-      }
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'API call failed');
+        }
+
+        return response.json();
+    };
+
+  const fetchGameState = async (gameIdd) => {
+  try {
+    const res = await fetch(`http://localhost:5000/api/game/state/${gameIdd}`, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${user.token}` }
     });
 
-    return initialPlayers;
-  });
+    const data = await res.json();
+    if (data.success) {
+      // Set state for game data
+      setPlayers(data.gameState.players);
+      setGamePhase(data.gameState.gamePhase);
+      setActivePlayer(data.gameState.currentPlayerId);
+    }
+  } catch (error) {
+    console.error('Error fetching game state:', error);
+  }
+};
 
+useEffect( () => {
+  const fetchData = async () => {
+    if (gameId) {
+    fetchGameState(gameId);
+    }
+  };
+
+  fetchData();
+}, [gameId, user]);
+
+  // Initialize players and reset business ownership
+  
+/*
+   useEffect(() => {
+    // Initialize socket connection
+     if (!user) return; 
+
+    const socketConnection = io('http://localhost:5000', {
+      auth: { token: user?.token, userId: user?.id }
+    });
+    
+    setSocket(socketConnection);
+
+    // Listen for game state updates
+    socketConnection.on('gameStateUpdated', (data) => {
+      setPlayers(data.players);
+      setActivePlayer(data.activePlayer);
+    });
+
+    return () => {
+      socketConnection.disconnect();
+    };
+  }, [user]);
+
+ */
   // Lock page scroll only while playing
   useEffect(() => {
     if (gamePhase === 'playing') {
@@ -472,8 +529,11 @@ const CommunityGameRoom = () => {
   }, [gamePhase, everyoneDone]);
 
   const startFromLobby = (settings, character) => {
+      setGamePhase('playing');
+localStorage.removeItem('gamePhase');
+localStorage.setItem('gamePhase', 'playing');
     // Proper reset with business ownership clearing
-    const resetPlayers = players.map(p => ({
+    let resetPlayers = players.map(p => ({
       ...p,
       pos: 0,
       laps: 0,
@@ -494,21 +554,25 @@ const CommunityGameRoom = () => {
     setGameSettings(settings);
     setActivePlayer(0);
     setGameLog(['Game started!']);
-    setGamePhase('playing');
     setShowTileSidebar(false);
+ //   localStorage.setItem('gamePhase', 'playing');
 
     // Emit socket event for multiplayer
-    socket.emit('startGame');
-  };
+   // socket.emit('startGame');
+   // call start game api
+   if(localStorage.getItem('gameId')){
+   fetchGameState(localStorage.getItem('gameId'));
+   }
+  }
 
   const createRoom = () => {
     if (!username) return alert('Please enter a username');
-    socket.emit('createRoom', { host: 'currentPlayer', username, settings: gameSettings });
+  //  socket.emit('createRoom', { host: 'currentPlayer', username, settings: gameSettings });
   };
 
   const joinRoom = () => {
-    if (!username || !roomCode) return alert('Please enter both username and room code');
-    socket.emit('joinRoom', { roomCode, username, playerId: 'currentPlayer' });
+    if (!username || !roomCode) return console.error('Please enter both username and room code');
+  //  socket.emit('joinRoom', { roomCode, username, playerId: 'currentPlayer' });
   };
 
   const restartGame = () => {
@@ -521,7 +585,7 @@ const CommunityGameRoom = () => {
   };
 
   const currentPlayer = players[activePlayer];
-  const netWorth = calculateNet(currentPlayer);
+ // const netWorth = calculateNet(currentPlayer);
   const playersSummary = players.map(p => ({
     id: p.id,
     name: p.name,
@@ -541,14 +605,15 @@ const CommunityGameRoom = () => {
     );
   }
 
+  
   return (
     <>
       {/* Slight spacer so content starts just under the fixed navbar */}
       <div style={{ height: 'calc(var(--app-header-h, 75px) - 70px)' }} />
-
-      {gamePhase === 'lobby' ? (
-        // Lobby: scroll locally if tall
-        <div className="px-6 h-[calc(100vh-var(--app-header-h,75px)- 70px)] overflow-auto pb-[max(24px,env(safe-area-inset-bottom))]">
+      {
+        gamePhase === 'lobby' && !localStorage.getItem('gameId') ? (
+          // Lobby: scroll locally if tall
+            <div className="px-6 h-[calc(100vh-var(--app-header-h,75px)- 70px)] overflow-auto pb-[max(24px,env(safe-area-inset-bottom))]">
           <GameLobby
             defaultMode="multiplayer"
             defaultPlayers={4}
@@ -563,7 +628,7 @@ const CommunityGameRoom = () => {
             availableGames={[]}
           />
         </div>
-      ) : gamePhase === 'playing' ? (
+      ) : localStorage.getItem('gameId') ? (
         // Playing: fill viewport minus navbar (and safe area)
         <div
           ref={gameContainerRef}
@@ -577,7 +642,7 @@ const CommunityGameRoom = () => {
               selectedCharacter={currentPlayer?.characterKey}
               pawns={players.map(p => ({
                 key: p.id,
-                character: p.characterKey,
+                character: p.characterKey || p.character ,
                 index: p.pos,
               }))}
             />
@@ -595,8 +660,7 @@ const CommunityGameRoom = () => {
             <GameHUD
               playerName={currentPlayer?.name}
               playerNumber={activePlayer + 1}
-              netWorth={netWorth}
-              timePlaying={`Turn ${gameLog.length}`}
+              netWorth={currentPlayer?.netWorth}
               goalLaps={currentPlayer?.laps}
               totalLaps={gameSettings.laps}
               businessWorth={currentPlayer?.assetsValue}

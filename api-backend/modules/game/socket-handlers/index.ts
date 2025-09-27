@@ -143,38 +143,75 @@ export function registerGameSocketHandlers(
     /**
      * Start game (host only)
      */
-    socket.on('lobby:start-game', async () => {
-      try {
-        const gameId = lobbyManager.startGame(userId);
-        if (!gameId) {
-          socket.emit('lobby:start-error', { message: 'Cannot start game' });
-          return;
-        }
+   socket.on('lobby:start-game', async (ack?: (res:{ok:boolean; gameId?:string; error?:string}) => void) => {
+    try {
+      // Ensure the caller is the host of some lobby
+      const lobby = lobbyManager.getLobbyByPlayer(userId);
+      if (!lobby) return ack?.({ ok:false, error:'Not in a lobby' });
+      const host = lobby.players.get(userId);
+      if (!host?.isHost) return ack?.({ ok:false, error:'Only the host can start' });
 
-        const lobby = lobbyManager.getLobbyByPlayer(userId);
-        if (lobby) {
-          // Move all players to game room
-          const playerSockets = Array.from(lobby.players.values()).map(p => p.socketId);
-          
-          for (const socketId of playerSockets) {
-            const playerSocket = io.sockets.sockets.get(socketId);
-            if (playerSocket) {
-              await playerSocket.leave(`lobby:${lobby.id}`);
-              await playerSocket.join(`game:${gameId}`);
-            }
-          }
-          
-          // Notify all players that game started
-          io.to(`game:${gameId}`).emit('game:started', {
-            gameId,
-            gameState: gameEngine.getGameState(gameId)
-          });
-        }
-        
-      } catch (error: any) {
-        socket.emit('lobby:start-error', { message: error.message });
+      // Create engine state & lock lobby
+      const gameId = lobbyManager.startGame(userId);
+      if (!gameId) return ack?.({ ok:false, error:'Cannot start (ready/players)' });
+
+      // Move everyone to game room
+      const playerSockets = Array.from(lobby.players.values()).map(p => p.socketId).filter(Boolean);
+      for (const sid of playerSockets) {
+        const s = io.sockets.sockets.get(sid);
+        if (!s) continue;
+        await s.leave(`lobby:${lobby.id}`);
+        await s.join(`game:${gameId}`);
       }
-    });
+
+      // Emit started + initial state
+      const gameState = gameEngine.getGameState(gameId);
+      io.to(`game:${gameId}`).emit('game:started', { gameId, gameState });
+
+      // Acknowledge back to the host
+      ack?.({ ok:true, gameId });
+    } catch (e:any) {
+      ack?.({ ok:false, error:e.message });
+    }
+  });
+
+  socket.on('startGame', async () => {
+    // Get the lobby by userId
+    const lobby = lobbyManager.getLobbyByPlayer(userId);
+    if (!lobby) {
+      socket.emit('game:start-error', { error: 'Lobby not found.' });
+      return;
+    }
+
+    // Ensure the user is the host
+    const host = lobby.players.get(userId);
+    if (!host?.isHost) {
+      socket.emit('game:start-error', { error: 'Only the host can start the game.' });
+      return;
+    }
+
+    // Start the game and get the gameId
+    const gameId = lobbyManager.startGame(userId);
+    if (!gameId) {
+      socket.emit('game:start-error', { error: 'Failed to start the game.' });
+      return;
+    }
+
+    // Move players from the lobby to the game
+    for (const player of lobby.players.values()) {
+      const playerSocket = io.sockets.sockets.get(player.socketId);
+      if (playerSocket) {
+        playerSocket.leave(`lobby:${lobby.id}`);  // Remove player from lobby room
+        playerSocket.join(`game:${gameId}`);     // Move player to game room
+        playerSocket.emit('game:started', { gameId, gameState: {} }); // Send initial game state
+      }
+    }
+
+    // Send a confirmation back to the host
+    io.to(`game:${gameId}`).emit('game:started', { gameId });
+
+    // Handle other game logic here (e.g., resetting players, game state)
+  });
 
     // 🎮 MATCHMAKING HANDLERS
 

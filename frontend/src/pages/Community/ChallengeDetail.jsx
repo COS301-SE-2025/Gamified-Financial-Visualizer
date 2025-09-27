@@ -137,7 +137,11 @@ const ChallengeDetail = () => {
                                 alt={`participant-${idx}`}
                             />
                         ))}
-                        <span className="text-sm text-[#6B7280] dark:text-gray-400 self-center ml-2">+ {challengeData.participantsCount - challengeData.participants.length} others</span>
+                        {(challengeData.participantsCount - challengeData.participants.length) > 0 && (
+                            <span className="text-sm text-[#6B7280] dark:text-gray-400 self-center ml-2">
+                                + {challengeData.participantsCount - challengeData.participants.length} others
+                            </span>
+                        )}
                     </div>
                 </div>
 
