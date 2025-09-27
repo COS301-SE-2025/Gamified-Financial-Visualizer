@@ -642,7 +642,7 @@ localStorage.setItem('gamePhase', 'playing');
               selectedCharacter={currentPlayer?.characterKey}
               pawns={players.map(p => ({
                 key: p.id,
-                character: p.characterKey,
+                character: p.characterKey || p.character ,
                 index: p.pos,
               }))}
             />

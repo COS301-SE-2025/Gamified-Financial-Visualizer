@@ -112,7 +112,11 @@ export default function GameLobby({
     const user = JSON.parse(localStorage.getItem('user'));
     const token = user.token;
     const [lobbyId, setLobbyId] = useState(null);
-
+// clear local storage gameId on mount
+    useEffect(() => {
+        localStorage.removeItem('gameId');
+        localStorage.removeItem('lobbyId');
+    }, []);
     /*
     useEffect(() => {
         const socket = getSocket(token, user?.id);
@@ -417,7 +421,7 @@ export default function GameLobby({
                 localStorage.removeItem('gameId');
                localStorage.setItem('gameId', result.gameId); 
              //   socket.emit('lobby:start-game');  // backend will pick up userId from socket.data
-                await fetchGameState();
+             //   await fetchGameState();
                 setCountdown(true);
             }  
             
@@ -443,6 +447,8 @@ export default function GameLobby({
     const fetchGameState = async () => {
   try {
     const gameId = localStorage.getItem('gameId');
+    if(!gameId) return;
+
     const res = await fetch(`http://localhost:5000/api/game/state/${gameId}`, {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${user.token}` }
@@ -453,6 +459,7 @@ export default function GameLobby({
       // Update the game state, players, etc.
       setPlayers(data.gameState.players);
       setGamePhase(data.gameState.gamePhase);
+      localStorage.setItem('gamePhase', data.gameState.gamePhase);
       setActivePlayer(data.gameState.currentPlayerId);
     }
   } catch (error) {
