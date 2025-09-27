@@ -44,7 +44,24 @@ const AccountsPerformanceHeader = () => {
   ];
 
   return (
-    <div className="flex flex-wrap justify-between gap-6 items-start w-full mb-6">
+    <div className="w-full mb-6">
+          {/* Mobile Only: Clean Header */}
+          <div className="lg:hidden">
+            {/* Page Title at Top Left Corner */}
+            <div className="mb-4">
+              <div className="flex items-center gap-2 text-[#B4DFA4] dark:text-[#88BC46]">
+                <FaUsers className="text-2xl" />
+                <h1 className="text-2xl font-light dark:text-white">Community</h1>
+              </div>
+              <div className="mb-6">
+              <p className="text-base text-gray-600 dark:text-gray-300">
+                Connect with peers, join communities, and take part in exciting financial challenges.
+              </p>
+            </div>
+            </div>
+          </div>
+
+    <div className="hidden lg:flex flex-wrap justify-between gap-6 items-start w-full mb-6">
       {/* Left Label */}
       <div className="text-center lg:text-left">
         <div className="flex items-center justify-center lg:justify-start gap-2 text-[#B4DFA4]">
@@ -123,6 +140,7 @@ const AccountsPerformanceHeader = () => {
           ))}
         </div>
       </div>
+    </div>
     </div>
   );
 };

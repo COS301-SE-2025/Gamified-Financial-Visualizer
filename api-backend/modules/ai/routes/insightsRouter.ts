@@ -670,12 +670,14 @@ router.get('/trends/:userId', async (req, res) => {
       };
 
       // Fetch trends data from the database
+
       const trends = await axios.post(`${AI_URL}/insights/trends`,
          userData,
          {
             timeout: 120000, // 2 minutes
             validateStatus: (status) => status < 500
          }
+
       );
 
       if (!trends.data) {
