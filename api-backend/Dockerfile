@@ -39,21 +39,16 @@ RUN npm run build && \
     npm prune --production --no-audit --no-fund
 
 # Production stage
-FROM node:18-slim AS production
+FROM node:18-alpine AS production
 
 # Install security updates and dumb-init
 RUN apk update && apk upgrade && apk add --no-cache \
     dumb-init \
-    python3 \
-    python3-pip\
     curl \
-    && rm -rf /var/cache/apk/lists/*
-
-RUN pip3 install --no-cache-dir \
-    PyPDF2==3.0.1 \
-    pandas==2.1.0 \
-    python-dateutil==2.8.2
-
+    python3 \
+    py3-pip \
+    && rm -rf /var/cache/apk/*
+    
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001 -G nodejs
@@ -66,8 +61,6 @@ RUN mkdir -p /tmp/uploads && chown -R nodejs:nodejs /tmp/
 COPY --from=build --chown=nodejs:nodejs /app/node_modules ./node_modules
 COPY --from=build --chown=nodejs:nodejs /app/dist ./dist
 COPY --from=build --chown=nodejs:nodejs /app/package*.json ./
-
-COPY --chown=nodejs:nodejs modules/ai/app/classifier/services/extractors/ ./dist/modules/ai/app/classifier/services/extractors/
 
 # Switch to non-root user
 USER nodejs
