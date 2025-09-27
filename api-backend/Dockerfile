@@ -45,10 +45,6 @@ FROM node:18-alpine AS production
 RUN apk update && apk upgrade && apk add --no-cache \
     dumb-init \
     curl \
-    python3 \
-    py3-pip \
-    py3-setuptools \
-    build-base \
     && rm -rf /var/cache/apk/*
 
 RUN pip3 install --no-cache-dir --break-system-packages \
