@@ -540,7 +540,7 @@ router.get("/sentiment/user/:userId/:month", async (req, res) => {
          `${AI_URL}/insights/user/${userId}/${month}`,
          userData,
          {
-            timeout: 120000, // 12 seconds timeout
+            timeout: 300000, // 12 seconds timeout
             validateStatus: (status) => status < 500 // Accept all HTTP status codes
          }
       );

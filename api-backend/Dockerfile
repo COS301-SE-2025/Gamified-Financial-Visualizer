@@ -45,6 +45,8 @@ FROM node:18-alpine AS production
 RUN apk update && apk upgrade && apk add --no-cache \
     dumb-init \
     curl \
+    python3 \
+    py3-pip \
     && rm -rf /var/cache/apk/*
     
 # Create non-root user
@@ -52,6 +54,8 @@ RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001 -G nodejs
 
 WORKDIR /app
+
+RUN mkdir -p /tmp/uploads && chown -R nodejs:nodejs /tmp
 
 # Copy built application and dependencies
 COPY --from=build --chown=nodejs:nodejs /app/node_modules ./node_modules
