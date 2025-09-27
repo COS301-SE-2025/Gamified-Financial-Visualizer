@@ -17,7 +17,8 @@ router.get('/landing-page', async (req: Request, res: Response) => {
 
     if (cachedData) {
       logger.info('[Community] Serving landing page data from cache');
-      return res.status(200).json({ status: 'success', data: JSON.parse(cachedData) });
+       res.status(200).json({ status: 'success', data: JSON.parse(cachedData) });
+       return;
     }
 
     const stats = await communityService.landingPageStats();

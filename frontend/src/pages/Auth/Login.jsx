@@ -4,6 +4,7 @@ import AuthLayout from '../../components/AuthLayout';
 import logoImg from '../../assets/Images/Logo.png';
 import { FaEye, FaEyeSlash,FaExclamationCircle } from 'react-icons/fa';
 
+import  {useThemeLoader, applyThemeFromPreferences }  from '../ThemeLoader.mjs';
 const BASE_URL = "http://localhost:5000";
 
 const Login = () => {
