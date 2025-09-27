@@ -4,9 +4,7 @@ FROM node:18-alpine AS base
 # Install security updates and required packages
 RUN apk update && apk upgrade && apk add --no-cache \
     dumb-init \
-    curl \
     python3 \
-    py3-pip \
     && rm -rf /var/cache/apk/*
 
 # Create app directory with proper permissions
