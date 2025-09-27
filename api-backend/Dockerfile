@@ -47,8 +47,18 @@ RUN apk update && apk upgrade && apk add --no-cache \
     curl \
     python3 \
     py3-pip \
+    gcc \
+    g++ \
+    musl-dev \
+    linux-headers \
+    python3-dev \
+    poppler-utils \
+    tesseract-ocr \
     && rm -rf /var/cache/apk/*
     
+COPY backend-requirements.txt ./
+RUN pip3 install --no-cache-dir --break-system-packages -r backend-requirements.txt
+
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001 -G nodejs
