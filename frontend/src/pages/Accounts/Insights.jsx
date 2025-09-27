@@ -239,6 +239,7 @@ const InsightsPage = () => {
   const [sentiment, setSentimentData] = useState(null);
   const [trend, setTrendData] = useState(null);
   const [heatmapData, setHeatmapData] = useState(null);
+  const [showInsightsInfo, setShowInsightsInfo] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
@@ -1638,14 +1639,27 @@ const InsightsPage = () => {
               )}
             </div>
 
-            <div className="text-xs dark:text-gray-200 text-gray-400 mb-4">
-              Delta = change vs last month. Volatility = spread of your expense amounts in that month.
+            <button
+  onClick={() => setShowInsightsInfo(prev => !prev)}
+  className="text-xs text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white transition-colors flex items-center gap-1 mb-2"
+>
+  <span className="text-lg font-bold">?</span>
+  <span className="underline">What do these insights mean?</span>
+</button>
+            {showInsightsInfo && (
+            <div className="text-xs dark:text-gray-200 text-gray-400 mb-4 space-y-1 leading-relaxed">
+              <div><strong>MoM Change</strong>: Month-over-Month comparison showing how your spending has increased or decreased compared to the previous month. Positive values indicate growth, while negative values suggest a drop.</div>
+              <div><strong>Volatility</strong>: Measures how spread out your expenses were in that month. High volatility means inconsistent spending across categories, while low volatility suggests stable, predictable behavior.</div>
+              <div><strong>Total Spending</strong>: The sum of all your expenses for the selected month, across all tracked categories.</div>
+              <div><strong>Forecast</strong>: A predictive estimate of your future spending based on historical trends and seasonal patterns. Dashed lines indicate projected values.</div>
+              <div><strong>Anomalies</strong>: Unusual spikes or dips in specific categories that deviate from your typical behavior. These may signal unexpected transactions, errors, or emerging habits.</div>
             </div>
+          )}        
 
             {/* Insights */}
             <div className="text-sm dark:text-gray-200 text-gray-600">
               {(!trend || !trend.categoryShift) ? (
-                <p>No significant trends detected so far this year.</p>
+                <ChartLoader label="Spending Trend Insights" />
               ) : (
                 <ul className="space-y-2">
                   {!!trend?.categoryShift?.changed && (
@@ -1657,10 +1671,10 @@ const InsightsPage = () => {
                       </span>
                     </li>
                   )}
-                  {Array.isArray(trend?.anomalies) && trend.anomalies.length > 0 && (
+                  {Array.isArray(trend?.anomalies) && (
                     <li className="flex items-start">
                       <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-1.5 mr-2 flex-shrink-0"></span>
-                      <span>Detected {trend.anomalies.length} unusual transactions this year so far</span>
+                      <span>Detected {trend.anomalies.length} unusual transactions so far</span>
                     </li>
                   )}
                   {!!trend?.spendingForecast?.next_month_forecast && (
