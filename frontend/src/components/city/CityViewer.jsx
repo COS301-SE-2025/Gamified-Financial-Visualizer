@@ -81,6 +81,11 @@ import civicOfficesSunset from '../../assets/Building Images/Sunset Pink/civic-o
 import cafeSunset from '../../assets/Building Images/Sunset Pink/cafe.png';
 
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
+
 /* ===========================
    YOUR THEMED CITY SCENES (swap GLBs)
    Put files in /public/models/ and adjust paths if needed.
@@ -1299,9 +1304,9 @@ export default function CityViewer() {
     // Fetch building data for the selected user
     const fetchBuildingData = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/city/buildings/${user.id}`);
-        const data = await response.json();
-        setBuildings(data);
+      const response = await fetch(`${BASE_URL}/api/city/buildings/${user.id}`);
+      const data = await response.json();
+      setBuildings(data);
       } catch (error) {
         console.error('Error fetching building data:', error);
       }

@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
+
 const COLORS = ['#FFD18C', '#F97156', '#F68D2B', '#5FBFFF', '#88BC46'];
 
 const DonutChart = () => {
@@ -10,7 +15,7 @@ const DonutChart = () => {
   useEffect(() => {
     const fetchSummary = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/goal/${user.id}/category-summary`);
+        const res = await fetch(`${BASE_URL}/api/goal/${user.id}/category-summary`);
         const result = await res.json();
         const mapped = result.data.map(item => ({
           name: item.goal_type[0].toUpperCase() + item.goal_type.slice(1),

@@ -62,6 +62,11 @@ const categoryIcons = {
   default: { icon: <FaMoneyBillWave />, color: 'bg-gray-100 text-gray-500' }
 };
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
+
 const CategoryDropdown = ({
   value,
   onChange,
@@ -395,7 +400,7 @@ const BudgetPage = () => {
   const fetchBudgets = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5000/api/budget/user/${userId}`);
+      const response = await fetch(`${BASE_URL}/api/budget/user/${userId}`);
       const result = await response.json();
       if (result.status === 'success') {
         const sortedBudgets = result.data.sort((a, b) => {
@@ -423,7 +428,7 @@ const BudgetPage = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/budget/categories');
+      const response = await fetch(`${BASE_URL}/api/budget/categories`);
       const result = await response.json();
       if (result.status === 'success') {
         setCategories(result.data);
@@ -452,7 +457,7 @@ const BudgetPage = () => {
   const confirmDelete = async () => {
     if (!deleteConfirmation.budgetId) return;
     try {
-      const response = await fetch(`http://localhost:5000/api/budget/${deleteConfirmation.budgetId}`, {
+      const response = await fetch(`${BASE_URL}/api/budget/${deleteConfirmation.budgetId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -479,7 +484,7 @@ const BudgetPage = () => {
   const handleSave = async (formData) => {
     try {
       if (editingId) {
-        const response = await fetch(`http://localhost:5000/api/budget/${editingId}`, {
+        const response = await fetch(`${BASE_URL}/api/budget/${editingId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -498,7 +503,7 @@ const BudgetPage = () => {
           setError(result.message || 'Failed to update budget');
         }
       } else {
-        const response = await fetch('http://localhost:5000/api/budget', {
+        const response = await fetch(`${BASE_URL}/api/budget`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

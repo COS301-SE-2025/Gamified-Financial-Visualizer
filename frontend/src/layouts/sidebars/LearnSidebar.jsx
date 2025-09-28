@@ -10,6 +10,10 @@ import {
 } from 'react-icons/fa';
 import avatar from '../../assets/Images/avatars/BlueSky.png';
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
 const AccountsPerformanceHeader = () => {
   const user = JSON.parse(localStorage.getItem('user'));
   const id = user ? user.id : null;
@@ -21,7 +25,7 @@ const AccountsPerformanceHeader = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/learning/summary/${id}`);
+        const response = await fetch(`${BASE_URL}/api/learning/summary/${id}`);
         const data = await response.json();
         if (data.status === 'success') {
           setSummary(data.data);
@@ -34,13 +38,13 @@ const AccountsPerformanceHeader = () => {
       }
     };
 
-    fetch(`http://localhost:5000/api/community/performance-summary/${id}`)
+    fetch(`${BASE_URL}/api/community/performance-summary/${id}`)
       .then(res => res.json())
       .then(data => setPerformance(data.data))
       .catch(err => console.error('Community performance summary error:', err));
 
     // Fetch level progress
-    fetch(`http://localhost:5000/api/auth/profile/level-progress/${id}`)
+    fetch(`${BASE_URL}/api/auth/profile/level-progress/${id}`)
       .then(res => res.json())
       .then(res => setLevelProgress(res.data))
       .catch(err => console.error('Failed to load level progress:', err));

@@ -11,6 +11,10 @@ import goal1 from '../../assets/Images/banners/pixelApartment.gif';
 import goal2 from '../../assets/Images/banners/pixelHouse.gif';
 import goal3 from '../../assets/Images/banners/pixelOffice1.gif';
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
 const PAGE_SIZE = 3;
 
 const GoalsPage = () => {
@@ -33,7 +37,7 @@ const GoalsPage = () => {
   useEffect(() => {
     const fetchGoals = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/goal/user/${user.id}`);
+        const res = await fetch(`${BASE_URL}/api/goal/user/${user.id}`);
         const data = await res.json();
         setGoals(data.data || []);
       } catch (e) {
@@ -47,7 +51,7 @@ const GoalsPage = () => {
   useEffect(() => {
     const fetchLatestGoal = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/goal/latest-completed/${user.id}`);
+        const res = await fetch(`${BASE_URL}/api/goal/latest-completed/${user.id}`);
         const data = await res.json();
         setLatestGoal(data.data || null);
       } catch (e) {

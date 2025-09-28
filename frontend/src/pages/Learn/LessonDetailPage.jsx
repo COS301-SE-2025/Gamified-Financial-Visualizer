@@ -20,6 +20,10 @@ import {
 } from 'react-icons/fa';
 import LearnLayout from './LearnLayout';
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
 const colorMap = {
   green: {
     border: 'border-l-[#7FDD53] dark:border-l-[#5FBFFF]',
@@ -69,17 +73,17 @@ const ModuleLessonsPage = () => {
       try {
         setIsLoading(true);
 
-        const moduleResponse = await fetch(`http://localhost:5000/api/learning/${moduleId}`);
+        const moduleResponse = await fetch(`${BASE_URL}/api/learning/${moduleId}`);
         if (!moduleResponse.ok) throw new Error('Failed to load module');
         const moduleData = await moduleResponse.json();
         setModuleTitle(moduleData.data.module_title);
         setModuleDescription(moduleData.data.module_description || 'Boost your financial knowledge with this module');
 
-        const lessonsResponse = await fetch(`http://localhost:5000/api/learning/${moduleId}/lessons`);
+        const lessonsResponse = await fetch(`${BASE_URL}/api/learning/${moduleId}/lessons`);
         if (!lessonsResponse.ok) throw new Error('Failed to load lessons');
         const lessonsData = await lessonsResponse.json();
 
-        const quizResponse = await fetch(`http://localhost:5000/api/learning/quizzes/${moduleId}`);
+        const quizResponse = await fetch(`${BASE_URL}/api/learning/quizzes/${moduleId}`);
         if (!quizResponse.ok) throw new Error('Failed to load quiz');
         const quizData = await quizResponse.json();
 
@@ -126,7 +130,7 @@ const ModuleLessonsPage = () => {
     });
 
     try {
-      await fetch(`http://localhost:5000/api/learning/quizzes/${moduleId}/submit`, {
+      await fetch(`${BASE_URL}/api/learning/quizzes/${moduleId}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

@@ -8,6 +8,11 @@ import {
   FaChevronLeft, FaChevronRight
 } from 'react-icons/fa';
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
+
 const ImportPage = () => {
   const userData = JSON.parse(localStorage.getItem('user') || '{}');
   const userId = userData?.id || null;
@@ -148,7 +153,7 @@ const ImportPage = () => {
         form.append('bankName', selectedBank.toLowerCase());    
               
         res = await fetch(
-          `http://localhost:5000/api/classifier/upload-statement`,
+          `${BASE_URL}/api/classifier/upload-statement`,
           { method: 'POST',
            headers: { 'Accept': 'application/json' }, 
            body: form
@@ -156,7 +161,7 @@ const ImportPage = () => {
         );
       } else {
         res = await fetch(
-          `http://localhost:5000/api/classifier/upload-statement-url`,
+          `${BASE_URL}/api/classifier/upload-statement-url`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -240,7 +245,7 @@ const ImportPage = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:5000/api/classifier/confirm-statement`,
+        `${BASE_URL}/api/classifier/confirm-statement`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -271,7 +276,7 @@ const ImportPage = () => {
                 
       if (payload.feedbacks.length) {
         fetch(
-          `http://localhost:5000/api/classifier/feedback`,
+          `${BASE_URL}/api/classifier/feedback`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -291,12 +296,12 @@ const ImportPage = () => {
   );
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/accounts/user/${userId}`)
+    fetch(`${BASE_URL}/api/accounts/user/${userId}`)
       .then(r => r.json())
       .then(j => setAccounts(j.data))
       .catch(() => setAccounts([]));
 
-    fetch(`http://localhost:5000/api/transactions/categories`)
+    fetch(`${BASE_URL}/api/transactions/categories`)
       .then(r => r.json())
       .then(j => setCategories(j.data))
       .catch(() => setCategories([]));

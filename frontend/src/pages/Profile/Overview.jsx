@@ -7,6 +7,10 @@ import { motion } from 'framer-motion';
 import profileBanner from '../../assets/Images/banners/pixelBalcony.gif';
 import avatar4 from '../../assets/Images/avatars/Totoro.png';
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
 // Format amount cleanly (e.g., 7500 or 7500.14)
 const formatAmount = (amount) => {
   const num = Number(amount);
@@ -29,37 +33,37 @@ const Overview = () => {
     if (!user?.id) return;
 
     // Fetch profile data
-    fetch(`http://localhost:5000/api/auth/top-bar/${user.id}`)
+    fetch(`${BASE_URL}/api/auth/top-bar/${user.id}`)
       .then(res => res.json())
       .then(res => setProfileData(res.data))
       .catch(err => console.error('Failed to load profile bar:', err));
 
     // Fetch current goals
-    fetch(`http://localhost:5000/api/auth/profile/current-goals/${user.id}`)
+    fetch(`${BASE_URL}/api/auth/profile/current-goals/${user.id}`)
       .then(res => res.json())
       .then(res => setGoals(res.data))
       .catch(err => console.error('Failed to load goals:', err));
 
     // Fetch performance stats
-    fetch(`http://localhost:5000/api/auth/profile/performance-stats/${user.id}`)
+    fetch(`${BASE_URL}/api/auth/profile/performance-stats/${user.id}`)
       .then(res => res.json())
       .then(res => setPerformanceStats(res.data))
       .catch(err => console.error('Failed to load performance stats:', err));
 
     // Fetch recent achievements
-    fetch(`http://localhost:5000/api/auth/profile/recent-achievements/${user.id}`)
+    fetch(`${BASE_URL}/api/auth/profile/recent-achievements/${user.id}`)
       .then(res => res.json())
       .then(res => setRecentAchievements(res.data))
       .catch(err => console.error('Failed to load achievements:', err));
 
     // Fetch communities
-    fetch(`http://localhost:5000/api/auth/profile/communities/${user.id}`)
+    fetch(`${BASE_URL}/api/auth/profile/communities/${user.id}`)
       .then(res => res.json())
       .then(res => setCommunityData(res.data))
       .catch(err => console.error('Failed to load communities:', err));
 
     // Fetch level progress
-    fetch(`http://localhost:5000/api/auth/profile/level-progress/${user.id}`)
+    fetch(`${BASE_URL}/api/auth/profile/level-progress/${user.id}`)
       .then(res => res.json())
       .then(res => setLevelProgress(res.data))
       .catch(err => console.error('Failed to load level progress:', err));
@@ -75,7 +79,8 @@ const Overview = () => {
 
   useEffect(() => {
     if (!userId) return;
-    fetch(`http://localhost:5000/api/auth/profile/post-images/${userId}?page=${postPage}&pageSize=${POSTS_PER_PAGE}`)
+    fetch(`${BASE_URL}/api/auth/profile/post-images/${userId}?page=${postPage}&pageSize=${POSTS_PER_PAGE}`)
+
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();

@@ -34,7 +34,14 @@ import badge24 from '../../assets/Images/badges/support.png';
 import badge25 from '../../assets/Images/badges/team.png';
 import badge26 from '../../assets/Images/badges/accepted.png';
 
-// Deterministic title → { color, badge } mapping (case-insensitive) - unchanged
+
+
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
+// Deterministic title → { color, badge } mapping (case-insensitive)
+
 const TITLE_META = {
   // Blue (Learning)
   'avid scholar': { color: 'blue', badge: badge10 },
@@ -416,7 +423,7 @@ const AchievementsPage = () => {
     const fetchAchievements = async () => {
       try {
         setIsLoading(true);
-        const res = await fetch(`http://localhost:5000/api/achievements/list/${user.id}`);
+        const res = await fetch(`${BASE_URL}/api/achievements/list/${user.id}`);
         if (!res.ok) throw new Error('Fetch failed');
         const payload = await res.json();
         const rows = Array.isArray(payload?.data) ? payload.data : [];

@@ -1,0 +1,128 @@
+# Updated docker-compose.yml (root directory)
+
+services:
+  # Redis service (required for your backend)
+  redis:
+    image: redis:7-alpine
+    container_name: finance-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # Main API Backend (Node.js)
+  api-backend:
+    build:
+      context: ./api-backend
+      target: development
+    container_name: finance-api
+    ports:
+      - "3000:3000"
+    environment:
+      # Database
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DATABASE_URL=${DATABASE_URL}
+      
+      # Auth
+      - PASETO_LOCAL_KEY=${PASETO_LOCAL_KEY}
+      - TOKEN_TTL_SECONDS=${TOKEN_TTL_SECONDS}
+      
+      # External APIs
+      - CMC_APIKEY=${CMC_APIKEY}
+      - HF_TOKEN=${HF_TOKEN}
+      
+      # Redis connection
+      - REDIS_URL=redis://redis:6379
+      
+      # Environment
+      - NODE_ENV=development
+      
+      # CORS settings - allow frontend
+      - CORS_ORIGIN=http://localhost:3001
+    volumes:
+      - ./api-backend:/app
+      - /app/node_modules
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Python AI Service (FastAPI)
+  ai-service:
+    build:
+      context: ./api-backend/modules/ai
+      dockerfile: Dockerfile
+    container_name: finance-ai
+    ports:
+      - "6000:6000"
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+      - PYTHONPATH=/app
+      # CORS settings - allow frontend
+      - CORS_ORIGIN=http://localhost:3001
+    volumes:
+      - ./api-backend/modules/ai:/app
+      - /app/__pycache__
+    restart: unless-stopped
+
+  # Frontend (Development)
+  frontend:
+    build:
+      context: ./frontend
+      target: development
+    container_name: finance-frontend
+    ports:
+      - "3001:3000"
+    environment:
+      # API URLs - use localhost for browser requests
+      - REACT_APP_API_URL=http://localhost:3000
+      - REACT_APP_AI_API_URL=http://localhost:6000
+      
+      # Docker-specific settings for hot reload
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+      - FAST_REFRESH=true
+      
+      # Prevent port conflicts
+      - PORT=3000
+      - HOST=0.0.0.0
+      
+      # Fix for React dev server in Docker
+      - WDS_SOCKET_PORT=0
+      - GENERATE_SOURCEMAP=false
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - api-backend
+      - ai-service
+    restart: unless-stopped
+    # Use init to handle signals properly
+    init: true
+
+  # Frontend Production (uncomment to use)
+  # frontend-prod:
+  #   build:
+  #     context: ./frontend
+  #     target: production
+  #   container_name: finance-frontend-prod
+  #   ports:
+  #     - "3001:80"
+  #   depends_on:
+  #     - api-backend
+  #     - ai-service
+  #   restart: unless-stopped
+
+volumes:
+  redis_data:
