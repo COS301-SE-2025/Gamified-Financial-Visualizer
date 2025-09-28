@@ -1,16 +1,78 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import GameLobby from '../game/lobby/GameLobby';
-import GameBoardViewer from '../game/GameBoardViewer';
-import GameHUD from '../game/hud/GameHUD';
-import GameLoader from './GameLoader';
-import HUDPortal from '../game/hud/HUDPortal';
-import BoardTileModal from '../game/BoardTileModal';
-import { BOARD_TILES, BOARD_ORDER } from '../../components/game/data/boardTiles';
+// src/components/game/MockGame.jsx
+import React, { useState, useEffect, useMemo } from 'react';
+import GameHUD from './hud/GameHUD';
+import HUDPortal from './hud/HUDPortal';
+import GameBoardViewer from './GameBoardViewer';
+import GameLobby from './lobby/GameLobby';
+import BoardTileModal from './BoardTileModal';
+import { BOARD_TILES, BOARD_ORDER } from './data/boardTiles';
+import { FaTrophy } from 'react-icons/fa';
 
+// Constants
 const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const currency = 'R';
 
-// Enhanced card deck system
+// Helper function to get user data from localStorage
+const getLoggedInUser = () => {
+  try {
+    // Try different possible localStorage keys where user data might be stored
+    const userDataKeys = ['user', 'currentUser', 'loggedInUser', 'authUser'];
+    
+    for (const key of userDataKeys) {
+      const stored = localStorage.getItem(key);
+      if (stored) {
+        const userData = JSON.parse(stored);
+        if (userData && userData.id) {
+          return userData;
+        }
+      }
+    }
+    
+    // Fallback: check for common authentication patterns
+    const authToken = localStorage.getItem('token') || localStorage.getItem('authToken');
+    if (authToken) {
+      // Try to extract user info from token or other storage
+      const userInfoKeys = ['userInfo', 'profile', 'userProfile'];
+      for (const key of userInfoKeys) {
+        const stored = localStorage.getItem(key);
+        if (stored) {
+          const userData = JSON.parse(stored);
+          if (userData && userData.id) {
+            return userData;
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.warn('Error reading user data from localStorage:', error);
+  }
+  
+  // Default fallback user
+  return {
+    id: 'user_' + Date.now(),
+    username: 'Player',
+    displayName: 'Player',
+    characterKey: 'Cowboy'
+  };
+};
+
+// Generate consistent random colors for each player based on their ID
+const generatePlayerColors = (players) => {
+  const colors = [
+    'bg-rose-500', 'bg-sky-500', 'bg-lime-500', 'bg-amber-500', 
+    'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-teal-500',
+    'bg-orange-500', 'bg-cyan-500', 'bg-lime-500', 'bg-amber-500'
+  ];
+  
+  const playerColors = {};
+  players.forEach((player, index) => {
+    playerColors[player.id] = colors[index % colors.length];
+  });
+  
+  return playerColors;
+};
+
+// Enhanced card deck system from MockGameSimulation
 const CARD_DECKS = {
   chance: [
     { id: 'chance1', title: 'Business Boom', desc: 'All your businesses earn double this round.', effect: 'double_business' },
@@ -28,7 +90,7 @@ const CARD_DECKS = {
   ]
 };
 
-// Tile Effects System: What happens when players land on different board spaces
+// Enhanced Tile Effects System from MockGameSimulation
 function applyTileEffect(player, tile, allPlayers = []) {
   if (!tile || !tile.action) return { text: `Landed on ${tile?.label || 'unknown tile'}`, delta: 0 };
 
@@ -146,7 +208,7 @@ function applyTileEffect(player, tile, allPlayers = []) {
   }
 }
 
-//  Card System: Chance and Community card functionality
+// Card System: Chance and Community card functionality from MockGameSimulation
 function applyCardEffect(player, card, allPlayers = []) {
   switch (card.effect) {
     case 'earn':
@@ -176,77 +238,7 @@ function applyCardEffect(player, card, allPlayers = []) {
   }
 }
 
-const calculateNet = (p) => p.cash + p.assetsValue - p.loanBalance;
-
-
-function Results({ players, onRestart }) {
-  const sorted = [...players].sort((a, b) => calculateNet(b) - calculateNet(a));
-  const winner = sorted[0];
-
-  return (
-    <div className="min-h-screen p-8 bg-gradient-to-br from-sky-50 to-indigo-50 flex items-center justify-center">
-      <div className="max-w-4xl w-full mx-auto space-y-6 bg-white p-8 rounded-3xl shadow-2xl">
-        <div className="text-center">
-          <h1 className="text-4xl font-extrabold text-sky-700">Game Complete!</h1>
-          <div className="mt-4 p-4 bg-gradient-to-r from-amber-400 to-yellow-300 rounded-2xl">
-            <h2 className="text-2xl font-bold text-white">🏆 Winner: {winner.name} 🏆</h2>
-            <p className="text-white/90">Net Worth: {currency}{calculateNet(winner).toLocaleString()}</p>
-          </div>
-        </div>
-
-        <div className="rounded-3xl overflow-hidden border bg-white shadow">
-          <table className="w-full">
-            <thead className="bg-sky-100">
-              <tr>
-                <th className="text-left p-3">#</th>
-                <th className="text-left p-3">Player</th>
-                <th className="text-left p-3">Laps</th>
-                <th className="text-right p-3">Cash</th>
-                <th className="text-right p-3">Assets</th>
-                <th className="text-right p-3">Loans</th>
-                <th className="text-right p-3">Businesses</th>
-                <th className="text-right p-3">Cards</th>
-                <th className="text-right p-3">Net Worth</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.map((p, i) => (
-                <tr key={p.id} className={i === 0 ? 'bg-amber-50 font-bold' : 'odd:bg-gray-50'}>
-                  <td className="p-3">{i + 1}</td>
-                  <td className="p-3 font-semibold">{p.name}</td>
-                  <td className="p-3">{p.laps}</td>
-                  <td className="p-3 text-right">{currency}{p.cash.toLocaleString()}</td>
-                  <td className="p-3 text-right">{currency}{p.assetsValue.toLocaleString()}</td>
-                  <td className="p-3 text-right text-rose-600">{currency}{p.loanBalance.toLocaleString()}</td>
-                  <td className="p-3 text-right">{p.businesses.length}</td>
-                  <td className="p-3 text-right">{p.cards.length}</td>
-                  <td className="p-3 text-right font-bold">{currency}{calculateNet(p).toLocaleString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="flex justify-center gap-4">
-          <button
-            onClick={onRestart}
-            className="px-6 py-3 rounded-2xl bg-emerald-500 text-white font-semibold shadow hover:bg-emerald-600 transition-colors"
-          >
-            Play Again
-          </button>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-6 py-3 rounded-2xl bg-sky-500 text-white font-semibold shadow hover:bg-sky-600 transition-colors"
-          >
-            Back to Lobby
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// AI decision making for bot players: AI logic for buying properties and using cards
+// AI decision making for bot players from MockGameSimulation
 function makeAIDecision(player, tile, allPlayers) {
   // Simple AI logic
   if (tile.type === 'business' && !tile.owner) {
@@ -269,87 +261,108 @@ function makeAIDecision(player, tile, allPlayers) {
   return 'pass'; // Default action
 }
 
-export default function MockGameSimulation() {
-  // Phase Management: 'lobby', 'playing', 'results'
+// Results Component
+function Results({ players, onRestart, onLobby }) {
+  const calculateNet = (p) => p.cash + p.assetsValue - p.loanBalance;
+  const sorted = [...players].sort((a, b) => calculateNet(b) - calculateNet(a));
+  const winner = sorted[0];
+
+  return (
+    <div className="min-h-screen p-8 bg-gradient-to-br from-sky-50 to-indigo-50 flex items-center justify-center">
+      <div className="max-w-4xl w-full mx-auto space-y-6 bg-white p-8 rounded-3xl shadow-2xl">
+        <div className="text-center">
+          <h1 className="text-4xl font-extrabold text-sky-700">Game Complete!</h1>
+          <div className="mt-4 p-4 bg-gradient-to-r from-amber-400 to-yellow-300 rounded-2xl">
+            <h2 className="text-2xl font-bold text-white"><FaTrophy/> Winner: {winner.name} <FaTrophy/></h2>
+            <p className="text-white/90">Net Worth: {currency}{calculateNet(winner).toLocaleString()}</p>
+          </div>
+        </div>
+
+        <div className="rounded-3xl overflow-hidden border bg-white shadow">
+          <table className="w-full">
+            <thead className="bg-sky-100">
+              <tr>
+                <th className="text-left p-3">#</th>
+                <th className="text-left p-3">Player</th>
+                <th className="text-left p-3">Laps</th>
+                <th className="text-right p-3">Cash</th>
+                <th className="text-right p-3">Net Worth</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sorted.map((p, i) => (
+                <tr key={p.id} className={i === 0 ? 'bg-amber-50 font-bold' : 'odd:bg-gray-50'}>
+                  <td className="p-3">{i + 1}</td>
+                  <td className="p-3 font-semibold">{p.name}</td>
+                  <td className="p-3">{p.laps}</td>
+                  <td className="p-3 text-right">{currency}{p.cash.toLocaleString()}</td>
+                  <td className="p-3 text-right font-bold">{currency}{calculateNet(p).toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={onRestart}
+            className="px-6 py-3 rounded-2xl bg-emerald-500 text-white font-semibold shadow hover:bg-emerald-600"
+          >
+            Play Again
+          </button>
+          <button
+            onClick={onLobby}
+            className="px-6 py-3 rounded-2xl bg-sky-500 text-white font-semibold shadow hover:bg-sky-600"
+          >
+            Back to Lobby
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Main MockGame Component
+export default function MockGame() {
   const [phase, setPhase] = useState('lobby');
-  const [settings, setSettings] = useState({ players: 4, laps: 1 });
-  // Player Turn System: Whose turn it is and movement animation state
+  const [settings, setSettings] = useState({ players: 4, laps: 5 });
   const [activePlayerIndex, setActivePlayerIndex] = useState(0);
   const [isMoving, setIsMoving] = useState(false);
-  const [loadingPhase, setLoadingPhase] = useState(false);
-  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [autoPlay, setAutoPlay] = useState(true);
   const [currentCard, setCurrentCard] = useState(null);
   const [showCardModal, setShowCardModal] = useState(false);
-  const [gameLog, setGameLog] = useState(['Game initialized']);
+  const [tilePopup, setTilePopup] = useState({ open: false, data: null });
+  const [diceResult, setDiceResult] = useState(null);
 
-  // Enhanced player initialization with cards and better AI behavior
-  // All player data (position, cash, assets, flags, etc.)
+  // Initialize players with localStorage user data for the "me" player
   const [players, setPlayers] = useState(() => {
+    const loggedInUser = getLoggedInUser();
+    
     const initialPlayers = [
       {
-        id: 'p1',
-        name: 'lily_rose',
-        characterKey: 'Green_girl',
-        pos: 0,
-        laps: 0,
-        cash: 10000,
-        assetsValue: 1500,
-        loanBalance: 500,
-        salary: 2000,
-        businesses: [],
-        cards: [],
-        // doubleBusiness, skipTurn, halfSalary, etc.
-        flags: {},
-        inventory: {},
-        isBot: true 
+        id: 'p1', name: 'lily_rose', characterKey: 'Green_girl', pos: 0, laps: 0,
+        cash: 10000, assetsValue: 1500, loanBalance: 500, salary: 2000,
+        businesses: [], cards: [], flags: {}, inventory: {}, isBot: true
       },
       {
-        id: 'p2',
-        name: 'me',
-        characterKey: 'Cowboy',
-        pos: 0,
-        laps: 0,
-        cash: 10000,
-        assetsValue: 2000,
-        loanBalance: 1000,
-        salary: 2200,
-        businesses: [],
-        cards: [],
-        flags: {},
-        inventory: {},
-        isBot: false // Human player
+        id: 'p2', 
+        name: loggedInUser.displayName || loggedInUser.username || 'Player',
+        characterKey: loggedInUser.characterKey || 'Cowboy', 
+        pos: 0, laps: 0,
+        cash: 10000, assetsValue: 2000, loanBalance: 1000, salary: 2200,
+        businesses: [], cards: [], flags: {}, inventory: {}, 
+        isBot: false, // This is the human player
+        userId: loggedInUser.id // Store the actual user ID
       },
       {
-        id: 'p3',
-        name: 'nile_waters',
-        characterKey: 'Mr_suit',
-        pos: 0,
-        laps: 0,
-        cash: 10000,
-        assetsValue: 1200,
-        loanBalance: 0,
-        salary: 1800,
-        businesses: [],
-        cards: [],
-        flags: {},
-        inventory: {},
-        isBot: true
+        id: 'p3', name: 'nile_waters', characterKey: 'Mr_suit', pos: 0, laps: 0,
+        cash: 10000, assetsValue: 1200, loanBalance: 0, salary: 1800,
+        businesses: [], cards: [], flags: {}, inventory: {}, isBot: true
       },
       {
-        id: 'p4',
-        name: 'man_person',
-        characterKey: 'Kimono_girl',
-        pos: 0,
-        laps: 0,
-        cash: 10000,
-        assetsValue: 1800,
-        loanBalance: 800,
-        salary: 2100,
-        businesses: [],
-        cards: [],
-        flags: {},
-        inventory: {},
-        isBot: true
+        id: 'p4', name: 'man_person', characterKey: 'Kimono_girl', pos: 0, laps: 0,
+        cash: 10000, assetsValue: 1800, loanBalance: 800, salary: 2100,
+        businesses: [], cards: [], flags: {}, inventory: {}, isBot: true
       },
     ];
 
@@ -363,9 +376,8 @@ export default function MockGameSimulation() {
     return initialPlayers;
   });
 
-  const [tilePopup, setTilePopup] = useState({ open: false, data: null });
-  const [autoPlay, setAutoPlay] = useState(true); // Auto-play for demo
-  const [diceResult, setDiceResult] = useState(null);
+  // Generate player colors
+  const playerColors = useMemo(() => generatePlayerColors(players), [players]);
 
   // Hide viewer's roll button
   useEffect(() => {
@@ -379,31 +391,6 @@ export default function MockGameSimulation() {
   const currentPlayer = players[activePlayerIndex];
   const currentTileId = useMemo(() => BOARD_ORDER[currentPlayer?.pos ?? 0], [currentPlayer]);
   const currentTile = BOARD_TILES[currentTileId];
-
-  const addGameLog = (message) => {
-    setGameLog(prev => [message, ...prev.slice(0, 50)]); // Keep last 50 messages
-  };
-
-  // Function to handle card usage (renamed from useCard to avoid hook naming convention)
-  const handleUseCard = (card) => {
-    setPlayers(prevPlayers => {
-      const updatedPlayers = prevPlayers.map(p => ({
-        ...p,
-        cards: [...p.cards]
-      }));
-
-      const currentPlayer = updatedPlayers[activePlayerIndex];
-      const cardEffect = applyCardEffect(currentPlayer, card, updatedPlayers);
-
-      // Remove the used card
-      currentPlayer.cards = currentPlayer.cards.filter(c => c.id !== card.id);
-
-      addGameLog(`Card used: ${cardEffect.text}`);
-      setShowCardModal(false);
-
-      return updatedPlayers;
-    });
-  };
 
   const advanceToNextPlayer = () => {
     setTimeout(() => {
@@ -422,12 +409,11 @@ export default function MockGameSimulation() {
     }, 1000);
   };
 
-  // Enhanced turn function with bot AI and card system
+  // Enhanced executeTurn function with bot AI and card system from MockGameSimulation
   const executeTurn = async () => {
     if (everyoneDone || !currentPlayer) return;
 
     setIsMoving(true);
-    addGameLog(`--- ${currentPlayer.name}'s turn ---`);
 
     // Bot players auto-play
     if (currentPlayer.isBot) {
@@ -437,7 +423,6 @@ export default function MockGameSimulation() {
     // Roll dice
     const roll = randInt(1, 6);
     setDiceResult(roll);
-    addGameLog(`${currentPlayer.name} rolled a ${roll}`);
 
     setTimeout(() => {
       setPlayers(prevPlayers => {
@@ -454,7 +439,6 @@ export default function MockGameSimulation() {
         // Handle skip turn
         if (currentPlayer.flags.skipTurn) {
           currentPlayer.flags.skipTurn = 0;
-          addGameLog(`${currentPlayer.name} skips a turn`);
           advanceToNextPlayer();
           return updatedPlayers;
         }
@@ -463,7 +447,6 @@ export default function MockGameSimulation() {
         const advanceSpaces = currentPlayer.flags.advanceSpaces || 0;
         const totalSpaces = roll + advanceSpaces;
         if (advanceSpaces > 0) {
-          addGameLog(`${currentPlayer.name} advances ${advanceSpaces} extra spaces from card`);
           currentPlayer.flags.advanceSpaces = 0;
         }
 
@@ -480,10 +463,9 @@ export default function MockGameSimulation() {
             currentPlayer.flags.halfSalary = 0;
           }
           currentPlayer.cash += salary;
-          addGameLog(`${currentPlayer.name} completed lap ${currentPlayer.laps}! (+${currency}${salary.toLocaleString()} salary)`);
 
           if (currentPlayer.laps >= settings.laps) {
-            addGameLog(`🎉 ${currentPlayer.name} has finished the game!`);
+            // Player has finished the game
           }
         }
 
@@ -491,15 +473,13 @@ export default function MockGameSimulation() {
         const tile = BOARD_TILES[BOARD_ORDER[newPos]];
         if (tile) {
           const effect = applyTileEffect(currentPlayer, tile, updatedPlayers);
-          addGameLog(`${currentPlayer.name} landed on ${tile.label}. ${effect.text}`);
           setTilePopup({ open: true, data: tile });
 
           // AI decision for bot players
           if (currentPlayer.isBot && tile.action) {
             const decision = makeAIDecision(currentPlayer, tile, updatedPlayers);
             if (decision === 'buy' && tile.action.type === 'buy') {
-              const buyEffect = applyTileEffect(currentPlayer, tile, updatedPlayers);
-              addGameLog(`🤖 ${currentPlayer.name} decided to buy: ${buyEffect.text}`);
+              applyTileEffect(currentPlayer, tile, updatedPlayers);
             }
           }
         }
@@ -510,7 +490,6 @@ export default function MockGameSimulation() {
           if (currentPlayer.flags.doubleBusiness) {
             incomePerBusiness *= 2;
             currentPlayer.flags.doubleBusiness = 0;
-            addGameLog(`${currentPlayer.name}'s business income was doubled this round!`);
           }
 
           let totalIncome = incomePerBusiness * currentPlayer.businesses.length;
@@ -519,7 +498,6 @@ export default function MockGameSimulation() {
             currentPlayer.flags.reduceBusiness = 0;
           }
           currentPlayer.cash += totalIncome;
-          addGameLog(`${currentPlayer.name} earned ${currency}${totalIncome.toLocaleString()} from ${currentPlayer.businesses.length} businesses`);
         }
 
         if (currentPlayer.flags.skipBizPayments) {
@@ -533,16 +511,14 @@ export default function MockGameSimulation() {
           );
           if (usableCards.length > 0 && currentPlayer.cash < 3000) {
             const cardToUse = usableCards[0];
-            const cardEffect = applyCardEffect(currentPlayer, cardToUse, updatedPlayers);
+            applyCardEffect(currentPlayer, cardToUse, updatedPlayers);
             currentPlayer.cards = currentPlayer.cards.filter(c => c.id !== cardToUse.id);
-            addGameLog(`🤖 ${currentPlayer.name} used card: ${cardEffect.text}`);
           }
         }
 
         // Handle extra roll
         if (currentPlayer.flags.extraRoll) {
           currentPlayer.flags.extraRoll = 0;
-          addGameLog(`${currentPlayer.name} gets an extra roll!`);
           setIsMoving(false);
           return updatedPlayers;
         }
@@ -553,109 +529,107 @@ export default function MockGameSimulation() {
     }, 1500);
   };
 
+  // Function to handle card usage
+  const handleUseCard = (card) => {
+    setPlayers(prevPlayers => {
+      const updatedPlayers = prevPlayers.map(p => ({
+        ...p,
+        cards: [...p.cards]
+      }));
+
+      const currentPlayer = updatedPlayers[activePlayerIndex];
+      applyCardEffect(currentPlayer, card, updatedPlayers);
+
+      // Remove the used card
+      currentPlayer.cards = currentPlayer.cards.filter(c => c.id !== card.id);
+
+      setShowCardModal(false);
+
+      return updatedPlayers;
+    });
+  };
+
   // Auto-play for demo
   useEffect(() => {
     if (autoPlay && phase === 'playing' && !everyoneDone) {
       const timer = setTimeout(executeTurn, 2000);
       return () => clearTimeout(timer);
     }
-  }, [autoPlay, phase, players, activePlayerIndex, everyoneDone]);
+  }, [autoPlay, phase, activePlayerIndex, everyoneDone]);
 
   // Game completion
   useEffect(() => {
     if (phase === 'playing' && everyoneDone) {
       setAutoPlay(false);
-      addGameLog('🎊 Game completed! All players have finished their laps.');
       setTimeout(() => setPhase('results'), 3000);
     }
   }, [phase, everyoneDone]);
 
-  const restartGame = () => {
-    setPhase('lobby');
-    setAutoPlay(false);
+  const startGame = (gameSettings) => {
+    // Reset game state
+    const resetPlayers = players.map(p => ({
+      ...p,
+      pos: 0,
+      laps: 0,
+      cash: 10000,
+      businesses: [],
+      cards: [],
+      flags: {},
+      inventory: {}
+    }));
+
+    Object.values(BOARD_TILES).forEach(tile => {
+      if (tile.type === 'business') {
+        tile.owner = null;
+      }
+    });
+
+    setPlayers(resetPlayers);
+    setSettings(gameSettings);
     setActivePlayerIndex(0);
-    setGameLog(['Game restarted']);
-    setLoadingPhase(false);
-    setLoadingProgress(0);
-  };
-
-  const startFromLobby = (gameSettings) => {
-    setLoadingPhase(true);
-    setLoadingProgress(0);
-
-    const progressInterval = setInterval(() => {
-      setLoadingProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(progressInterval);
-
-          // Reset game state
-          const resetPlayers = players.map(p => ({
-            ...p,
-            pos: 0,
-            laps: 0,
-            cash: 10000,
-            businesses: [],
-            cards: [],
-            flags: {},
-            inventory: {}
-          }));
-
-          Object.values(BOARD_TILES).forEach(tile => {
-            if (tile.type === 'business') {
-              tile.owner = null;
-            }
-          });
-
-          setPlayers(resetPlayers);
-          setSettings(gameSettings);
-          setActivePlayerIndex(0);
-          setGameLog(['Game started!']);
-          return 100;
-        }
-        return prev + Math.random() * 15 + 5;
-      });
-    }, 300);
-  };
-
-  const handleLoaderComplete = () => {
-    setLoadingPhase(false);
     setPhase('playing');
-    addGameLog('Game loaded! Starting now...');
   };
 
-  // Render logic
+  const restartGame = () => {
+    startGame(settings);
+  };
+
+  const returnToLobby = () => {
+    setPhase('lobby');
+  };
+
+  const endGameImmediately = () => {
+    // Force all players to complete their laps
+    setPlayers(prevPlayers => 
+      prevPlayers.map(p => ({
+        ...p,
+        laps: settings.laps
+      }))
+    );
+    setAutoPlay(false);
+    setPhase('results');
+  };
+
   if (phase === 'lobby') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
         <GameLobby
-          highestScore={12345}
-          totalPoints={420}
           currentPlayers={players.map(p => ({ ...p, ready: true }))}
           availableGames={[]}
           defaultPlayers={4}
           defaultLaps={5}
-          onStart={startFromLobby}
+          onStart={startGame}
           onRefreshGames={() => Promise.resolve([])}
         />
       </div>
     );
   }
 
-  if (loadingPhase) {
-    return (
-      <GameLoader
-        players={players}
-        gameSettings={settings}
-        loadingProgress={loadingProgress}
-        onComplete={handleLoaderComplete}
-      />
-    );
-  }
-
   if (phase === 'results') {
-    return <Results players={players} onRestart={restartGame} />;
+    return <Results players={players} onRestart={restartGame} onLobby={returnToLobby} />;
   }
 
+  const calculateNet = (p) => p.cash + p.assetsValue - p.loanBalance;
   const netWorth = calculateNet(currentPlayer);
   const playersSummary = players.map(p => ({
     id: p.id,
@@ -663,7 +637,8 @@ export default function MockGameSimulation() {
     position: p.pos,
     laps: p.laps,
     cash: p.cash,
-    active: p.id === currentPlayer.id
+    active: p.id === currentPlayer.id,
+    color: playerColors[p.id] // Add color to player summary
   }));
 
   return (
@@ -684,7 +659,7 @@ export default function MockGameSimulation() {
           playerName={currentPlayer.name}
           playerNumber={activePlayerIndex + 1}
           netWorth={netWorth}
-          timePlaying={`Turn ${gameLog.length}`}
+          timePlaying={`Turn ${players.reduce((acc, p) => acc + p.laps, 0)}`}
           goalLaps={currentPlayer.laps}
           totalLaps={settings.laps}
           businessWorth={currentPlayer.assetsValue}
@@ -700,89 +675,60 @@ export default function MockGameSimulation() {
           activePlayerId={currentPlayer.id}
           inventoryCards={currentPlayer.cards}
           diceToast={diceResult}
+          playerColors={playerColors} // Pass colors to HUD
         />
       </HUDPortal>
 
-      {/* Enhanced Game Controls Panel */}
-      <div className="fixed top-24 right-6 z-[1000] w-[380px] space-y-3">
+      {/* RIGHT: Side Panel - Moved controls below Current Business */}
+      <div className="pointer-events-auto fixed bottom-32 right-4 z-[1000] w-[360px] space-y-4">
+        {/* Controls moved below Current Business */}
         <div className="rounded-2xl overflow-hidden shadow-2xl border bg-white">
           <div className="px-4 py-2 bg-gradient-to-r from-sky-500 to-blue-500 text-white">
             <div className="text-sm font-extrabold tracking-wide">Game Controls</div>
           </div>
           <div className="p-4 space-y-3">
-            <div className="text-sm text-gray-700 grid grid-cols-2 gap-2">
-              <div><b>Active Player:</b></div>
-              <div className="font-bold text-sky-600">{currentPlayer.name}</div>
-
-              <div><b>Tile:</b></div>
-              <div>{currentTile?.label ?? '—'}</div>
-
-              <div><b>Lap:</b></div>
-              <div>{currentPlayer.laps}/{settings.laps}</div>
-
-              <div><b>Cash:</b></div>
-              <div>{currency}{currentPlayer.cash.toLocaleString()}</div>
-
-              <div><b>Businesses:</b></div>
-              <div>{currentPlayer.businesses.length}</div>
-
-              <div><b>Cards:</b></div>
-              <div>{currentPlayer.cards.length}</div>
+            <div className="text-sm text-gray-700">
+              <div className="flex justify-between mb-2">
+                <span><strong>Active Player:</strong></span>
+                <span className="font-bold text-sky-600">{currentPlayer.name}</span>
+              </div>
+              <div className="flex justify-between mb-2">
+                <span><strong>Lap:</strong></span>
+                <span>{currentPlayer.laps}/{settings.laps}</span>
+              </div>
+              <div className="flex justify-between">
+                <span><strong>Cash:</strong></span>
+                <span>{currency}{currentPlayer.cash.toLocaleString()}</span>
+              </div>
             </div>
 
             <div className="flex gap-2 flex-wrap">
               <button
-                onClick={executeTurn}
-                disabled={isMoving || everyoneDone || currentPlayer.isBot}
-                className="px-3 py-2 rounded-xl bg-amber-400 text-white font-semibold shadow hover:bg-amber-500 disabled:opacity-50"
-              >
-                Roll Dice
-              </button>
-
-              <button
                 onClick={() => setAutoPlay(!autoPlay)}
-                className={`px-3 py-2 rounded-xl ${autoPlay ? 'bg-gray-500' : 'bg-emerald-500'
-                  } text-white font-semibold shadow hover:opacity-90`}
+                className={`flex-1 px-3 py-2 rounded-xl ${autoPlay ? 'bg-gray-500' : 'bg-green-500'} text-white font-semibold shadow hover:opacity-90`}
               >
                 {autoPlay ? 'Pause Auto' : 'Resume Auto'}
               </button>
 
-              {currentPlayer.cards.length > 0 && (
-                <button
-                  onClick={() => {
-                    setCurrentCard(currentPlayer.cards[0]);
-                    setShowCardModal(true);
-                  }}
-                  className="px-3 py-2 rounded-xl bg-purple-500 text-white font-semibold shadow hover:bg-purple-600"
-                >
-                  Use Card
-                </button>
-              )}
-
               <button
-                onClick={() => setPhase('results')}
-                className="px-3 py-2 rounded-xl bg-rose-500 text-white font-semibold shadow hover:bg-rose-600"
+                onClick={endGameImmediately}
+                className="flex-1 px-3 py-2 rounded-xl bg-red-500 text-white font-semibold shadow hover:bg-red-600"
               >
-                Show Results
+                End Game
               </button>
             </div>
-          </div>
-        </div>
 
-        {/* Enhanced Game Log */}
-        <div className="rounded-2xl overflow-hidden shadow-2xl border bg-white max-h-[40vh]">
-          <div className="px-4 py-2 bg-gradient-to-r from-sky-500 to-blue-500 text-white flex justify-between items-center">
-            <div className="text-sm font-extrabold tracking-wide">Game Log</div>
-            <div className="text-xs">Laps: {settings.laps}</div>
-          </div>
-          <div className="p-3 space-y-2 overflow-auto max-h-[32vh]">
-            {gameLog.length === 0 ? (
-              <div className="text-sm text-gray-500">Game starting...</div>
-            ) : gameLog.map((line, i) => (
-              <div key={i} className="text-sm p-2 bg-gray-50 rounded-lg border-l-4 border-sky-400">
-                {line}
-              </div>
-            ))}
+            {currentPlayer.cards.length > 0 && (
+              <button
+                onClick={() => {
+                  setCurrentCard(currentPlayer.cards[0]);
+                  setShowCardModal(true);
+                }}
+                className="w-full px-3 py-2 rounded-xl bg-purple-500 text-white font-semibold shadow hover:bg-purple-600"
+              >
+                Use Card ({currentPlayer.cards.length})
+              </button>
+            )}
           </div>
         </div>
       </div>

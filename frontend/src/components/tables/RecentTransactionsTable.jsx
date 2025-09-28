@@ -211,13 +211,13 @@ const SortDropdown = ({
         aria-expanded={open}
         onClick={() => setOpen(o => !o)}
         onKeyDown={onKey}
-        className="w-full rounded-xl px-4 py-2 border dark:border-gray-600 shadow dark:shadow-none
-                   bg-white dark:bg-gray-800 text-left text-gray-900 dark:text-white flex items-center justify-between"
+        className="w-full rounded-xl px-2 sm:px-4 py-1.5 sm:py-2 border dark:border-gray-600 shadow dark:shadow-none
+                   bg-white dark:bg-gray-800 text-left text-gray-900 dark:text-white flex items-center justify-between text-xs sm:text-sm"
       >
-        <span className={`${selected ? '' : 'text-gray-400 dark:text-gray-400'}`}>
+        <span className={`${selected ? '' : 'text-gray-400 dark:text-gray-400'} truncate`}>
           {selected ? selected.label : placeholder}
         </span>
-        <FaChevronDown className="ml-3 text-gray-400 dark:text-gray-500" />
+        <FaChevronDown className="ml-1 sm:ml-3 text-gray-400 dark:text-gray-500 flex-shrink-0 text-xs" />
       </button>
 
       {open && createPortal(
@@ -266,10 +266,10 @@ const RecentTransactionsTable = ({
   account,
   transactions = [],
   heading,
-  onAdd,       // optional: still called
-  onEdit,      // optional: now called with (id, updated)
-  onDelete,    // optional: now called with (id)
-  onRefresh,   // optional
+  onAdd,       
+  onEdit,      
+  onDelete,    
+  onRefresh,   
 }) => {
   const isAccountView = Boolean(account);
 
@@ -486,19 +486,19 @@ const RecentTransactionsTable = ({
   /* --------------------------------- UI ---------------------------------- */
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-md px-6 py-6">
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-md px-3 sm:px-6 py-3 sm:py-6">
       {/* Delete confirmation */}
       {deleteConfirmation.show && (() => {
         const txn = normalizedTxns.find(t => t.transaction_id === deleteConfirmation.transactionId);
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={hideDelete} />
-            <div className="relative z-10 w-[92%] max-w-md rounded-2xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="relative z-10 w-full max-w-md rounded-2xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 p-4 sm:p-6" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-600">
-                  <FaTrash />
+                <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-red-100 text-red-600">
+                  <FaTrash className="text-sm" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Delete transaction?</h3>
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">Delete transaction?</h3>
               </div>
 
               <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">
@@ -511,10 +511,10 @@ const RecentTransactionsTable = ({
                 for <span className="font-semibold">{txn?._name}</span>. This action cannot be undone.
               </p>
 
-              <div className="mt-6 flex flex-wrap gap-3 justify-end">
+              <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-end">
                 <button
                   onClick={hideDelete}
-                  className="px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                  className="w-full sm:w-auto px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                   disabled={busy}
                 >
                   Cancel
@@ -522,7 +522,7 @@ const RecentTransactionsTable = ({
                 <button
                   onClick={() => handleDeleteById(deleteConfirmation.transactionId)}
                   disabled={busy}
-                  className={`px-4 py-2 rounded-full text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-red-400
+                  className={`w-full sm:w-auto px-4 py-2 rounded-full text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-red-400
                     ${busy ? 'bg-red-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'}`}
                 >
                   {busy ? 'Deleting...' : 'Yes, delete'}
@@ -534,74 +534,85 @@ const RecentTransactionsTable = ({
       })()}
 
       {/* Header + Controls */}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold text-[#336699] dark:text-[#88D1FF]">{heading}</h2>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 mb-4">
+        <h2 className="text-lg sm:text-xl font-semibold text-[#336699] dark:text-[#88D1FF]">{heading}</h2>
 
-        <div className="flex gap-2 items-center">
-          <SortDropdown
-            name="sortBy"
-            value={sortBy}
-            onChange={setSortBy}
-            options={[
-              { value: '', label: 'Sort by' },
-              { value: 'name', label: 'Name (A–Z)' },
-              { value: 'amount_asc', label: 'Amount ↑' },
-              { value: 'amount_desc', label: 'Amount ↓' },
-              { value: 'date_desc', label: 'Date (Newest)' },
-            ]}
-            placeholder="Sort by"
-          />
+        <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+          {/* Mobile: Stack filters vertically */}
+          <div className="grid grid-cols-2 sm:flex gap-2">
+            <div className="min-w-0">
+              <SortDropdown
+                name="sortBy"
+                value={sortBy}
+                onChange={setSortBy}
+                options={[
+                  { value: '', label: 'Sort by' },
+                  { value: 'name', label: 'Name (A–Z)' },
+                  { value: 'amount_asc', label: 'Amount ↑' },
+                  { value: 'amount_desc', label: 'Amount ↓' },
+                  { value: 'date_desc', label: 'Date (Newest)' },
+                ]}
+                placeholder="Sort"
+              />
+            </div>
 
-          <SortDropdown
-            name="categoryFilter"
-            value={categoryFilter}
-            onChange={setCategoryFilter}
-            options={[
-              { value: '', label: 'Filter by categories' },
-              ...categories.map(cat => {
-                const val = String(cat.category_name || '').trim().toLowerCase();
-                return { value: val, label: toTitleCase(val) };
-              }),
-            ]}
-            placeholder="Filter by categories"
-          />
+            <div className="min-w-0">
+              <SortDropdown
+                name="categoryFilter"
+                value={categoryFilter}
+                onChange={setCategoryFilter}
+                options={[
+                  { value: '', label: 'All categories' },
+                  ...categories.map(cat => {
+                    const val = String(cat.category_name || '').trim().toLowerCase();
+                    return { value: val, label: toTitleCase(val) };
+                  }),
+                ]}
+                placeholder="Category"
+              />
+            </div>
 
-          <SortDropdown
-            name="dateFilter"
-            value={dateFilter}
-            onChange={setDateFilter}
-            options={[
-              { value: '', label: 'Filter by date' },
-              { value: '7d', label: 'Last 7 Days' },
-              { value: '10d', label: 'Last 10 Days' },
-              { value: 'last_month', label: 'Last Month' },
-            ]}
-            placeholder="Filter by date"
-          />
+            <div className="min-w-0">
+              <SortDropdown
+                name="dateFilter"
+                value={dateFilter}
+                onChange={setDateFilter}
+                options={[
+                  { value: '', label: 'All dates' },
+                  { value: '7d', label: 'Last 7 Days' },
+                  { value: '10d', label: 'Last 10 Days' },
+                  { value: 'last_month', label: 'Last Month' },
+                ]}
+                placeholder="Date"
+              />
+            </div>
 
-          <SortDropdown
-            name="typeFilter"
-            value={typeFilter}
-            onChange={setTypeFilter}
-            options={[
-              { value: '', label: 'Filter by type' },
-              { value: 'income', label: 'Income' },
-              { value: 'expense', label: 'Expense' },
-              { value: 'deposit', label: 'Deposit' },
-              { value: 'withdrawal', label: 'Withdrawal' },
-              { value: 'fee', label: 'Fee' },
-              { value: 'transfer', label: 'Transfer' },
-            ]}
-            placeholder="Filter by type"
-          />
+            <div className="min-w-0">
+              <SortDropdown
+                name="typeFilter"
+                value={typeFilter}
+                onChange={setTypeFilter}
+                options={[
+                  { value: '', label: 'All types' },
+                  { value: 'income', label: 'Income' },
+                  { value: 'expense', label: 'Expense' },
+                  { value: 'deposit', label: 'Deposit' },
+                  { value: 'withdrawal', label: 'Withdrawal' },
+                  { value: 'fee', label: 'Fee' },
+                  { value: 'transfer', label: 'Transfer' },
+                ]}
+                placeholder="Type"
+              />
+            </div>
+          </div>
 
           {isAccountView && (
             <button
               onClick={() => setShowAddModal(true)}
               disabled={!account || busy}
-              className="flex items-center gap-2 px-4 py-1 bg-[#D8F5C5] dark:bg-[#AAD977] dark:text-white text-[#76B947] text-sm font-medium rounded-full hover:bg-[#c8ecb4] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-1 bg-[#D8F5C5] dark:bg-[#AAD977] dark:text-white text-[#76B947] text-xs sm:text-sm font-medium rounded-full hover:bg-[#c8ecb4] transition disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             >
-              <FaPlus /> Add
+              <FaPlus className="text-xs" /> Add
             </button>
           )}
         </div>
@@ -617,20 +628,20 @@ const RecentTransactionsTable = ({
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="min-w-full text-sm text-left text-gray-700 dark:text-gray-300">
+        <table className="min-w-full text-xs sm:text-sm text-left text-gray-700 dark:text-gray-300">
           <thead className="border-b dark:border-gray-700">
             <tr>
-              <th className="px-4 py-2">Name</th>
-              <th className="px-4 py-2">Date</th>
-              <th className="px-4 py-2">Category</th>
-              <th className="px-4 py-2">Amount</th>
-              <th className="px-4 py-2">Actions</th>
+              <th className="px-2 sm:px-4 py-2 font-medium">Name</th>
+              <th className="px-2 sm:px-4 py-2 font-medium">Date</th>
+              <th className="px-2 sm:px-4 py-2 font-medium">Category</th>
+              <th className="px-2 sm:px-4 py-2 font-medium">Amount</th>
+              <th className="px-2 sm:px-4 py-2 font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredSortedTransactions.length === 0 ? (
               <tr>
-                <td colSpan="5" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                <td colSpan="5" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400 text-sm">
                   {isAccountView ? (account ? 'No transactions found for this account' : 'Select an account to view transactions') : 'No transactions available'}
                 </td>
               </tr>
@@ -655,102 +666,115 @@ const RecentTransactionsTable = ({
                 const formattedAmount = Math.abs(txn._amount)
                   .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-
                 const originalYMD = ymd(txn._date || txn.transaction_date || txn.date);
 
                 return (
                   <tr key={txn.transaction_id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                    <td className="px-4 py-2">
+                    <td className="px-2 sm:px-4 py-2">
                       {isEditing ? (
                         <input
                           type="text"
                           value={editValues.name ?? txn._name}
                           onChange={(e) => setEditValues(v => ({ ...v, name: e.target.value }))}
-                          className="border rounded px-2 py-1 w-full"
+                          className="border rounded px-2 py-1 w-full text-xs sm:text-sm"
                         />
-                      ) : txn._name}
+                      ) : (
+                        <div className="truncate max-w-[100px] sm:max-w-none" title={txn._name}>
+                          {txn._name}
+                        </div>
+                      )}
                     </td>
-                    <td className="px-4 py-2">
+                    <td className="px-2 sm:px-4 py-2">
                       {isEditing ? (
                         <input
                           type="date"
                           value={editValues.date ?? originalYMD}
-                          min={originalYMD}                 // only allow same day or later
-                          max={todayYMD()}                  // not in the future
+                          min={originalYMD}                 
+                          max={todayYMD()}                  
                           onChange={(e) => {
                             const clamped = clampYMD(e.target.value, { minYMD: originalYMD, maxYMD: todayYMD() });
                             setEditValues(v => ({ ...v, date: clamped }));
                           }}
-                          className="border rounded px-2 py-1 w-full"
+                          className="border rounded px-2 py-1 w-full text-xs sm:text-sm"
                         />
-                      ) : (txn._date ? txn._date.toLocaleDateString() : (txn.date ?? ''))}
+                      ) : (
+                        <div className="text-xs sm:text-sm whitespace-nowrap">
+                          {txn._date ? txn._date.toLocaleDateString() : (txn.date ?? '')}
+                        </div>
+                      )}
                     </td>
-                    <td className="px-4 py-2">
+                    <td className="px-2 sm:px-4 py-2">
                       {isEditing ? (
                         <select
                           value={editValues.category_id ?? txn.category_id ?? ''}
                           onChange={(e) => setEditValues(v => ({ ...v, category_id: e.target.value }))}
-                          className="border rounded px-2 py-1 w-full"
+                          className="border rounded px-2 py-1 w-full text-xs sm:text-sm"
                         >
                           <option value="">Uncategorized</option>
                           {categories.map((cat) => (
                             <option key={cat.category_id} value={cat.category_id}>{cat.category_name}</option>
                           ))}
                         </select>
-                      ) : txn._categoryLabel || 'Uncategorized'}
+                      ) : (
+                        <div className="truncate max-w-[80px] sm:max-w-none" title={txn._categoryLabel}>
+                          {txn._categoryLabel || 'Uncategorized'}
+                        </div>
+                      )}
                     </td>
-                    <td className={`px-4 py-2 font-semibold ${amountColor}`}>
+                    <td className={`px-2 sm:px-4 py-2 font-semibold ${amountColor}`}>
                       {isEditing ? (
                         <input
                           type="number"
                           value={String(editValues.amount ?? txn._amount)}
                           onChange={(e) => setEditValues(v => ({ ...v, amount: e.target.value }))}
-                          className="border rounded px-2 py-1 w-full"
+                          className="border rounded px-2 py-1 w-full text-xs sm:text-sm"
                           step="0.01"
                           min="0"
                           inputMode="decimal"
                         />
                       ) : (
-                        <>
+                        <div className="whitespace-nowrap text-xs sm:text-sm">
                           {amountPrefix} {formattedAmount}
-                        </>
+                        </div>
                       )}
                     </td>
 
-                    <td className="px-4 py-2 flex gap-2">
-                      {isEditing ? (
-                        <>
-                          <button
-                            className="text-green-600 hover:underline text-sm"
-                            onClick={() => saveEdit(txn)}
-                            disabled={busy}
-                          >Save</button>
-                          <button
-                            className="text-gray-500 hover:underline text-sm"
-                            onClick={() => { setEditTransactionId(null); setEditValues({}); }}
-                            disabled={busy}
-                          >Cancel</button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            className="text-blue-500 hover:text-blue-600  text-sm dark:text-[#5FBFFF]"
-                            onClick={() => {
-                              setEditTransactionId(txn.transaction_id);
-                              setEditValues({
-                                name: txn._name,
-                                date: originalYMD,
-                                category_id: txn.category_id ?? '',
-                                amount: String(txn._amount),
-                              });
-                            }}
-                          ><FaEdit /></button>
-                          <button
-                            className="text-red-500 hover:text-red-600 text-sm dark:text-[#EA746A]"
-                            onClick={() => showDelete(txn.transaction_id)}
-                          ><FaTrash /></button>
-                        </>
-                      )}
+                    <td className="px-2 sm:px-4 py-2">
+                      <div className="flex gap-1 sm:gap-2">
+                        {isEditing ? (
+                          <>
+                            <button
+                              className="text-green-600 hover:underline text-xs sm:text-sm px-1"
+                              onClick={() => saveEdit(txn)}
+                              disabled={busy}
+                            >Save</button>
+                            <button
+                              className="text-gray-500 hover:underline text-xs sm:text-sm px-1"
+                              onClick={() => { setEditTransactionId(null); setEditValues({}); }}
+                              disabled={busy}
+                            >Cancel</button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              className="text-blue-500 hover:text-blue-600 text-xs sm:text-sm dark:text-[#5FBFFF] p-1"
+                              onClick={() => {
+                                setEditTransactionId(txn.transaction_id);
+                                setEditValues({
+                                  name: txn._name,
+                                  date: originalYMD,
+                                  category_id: txn.category_id ?? '',
+                                  amount: String(txn._amount),
+                                });
+                              }}
+                            ><FaEdit /></button>
+                            <button
+                              className="text-red-500 hover:text-red-600 text-xs sm:text-sm dark:text-[#EA746A] p-1"
+                              onClick={() => showDelete(txn.transaction_id)}
+                            ><FaTrash /></button>
+                          </>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
