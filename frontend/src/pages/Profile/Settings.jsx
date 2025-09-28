@@ -32,7 +32,7 @@ const Settings = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [setPasswordChanged] = useState(false);
+  const [passwordChanged, setPasswordChanged] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -237,54 +237,56 @@ const Settings = () => {
     isValid ? <FaCheckCircle className="text-green-500 inline" /> : <FaTimesCircle className="text-red-500 inline" />;
 
   return (
-    <div className="max-w-6xl mx-auto px-2 pb-2 space-y-6 overflow-y-auto dark:bg-gray-900">
-      {/* Save Preferences */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-4 flex justify-end space-x-3">
-        <button className="bg-gray-200 dark:bg-gray-700 dark:text-white px-4 py-2 rounded-md">Cancel</button>
-        <button onClick={handleSavePreferences} className="bg-[#AAD977] text-white px-4 py-2 rounded-md">Save</button>
+    <div className="max-w-6xl mx-auto px-2 sm:px-4 pb-2 space-y-4 sm:space-y-6 overflow-y-auto dark:bg-gray-900 min-h-screen">
+      {/* Save Preferences - Top */}
+      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-3 sm:p-4 flex justify-end space-x-2 sm:space-x-3">
+        <button className="bg-gray-200 dark:bg-gray-700 dark:text-white px-3 py-2 sm:px-4 sm:py-2 rounded-md text-sm sm:text-base">Cancel</button>
+        <button onClick={handleSavePreferences} className="bg-[#AAD977] text-white px-3 py-2 sm:px-4 sm:py-2 rounded-md text-sm sm:text-base">Save</button>
       </div>
       
       {/* Username Section */}
-      <div className="bg-white shadow dark:bg-gray-800 rounded-xl p-6">
-        <h3 className="font-semibold text-[#88BC46] dark:text-[#AAD977] text-lg mb-4">Change Username</h3>
+      <div className="bg-white shadow dark:bg-gray-800 rounded-xl p-4 sm:p-6">
+        <h3 className="font-semibold text-[#88BC46] dark:text-[#AAD977] text-lg mb-3 sm:mb-4">Change Username</h3>
         {isEditingUsername ? (
           <div className="w-full">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Enter new username"
-                className="input flex-1"
+                className="input flex-1 w-full sm:w-auto mb-2 sm:mb-0"
               />
-              <button
-                onClick={handleUsernameChange}
-                disabled={!usernameCriteria.length || !usernameCriteria.pattern}
-                className={`px-4 py-2 rounded-md text-white ${
-                  !usernameCriteria.length || !usernameCriteria.pattern
-                    ? 'bg-gray-300 cursor-not-allowed'
-                    : 'bg-[#AAD977]'
-                }`}
-              >
-                Save
-              </button>
-              <button onClick={() => setIsEditingUsername(false)} className="bg-gray-200 px-4 py-2 rounded-md">
-                Cancel
-              </button>
+              <div className="flex gap-2 w-full sm:w-auto">
+                <button
+                  onClick={handleUsernameChange}
+                  disabled={!usernameCriteria.length || !usernameCriteria.pattern}
+                  className={`px-3 py-2 sm:px-4 sm:py-2 rounded-md text-white text-sm sm:text-base flex-1 sm:flex-none ${
+                    !usernameCriteria.length || !usernameCriteria.pattern
+                      ? 'bg-gray-300 cursor-not-allowed'
+                      : 'bg-[#AAD977]'
+                  }`}
+                >
+                  Save
+                </button>
+                <button onClick={() => setIsEditingUsername(false)} className="bg-gray-200 px-3 py-2 rounded-md text-sm sm:text-base flex-1 sm:flex-none">
+                  Cancel
+                </button>
+              </div>
             </div>
             {username.length > 0 && (
-              <div className="text-xs text-gray-600 space-y-1 mt-1">
+              <div className="text-xs text-gray-600 space-y-1 mt-2">
                 <p>{renderCheck(usernameCriteria.length)} Between 3–15 characters</p>
                 <p>{renderCheck(usernameCriteria.pattern)} Only lowercase letters, numbers, dots, and underscores</p>
               </div>
             )}
           </div>
         ) : (
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Current username: <span className="font-bold">{username || 'Not set'}</span>
             </p>
-            <button onClick={() => setIsEditingUsername(true)} className="bg-[#AAD977] text-white px-4 py-2 rounded-md text-sm">
+            <button onClick={() => setIsEditingUsername(true)} className="bg-[#AAD977] text-white px-4 py-2 rounded-md text-sm w-full sm:w-auto">
               Change Username
             </button>
           </div>
@@ -292,13 +294,13 @@ const Settings = () => {
       </div>
 
       {/* Preferences */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-6">
-        <h3 className="font-semibold text-[#88BC46] dark:text-[#AAD977] text-lg mb-4">Preferences</h3>
+      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-4 sm:p-6">
+        <h3 className="font-semibold text-[#88BC46] dark:text-[#AAD977] text-lg mb-3 sm:mb-4">Preferences</h3>
         {[
           { label: 'Dark Mode', state: theme, action: toggleTheme },
         ].map(({ label, state, action }, i) => (
-          <div key={i} className="flex items-center justify-between mb-4">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</p>
+          <div key={i} className="flex items-center justify-between mb-3 sm:mb-4">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 pr-2">{label}</p>
             <label className="relative inline-flex items-center cursor-pointer">
               <input 
                 type="checkbox" 
@@ -314,16 +316,16 @@ const Settings = () => {
       </div>
 
       {/* Password Section */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-6">
-        <h3 className="font-semibold mb-4 text-[#88BC46] dark:text-[#AAD977]">Change Password</h3>
-        <div className="grid gap-4 mb-3">
-          <div className="relative ">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-4 sm:p-6">
+        <h3 className="font-semibold mb-3 sm:mb-4 text-[#88BC46] dark:text-[#AAD977]">Change Password</h3>
+        <div className="grid gap-3 sm:gap-4 mb-3">
+          <div className="relative">
             <input 
               type={showCurrentPassword ? "text" : "password"} 
               placeholder="Current Password" 
               value={currentPassword} 
               onChange={(e) => setCurrentPassword(e.target.value)} 
-              className="input w-full dark:text-gray-300 dark:bg-gray-700" 
+              className="input w-full dark:text-gray-300 dark:bg-gray-700 pr-10" 
             />
             <button 
               onClick={() => setShowCurrentPassword(!showCurrentPassword)}
@@ -338,7 +340,7 @@ const Settings = () => {
               placeholder="New Password" 
               value={newPassword} 
               onChange={(e) => setNewPassword(e.target.value)} 
-              className="input w-full dark:text-gray-300 dark:bg-gray-700" 
+              className="input w-full dark:text-gray-300 dark:bg-gray-700 pr-10" 
             />
             <button 
               onClick={() => setShowNewPassword(!showNewPassword)}
@@ -353,7 +355,7 @@ const Settings = () => {
               placeholder="Confirm New Password" 
               value={confirmPassword} 
               onChange={(e) => setConfirmPassword(e.target.value)} 
-              className="input w-full dark:text-gray-300 dark:bg-gray-700 " 
+              className="input w-full dark:text-gray-300 dark:bg-gray-700 pr-10" 
             />
             <button 
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -380,7 +382,7 @@ const Settings = () => {
             !Object.values(passwordStatus).every(Boolean) ||
             !passwordsMatch
           }
-          className={`px-4 py-2 rounded-md mt-2 text-white dark:bg-gray-700 dark:text-white ${
+          className={`px-4 py-2 rounded-md mt-2 text-white dark:bg-gray-700 dark:text-white w-full sm:w-auto ${
             !currentPassword.length ||
             !Object.values(passwordStatus).every(Boolean) ||
             !passwordsMatch
@@ -393,25 +395,25 @@ const Settings = () => {
       </div>
 
       {/* Avatar */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-6">
-        <h3 className="font-semibold mb-4 text-[#88BC46] dark:text-[#AAD977]">Change Avatar</h3>
-        <div className="flex flex-wrap gap-3">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-4 sm:p-6">
+        <h3 className="font-semibold mb-3 sm:mb-4 text-[#88BC46] dark:text-[#AAD977]">Change Avatar</h3>
+        <div className="flex flex-wrap gap-2 sm:gap-3 justify-center sm:justify-start">
           {avatarList.map((avatar) => (
             <button key={avatar.avatar_id} onClick={() => handleAvatarChange(avatar.avatar_id)}
               className={`rounded-full overflow-hidden border-4 ${
                 selectedAvatar === avatar.avatar_id ? 'border-[#88BC46]' : 'border-transparent'
               } transition-all duration-200`}>
               <img src={`/assets/Images/${avatar.avatar_image_path}`} alt={`avatar-${avatar.avatar_id}`}
-                className="w-14 h-14 object-cover rounded-full" />
+                className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-full" />
             </button>
           ))}
         </div>
       </div>
 
-      {/* Banner Section - Fixed */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-6">
-        <h3 className="font-semibold mb-4 text-[#88BC46] dark:text-[#AAD977]">Change Banner</h3>
-        <div className="flex flex-wrap gap-3">
+      {/* Banner Section */}
+      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-4 sm:p-6">
+        <h3 className="font-semibold mb-3 sm:mb-4 text-[#88BC46] dark:text-[#AAD977]">Change Banner</h3>
+        <div className="flex flex-wrap gap-2 sm:gap-3 justify-center sm:justify-start">
           {bannerList.map((banner) => (
             <button
               key={banner.banner_id}
@@ -423,7 +425,7 @@ const Settings = () => {
               <img
                 src={`/assets/Images/${banner.banner_image_path}`}
                 alt={`banner-${banner.banner_id}`}
-                className="w-28 h-16 object-cover rounded-xl"
+                className="w-20 h-12 sm:w-28 sm:h-16 object-cover rounded-xl"
               />
             </button>
           ))}
@@ -431,28 +433,28 @@ const Settings = () => {
       </div>
 
       {/* Danger Zone */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-6 border border-red-100 dark:border-red-900">
-        <h3 className="font-semibold text-red-500 mb-4">Danger Zone</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Deleting your account is permanent and cannot be undone.</p>
-        <button onClick={() => setShowConfirm(true)} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-4 sm:p-6 border border-red-100 dark:border-red-900">
+        <h3 className="font-semibold text-red-500 mb-3 sm:mb-4">Danger Zone</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 sm:mb-4">Deleting your account is permanent and cannot be undone.</p>
+        <button onClick={() => setShowConfirm(true)} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md w-full sm:w-auto">
           Delete My Account
         </button>
       </div>
 
-      {/* Save Preferences 2*/}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-4 flex justify-start space-x-3">
-        <button className="bg-gray-200 dark:bg-gray-700 dark:text-white px-4 py-2 rounded-md">Cancel</button>
-        <button onClick={handleSavePreferences} className="bg-[#AAD977] text-white px-4 py-2 rounded-md">Save</button>
+      {/* Save Preferences - Bottom */}
+      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-3 sm:p-4 flex justify-end space-x-2 sm:space-x-3">
+        <button className="bg-gray-200 dark:bg-gray-700 dark:text-white px-3 py-2 sm:px-4 sm:py-2 rounded-md text-sm sm:text-base">Cancel</button>
+        <button onClick={handleSavePreferences} className="bg-[#AAD977] text-white px-3 py-2 sm:px-4 sm:py-2 rounded-md text-sm sm:text-base">Save</button>
       </div>
 
       {/* Confirmation Modal */}
       {showConfirm && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm space-y-4">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 w-full max-w-sm space-y-4 mx-2">
             <h2 className="text-lg font-semibold text-red-500">Confirm Account Deletion</h2>
             <p className="text-sm text-gray-600">Are you sure you want to delete your account? This action cannot be undone.</p>
-            <div className="flex justify-end gap-3 pt-2">
-              <button onClick={() => setShowConfirm(false)} className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md">Cancel</button>
+            <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-2">
+              <button onClick={() => setShowConfirm(false)} className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md order-2 sm:order-1 mt-2 sm:mt-0">Cancel</button>
               <button onClick={async () => {
                 try {
                   const res = await fetch(`${BASE_URL}/api/auth/${userId}`, { method: 'DELETE' });
@@ -466,7 +468,7 @@ const Settings = () => {
                 } catch (err) {
                   console.error('Error deleting account:', err);
                 }
-              }} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md">
+              }} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md order-1 sm:order-2">
                 Confirm Delete
               </button>
             </div>

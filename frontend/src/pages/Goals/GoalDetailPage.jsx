@@ -78,9 +78,10 @@ const GoalsDetailPage = () => {
 
             {/* Goal Info */}
             <div className="flex-1 space-y-2">
-              {/* Progress Ring */}
+              {/* Progress Section */}
               <div className="flex flex-col sm:flex-row items-center gap-4">
-                <div className="relative w-24 h-24">
+                {/* Circular Progress Bar - Hidden on mobile, shown on md and above */}
+                <div className="hidden md:block relative w-24 h-24">
                   <svg viewBox="0 0 100 100" className="w-full h-full">
                     <circle
                       cx="50"
@@ -107,7 +108,6 @@ const GoalsDetailPage = () => {
                       <linearGradient id="grad1" x1="1" y1="0" x2="0" y2="1">
                         <stop offset="40%" stopColor="#5FBFFF" />
                         <stop offset="100%" stopColor="#7FDD53" />
-                        {/* // bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53] */}
                       </linearGradient>
                     </defs>
                   </svg>
@@ -116,20 +116,48 @@ const GoalsDetailPage = () => {
                   </div>
                 </div>
 
+                {/* Straight Progress Bar - Shown on mobile, hidden on md and above */}
+                <div className="md:hidden w-full mb-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sky-500 dark:text-orange-400 font-bold text-lg">{percentage}%</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {goal.current_amount} ZAR / {goal.target_amount} ZAR
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+                    <div 
+                      className="bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53] h-4 rounded-full transition-all duration-300"
+                      style={{ width: `${percentage}%` }}
+                    ></div>
+                  </div>
+                  <div className="flex justify-between items-center mt-2">
+                    <span className="text-sm text-[#5FBFFF] dark:text-[#93C5FD] font-semibold">
+                      {amountLeft} ZAR Left
+                    </span>
+                    <span className="text-sm text-[#E6904E] dark:text-[#F59E0B] font-semibold">
+                      Target: {targetDate}
+                    </span>
+                  </div>
+                </div>
+
                 {/* Title + Progress Info */}
-                <div>
+                <div className="w-full md:w-auto">
                   <h2 className="text-2xl font-medium text-gray-800 dark:text-white flex items-center gap-2">
                     {goal.goal_name} <FaUmbrellaBeach className="text-[#AAD977] dark:text-[#7FDD53]" />
                   </h2>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    <span className="text-[#ED5E52] dark:text-[#F87171] font-medium">{goal.current_amount} ZAR</span>/
-                    <span className="text-gray-800 dark:text-gray-200 font-normal">{goal.target_amount} ZAR</span> |
-                    <span className="text-[#5FBFFF] dark:text-[#93C5FD] font-semibold ml-1">{amountLeft} ZAR Left</span>
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Goal will be accomplished on{' '}
-                    <span className="text-[#E6904E] dark:text-[#F59E0B] font-semibold">{targetDate}</span>
-                  </p>
+                  
+                  {/* Desktop-only progress info */}
+                  <div className="hidden md:block">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <span className="text-[#ED5E52] dark:text-[#F87171] font-medium">{goal.current_amount} ZAR</span>/
+                      <span className="text-gray-800 dark:text-gray-200 font-normal">{goal.target_amount} ZAR</span> |
+                      <span className="text-[#5FBFFF] dark:text-[#93C5FD] font-semibold ml-1">{amountLeft} ZAR Left</span>
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      Goal will be accomplished on{' '}
+                      <span className="text-[#E6904E] dark:text-[#F59E0B] font-semibold">{targetDate}</span>
+                    </p>
+                  </div>
 
                   {/* Tags */}
                   <div className="flex flex-wrap gap-2 mt-3">

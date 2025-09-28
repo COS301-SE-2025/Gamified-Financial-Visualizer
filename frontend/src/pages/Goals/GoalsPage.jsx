@@ -27,7 +27,6 @@ const GoalsPage = () => {
   const bannerImages = [goal1, goal2, goal3];
 
   // ---- helpers -------------------------------------------------------------
-  // stable banner pick: 1->0, 2->1, 3->2 (wraps safely)
   const getBanner = (id) => {
     const n = bannerImages.length;
     const idx = ((Number(id) || 1) - 1 + n) % n;
@@ -46,7 +45,7 @@ const GoalsPage = () => {
       }
     };
     if (user?.id) fetchGoals();
-  }, [user?.id]); // :contentReference[oaicite:3]{index=3}
+  }, [user?.id]);
 
   // ---- data: latest completed (API) ---------------------------------------
   useEffect(() => {
@@ -60,22 +59,22 @@ const GoalsPage = () => {
       }
     };
     if (user?.id) fetchLatestGoal();
-  }, [user?.id]); // :contentReference[oaicite:4]{index=4}
+  }, [user?.id]);
 
   // ---- search + pagination -------------------------------------------------
   const filtered = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
     return term ? goals.filter((g) => g.goal_name?.toLowerCase().includes(term)) : goals;
-  }, [goals, searchTerm]); // :contentReference[oaicite:5]{index=5}
+  }, [goals, searchTerm]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const clampedPage = Math.min(page, totalPages);
   useEffect(() => {
     if (page !== clampedPage) setPage(clampedPage);
-  }, [clampedPage, page]); // :contentReference[oaicite:6]{index=6}
+  }, [clampedPage, page]);
 
   const sliceStart = (clampedPage - 1) * PAGE_SIZE;
-  const visibleGoals = filtered.slice(sliceStart, sliceStart + PAGE_SIZE); // :contentReference[oaicite:7]{index=7}
+  const visibleGoals = filtered.slice(sliceStart, sliceStart + PAGE_SIZE);
 
   // ---- local fallback for "latest completed" ------------------------------
   const latestCompletedLocal = useMemo(() => {
@@ -102,7 +101,7 @@ const GoalsPage = () => {
 
   // ---- renderer for list cards --------------------------------------------
   const renderGoalCard = (g) => {
-    const img = getBanner(g.banner_id); // was: bannerImages[(g.banner_id) % bannerImages.length]
+    const img = getBanner(g.banner_id);
     const progress = Math.min(
       Math.round((Number(g.current_amount) / Number(g.target_amount)) * 100),
       100
@@ -124,7 +123,7 @@ const GoalsPage = () => {
         dueDate={due}
       />
     );
-  }; // (based on your original implementation) :contentReference[oaicite:8]{index=8}
+  };
 
   // ---- view ---------------------------------------------------------------
   return (
@@ -132,8 +131,8 @@ const GoalsPage = () => {
       <div className="flex flex-col gap-6 px-4 sm:px-6 py-6 w-full max-w-screen-2xl mx-auto">
         {/* Search bar (top) */}
         <div className="w-full">
-          <div className="flex items-center w-full px-4 py-2 border border-[#76B947] dark:border-[#AAD977] rounded-full bg-white shadow-sm dark:bg-gray-800">
-            <FaSearch className="text-[#76B947] mr-2" />
+          <div className="flex items-center w-full px-4 py-3 border border-[#76B947] dark:border-[#AAD977] rounded-full bg-white shadow-sm dark:bg-gray-800">
+            <FaSearch className="text-[#76B947] mr-3" />
             <input
               type="text"
               value={searchTerm}
@@ -142,13 +141,113 @@ const GoalsPage = () => {
                 setPage(1);
               }}
               placeholder="Search your goals..."
-              className="w-full outline-none bg-transparent text-sm text-[#76B947] dark:text-[#AAD977] placeholder-[#76B947]/70"
+              className="w-full outline-none bg-transparent text-base text-[#76B947] dark:text-[#AAD977] placeholder-[#76B947]/70"
             />
           </div>
         </div>
 
-        {/* Main content: left 2x2 grid, right 1x3 paginated list */}
-        <div className="grid grid-cols-12 gap-6">
+        {/* Mobile Layout - Single column */}
+        <div className="lg:hidden flex flex-col gap-6">
+          {/* Your Goals Section - Moved to top for mobile */}
+          <div className="bg-white rounded-2xl shadow-md p-4 dark:bg-gray-800">
+            <h3 className="text-lg font-semibold text-gray-700 mb-4 dark:text-gray-200">
+              Your Goals
+            </h3>
+            <div className="grid grid-cols-1 gap-4">
+              {visibleGoals.map(renderGoalCard)}
+              {visibleGoals.length === 0 && (
+                <div className="text-center text-gray-500 text-sm py-6">
+                  {searchTerm ? 'No matching goals.' : 'No goals yet.'}
+                </div>
+              )}
+            </div>
+
+            {/* Pagination - Mobile optimized */}
+            {filtered.length > PAGE_SIZE && (
+              <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200 dark:border-gray-600">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={clampedPage === 1}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm border min-w-[100px] justify-center
+                    ${clampedPage === 1 
+                      ? 'opacity-40 cursor-not-allowed text-gray-400' 
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                    } dark:border-gray-600`}
+                >
+                  <FaChevronLeft /> Prev
+                </button>
+                <span className="text-sm text-gray-600 dark:text-gray-400 px-4">
+                  {clampedPage} / {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={clampedPage === totalPages}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm border min-w-[100px] justify-center
+                    ${clampedPage === totalPages 
+                      ? 'opacity-40 cursor-not-allowed text-gray-400' 
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                    } dark:border-gray-600`}
+                >
+                  Next <FaChevronRight />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Charts and Cards - Single column for mobile */}
+          <div className="grid grid-cols-1 gap-6">
+            {/* Bar Chart */}
+            <div className="bg-white rounded-2xl shadow-md p-4 min-h-[300px] dark:bg-gray-800">
+              <h3 className="text-lg font-semibold text-gray-700 mb-4 dark:text-gray-200">
+                Progress Overview
+              </h3>
+              <BarChart />
+            </div>
+
+            {/* Donut Chart */}
+            <div className="bg-white rounded-2xl shadow-md p-4 min-h-[300px] overflow-hidden dark:bg-gray-800">
+              <h3 className="text-lg font-semibold text-gray-700 mb-4 dark:text-gray-200">
+                Goals Distribution
+              </h3>
+              <DonutChart />
+            </div>
+
+            {/* Latest Accomplished Goal */}
+            <div className="bg-white rounded-2xl shadow-md p-4 min-h-[200px] dark:bg-gray-800">
+              <h3 className="text-lg font-semibold text-gray-700 mb-4 dark:text-gray-200">
+                Recently Completed
+              </h3>
+              {latest ? (
+                <GoalCard
+                  goalId={latest.goal_id}
+                  title={latest.goal_name}
+                  image={getBanner(latest.banner_id)}
+                  progress={100}
+                  target={latest.target_amount}
+                  dueDate={new Date(latest.completed_date || latest.target_date).toLocaleDateString(
+                    'en-ZA',
+                    { day: '2-digit', month: 'short', year: 'numeric' }
+                  )}
+                />
+              ) : (
+                <div className="text-gray-400 text-base h-full flex items-center justify-center py-8">
+                  No completed goals yet
+                </div>
+              )}
+            </div>
+
+            {/* Goal Totals */}
+            <div className="bg-white rounded-2xl shadow-md p-4 min-h-[200px] dark:bg-gray-800">
+              <h3 className="text-lg font-semibold text-gray-700 mb-4 dark:text-gray-200">
+                Goal Summary
+              </h3>
+              <GoalOverviewCards />
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop Layout - Hidden on mobile */}
+        <div className="hidden lg:grid grid-cols-12 gap-6">
           {/* LEFT: 2x2 grid */}
           <div className="col-span-12 lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
             {/* Bar Chart */}
