@@ -1,5 +1,5 @@
 // src/pages/game/hud/GameHUD.jsx
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   FaDollarSign, FaBuilding, FaClock, FaChevronLeft, FaChevronRight, FaSignOutAlt,
   FaMoneyBillWave, FaCreditCard, FaHandHoldingUsd, FaPiggyBank, FaTruck, FaDice, FaBox,
@@ -7,10 +7,6 @@ import {
 } from 'react-icons/fa';
 
 /* ----------------------------- Image imports ----------------------------- */
-import playerIcon from '../../../assets/Images/avatars/Skull.png';
-import playerIcon2 from '../../../assets/Images/avatars/CityBuilding.png';
-import playerIcon3 from '../../../assets/Images/avatars/koiFish.png';
-import playerIcon4 from '../../../assets/Images/avatars/Ramen.png';
 
 import artBusiness from '../../../assets/hud/Business Card.png';
 import artChance from '../../../assets/hud/Chance Card.png';
@@ -20,9 +16,25 @@ function IconImg({ src, alt = '', className = 'w-5 h-5' }) {
   return <img src={src} alt={alt} className={`inline-block object-contain ${className}`} aria-hidden="true" />;
 }
 
+// Generate consistent random colors for each player based on their ID
+const generatePlayerColors2 = (players) => {
+  const colors = [
+    'bg-rose-500', 'bg-sky-500', 'bg-lime-500', 'bg-amber-500',
+    'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-teal-500',
+    'bg-orange-500', 'bg-cyan-500', 'bg-lime-500', 'bg-amber-500'
+  ];
+
+  const playerColors = {};
+  players.forEach((player, index) => {
+    playerColors[player.id] = colors[index % colors.length];
+  });
+
+  return playerColors;
+};
+
 export default function GameHUD({
   /* existing props */
-  playerName = "kevin_park",
+  playerName = "me",
   playerNumber = 2,
   netWorth = 5000,
   businesses = 4,
@@ -52,6 +64,10 @@ export default function GameHUD({
 
   // dice toast (number or null)
   diceToast = null,
+
+  /* NEW: Add missing props */
+  players = [],               // Array of all players
+  currentPlayer = {},         // Current player object
 }) {
   const [showInventory, setShowInventory] = useState(false);
   const [showCard, setShowCard] = useState(false);
@@ -62,8 +78,6 @@ export default function GameHUD({
   const computedNetWorth = netWorth;
   const availableCash = netWorth - assetsValue + loanBalance;
 
-  const playerAvatars = { p1: playerIcon2, p2: playerIcon, p3: playerIcon3, p4: playerIcon4 };
-
   const cards = inventoryCards?.length ? inventoryCards : [
     { deck: 'Chance', title: 'Big Recession', desc: 'Salary payout reduced this round.' },
     { deck: 'Community', title: 'Local Grant', desc: '+R500 stipend.' },
@@ -71,6 +85,21 @@ export default function GameHUD({
 
   const currentCard = cards[Math.max(0, Math.min(cardIndex, cards.length - 1))];
 
+  // Generate consistent random colors for each player based on their ID
+  const getPlayerColor = (playerId) => {
+    const colors = {
+      'p1': 'bg-rose-500', // Rose
+      'p2': 'bg-sky-500', // Teal
+      'p3': 'bg-lime-500', // Blue
+      'p4': 'bg-amber-500', // Yellow
+      'p5': 'bg-red-500', // Red
+      'p6': '#5F27CD', // Purple
+    };
+    return colors[playerId] || 'bg-gray-400'; // Default gray
+  };
+
+  // Generate player colors
+  const playerColors = useMemo(() => generatePlayerColors2(players), [players]);
 
   // Fallback footer if no playersSummary passed
   const footerPlayers = (playersSummary && playersSummary.length)
@@ -89,7 +118,11 @@ export default function GameHUD({
         <div className="flex items-center gap-6 px-5 py-3 rounded-2xl bg-white/95 border shadow-lg">
           {/* Player Icon */}
           <div className="flex items-center gap-2">
-            <img src={playerIcon} alt="Player" className="w-10 h-10 rounded-full border-2 border-sky-400" />
+            <div
+              className={`w-10 h-10 rounded-full border-2 border-sky-400 flex items-center justify-center text-white font-bold shadow-sm ${getPlayerColor('p2')}`}
+            >
+              {playerName.charAt(0).toUpperCase()}
+            </div>
             <span className="font-semibold text-sky-700">{playerName}</span>
           </div>
 
@@ -116,16 +149,6 @@ export default function GameHUD({
             <FaCrown className="text-amber-500" />
             <span className="text-sm font-semibold">Laps: {goalLaps}/{totalLaps}</span>
           </div>
-
-          {/* Roll Button */}
-          {/* <button
-            onClick={onRoll}
-            disabled={isMoving}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-400 text-white font-semibold shadow hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <FaDice className="text-lg" />
-            Dice
-          </button> */}
 
           {/* Inventory Button */}
           <button
@@ -237,13 +260,18 @@ export default function GameHUD({
           <div className="flex items-stretch gap-3 overflow-x-auto">
             {footerPlayers.map(p => {
               const active = activePlayerId ? (p.id === activePlayerId) : !!p.active;
+              const playerColor = p.color || 'bg-gray-400'; // Fallback color
+
               return (
                 <div
                   key={p.id}
                   className={`min-w-[100px] flex-1 rounded-2xl border p-3 bg-white shadow-sm ${active ? 'ring-4 ring-sky-400' : ''}`}
                 >
                   <div className="flex items-center gap-3">
-                    <img src={playerAvatars[p.id] || playerIcon} alt={p.name} className="w-10 h-10 rounded-full border object-cover" />
+                    {/* Replace image with colored circle */}
+                    <div className={`w-10 h-10 rounded-full ${playerColor} flex items-center justify-center text-white font-bold border-2 border-white shadow`}>
+                      {p.name.charAt(0).toUpperCase()}
+                    </div>
                     <div className="leading-tight">
                       <div className="font-semibold">{p.name}</div>
                       <div className="text-xs text-gray-500">Lap {p.laps ?? 0} / {totalLaps}</div>
@@ -279,7 +307,7 @@ export default function GameHUD({
                     <button className="p-2 rounded-lg bg-white border shadow" onClick={() => setCardIndex(i => Math.max(0, i - 1))}><FaChevronLeft /></button>
                   </div>
                   <div className="absolute inset-y-0 right-0 grid place-items-center w-10">
-      <button className="p-2 rounded-lg bg-white border shadow" onClick={() => setCardIndex(i => Math.min(cards.length - 1, i + 1))}><FaChevronRight /></button>
+                    <button className="p-2 rounded-lg bg-white border shadow" onClick={() => setCardIndex(i => Math.min(cards.length - 1, i + 1))}><FaChevronRight /></button>
                   </div>
 
                   <div className="h-56 rounded-xl overflow-hidden bg-white border flex items-center justify-center">
