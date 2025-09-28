@@ -9,6 +9,10 @@ import {
   FaBan
 } from 'react-icons/fa';
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
 
 const performance = {
   score: 350,
@@ -28,12 +32,12 @@ const AccountsPerformanceHeader = () => {
     if (!user?.id) return;
 
     // Fetch user stats
-    fetch(`http://localhost:5000/api/achievements/performance/${user.id}`)
+    fetch(`${BASE_URL}/api/achievements/performance/${user.id}`)
       .then(res => res.json())
       .then(data => setUserStats(data.data))
       .catch(err => console.error('User stats error:', err));
 
-    fetch(`http://localhost:5000/api/achievements/user/${user.id}`)
+    fetch(`${BASE_URL}/api/achievements/user/${user.id}`)
       .then(res => res.json())
       .then(data => {
         const complete = data?.data.filter(a => a.achievement_status === 'complete');
@@ -43,7 +47,7 @@ const AccountsPerformanceHeader = () => {
       });
 
     // Fetch level progress
-    fetch(`http://localhost:5000/api/auth/profile/level-progress/${user.id}`)
+    fetch(`${BASE_URL}/api/auth/profile/level-progress/${user.id}`)
       .then(res => res.json())
       .then(res => setLevelProgress(res.data))
       .catch(err => console.error('Failed to load level progress:', err));

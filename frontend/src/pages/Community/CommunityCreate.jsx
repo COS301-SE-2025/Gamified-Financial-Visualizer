@@ -7,6 +7,10 @@ import {
   FaPlusCircle, FaSearch, FaArrowLeft, FaUsers,
 } from 'react-icons/fa';
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
 const CommunityCreate = () => {
   const [bannerOptions, setBannerOptions] = useState([]);
   const [friendsList, setFriendsList] = useState([]);
@@ -14,13 +18,13 @@ const CommunityCreate = () => {
   useEffect(() => {
     const fetchAssets = async () => {
       try {
-        const bannersRes = await fetch('http://localhost:5000/api/community/banners');
+        const bannersRes = await fetch('${BASE_URL}/api/community/banners');
         const bannersData = await bannersRes.json();
         setBannerOptions(bannersData.data || []);
 
         const user = JSON.parse(localStorage.getItem('user'));
         if (user?.id) {
-          const friendsRes = await fetch(`http://localhost:5000/api/community/friends/${user.id}`);
+          const friendsRes = await fetch(`${BASE_URL}/api/community/friends/${user.id}`);
           const friendsData = await friendsRes.json();
           setFriendsList(friendsData.data || []);
         }
@@ -83,7 +87,7 @@ const CommunityCreate = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/community', {
+      const response = await fetch('${BASE_URL}/api/community', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

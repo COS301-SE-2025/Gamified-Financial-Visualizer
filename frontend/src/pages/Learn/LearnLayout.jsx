@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PacmanLoader from '../../components/loaders/PacmanLoader';
-import LearnSidebar from '../../layouts/sidebars/LearnSidebar';
+import LearnSidebar from '../../layouts/sidebars/LearnSidebar'; 
 
 const LearnLayout = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -20,17 +20,15 @@ const LearnLayout = ({ children }) => {
       )}
 
       <div className={`${isLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'} transition-opacity duration-500`}>
-        {/* Top Learn Header */}
+        {/* Your "LearnSidebar" (which is actually a header) */}
         <div className="px-4 sm:px-6 pt-4">
-          <LearnSidebar />
-        </div>
+        <LearnSidebar /> {/* This should now display properly */}
+      </div>
 
-        {/* Page Content */}
-        <div className="flex">
-          <div className="flex-1 flex flex-col h-full pr-6">
-            <div className="px-6 pb-6">
-              {children}
-            </div>
+        {/* Main content area - fixed to take full width */}
+        <div className="w-full">
+          <div className="px-4 sm:px-6 pb-6">
+            {children}
           </div>
         </div>
       </div>

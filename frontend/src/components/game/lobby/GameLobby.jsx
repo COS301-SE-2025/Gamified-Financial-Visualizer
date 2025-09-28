@@ -10,6 +10,9 @@ import { CopyToClipboard } from "react-copy-to-clipboard";
 import { getSocket } from '../socket';
 
 import bannerImage from '../../../assets/Images/game/lobby-banner.png'
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
 
 const ALL_CHARACTERS = [
     { label: 'Green girl', key: 'Green_girl' },
@@ -187,8 +190,8 @@ export default function GameLobby({
 
     // API Functions
     const apiCall = async (endpoint, options = {}) => {
-       // console.log('API Call:', endpoint, options);
-        const response = await fetch(`http://localhost:5000/api/game${endpoint}`, {
+        console.log('API Call:', endpoint, options);
+        const response = await fetch(`${BASE_URL}/api/game${endpoint}`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,

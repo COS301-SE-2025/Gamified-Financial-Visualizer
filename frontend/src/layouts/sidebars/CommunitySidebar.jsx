@@ -11,6 +11,10 @@ import {
 } from 'react-icons/fa';
 import avatar from '../../assets/Images/avatars/BlueSky.png';
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
 const AccountsPerformanceHeader = () => {
   const [stats, setStats] = useState(null);
   const [performance, setPerformance] = useState(null);
@@ -19,12 +23,12 @@ const AccountsPerformanceHeader = () => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user?.id) return;
 
-    fetch(`http://localhost:5000/api/community/stats/${user.id}`)
+    fetch(`${BASE_URL}/api/community/stats/${user.id}`)
       .then(res => res.json())
       .then(data => setStats(data.data))
       .catch(err => console.error('Community stats error:', err));
 
-    fetch(`http://localhost:5000/api/community/performance-summary/${user.id}`)
+    fetch(`${BASE_URL}/api/community/performance-summary/${user.id}`)
       .then(res => res.json())
       .then(data => setPerformance(data.data))
       .catch(err => console.error('Community performance summary error:', err));

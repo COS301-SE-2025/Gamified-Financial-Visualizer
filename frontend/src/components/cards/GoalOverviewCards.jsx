@@ -2,6 +2,11 @@ import React, { useEffect, useState } from 'react';
 
 import { FaCoins } from 'react-icons/fa';
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
+
 const GoalOverviewCards = () => {
   const [user, setUser] = useState(null);
   const [data, setData] = useState([]);
@@ -13,7 +18,7 @@ const GoalOverviewCards = () => {
     if (storedUser?.id) {
       const fetchData = async () => {
         try {
-          const res = await fetch(`http://localhost:5000/api/goal/user/${storedUser.id}/total-value`);
+          const res = await fetch(`${BASE_URL}/api/goal/user/${storedUser.id}/total-value`);
           const result = await res.json();
           setData(result.data.total_goal_value);
         } catch (error) {

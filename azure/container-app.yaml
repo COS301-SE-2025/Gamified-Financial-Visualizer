@@ -1,0 +1,54 @@
+# Azure Container Apps deployment configuration
+apiVersion: 2023-05-01
+location: eastus
+name: finance-visualizer-app
+properties:
+  environmentId: /subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.App/managedEnvironments/${ENVIRONMENT_NAME}
+  configuration:
+    ingress:
+      external: true
+      targetPort: 8080
+      traffic:
+        - weight: 100
+          latestRevision: true
+  template:
+    containers:
+      - name: frontend
+        image: ${AZURE_REGISTRY}/finance-frontend:${IMAGE_TAG}
+        resources:
+          cpu: 0.5
+          memory: 0.5Gi
+        env:
+          - name: REACT_APP_API_BASE_URL
+            value: ${REACT_APP_API_BASE_URL}
+          - name: REACT_APP_AI_API_URL
+            value: ${REACT_APP_AI_API_URL}
+      - name: api-backend
+        image: ${AZURE_REGISTRY}/finance-api:${IMAGE_TAG}
+        resources:
+          cpu: 1.0
+          memory: 1.0Gi
+        env:
+          - name: DATABASE_URL
+            secretRef: database-url
+          - name: REDIS_URL
+            value: redis://redis:6379
+          - name: PASETO_LOCAL_KEY
+            secretRef: paseto-key
+      - name: ai-service
+        image: ${AZURE_REGISTRY}/finance-ai:${IMAGE_TAG}
+        resources:
+          cpu: 1.0
+          memory: 2.0Gi
+        env:
+          - name: HF_TOKEN
+            secretRef: hf-token
+      - name: redis
+        image: redis:7-alpine
+        resources:
+          cpu: 0.5
+          memory: 0.5Gi
+    scale:
+      minReplicas: 1
+      maxReplicas: 3
+type: Microsoft.App/containerApps

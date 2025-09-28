@@ -14,6 +14,10 @@ import {
 } from 'react-icons/fa';
 import defaultBanner from '../../assets/Images/banners/pixelStore.gif';
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
 const ChallengesPage = () => {
   const [challenges, setChallenges] = useState({ active: [], upcoming: [], completed: [] });
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,7 +29,7 @@ const ChallengesPage = () => {
 
     const fetchChallenges = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/community/challenges/user/${user.id}`);
+        const res = await fetch(`${BASE_URL}/api/community/challenges/user/${user.id}`);
         const json = await res.json();
         if (res.ok) {
           setChallenges(json.data);
@@ -46,7 +50,7 @@ const ChallengesPage = () => {
   // delete challenge 
   const deleteChallenge = async (challengeId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/community/challenges/${challengeId}`, {
+      const res = await fetch(`${BASE_URL}/api/community/challenges/${challengeId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json'
@@ -65,7 +69,7 @@ const ChallengesPage = () => {
   // delete challenge handler
   const handleDelete = (title, challenge_id) => {
     toast.custom((t) => (
-      <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-lg max-w-sm w-full space-y-3">
+      <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-lg max-w-sm w-full space-y-3 mx-2 sm:mx-0">
         <p className="text-sm font-semibold text-gray-800">
           Delete <span className="text-[#ED5E52]">"{title}"</span> challenge?
         </p>
@@ -109,30 +113,30 @@ const ChallengesPage = () => {
     return (
       <div
         key={challenge.id}
-        className="bg-white pt-12 px-5 pb-5 rounded-3xl shadow-md  relative top-4 dark:bg-gray-800"
+        className="bg-white pt-10 px-3 sm:px-5 pb-3 sm:pb-5 rounded-xl sm:rounded-3xl shadow-md relative top-3 sm:top-4 dark:bg-gray-800 mx-1 sm:mx-0"
         style={{ borderColor: '#E5E7EB' }}
       >
         <img
           src={bannerSrc}
           alt="Challenge Banner"
-          className="absolute -top-8 left-4 w-20 h-20 rounded-full object-cover border-4 border-white shadow dark:border-gray-700"
+          className="absolute -top-4 sm:-top-8 left-3 sm:left-4 w-12 h-12 sm:w-20 sm:h-20 rounded-full object-cover border-4 border-white shadow dark:border-gray-700"
         />
 
-        <div className="flex justify-between items-start">
-          <div>
-            <h4 className="text-lg font-semibold text-[#111827] leading-normal mb-1 break-words dark:text-gray-200">
-              <FaCoins className="inline mr-1 text-[#FBBF24]" />
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 sm:gap-0">
+          <div className="flex-1 min-w-0">
+            <h4 className="text-sm sm:text-lg font-semibold text-[#111827] leading-tight mb-1 break-words dark:text-gray-200">
+              <FaCoins className="inline mr-1 text-[#FBBF24] text-xs sm:text-base" />
               {challenge.title}
             </h4>
-            <p className="text-xs font-semibold text-[#72C1F5] bg-[#E0F2FE] rounded-full px-3 py-1 inline-block w-fit mb-1 dark:bg-[#88D1FF] dark:text-[#4B82A2]">
+            <p className="text-xs font-semibold text-[#72C1F5] bg-[#E0F2FE] rounded-full px-2 py-0.5 sm:px-3 sm:py-1 inline-block w-fit mb-1 dark:bg-[#88D1FF] dark:text-[#4B82A2]">
               {challenge.community}
             </p>
 
             {challenge.status === 'active' && (
               <>
-                <p className="text-sm text-[#ED5E52] font-medium mt-1">{challenge.goal}</p>
-                <p className="text-sm text-[#374151]">{challenge.remaining} ZAR Left</p>
-                <p className="text-sm text-[#6B7280] mt-1">
+                <p className="text-xs sm:text-sm text-[#ED5E52] font-medium mt-1">{challenge.goal}</p>
+                <p className="text-xs sm:text-sm text-[#374151]">{challenge.remaining} ZAR Left</p>
+                <p className="text-xs text-[#6B7280] mt-1">
                   Goal will be accomplished on{' '}
                   <span className="text-[#ED5E52] font-semibold">{challenge.formattedEnd}</span>
                 </p>
@@ -140,26 +144,26 @@ const ChallengesPage = () => {
             )}
 
             {challenge.status === 'upcoming' && challenge.startsIn !== undefined && (
-              <p className="text-sm text-[#F59E0B] mt-1">
+              <p className="text-xs sm:text-sm text-[#F59E0B] mt-1">
                 Starts in {challenge.startsIn} day{challenge.startsIn !== 1 ? 's' : ''}
               </p>
             )}
 
             {challenge.status === 'completed' && challenge.formattedEnd && (
-              <p className="text-sm text-[#AAD977] mt-1">
+              <p className="text-xs sm:text-sm text-[#AAD977] mt-1">
                 Completed on <span className="font-semibold">{challenge.formattedEnd}</span>
               </p>
             )}
 
             {challenge.status === 'expired' && (
-              <p className="text-sm text-[#6B7280] mt-1">
+              <p className="text-xs sm:text-sm text-[#6B7280] mt-1">
                 Expired on <span className="font-semibold">{challenge.formattedEnd}</span>
               </p>
             )}
           </div>
 
-          <div className="flex flex-col items-end gap-2 ml-4">
-            <span className="text-xs px-3 py-1 rounded-full bg-[#B1E1FF] text-[#4B82A2] font-medium capitalize">
+          <div className="flex flex-row sm:flex-col items-start sm:items-end gap-1 sm:gap-2 flex-wrap sm:flex-nowrap sm:ml-4 mt-1 sm:mt-0">
+            <span className="text-xs px-2 py-0.5 sm:px-3 sm:py-1 rounded-full bg-[#B1E1FF] text-[#4B82A2] font-medium capitalize">
               {challenge.status === 'active'
                 ? 'Active'
                 : challenge.status === 'upcoming'
@@ -168,28 +172,28 @@ const ChallengesPage = () => {
                   ? 'Expired'
                   : 'Completed'}
             </span>
-            <span className="text-xs px-3 py-1 rounded-full bg-[#FFD18C] text-white font-medium capitalize">
+            <span className="text-xs px-2 py-0.5 sm:px-3 sm:py-1 rounded-full bg-[#FFD18C] text-white font-medium capitalize">
               {challenge.type}
             </span>
-            <span className="text-xs px-3 py-1 rounded-full bg-[#FFD18C] text-white font-semibold">
-              {challenge.reward} XP Reward
+            <span className="text-xs px-2 py-0.5 sm:px-3 sm:py-1 rounded-full bg-[#FFD18C] text-white font-semibold">
+              {challenge.reward} XP
             </span>
           </div>
         </div>
 
-        <div className="flex justify-between items-center mt-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-2 sm:mt-4 gap-1 sm:gap-0">
           <span className="text-xs text-gray-500 flex items-center gap-1 dark:text-gray-300">
-            <FaUsers /> {challenge.participants} participants • {challenge.difficulty}
+            <FaUsers className="text-xs" /> {challenge.participants} participants • {challenge.difficulty}
           </span>
           {challenge.status === 'active' && (
             <span className="text-xs text-[#F97316]">{challenge.progressText}</span>
           )}
         </div>
 
-        <div className="flex gap-3 mt-4">
+        <div className="flex gap-2 sm:gap-3 mt-2 sm:mt-4">
           <div className="flex-1">
             <Link to={`/community/challenges/${challenge.id}`}>
-              <button className="w-full bg-[#AAD977] text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-[#83AB55] transition">
+              <button className="w-full bg-[#AAD977] text-white text-xs px-2 py-1 sm:px-4 sm:py-2 rounded-full font-semibold hover:bg-[#83AB55] transition">
                 View
               </button>
             </Link>
@@ -197,7 +201,7 @@ const ChallengesPage = () => {
           <div className="flex-1">
             <button
               onClick={() => handleDelete(challenge.title, challenge.id)}
-              className="w-full bg-[#FE9B90] text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-[#ED5E52] transition"
+              className="w-full bg-[#FE9B90] text-white text-xs px-2 py-1 sm:px-4 sm:py-2 rounded-full font-semibold hover:bg-[#ED5E52] transition"
             >
               Delete
             </button>
@@ -211,11 +215,11 @@ const ChallengesPage = () => {
     const filtered = filterBySearch(data);
     return (
       <div>
-        <h3 className={`text-lg font-semibold ${color} mb-3 mt-6 flex items-center gap-2`}>
+        <h3 className={`text-base sm:text-lg font-semibold ${color} mb-2 sm:mb-3 mt-4 sm:mt-6 flex items-center gap-2`}>
           {icon} {title}
         </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {filtered?.length > 0 ? filtered.map(renderCard) : <p className="text-gray-400 italic">No matches</p>}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
+          {filtered?.length > 0 ? filtered.map(renderCard) : <p className="text-gray-400 italic text-sm">No matches</p>}
         </div>
       </div>
     );
@@ -224,29 +228,50 @@ const ChallengesPage = () => {
   return (
     <CommunityLayout>
       <Toaster position="top-right" />
-      <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-600 dark:text-gray-200">Community Challenges</h2>
-            <p className="text-gray-400">Join challenges to earn XP and level up!</p>
+      <div className="max-w-6xl mx-auto space-y-3 sm:space-y-6 px-2 sm:px-4">
+        {/* Header Section - Mobile smaller, desktop unchanged */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+              
+              
+              {/* Header Section - Button on same line with smaller mobile version */}
+                <div className="flex flex-row justify-between items-center gap-3 mb-3">
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-lg sm:text-2xl font-bold text-gray-600 dark:text-gray-200">My Challenges</h2>
+                    <p className="text-xs sm:text-base text-gray-400 mt-1">Join challenges to earn XP and level up!</p>
+                  </div>
+                  <Link to="/community/challenges/create" className="shrink-0">
+                    <button className="flex items-center ml-14 justify-center gap-1 bg-gradient-to-r from-[#72C1F5] to-[#72C1F5] text-white px-2 py-1 sm:px-4 sm:py-2 rounded-full text-xs font-medium shadow hover:shadow-md transition">
+                      <FaTrophy className="text-xs" /> 
+                      <span className="hidden xs:inline">Create Challenge</span>
+                      <span className="xs:hidden ">Create</span>
+                    </button>
+                  </Link>
+                </div>
+            </div>
           </div>
-          <Link to="/community/challenges/create">
-            <button className="flex items-center gap-2 bg-gradient-to-r from-[#72C1F5] to-[#72C1F5] text-white px-4 py-2 rounded-full text-sm font-medium shadow hover:shadow-md transition">
-              <FaTrophy /> Create Challenge
-            </button>
-          </Link>
+          {/* Desktop: Normal sized button */}
+          <div className="hidden sm:block">
+            <Link to="/community/challenges/create">
+              <button className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#72C1F5] to-[#72C1F5] text-white px-4 py-2 rounded-full text-sm font-medium shadow hover:shadow-md transition">
+                <FaTrophy className="text-base" /> 
+                <span>Create Challenge</span>
+              </button>
+            </Link>
+          </div>
         </div>
 
         {/* Search bar */}
-        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm dark:bg-gray-800">
-          <FaSearch className="text-[#76B947] mr-2" />
+        <div className="flex items-center w-full px-3 py-1.5 sm:py-2 border border-[#76B947] rounded-full bg-white shadow-sm dark:bg-gray-800">
+          <FaSearch className="text-[#76B947] mr-2 text-sm" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onKeyDown={(e) => e.key === 'Escape' && setSearchTerm('')}
             placeholder="Search your challenges..."
-            className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70"
+            className="w-full outline-none bg-transparent text-xs sm:text-sm text-[#76B947] placeholder-[#76B947]/70"
           />
           {searchTerm && (
             <button
