@@ -6,6 +6,8 @@ import { redisClient } from '../../../config/redis';
 import * as insightsService from '../services/insights.service';
 const router = express.Router();
 
+const BASE = 'http://localhost:6000';
+
 // Endpoint to fetch user insights on income and expenses per month in the current year
 router.get('/transactions/:userId', async (req, res) => {
    const { userId } = req.params;
@@ -730,6 +732,16 @@ router.get('/budget/:userId', async (req, res) => {
       logger.error('Error fetching budget recommendations:', error);
       res.status(500).json({ error: 'Internal server error' });
    }
+});
+
+router.post('/chat', async (req, res) => {
+  try {
+    const { question } = req.body;
+    const { data } = await axios.post(`${BASE}/chat`, { question });
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch chat response' });
+  }
 });
 
 

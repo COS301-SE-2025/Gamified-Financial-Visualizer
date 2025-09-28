@@ -424,32 +424,40 @@ const InsightsPage = () => {
 
 
   const getAiAnalysis = async (userPrompt) => {
+    if (!userPrompt.trim()) return;
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    setAiResponse(null); // reset previous response
+    try {
+      const res = await fetch('http://localhost:5000/api/insights/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ question: userPrompt }),
+      });
 
-    const responses = {
-      default: "Based on your spending patterns, you could save 15% more by reducing dining out expenses and optimizing your grocery budget.",
-      savings: "Your savings rate is 18%, which is good but could improve. Consider automating R500 more per month to reach your goals faster.",
-      investments: "Your portfolio lacks diversification. 78% is in equities - consider adding 20% bonds and 2% crypto for better risk balance.",
-      debt: "Your credit card utilization is 45%. Aim for under 30% to improve your credit score. Focus on paying down the card with 19.5% APR first."
-    };
+      if (!res.ok) throw new Error(`API Error: ${res.status}`);
 
-    let response = responses.default;
-    if (userPrompt.toLowerCase().includes('savings')) response = responses.savings;
-    if (userPrompt.toLowerCase().includes('invest')) response = responses.investments;
-    if (userPrompt.toLowerCase().includes('debt')) response = responses.debt;
+      const data = await res.json();
 
-    setAiResponse({
-      prompt: userPrompt,
-      analysis: response,
-      actionItems: [
-        "Set up auto-transfer of R500 to savings",
-        "Review dining expenses from last month",
-        "Schedule a portfolio review next week"
-      ],
-      generatedAt: new Date().toLocaleString()
-    });
-    setIsLoading(false);
+      setAiResponse({
+        prompt: userPrompt,
+        analysis: data.response,
+        actionItems: [], // optionally keep empty or generate static tips
+        generatedAt: new Date().toLocaleString(),
+      });
+
+    } catch (err) {
+      console.error('Failed to fetch AI response:', err);
+      setAiResponse({
+        prompt: userPrompt,
+        analysis: 'Failed to get response from AI. Please try again later.',
+        actionItems: [],
+        generatedAt: new Date().toLocaleString(),
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
 
