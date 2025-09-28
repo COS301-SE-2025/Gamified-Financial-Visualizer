@@ -131,9 +131,20 @@ export async function getUserByEmail(email: string) {
 }
 
 export async function getUserByUsername(username: string) {
-  const query = 'SELECT * FROM users WHERE username = $1';
+
+  const query = `
+  SELECT *
+  FROM users
+  JOIN user_points ON users.user_id = user_points.user_id
+  WHERE username = $1
+`;
+
   try {
     const result = await pool.query(query, [username]);
+    if (result.rows.length === 0) {
+      throw new Error(`User with username '${username}' not found`);
+    }
+  
     return result.rows[0];
   } catch (err) {
     logger.error(`[AuthService] Failed to fetch user by username ${username}:`, err);

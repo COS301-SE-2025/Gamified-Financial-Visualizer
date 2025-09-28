@@ -455,9 +455,9 @@ const BudgetPage = () => {
       const response = await fetch(`http://localhost:5000/api/budget/${deleteConfirmation.budgetId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({
-            user_id: userId
-          }),
+        body: JSON.stringify({
+          user_id: userId
+        }),
       });
       const result = await response.json();
       if (result.status === 'success') {
@@ -497,20 +497,20 @@ const BudgetPage = () => {
         } else {
           setError(result.message || 'Failed to update budget');
         }
- } else {
-  const response = await fetch('http://localhost:5000/api/budget', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      user_id: userId,
-      category_id: formData.category_id,
-      allocations: [{
-        category_id: formData.category_id,
-        target_amount: formData.target_amount
-      }]
-    }),
-  });
-  const result = await response.json();
+      } else {
+        const response = await fetch('http://localhost:5000/api/budget', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: userId,
+            category_id: formData.category_id,
+            allocations: [{
+              category_id: formData.category_id,
+              target_amount: formData.target_amount
+            }]
+          }),
+        });
+        const result = await response.json();
 
   if (result.status === 'success') {
     const cat = categories.find(c => c.category_id === formData.category_id);

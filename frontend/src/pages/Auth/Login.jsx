@@ -4,6 +4,7 @@ import AuthLayout from '../../components/AuthLayout';
 import logoImg from '../../assets/Images/Logo.png';
 import { FaEye, FaEyeSlash,FaExclamationCircle } from 'react-icons/fa';
 
+import  {useThemeLoader, applyThemeFromPreferences }  from '../ThemeLoader.mjs';
 const BASE_URL = "http://localhost:5000";
 
 const Login = () => {
@@ -35,7 +36,15 @@ const Login = () => {
         if (idRes.ok && idResult.data?.user_id) {
           const userId = idResult.data.user_id;
           const token = result.data.token;
-          localStorage.setItem('user', JSON.stringify({ username, id: userId, token: token }));
+          const tier = result.data.user.tier_status;
+          localStorage.setItem('user', JSON.stringify({ username, id: userId ,
+            token: token,
+            tier: tier
+          }));
+          applyThemeFromPreferences(userId, token);
+          // remove gameId from localStorage on login
+          localStorage.removeItem('gameId');
+          localStorage.removeItem('lobbyId')
           navigate('/dashboard', { state: { userId } });
         } else {
           setError('Could not retrieve user ID after login.');

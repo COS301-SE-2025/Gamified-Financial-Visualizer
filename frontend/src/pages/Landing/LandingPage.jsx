@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Button } from '../../components/ui/Button';
 import { motion } from "framer-motion";
 import { FaTrophy, FaUserGraduate, FaPuzzlePiece, FaUserFriends, FaChartLine, FaArrowUp, FaArrowDown, FaRocket, FaCoins, FaShieldAlt, FaArrowRight, FaMedal } from "react-icons/fa";
+import CountUp from 'react-countup';
 
 // Image imports
 import YohaliImg from '../../assets/Team Profiles/Malaika.png';
@@ -18,6 +19,11 @@ import avatar3 from '../../assets/Images/avatars/Totoro.png';
 // Banner header images 
 import heroGif from '../../assets/Images/banners/pixelOffice.gif';
 import gemImg from '../../assets/Images/Logo1.png';
+
+const BASE_URL = 'http://localhost:5000';
+
+
+
 
 const AchievementBadge = ({ title, description, icon, color }) => (
     <motion.div
@@ -122,6 +128,79 @@ const ScrollNavigation = ({ sections }) => {
 
 export default function LandingPage() {
     const [activeTestimonial, setActiveTestimonial] = React.useState(0);
+    const [dynamicDataStats, setDynamicDataStats] = useState(null);
+
+
+    // Fetch dynamic data stats
+    const fetchDynamicDataStats = async () => {
+        try {
+            const response = await fetch(`${BASE_URL}/api/community/landing-page`);
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                return data.data;
+            } else {
+                throw new Error(data.message);
+            }
+        } catch (error) {
+            console.error('Error fetching dynamic data stats:', error);
+            return null;
+        }
+    };
+    useEffect(() => {
+        const getData = async () => {
+            const stats = await fetchDynamicDataStats();
+            setDynamicDataStats(stats);
+        };
+        getData();
+    }, []);
+
+    const formatCompactNumber = (value) => {
+        const num = typeof value === 'string' ? parseFloat(value) : value;
+        if (isNaN(num)) return "0";
+
+        if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(1) + "B";
+        if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + "M";
+        if (num >= 1_000) return (num / 1_000).toFixed(1) + "K";
+        return num.toFixed(2);
+    };
+
+
+    const StatCard = React.memo(({ icon, value, label, isCurrency = false, isStatic = false }) => {
+        if (!value || !label || !icon) return null;
+
+        return (
+            <motion.div
+                className="text-center p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20"
+                initial={false}
+
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
+            >
+                <div className="text-3xl font-bold flex items-center justify-center gap-2">
+                    {icon}
+                    {isStatic ? (
+                        value
+                    ) : value ? (
+                        <>
+                            {isCurrency && "R"}
+                            <CountUp
+                                end={parseFloat(value)}
+                                duration={2}
+                                formattingFn={formatCompactNumber}
+                                enableScrollSpy={true}
+                            />
+                        </>
+                    ) : (
+                        isCurrency ? "R0" : "0"
+                    )}
+                </div>
+                <div className="text-sm opacity-90 mt-1">{label}</div>
+            </motion.div>
+        );
+    });
+
 
     //Team members 
     const team = [
@@ -137,7 +216,7 @@ export default function LandingPage() {
             role: 'Services Engineer, Systems Architect',
             image: LebogangImg,
             github: 'https://github.com/B-WayneZA',
-            linkedin: 'https://www.linkedin.com/in/lebogang-masenya/',
+            linkedin: 'http://linkedin.com/in/lebogang-masenya-298772382',
         },
         {
             name: 'Mpho Siminya',
@@ -338,24 +417,40 @@ export default function LandingPage() {
             <section ref={statsRef} className="py-7 bg-gradient-to-r from-[#4B6343] to-[#AAD977] text-white shadow-lg">
                 <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 px-6">
                     {[
-                        { value: "100+", label: "Active Players", icon: <FaUserFriends /> },
-                        { value: "500+", label: "XP Earned Daily", icon: <FaChartLine /> },
-                        { value: "30+", label: "Unique Achievements", icon: <FaTrophy /> },
-                        { value: "R100K+", label: "Collectively Saved", icon: <FaCoins /> }
+                        {
+                            value: dynamicDataStats?.activePlayers,
+                            label: "Active Players",
+                            icon: <FaUserFriends />,
+                            isCurrency: false
+                        },
+                        {
+                            value: dynamicDataStats?.totalXPEarned,
+                            label: "XP Earned",
+                            icon: <FaChartLine />,
+                            isCurrency: false
+                        },
+                        {
+                            value: "30+",
+                            label: "Unique Achievements",
+                            icon: <FaTrophy />,
+                            isCurrency: false,
+                            isStatic: true
+                        },
+                        {
+                            value: dynamicDataStats?.totalAccountValue,
+                            label: "Collectively Tracked",
+                            icon: <FaCoins />,
+                            isCurrency: true
+                        }
                     ].map((stat, i) => (
-                        <motion.div
+                        <StatCard
                             key={i}
-                            className="text-center p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20"
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.1 }}
-                            viewport={{ once: true }}
-                        >
-                            <div className="text-3xl font-bold flex items-center justify-center gap-2">
-                                {stat.icon} {stat.value}
-                            </div>
-                            <div className="text-sm opacity-90 mt-1">{stat.label}</div>
-                        </motion.div>
+                            icon={stat.icon}
+                            label={stat.label}
+                            value={stat.value}
+                            isCurrency={stat.isCurrency}
+                            isStatic={stat.isStatic}
+                        />
                     ))}
                 </div>
             </section>

@@ -65,6 +65,7 @@ import CommunityMemberPage from './pages/Community/CommunityMemberPage';
 import CommunityCreate from './pages/Community/CommunityCreate';
 import ChallengeCreate from './pages/Community/ChallengeCreate';
 import CommunityGameRoom from './pages/Community/CommunityGameRoom';
+import MockGame from './components/game/MockGame';
 
 // The Achievements Page Routes
 import AchievementsPage from './pages/Achievements/AchievementsPage';
@@ -154,8 +155,7 @@ function App() {
           <Route path="/community/challenges/:id" element={<ChallengeDetail />} />
           <Route path="/community/create" element={<CommunityCreate />} />
           <Route path="/community/challenges/create" element={<ChallengeCreate />} />
-          <Route path="/community/game" element={<CommunityGameRoom />} />
-           <Route path="/community/mockGame" element={<MockGameSimulation />} />
+          <Route path="/community/game" element={<MockGame />} />
 
           {/* Routes for the Accounts pages */}
           <Route path="/transactions" element={<TransactionPage />} />
