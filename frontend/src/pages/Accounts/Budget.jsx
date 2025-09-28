@@ -462,9 +462,9 @@ const BudgetPage = () => {
       const response = await fetch(`${BASE_URL}/api/budget/${deleteConfirmation.budgetId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({
-            user_id: userId
-          }),
+        body: JSON.stringify({
+          user_id: userId
+        }),
       });
       const result = await response.json();
       if (result.status === 'success') {
@@ -494,204 +494,210 @@ const BudgetPage = () => {
             user_id: userId
           }),
         });
-        const result = await response.json();
-        if (result.status === 'success') {
-          setBudgets(prev =>
-            prev.map(b => b.budget_id === editingId ? { ...b, budget_name: formData.budget_name } : b)
-          );
-          setEditingId(null);
-          toast.success('Budget updated successfully');
-        } else {
-          setError(result.message || 'Failed to update budget');
-        }
- } else {
-  const response = await fetch(`${BASE_URL}/api/budget`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      user_id: userId,
-      category_id: formData.category_id,
-      allocations: [{
-        category_id: formData.category_id,
-        target_amount: formData.target_amount
-      }]
-    }),
-  });
-  const result = await response.json();
+      const result = await response.json();
+      if (result.status === 'success') {
+        setBudgets(prev =>
+          prev.map(b => b.budget_id === editingId ? { ...b, budget_name: formData.budget_name } : b)
+        );
+        setEditingId(null);
+        toast.success('Budget updated successfully');
+      } else {
+        setError(result.message || 'Failed to update budget');
+      }
+    } else {
+      const response = await fetch(`${BASE_URL}/api/budget`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: userId,
+          category_id: formData.category_id,
+          allocations: [{
+            category_id: formData.category_id,
+            target_amount: formData.target_amount
+          }]
+        }),
+      });
+      const result = await response.json();
 
-  if (result.status === 'success') {
-    // derive a friendly name from the chosen category if API didn’t send one
-    const cat = categories.find(c => c.category_id === formData.category_id);
-    const resolvedName =
-      result.data?.budget_name || result.data?.category_name || cat?.category_name || 'Untitled Budget';
+      if (result.status === 'success') {
+        // derive a friendly name from the chosen category if API didn’t send one
+        const cat = categories.find(c => c.category_id === formData.category_id);
+        const resolvedName =
+          result.data?.budget_name || result.data?.category_name || cat?.category_name || 'Untitled Budget';
 
-    const newBudget = {
-      ...result.data,
-      // make sure both fields exist for downstream UI
-      budget_name: resolvedName,
-      category_name: result.data?.category_name || resolvedName,
+        const newBudget = {
+          ...result.data,
+          // make sure both fields exist for downstream UI
+          budget_name: resolvedName,
+          category_name: result.data?.category_name || resolvedName,
 
-      // ensure numbers the card can use immediately
-      total_target:
-        Number(result.data?.total_target ??
-               result.data?.target_amount ??
-               formData.target_amount ?? 0),
+          // ensure numbers the card can use immediately
+          total_target:
+            Number(result.data?.total_target ??
+              result.data?.target_amount ??
+              formData.target_amount ?? 0),
 
-      used: Number(result.data?.used ?? 0),
+          used: Number(result.data?.used ?? 0),
 
-      created_at: result.data?.created_at ?? new Date().toISOString(),
-    };
+          created_at: result.data?.created_at ?? new Date().toISOString(),
+        };
 
-    setBudgets(prev => [newBudget, ...prev]);   // no refresh needed
-    setIsCreating(false);
-    toast.success('Budget created successfully');
-  } else {
-    setError(result.message || 'Failed to create budget');
+        setBudgets(prev => [newBudget, ...prev]);   // no refresh needed
+        setIsCreating(false);
+        toast.success('Budget created successfully');
+      } else {
+        setError(result.message || 'Failed to create budget');
+      }
+    }
+
+  } catch (err) {
+    setError('Failed to save budget');
+    console.error('Error saving budget:', err);
   }
-}
+};
 
 
-  const handleCancel = () => { setEditingId(null); setIsCreating(false); };
+const handleCancel = () => { setEditingId(null); setIsCreating(false); };
 
-  return (
-    <AccountsLayout>
-      <div className="p-6 w-full">
-        <Toaster position="top-center" />
+return (
+  <AccountsLayout>
+    <div className="p-6 w-full">
+      <Toaster position="top-center" />
 
-        {deleteConfirmation.show && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={cancelDelete} />
-            <div
-              className="relative z-10 w-[92%] max-w-md rounded-2xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 p-6"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-600">
-                  <FaTrash />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                  Delete budget?
-                </h3>
-              </div>
-
-              <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">
-                You're about to delete the budget for{' '}
-                <span className="font-semibold">{deleteConfirmation.budgetName}</span>.
-                This action cannot be undone.
-              </p>
-
-              <div className="mt-6 flex flex-wrap gap-3 justify-end">
-                <button
-                  onClick={cancelDelete}
-                  className="px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmDelete}
-                  className="px-4 py-2 rounded-full text-sm font-semibold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 transition"
-                >
-                  Delete Budget
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Monthly Budget Management</h2>
-          <button
-            onClick={handleCreate}
-            className="flex items-center gap-2 px-5 py-2.5 bg-[#AAD977] text-white text-sm font-medium rounded-lg hover:bg-[#6d9140] transition shadow-sm"
+      {deleteConfirmation.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={cancelDelete} />
+          <div
+            className="relative z-10 w-[92%] max-w-md rounded-2xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 p-6"
+            onClick={(e) => e.stopPropagation()}
           >
-            <FaPlus /> Create Budget
-          </button>
-        </div>
-
-        {error && (
-          <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 text-red-500 dark:text-red-300 p-4 mb-6 rounded">
-            <div className="flex items-center">
-              <FaTimes className="mr-2" />
-              <span>{error}</span>
-            </div>
-          </div>
-        )}
-
-        <div className="mb-6">
-          <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm dark:bg-gray-800">
-            <FaSearch className="text-[#76B947] mr-2" />
-            <input
-              type="text"
-              placeholder="Search your budgets..."
-              className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          {isCreating && (
-            <BudgetForm
-              onSave={handleSave}
-              onCancel={handleCancel}
-              categories={categories}
-              isEdit={false}
-            />
-          )}
-
-          {filteredBudgets.map((budget) => (
-            editingId === budget.budget_id ? (
-              <BudgetForm
-                key={budget.budget_id}
-                initialData={{ budget_name: budget.budget_name }}
-                onSave={handleSave}
-                onCancel={handleCancel}
-                categories={categories.slice(0, 10)}
-                isEdit={true}
-              />
-            ) : (
-              <BudgetCard
-                key={budget.budget_id}
-                budget_id={budget.budget_id}
-                budget_name={budget.budget_name}
-                total_target={budget.total_target}
-                used={budget.used}
-                onEdit={() => handleEdit(budget.budget_id)}
-                onDelete={() => handleDeleteClick(budget.budget_id, budget.budget_name)}
-              />
-            )
-          ))}
-
-          {budgets.length === 0 && !isCreating && (
-            <div className="text-center py-12">
-              <div className="mx-auto w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
-                <FaWallet className="text-gray-400 dark:text-gray-500 text-3xl" />
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-600">
+                <FaTrash />
               </div>
-              <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-1">No budgets yet</h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-4">Create your first budget to start tracking your expenses</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Delete budget?
+              </h3>
+            </div>
+
+            <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">
+              You're about to delete the budget for{' '}
+              <span className="font-semibold">{deleteConfirmation.budgetName}</span>.
+              This action cannot be undone.
+            </p>
+
+            <div className="mt-6 flex flex-wrap gap-3 justify-end">
               <button
-                onClick={handleCreate}
-                className="px-5 py-2.5 bg-[#AAD977] text-white rounded-lg hover:bg-[#6d9140] transition"
+                onClick={cancelDelete}
+                className="px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 transition"
               >
-                <FaPlus className="inline mr-2" /> Create Budget
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 rounded-full text-sm font-semibold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 transition"
+              >
+                Delete Budget
               </button>
             </div>
-          )}
+          </div>
+        </div>
+      )}
 
-          {budgets.length > 0 && filteredBudgets.length === 0 && (
-            <div className="text-center py-12">
-              <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <FaSearch className="text-gray-400 text-3xl" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-700 mb-1">No budgets found</h3>
-              <p className="text-gray-500">Try adjusting your search term</p>
-            </div>
-          )}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Monthly Budget Management</h2>
+        <button
+          onClick={handleCreate}
+          className="flex items-center gap-2 px-5 py-2.5 bg-[#AAD977] text-white text-sm font-medium rounded-lg hover:bg-[#6d9140] transition shadow-sm"
+        >
+          <FaPlus /> Create Budget
+        </button>
+      </div>
+
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 text-red-500 dark:text-red-300 p-4 mb-6 rounded">
+          <div className="flex items-center">
+            <FaTimes className="mr-2" />
+            <span>{error}</span>
+          </div>
+        </div>
+      )}
+
+      <div className="mb-6">
+        <div className="flex items-center w-full px-4 py-2 border border-[#76B947] rounded-full bg-white shadow-sm dark:bg-gray-800">
+          <FaSearch className="text-[#76B947] mr-2" />
+          <input
+            type="text"
+            placeholder="Search your budgets..."
+            className="w-full outline-none bg-transparent text-sm text-[#76B947] placeholder-[#76B947]/70"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
       </div>
-    </AccountsLayout>
-  );
+
+      <div className="space-y-4">
+        {isCreating && (
+          <BudgetForm
+            onSave={handleSave}
+            onCancel={handleCancel}
+            categories={categories}
+            isEdit={false}
+          />
+        )}
+
+        {filteredBudgets.map((budget) => (
+          editingId === budget.budget_id ? (
+            <BudgetForm
+              key={budget.budget_id}
+              initialData={{ budget_name: budget.budget_name }}
+              onSave={handleSave}
+              onCancel={handleCancel}
+              categories={categories.slice(0, 10)}
+              isEdit={true}
+            />
+          ) : (
+            <BudgetCard
+              key={budget.budget_id}
+              budget_id={budget.budget_id}
+              budget_name={budget.budget_name}
+              total_target={budget.total_target}
+              used={budget.used}
+              onEdit={() => handleEdit(budget.budget_id)}
+              onDelete={() => handleDeleteClick(budget.budget_id, budget.budget_name)}
+            />
+          )
+        ))}
+
+        {budgets.length === 0 && !isCreating && (
+          <div className="text-center py-12">
+            <div className="mx-auto w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
+              <FaWallet className="text-gray-400 dark:text-gray-500 text-3xl" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-1">No budgets yet</h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-4">Create your first budget to start tracking your expenses</p>
+            <button
+              onClick={handleCreate}
+              className="px-5 py-2.5 bg-[#AAD977] text-white rounded-lg hover:bg-[#6d9140] transition"
+            >
+              <FaPlus className="inline mr-2" /> Create Budget
+            </button>
+          </div>
+        )}
+
+        {budgets.length > 0 && filteredBudgets.length === 0 && (
+          <div className="text-center py-12">
+            <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <FaSearch className="text-gray-400 text-3xl" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-700 mb-1">No budgets found</h3>
+            <p className="text-gray-500">Try adjusting your search term</p>
+          </div>
+        )}
+      </div>
+    </div>
+  </AccountsLayout>
+);
 };
 
 export default BudgetPage;

@@ -111,7 +111,7 @@ const Settings = () => {
   // Fetch banners from database
   const fetchBanners = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/auth/banners');
+      const res = await fetch(`${BASE_URL}/api/auth/banners`);
       const data = await res.json();
       setBannerList(data.data);
     } catch (err) {
