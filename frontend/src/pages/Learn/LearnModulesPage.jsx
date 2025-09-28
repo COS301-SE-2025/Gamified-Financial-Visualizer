@@ -238,10 +238,10 @@ const LearningPage = () => {
 
         {/* Search and Filters */}
         <div className="mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center justify-between mb-4 sm:mb-6">
+          <div className="flex gap-3 items-center justify-between mb-4 sm:mb-6">
             {/* Search Bar */}
             <div className="flex items-center w-full px-3 sm:px-4 py-2 border border-[#76B947] rounded-full bg-white dark:bg-gray-800 shadow-sm dark:border-[#AAD977]">
-              <FaSearch className="text-[#76B947] dark:text-[#AAD977] mr-2 flex-shrink-0" />
+              <FaSearch className="text-[#76B947] dark:text-[#AAD977] mr-2 flex-shrink-0 text-sm sm:text-base" />
               <input
                 type="text"
                 placeholder="Search your modules..."
@@ -251,13 +251,13 @@ const LearningPage = () => {
               />
             </div>
             
-            {/* Filter Button */}
+            {/* Filter Button - Icon only on mobile, text + icon on desktop */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center justify-center gap-2 px-2 sm:px-4 py-2 sm:py-3 bg-white dark:bg-gray-800 border border-[#76B947] dark:border-[#AAD977] rounded-lg shadow-sm hover:bg-lime-100 dark:hover:bg-gray-700 transition-colors flex-shrink-0"
+              className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-gray-800 border border-[#76B947] dark:border-[#AAD977] rounded-lg shadow-sm hover:bg-lime-100 dark:hover:bg-gray-700 transition-colors flex-shrink-0"
             >
               <FaFilter className="text-[#76B947] dark:text-[#AAD977] text-sm sm:text-base" />
-              <span className="text-[#76B947] dark:text-[#AAD977] text-sm sm:text-base whitespace-nowrap">
+              <span className="hidden sm:inline text-[#76B947] dark:text-[#AAD977] text-sm sm:text-base whitespace-nowrap">
                 Filters
               </span>
             </button>
