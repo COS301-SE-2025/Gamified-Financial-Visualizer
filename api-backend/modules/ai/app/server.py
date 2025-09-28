@@ -91,6 +91,7 @@ class ChatResponse(BaseModel):
 
 # --- Load GPT model once at startup ---
 # MODEL_NAME = "openai-community/gpt2"
+# MODEL_NAME = "openai/gpt-oss-20b" // lighter model
 MODEL_NAME = "openai/gpt-oss-120b"
 generator = pipeline('text-generation', model=MODEL_NAME)
 

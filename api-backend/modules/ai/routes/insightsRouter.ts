@@ -748,7 +748,7 @@ router.get('/budget/:userId', async (req, res) => {
 router.post('/chat', async (req, res) => {
   try {
     const { question } = req.body;
-    const { data } = await axios.post(`$http://localhost:6000/chat`, { question });
+    const { data } = await axios.post(`${AI_URL}/chat`, { question });
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch chat response' });
