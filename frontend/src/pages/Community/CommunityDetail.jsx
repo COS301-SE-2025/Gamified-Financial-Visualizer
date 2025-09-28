@@ -256,33 +256,33 @@ const CommunityDetail = () => {
   const removeMember = async (userId) => {
 
     try {
-    const res = await fetch(
-      `${BASE_URL}/api/community/${communityData.community_id}/members/${userId}`,
-      { method: 'DELETE' }
-    );
-    if (!res.ok) throw new Error('Remove failed');
-    setMembers((prev) => prev.filter((m) => m.user_id !== userId));
-     toast.success('Member removed successfully');
+      const res = await fetch(
+        `${BASE_URL}/api/community/${communityData.community_id}/members/${userId}`,
+        { method: 'DELETE' }
+      );
+      if (!res.ok) throw new Error('Remove failed');
+      setMembers((prev) => prev.filter((m) => m.user_id !== userId));
+      toast.success('Member removed successfully');
     } catch (err) {
       toast.error('Failed to remove member');
       console.error(err);
-
-  };
-
+    };
+  }
+  
   const handleSave = async () => {
     const payload = {
       community_name: communityData.community_name,
       description: communityData.description,
     };
 
-
-    const res = await fetch(
-      `${BASE_URL}/api/community/${communityData.community_id}`,
-      {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+    try {
+      const res = await fetch(
+        `${BASE_URL}/api/community/${communityData.community_id}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
       if (!res.ok) throw new Error('Update failed');
       const json = await res.json();
       setCommunityData(json.data);
@@ -358,7 +358,7 @@ const CommunityDetail = () => {
           )}
         </div>
       </div>
-      
+
       <div className="flex flex-wrap gap-2">
         {isEditing ? (
           <>
@@ -644,76 +644,76 @@ const CommunityDetail = () => {
         )}
 
         {/* Community Challenges */}
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="text-base sm:text-lg font-semibold text-[#4B5563] dark:text-gray-300">
-              Community Challenges
-            </h3>
-            {isMember(currentUser?.id) && (
-              <Link to="/community/challenges/create">
-                <button className="flex items-center gap-2 bg-gradient-to-r from-[#72C1F5] to-[#B1E1FF] text-white px-3 py-1.5 rounded-full text-xs font-medium shadow hover:shadow-md transition whitespace-nowrap">
-                  <FaTrophy size={12} /> Create Challenge
-                </button>
-              </Link>
-            )}
-          </div>
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-base sm:text-lg font-semibold text-[#4B5563] dark:text-gray-300">
+            Community Challenges
+          </h3>
+          {isMember(currentUser?.id) && (
+            <Link to="/community/challenges/create">
+              <button className="flex items-center gap-2 bg-gradient-to-r from-[#72C1F5] to-[#B1E1FF] text-white px-3 py-1.5 rounded-full text-xs font-medium shadow hover:shadow-md transition whitespace-nowrap">
+                <FaTrophy size={12} /> Create Challenge
+              </button>
+            </Link>
+          )}
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-            {challengeData.map((challenge, i) => (
-              <div key={i} className="bg-white dark:bg-gray-800 p-4 pt-12 sm:pt-10 rounded-3xl shadow-md border dark:border-gray-700 relative">
-                {/* Mobile: Smaller banner, Desktop: Original size */}
-                <img src={banner1} alt="Challenge" className="absolute -top-6 left-4 w-14 h-14 sm:w-20 sm:h-20 rounded-full object-cover border-4 border-white dark:border-gray-700 shadow" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          {challengeData.map((challenge, i) => (
+            <div key={i} className="bg-white dark:bg-gray-800 p-4 pt-12 sm:pt-10 rounded-3xl shadow-md border dark:border-gray-700 relative">
+              {/* Mobile: Smaller banner, Desktop: Original size */}
+              <img src={banner1} alt="Challenge" className="absolute -top-6 left-4 w-14 h-14 sm:w-20 sm:h-20 rounded-full object-cover border-4 border-white dark:border-gray-700 shadow" />
 
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
-                  <div className="flex-1 min-w-0">
-                    {/* Mobile: Smaller text, Desktop: Original size */}
-                    <h4 className="text-sm sm:text-lg font-semibold text-[#111827] dark:text-gray-200 truncate">{challenge.title}</h4>
-                    <p className={`text-xs sm:text-sm font-medium mt-1 ${challenge.current_amount >= challenge.target_amount ? 'text-green-400' : 'text-[#ED5E52]'}`}>
-                      {challenge.current_amount}/{challenge.target_amount} ZAR
-                    </p>
-                    <p className="text-xs sm:text-sm text-[#374151] dark:text-gray-300">
-                      {Math.max(0, challenge.target_amount - challenge.current_amount)} ZAR Left
-                    </p>
-                    <p className="text-xs text-[#6B7280] dark:text-gray-400 mt-1">
-                      Goal by <span className="text-[#E99470] font-semibold">{challenge.deadline}</span>
-                    </p>
-                  </div>
-
-                  {/* Mobile: Horizontal badges, Desktop: Vertical badges */}
-                  <div className="flex flex-wrap gap-1 sm:gap-2 sm:flex-col sm:items-end">
-                    <span className="text-xs px-2 sm:px-3 py-1 rounded-full bg-[#B1E1FF] dark:bg-[#88D1FF] text-[#4B82A2] dark:text-[#1E3A8A] font-medium">{challenge.challenge_status}</span>
-                    <span className="text-xs px-2 sm:px-3 py-1 rounded-full bg-[#FFD18C] text-white font-medium">{challenge.challenge_type}</span>
-                    <span className="text-xs px-2 sm:px-3 py-1 rounded-full bg-[#FFD18C] text-white font-semibold">{challenge.xp} XP</span>
-                  </div>
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                <div className="flex-1 min-w-0">
+                  {/* Mobile: Smaller text, Desktop: Original size */}
+                  <h4 className="text-sm sm:text-lg font-semibold text-[#111827] dark:text-gray-200 truncate">{challenge.title}</h4>
+                  <p className={`text-xs sm:text-sm font-medium mt-1 ${challenge.current_amount >= challenge.target_amount ? 'text-green-400' : 'text-[#ED5E52]'}`}>
+                    {challenge.current_amount}/{challenge.target_amount} ZAR
+                  </p>
+                  <p className="text-xs sm:text-sm text-[#374151] dark:text-gray-300">
+                    {Math.max(0, challenge.target_amount - challenge.current_amount)} ZAR Left
+                  </p>
+                  <p className="text-xs text-[#6B7280] dark:text-gray-400 mt-1">
+                    Goal by <span className="text-[#E99470] font-semibold">{challenge.deadline}</span>
+                  </p>
                 </div>
 
-                {/* Mobile: Hide avatar group, Desktop: Show */}
-                <div className="hidden sm:flex gap-1 mt-3">
-                  {challenge.avatarGroup?.slice(0, 3).map((src, j) => (
-                    <img key={j} src={src} alt="avatar" className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-white dark:border-gray-700 shadow-sm" />
-                  ))}
-                </div>
-
-                {/* Mobile: Smaller buttons, Desktop: Original size */}
-                <div className="flex gap-2 mt-3">
-                  <Link to={`/community/challenges/${challenge.id}`} className="flex-1">
-                    <button className="w-full bg-[#AAD977] dark:bg-[#A0E555] text-white text-xs sm:text-sm px-2 sm:px-3 py-1.5 rounded-full font-semibold hover:bg-[#83AB55] dark:hover:bg-[#88BC46] transition">
-                      View
-                    </button>
-                  </Link>
-                  <button
-                    onClick={() => handleDelete(challenge.id)}
-                    className="flex-1 bg-[#FE9B90] dark:bg-[#FE9B90] text-white text-xs sm:text-sm px-2 sm:px-3 py-1.5 rounded-full font-semibold hover:bg-[#ED5E52] dark:hover:bg-[#E55C4C] transition"
-                  >
-                    Delete
-                  </button>
+                {/* Mobile: Horizontal badges, Desktop: Vertical badges */}
+                <div className="flex flex-wrap gap-1 sm:gap-2 sm:flex-col sm:items-end">
+                  <span className="text-xs px-2 sm:px-3 py-1 rounded-full bg-[#B1E1FF] dark:bg-[#88D1FF] text-[#4B82A2] dark:text-[#1E3A8A] font-medium">{challenge.challenge_status}</span>
+                  <span className="text-xs px-2 sm:px-3 py-1 rounded-full bg-[#FFD18C] text-white font-medium">{challenge.challenge_type}</span>
+                  <span className="text-xs px-2 sm:px-3 py-1 rounded-full bg-[#FFD18C] text-white font-semibold">{challenge.xp} XP</span>
                 </div>
               </div>
-            ))}
-          </div>
+
+              {/* Mobile: Hide avatar group, Desktop: Show */}
+              <div className="hidden sm:flex gap-1 mt-3">
+                {challenge.avatarGroup?.slice(0, 3).map((src, j) => (
+                  <img key={j} src={src} alt="avatar" className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-white dark:border-gray-700 shadow-sm" />
+                ))}
+              </div>
+
+              {/* Mobile: Smaller buttons, Desktop: Original size */}
+              <div className="flex gap-2 mt-3">
+                <Link to={`/community/challenges/${challenge.id}`} className="flex-1">
+                  <button className="w-full bg-[#AAD977] dark:bg-[#A0E555] text-white text-xs sm:text-sm px-2 sm:px-3 py-1.5 rounded-full font-semibold hover:bg-[#83AB55] dark:hover:bg-[#88BC46] transition">
+                    View
+                  </button>
+                </Link>
+                <button
+                  onClick={() => handleDelete(challenge.id)}
+                  className="flex-1 bg-[#FE9B90] dark:bg-[#FE9B90] text-white text-xs sm:text-sm px-2 sm:px-3 py-1.5 rounded-full font-semibold hover:bg-[#ED5E52] dark:hover:bg-[#E55C4C] transition"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
 
         {/* Community Statistics */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-          
+
           {/* Community Progress Card */}
           <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow border dark:border-gray-700">
             <h4 className="text-base sm:text-lg font-semibold mb-4 text-[#1F2937] dark:text-gray-200">Community Progress</h4>
@@ -749,32 +749,32 @@ const CommunityDetail = () => {
               <p className="text-sm text-gray-500 dark:text-gray-400">No contributions yet.</p>
             ) : (
               paginatedScores.map((member, index) => (
-              <div key={member.id} className="flex items-center justify-between mb-4">
-                {/* Avatar & Name */}
-                <div className="flex items-center gap-3">
-                  <img
-                    src={member.avatar}
-                    alt={member.name}
-                    className="w-8 h-8 rounded-full object-cover border border-gray-300"
-                  />
-                  <span className="text-sm font-medium text-[#374151]">{member.name}</span>
-                </div>
-
-                {/* Score Bar */}
-                <div className="flex items-center gap-2 w-2/3">
-                  <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full"
-                      style={{
-                        width: `${member.score}%`,
-                        background: 'linear-gradient(to right, #34D399, #3B82F6)',
-                        borderRadius: '9999px',
-                      }}
+                <div key={member.id} className="flex items-center justify-between mb-4">
+                  {/* Avatar & Name */}
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={member.avatar}
+                      alt={member.name}
+                      className="w-8 h-8 rounded-full object-cover border border-gray-300"
                     />
+                    <span className="text-sm font-medium text-[#374151]">{member.name}</span>
+                  </div>
+
+                  {/* Score Bar */}
+                  <div className="flex items-center gap-2 w-2/3">
+                    <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full"
+                        style={{
+                          width: `${member.score}%`,
+                          background: 'linear-gradient(to right, #34D399, #3B82F6)',
+                          borderRadius: '9999px',
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              ))
             )}
             {/* Pagination Controls */}
             {totalPages > 1 && (
