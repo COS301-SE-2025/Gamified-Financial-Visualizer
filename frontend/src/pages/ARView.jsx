@@ -338,7 +338,7 @@ export default function ARView() {
 
                 {/* Theme Badge */}
                 <div className="absolute top-6 left-6 bg-black/80 text-white px-4 py-3 rounded-full text-sm font-semibold backdrop-blur-sm border border-white/20 flex items-center gap-2">
-                  <span className="text-xl text-sky-300">
+                  <span className="text-xl text-sky-400">
                     <FaBuilding />
                   </span>
                   <span className="capitalize">{currentTheme.replace(/_/g, ' ')}</span>
