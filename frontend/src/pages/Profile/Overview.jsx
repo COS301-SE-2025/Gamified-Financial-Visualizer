@@ -5,8 +5,11 @@ import { motion } from 'framer-motion';
 
 // Profile banner
 import profileBanner from '../../assets/Images/banners/pixelBalcony.gif';
-
 import avatar4 from '../../assets/Images/avatars/Totoro.png';
+
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
 
 // Format amount cleanly (e.g., 7500 or 7500.14)
 const formatAmount = (amount) => {
@@ -30,37 +33,37 @@ const Overview = () => {
     if (!user?.id) return;
 
     // Fetch profile data
-    fetch(`http://localhost:5000/api/auth/top-bar/${user.id}`)
+    fetch(`${BASE_URL}/api/auth/top-bar/${user.id}`)
       .then(res => res.json())
       .then(res => setProfileData(res.data))
       .catch(err => console.error('Failed to load profile bar:', err));
 
     // Fetch current goals
-    fetch(`http://localhost:5000/api/auth/profile/current-goals/${user.id}`)
+    fetch(`${BASE_URL}/api/auth/profile/current-goals/${user.id}`)
       .then(res => res.json())
       .then(res => setGoals(res.data))
       .catch(err => console.error('Failed to load goals:', err));
 
     // Fetch performance stats
-    fetch(`http://localhost:5000/api/auth/profile/performance-stats/${user.id}`)
+    fetch(`${BASE_URL}/api/auth/profile/performance-stats/${user.id}`)
       .then(res => res.json())
       .then(res => setPerformanceStats(res.data))
       .catch(err => console.error('Failed to load performance stats:', err));
 
     // Fetch recent achievements
-    fetch(`http://localhost:5000/api/auth/profile/recent-achievements/${user.id}`)
+    fetch(`${BASE_URL}/api/auth/profile/recent-achievements/${user.id}`)
       .then(res => res.json())
       .then(res => setRecentAchievements(res.data))
       .catch(err => console.error('Failed to load achievements:', err));
 
     // Fetch communities
-    fetch(`http://localhost:5000/api/auth/profile/communities/${user.id}`)
+    fetch(`${BASE_URL}/api/auth/profile/communities/${user.id}`)
       .then(res => res.json())
       .then(res => setCommunityData(res.data))
       .catch(err => console.error('Failed to load communities:', err));
 
     // Fetch level progress
-    fetch(`http://localhost:5000/api/auth/profile/level-progress/${user.id}`)
+    fetch(`${BASE_URL}/api/auth/profile/level-progress/${user.id}`)
       .then(res => res.json())
       .then(res => setLevelProgress(res.data))
       .catch(err => console.error('Failed to load level progress:', err));
@@ -75,55 +78,56 @@ const Overview = () => {
   const [userId] = useState(() => JSON.parse(localStorage.getItem('user'))?.id ?? null);
 
   useEffect(() => {
-  if (!userId) return;
-  fetch(`http://localhost:5000/api/auth/profile/post-images/${userId}?page=${postPage}&pageSize=${POSTS_PER_PAGE}`)
-    .then(res => {
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    })
-    .then(json => {
-      const data = json?.data;
-      console.log('Post data received:', data?.posts); // Add this line
-      setPostImages(data?.posts || []);
-      setPostTotalPages(data?.totalPages || 1);
-      if (postPage > (data?.totalPages || 1)) setPostPage(data?.totalPages || 1);
-    })
-    .catch(err => {
-      console.error('Failed to load post images:', err);
-      setPostImages([]); setPostTotalPages(1);
-    });
-}, [userId, postPage]);
+    if (!userId) return;
+    fetch(`${BASE_URL}/api/auth/profile/post-images/${userId}?page=${postPage}&pageSize=${POSTS_PER_PAGE}`)
+
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then(json => {
+        const data = json?.data;
+        setPostImages(data?.posts || []);
+        setPostTotalPages(data?.totalPages || 1);
+        if (postPage > (data?.totalPages || 1)) setPostPage(data?.totalPages || 1);
+      })
+      .catch(err => {
+        console.error('Failed to load post images:', err);
+        setPostImages([]); setPostTotalPages(1);
+      });
+  }, [userId, postPage]);
 
 
   return (
-    <div className="max-w-6xl mx-auto px-2 pb-2 space-y-4">
+    <div className="max-w-6xl mx-auto px-3 sm:px-4 pb-4 space-y-4 sm:space-y-6">
       {/* Profile Banner Section */}
       <div className="relative">
         {/* Banner Image */}
         <img
           src={profileData ? `/assets/Images/${profileData.banner_image_path}` : profileBanner}
           alt="profile-banner"
-          className="w-full h-40 object-cover rounded-2xl"
+          className="w-full h-28 sm:h-32 md:h-40 object-cover rounded-xl sm:rounded-2xl"
         />
 
         {/* Avatar + Username container */}
-        <div className="absolute -bottom-10 left-6 flex items-center gap-4">
+        <div className="absolute -bottom-6 sm:-bottom-8 md:-bottom-10 left-3 sm:left-6 flex items-center gap-2 sm:gap-4">
           {/* Avatar */}
           <img
             src={profileData ? `/assets/Images/${profileData.avatar_image_path}` : avatar4}
             alt="avatar"
-            className="w-28 h-28 rounded-full border-4 border-white shadow-md object-cover"
+            className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full border-2 sm:border-3 md:border-4 border-white shadow-md object-cover"
           />
 
-
           {/* Username and Join date card */}
-          <div className="bg-white shadow-md px-4 py-2 rounded-full flex items-center gap-3 dark:bg-gray-800">
-            <p className="text-lg font-medium text-gray-800 dark:text-gray-300">{profileData?.username || '...'}</p>
-            <p className="text-sm italic text-[#5FBFFF]">
+          <div className="bg-white shadow-md px-2 sm:px-3 py-1 sm:py-2 rounded-full flex items-center gap-1 sm:gap-3 dark:bg-gray-800 max-w-[200px] sm:max-w-none">
+            <p className="text-sm sm:text-base md:text-lg font-medium text-gray-800 dark:text-gray-300 truncate">
+              {profileData?.username || '...'}
+            </p>
+            <p className="text-xs sm:text-sm italic text-[#5FBFFF] hidden sm:block">
               Joined: <span className="font-medium">
                 {profileData && new Date(profileData.created_at).toLocaleDateString('en-GB', {
                   day: '2-digit',
-                  month: 'long',
+                  month: 'short',
                   year: 'numeric',
                 })}
               </span>
@@ -133,22 +137,22 @@ const Overview = () => {
       </div>
 
       {/* Add margin below to push content down */}
-      <div className="h-4" />
+      <div className="h-6 sm:h-8 md:h-10 lg:h-12" />
 
       {/* Level Progress Card */}
-      <div className="bg-white p-6 rounded-3xl shadow flex flex-col gap-4 dark:bg-gray-800">
+      <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow flex flex-col gap-3 sm:gap-4 dark:bg-gray-800">
         {/* Header Row */}
         <div className="flex items-center justify-between">
           {/* Current Level Circle */}
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full border-4 border-[#FFD18C] text-[#FFCE51] font-bold flex items-center justify-center shadow-sm">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 sm:border-3 md:border-4 border-[#FFD18C] text-[#FFCE51] font-bold flex items-center justify-center shadow-sm text-sm sm:text-base">
               {levelProgress?.level_number ?? '—'}
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+              <p className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200">
                 Lv {levelProgress?.tier_status ?? '—'}
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 {levelProgress
                   ? `${levelProgress.points_to_next_tier} points to next tier`
                   : 'Loading...'}
@@ -157,14 +161,14 @@ const Overview = () => {
           </div>
 
           {/* Target Level Circle */}
-          <div className="w-10 h-10 rounded-full bg-[#f8e5b5] dark:bg-[#FFD18C] dark:text-[#CF6108] text-yellow-500 font-bold flex items-center justify-center shadow-sm ">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#f8e5b5] dark:bg-[#FFD18C] dark:text-[#CF6108] text-yellow-500 font-bold flex items-center justify-center shadow-sm text-sm sm:text-base">
             {levelProgress?.next_level ?? '—'}
           </div>
         </div>
 
         {/* Progress Bar */}
-        <div className="relative mt-2 ">
-          <div className="w-full h-6 bg-[#f8e5b5] rounded-full overflow-hidden dark:bg-[#FFD18C] dark:text-[#CF6108]">
+        <div className="relative mt-1 sm:mt-2">
+          <div className="w-full h-4 sm:h-6 bg-[#f8e5b5] rounded-full overflow-hidden dark:bg-[#FFD18C] dark:text-[#CF6108]">
             <div
               className="h-full bg-gradient-to-r from-[#FFD18C] to-[#FFCE51] rounded-full"
               style={{
@@ -177,7 +181,7 @@ const Overview = () => {
               }}
             />
           </div>
-          <div className="absolute inset-0 flex justify-center items-center text-sm font-semibold text-yellow-600">
+          <div className="absolute inset-0 flex justify-center items-center text-xs sm:text-sm font-semibold text-yellow-600">
             {levelProgress
               ? `${levelProgress.current_tier_xp}/${levelProgress.tier_xp_required}`
               : '...'}
@@ -186,44 +190,44 @@ const Overview = () => {
       </div>
 
       {/* Middle Row - Two Columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Left Column - Stats Tiles */}
-        <div className="space-y-5 ">
+        <div className="space-y-4 sm:space-y-5">
           <motion.div
-            whileHover={{ y: -5 }}
-            className="bg-[#ffffff] p-6 rounded-2xl shadow-sm hover:border-[#4d7c0f] transition-all relative overflow-hidden group dark:bg-gray-800"
+            whileHover={{ y: -3 }}
+            className="bg-[#ffffff] p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm hover:border-[#4d7c0f] transition-all relative overflow-hidden group dark:bg-gray-800"
           >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-[#88BC46] group-hover:text-[#88BC46] transition-colors dark:bg-gray-800">
-                <FaChartLine className="w-10 h-10 text-2xl" />
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl bg-white flex items-center justify-center text-[#88BC46] group-hover:text-[#88BC46] transition-colors dark:bg-gray-800">
+                <FaChartLine className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-xl" />
               </div>
               <div className="text-left">
-                <p className="text-lg font-semibold text-[#1f2937] dark:text-gray-200">Performance Stats</p>
-                <p className="text-sm text-[#4b5563] dark:text-gray-400">Your gamified metrics</p>
+                <p className="text-base sm:text-lg font-semibold text-[#1f2937] dark:text-gray-200">Performance Stats</p>
+                <p className="text-xs sm:text-sm text-[#4b5563] dark:text-gray-400">Your gamified metrics</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <div className="bg-gray-50 rounded-xl p-3 text-center hover:bg-gray-100 transition-colors  dark:bg-gray-700 ">
-                <div className="text-2xl font-bold text-[#88BC46]">
+            <div className="grid grid-cols-2 gap-2 sm:gap-4 mt-3 sm:mt-4">
+              <div className="bg-gray-50 rounded-lg sm:rounded-xl p-2 sm:p-3 text-center hover:bg-gray-100 transition-colors dark:bg-gray-700">
+                <div className="text-lg sm:text-xl md:text-2xl font-bold text-[#88BC46]">
                   {performanceStats ? `${performanceStats.accuracy}%` : '—'}
                 </div>
                 <div className="text-xs text-gray-500 mt-1 dark:text-gray-400">Accuracy</div>
               </div>
-              <div className="bg-gray-50 rounded-xl p-3 text-center hover:bg-gray-100 transition-colors  dark:bg-gray-700">
-                <div className="text-2xl font-bold text-[#72C1F5]">
+              <div className="bg-gray-50 rounded-lg sm:rounded-xl p-2 sm:p-3 text-center hover:bg-gray-100 transition-colors dark:bg-gray-700">
+                <div className="text-lg sm:text-xl md:text-2xl font-bold text-[#72C1F5]">
                   {performanceStats ? `#${performanceStats.leaderboard_rank}` : '—'}
                 </div>
                 <div className="text-xs text-gray-500 mt-1 dark:text-gray-400">Leaderboard</div>
               </div>
-              <div className="bg-gray-50 rounded-xl p-3 text-center hover:bg-gray-100 transition-colors  dark:bg-gray-700">
-                <div className="text-2xl font-bold text-[#FF4080]">
+              <div className="bg-gray-50 rounded-lg sm:rounded-xl p-2 sm:p-3 text-center hover:bg-gray-100 transition-colors dark:bg-gray-700">
+                <div className="text-lg sm:text-xl md:text-2xl font-bold text-[#FF4080]">
                   {performanceStats ? performanceStats.challenges_joined : '—'}
                 </div>
                 <div className="text-xs text-gray-500 mt-1 dark:text-gray-400">Challenges</div>
               </div>
-              <div className="bg-gray-50 rounded-xl p-3 text-center hover:bg-gray-100 transition-colors  dark:bg-gray-700">
-                <div className="text-2xl font-bold text-yellow-500">
+              <div className="bg-gray-50 rounded-lg sm:rounded-xl p-2 sm:p-3 text-center hover:bg-gray-100 transition-colors dark:bg-gray-700">
+                <div className="text-lg sm:text-xl md:text-2xl font-bold text-yellow-500">
                   {performanceStats
                     ? `${performanceStats.goals_completed}/${performanceStats.goals_total}`
                     : '—'}
@@ -234,40 +238,40 @@ const Overview = () => {
           </motion.div>
 
           <motion.div
-            whileHover={{ y: -5 }}
-            className="bg-white p-6 rounded-2xl shadow-sm  transition-all hover:shadow-md dark:bg-gray-800"
+            whileHover={{ y: -3 }}
+            className="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm transition-all hover:shadow-md dark:bg-gray-800"
           >
-            <div className="flex items-center gap-3 mb-6 ">
-              <div className="w-20 h-20 bg-white rounded-xl flex items-center justify-center text-[#F3B14E] shadow-inner dark:bg-gray-800">
-                <div className="w-10 h-10 flex items-center justify-center text-[#F3B14E]">
-                  <FaTrophy className="w-16 h-16 text-xl" />
+            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-white rounded-lg sm:rounded-xl flex items-center justify-center text-[#F3B14E] shadow-inner dark:bg-gray-800">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 flex items-center justify-center text-[#F3B14E]">
+                  <FaTrophy className="w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 text-xl" />
                 </div>
               </div>
               <div>
-                <p className="text-lg font-bold text-gray-900 dark:text-gray-200">Recent Achievements</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Earned rewards</p>
+                <p className="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-200">Recent Achievements</p>
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Earned rewards</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 ">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
               {recentAchievements.length === 0 ? (
-                <p className="text-sm text-gray-500 italic text-center">No achievements yet.</p>
+                <p className="text-sm text-gray-500 italic text-center col-span-full">No achievements yet.</p>
               ) : (
                 recentAchievements.map((a, i) => (
                   <motion.div
                     key={i}
-                    whileHover={{ scale: 1.05 }}
-                    className="rounded-xl p-4 text-center border-2 bg-white border-[#AAD977] shadow-sm dark:bg-gray-800"
+                    whileHover={{ scale: 1.03 }}
+                    className="rounded-lg sm:rounded-xl p-2 sm:p-4 text-center border-2 bg-white border-[#AAD977] shadow-sm dark:bg-gray-800"
                   >
-                    <div className="h-20 w-20 rounded-full mx-auto dark:bg-gray-800">
+                    <div className="h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 rounded-full mx-auto dark:bg-gray-800">
                       <img
                         src={`/assets/Images/${a.icon_image_path}`}
                         alt={a.achievement_title}
                         className="object-contain h-full w-auto"
                       />
                     </div>
-                    <p className="text-sm font-semibold text-gray-800 mt-2">{a.achievement_title}</p>
-                    <p className="text-xs text-yellow-600 dark:bg-[#FFD18C] dark:text-[#CF6108] font-medium mt-2 bg-yellow-100/50 px-2 py-1 rounded-full inline-block">
+                    <p className="text-xs sm:text-sm font-semibold text-gray-800 mt-1 sm:mt-2 line-clamp-2">{a.achievement_title}</p>
+                    <p className="text-xs text-yellow-600 dark:bg-[#FFD18C] dark:text-[#CF6108] font-medium mt-1 sm:mt-2 bg-yellow-100/50 px-1 sm:px-2 py-0.5 sm:py-1 rounded-full inline-block">
                       +{a.xp_reward} XP
                     </p>
                   </motion.div>
@@ -282,18 +286,18 @@ const Overview = () => {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="bg-[#ffffff] p-6 rounded-3xl shadow-md h-full dark:bg-gray-800"
+          className="bg-[#ffffff] p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-md h-full dark:bg-gray-800"
         >
-          <h2 className="text-xl font-bold text-[#1f2937] mb-4 flex items-center gap-2 dark:text-gray-200">
-            <FaStar className="text-[#83AB55]" /> Current Goals
+          <h2 className="text-lg sm:text-xl font-bold text-[#1f2937] mb-3 sm:mb-4 flex items-center gap-2 dark:text-gray-200">
+            <FaStar className="text-[#83AB55] w-4 h-4 sm:w-5 sm:h-5" /> Current Goals
           </h2>
 
-          <div className="space-y-4 dark:bg-gray-800">
+          <div className="space-y-3 sm:space-y-4 dark:bg-gray-800">
             {goals?.length > 0 ? (
               goals.map((goal, i) => (
-                <div key={i} className="bg-[#F0F8EA] p-4 rounded-xl border border-[#B4CB98] ">
+                <div key={i} className="bg-[#F0F8EA] p-3 sm:p-4 rounded-lg sm:rounded-xl border border-[#B4CB98]">
                   <div className="flex justify-between items-center mb-2">
-                    <h3 className="font-medium text-gray-800">{goal.goal_name}</h3>
+                    <h3 className="font-medium text-gray-800 text-sm sm:text-base line-clamp-1">{goal.goal_name}</h3>
                     <span className="text-xs bg-[#E6F4D8] text-[#4D7C0F] px-2 py-1 rounded-full border border-[#AAD977] dark:bg-gray-800">
                       +{goal.xp_reward} XP
                     </span>
@@ -315,7 +319,7 @@ const Overview = () => {
           </div>
 
           <button
-            className="mt-6 w-full px-4 py-2 bg-gradient-to-r from-[#AAD977] to-[#B4CB98] hover:from-[#83AB55] hover:to-[#AAD977] text-white font-medium rounded-full shadow-sm transition-all"
+            className="mt-4 sm:mt-6 w-full px-3 sm:px-4 py-2 bg-gradient-to-r from-[#AAD977] to-[#B4CB98] hover:from-[#83AB55] hover:to-[#AAD977] text-white font-medium rounded-full shadow-sm transition-all text-sm sm:text-base"
             onClick={() => navigate('/goals')}
           >
             View All Goals
@@ -328,35 +332,35 @@ const Overview = () => {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.4 }}
-        className="bg-white p-6 rounded-3xl shadow-md dark:bg-gray-800"
+        className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-md dark:bg-gray-800"
       >
-        <h2 className="text-xl font-bold text-[#1f2937] mb-6 flex items-center gap-2 dark:text-gray-200">
-          <FaCrown className="text-[#fb923c]" /> Active Communities
+        <h2 className="text-lg sm:text-xl font-bold text-[#1f2937] mb-4 sm:mb-6 flex items-center gap-2 dark:text-gray-200">
+          <FaCrown className="text-[#fb923c] w-4 h-4 sm:w-5 sm:h-5" /> Active Communities
         </h2>
 
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {communityData?.map((community, i) => (
             <div
               key={i}
-              className="flex justify-between items-center bg-white shadow-md rounded-2xl px-4 py-4 dark:bg-gray-700"
+              className="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-white shadow-md rounded-xl sm:rounded-2xl px-3 sm:px-4 py-3 sm:py-4 dark:bg-gray-700 gap-3 sm:gap-0"
             >
               {/* Left side */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <img
                   src={`/assets/Images/${community.banner}`}
                   alt={community.community_name}
-                  className="w-16 h-16 rounded-full object-cover shadow dark: "
+                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full object-cover shadow"
                 />
-                <div>
-                  <p className="text-lg font-medium text-gray-800 dark:text-gray-400">{community.community_name}</p>
-                  <div className="flex gap-2 mt-1">
-                    <span className="bg-[#E0F2FE] text-[#72C1F5] text-xs font-medium px-3 py-1 rounded-full">
+                <div className="flex-1 min-w-0">
+                  <p className="text-base sm:text-lg font-medium text-gray-800 dark:text-gray-400 truncate">{community.community_name}</p>
+                  <div className="flex flex-wrap gap-1 sm:gap-2 mt-1">
+                    <span className="bg-[#E0F2FE] text-[#72C1F5] text-xs font-medium px-2 py-0.5 sm:px-3 sm:py-1 rounded-full">
                       {community.member_count} Members
                     </span>
-                    <span className="bg-[#E0F2FE] text-[#72C1F5] text-xs font-medium px-3 py-1 rounded-full">
+                    <span className="bg-[#E0F2FE] text-[#72C1F5] text-xs font-medium px-2 py-0.5 sm:px-3 sm:py-1 rounded-full">
                       {community.challenge_count} Challenges
                     </span>
-                    <span className="bg-[#FEF9C3] dark:bg-[#FFD18C] dark:text-[#CF6108] text-yellow-500 text-xs font-medium px-3 py-1 rounded-full ">
+                    <span className="bg-[#FEF9C3] dark:bg-[#FFD18C] dark:text-[#CF6108] text-yellow-500 text-xs font-medium px-2 py-0.5 sm:px-3 sm:py-1 rounded-full">
                       {Math.round(community.xp_total)} XP
                     </span>
                   </div>
@@ -364,15 +368,15 @@ const Overview = () => {
               </div>
 
               {/* Right side */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4">
                 {/* Avatars with fallback */}
-                <div className="flex -space-x-2">
-                  {(community?.preview_avatars || []).map((path, index) => (
+                <div className="flex -space-x-1 sm:-space-x-2">
+                  {(community?.preview_avatars || []).slice(0, 3).map((path, index) => (
                     <img
                       key={index}
                       src={`/assets/Images/${path}`}
                       alt="avatar"
-                      className="w-8 h-8 rounded-full border-2 border-white"
+                      className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-full border-2 border-white"
                     />
                   ))}
                 </div>
@@ -380,9 +384,9 @@ const Overview = () => {
                 {/* View Button */}
                 <button
                   onClick={() => navigate(`/community/details/${community.community_name}`)}
-                  className="flex items-center gap-2 bg-[#AAD977] text-white font-medium text-sm px-4 py-1.5 rounded-full hover:bg-[#83AB55] transition-all"
+                  className="flex items-center gap-1 sm:gap-2 bg-[#AAD977] text-white font-medium text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5 rounded-full hover:bg-[#83AB55] transition-all"
                 >
-                  <FaEye /> View
+                  <FaEye className="w-3 h-3 sm:w-4 sm:h-4" /> View
                 </button>
               </div>
             </div>
@@ -391,63 +395,27 @@ const Overview = () => {
       </motion.div>
 
       {/* Bottom Grid – User Posts */}
-      <div className="bg-white p-6 rounded-3xl shadow-md dark:bg-gray-800">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">My Posts</h2>
+      <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-md dark:bg-gray-800">
+        <div className="flex justify-between items-center mb-4 sm:mb-6">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-200">My Posts</h2>
         </div>
 
         {/* Grid */}
         {postImages.length === 0 ? (
           <p className="text-sm text-gray-500 italic text-center">No posts yet.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3">
             {postImages.map((p) => (
               <div
                 key={p.post_id}
-                className="relative group overflow-hidden rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 bg-gray-50 dark:bg-gray-700"
+                className="relative group overflow-hidden rounded-lg sm:rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
               >
-                {/* Image Container with proper 16:9 aspect ratio */}
-                <div className="relative overflow-hidden bg-gray-200 dark:bg-gray-600 aspect-video">
-                  <img
-                    src={`/assets/Images/${p.image_path}`}
-                    alt={`post-${p.post_id}`}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    onError={(e) => { e.currentTarget.src = '/assets/Images/badges/default.png'; }}
-                  />
-
-                  {/* Hover overlay */}
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
-                    <div className="opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                      <div className="flex gap-2">
-                        <span className="bg-black bg-opacity-50 text-white p-2 rounded-full">
-                          <FaHeart className="w-4 h-4" />
-                        </span>
-                        <span className="bg-black bg-opacity-50 text-white p-2 rounded-full">
-                          <FaRegComment className="w-4 h-4" />
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Description - using the content field from your post data */}
-                <div className="p-4">
-                  {/* <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-3">
-                    {p.caption || p.content || p.description || "No description available"}
-                  </p> */}
-
-                  {/* Post metadata */}
-                  <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
-                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                      <FaHeart className="w-3 h-3 text-red-500" />
-                      <span>{p.likes || 0}</span>
-                    </div>
-
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {p.created_at ? new Date(p.created_at).toLocaleDateString() : ''}
-                    </p>
-                  </div>
-                </div>
+                <img
+                  src={`/assets/Images/${p.image_path}`}
+                  alt={`post-${p.post_id}`}
+                  className="w-full h-full object-cover aspect-square transition-transform duration-300 group-hover:scale-105"
+                  onError={(e) => { e.currentTarget.src = '/assets/Images/badges/default.png'; }}
+                />
               </div>
             ))}
           </div>
@@ -455,32 +423,31 @@ const Overview = () => {
 
         {/* Pagination controls */}
         {postTotalPages > 1 && (
-          <div className="flex items-center justify-between mt-6">
+          <div className="flex items-center justify-between mt-3 sm:mt-4">
             <button
               onClick={() => setPostPage(p => Math.max(1, p - 1))}
               disabled={postPage === 1}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm border dark:border-gray-600
-          ${postPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+              className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm border dark:border-gray-600
+                ${postPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
             >
-              <FaChevronLeft /> Prev
+              <FaChevronLeft className="w-3 h-3" /> Prev
             </button>
 
-            <span className="text-sm text-gray-500 dark:text-gray-400">
+            <span className="text-xs text-gray-500 dark:text-gray-400">
               Page {postPage} of {postTotalPages}
             </span>
 
             <button
               onClick={() => setPostPage(p => Math.min(postTotalPages, p + 1))}
               disabled={postPage === postTotalPages}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm border dark:border-gray-600
-          ${postPage === postTotalPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+              className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm border dark:border-gray-600
+                ${postPage === postTotalPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
             >
-              Next <FaChevronRight />
+              Next <FaChevronRight className="w-3 h-3" />
             </button>
           </div>
         )}
       </div>
-
     </div>
   );
 };

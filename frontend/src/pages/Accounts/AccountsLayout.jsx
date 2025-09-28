@@ -18,7 +18,7 @@ const AccountsLayout = ({ children }) => {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-gray-50  dark:bg-gray-900">
+    <div className="relative min-h-screen bg-gray-50 dark:bg-gray-900">
       {isLoading && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-white">
           <PacmanLoader />
@@ -27,14 +27,14 @@ const AccountsLayout = ({ children }) => {
 
       <div className={`${isLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'} transition-opacity duration-500`}>
         {/* 🔁 PERFORMANCE HEADER moved to top full width */}
-        <div className="px-6 pt-6">
+        <div className="px-4 sm:px-6 pt-4 sm:pt-6">
           <AccountsSidebar />
         </div>
 
         {/* Main Page Content */}
         <div className="flex">
-          <div className="flex-1 flex flex-col h-full pr-6 ">
-            <div className="flex-1 px-6 pb-6 overflow-y-auto min-h-0">
+          <div className="flex-1 flex flex-col h-full pr-4 sm:pr-6">
+            <div className="flex-1 px-4 sm:px-6 pb-4 sm:pb-6 overflow-y-auto min-h-0">
               {children}
             </div>
           </div>

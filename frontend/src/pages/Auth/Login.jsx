@@ -4,8 +4,13 @@ import AuthLayout from '../../components/AuthLayout';
 import logoImg from '../../assets/Images/Logo.png';
 import { FaEye, FaEyeSlash,FaExclamationCircle } from 'react-icons/fa';
 
+
 import  {useThemeLoader, applyThemeFromPreferences }  from '../ThemeLoader.mjs';
-const BASE_URL = "http://localhost:5000";
+
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
 
 const Login = () => {
   const navigate = useNavigate();
@@ -24,6 +29,7 @@ const Login = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
+        credentials: 'include',
       });
 
       const result = await res.json();

@@ -1,6 +1,4 @@
-// /gamified-finance-api/tsconfig.json
 {
-   "extends": "../tsconfig.json",
    "compilerOptions": {
        "target": "es2020",
     "module": "commonjs",
@@ -8,8 +6,8 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+      "outDir": "dist",
      "rootDir": ".", 
-    // Removed "rootDir" to allow sources from multiple service folders
     "baseUrl": ".", 
    },
    "include": [

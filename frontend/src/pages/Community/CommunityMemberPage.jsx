@@ -7,6 +7,10 @@ import CommunityLayout from '../../pages/Community/CommunityLayout';
 
 import { FaChartLine, FaArrowLeft, FaCrown, FaEye, FaMedal, FaUserMinus, FaPaperPlane, FaTimes, FaCheck } from 'react-icons/fa';
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
 const CommunityMemberPage = () => {
   const user = JSON.parse(localStorage.getItem('user'));
   const { username } = useParams();
@@ -29,7 +33,7 @@ const CommunityMemberPage = () => {
     if (!username) return;
     (async () => {
       try {
-        const r = await fetch(`http://localhost:5000/api/community/userID/${username}`);
+        const r = await fetch(`${BASE_URL}/api/community/userID/${username}`);
         const { data } = await r.json();
         setUserID(data);
       } catch (e) {
@@ -44,14 +48,14 @@ const CommunityMemberPage = () => {
     (async () => {
       try {
         const [bar, perf, learn, achs, recA, comms, lvl, stat] = await Promise.all([
-          fetch(`http://localhost:5000/api/auth/top-bar/${userID}`),
-          fetch(`http://localhost:5000/api/auth/profile/performance-stats/${userID}`),
-          fetch(`http://localhost:5000/api/learning/summary/${userID}`),
-          fetch(`http://localhost:5000/api/achievements/user/${userID}`),
-          fetch(`http://localhost:5000/api/auth/profile/recent-achievements/${userID}`),
-          fetch(`http://localhost:5000/api/auth/profile/communities/${userID}`),
-          fetch(`http://localhost:5000/api/auth/profile/level-progress/${userID}`),
-          fetch(`http://localhost:5000/api/community/friends/status/${id}/${userID}`)
+          fetch(`${BASE_URL}/api/auth/top-bar/${userID}`),
+          fetch(`${BASE_URL}/api/auth/profile/performance-stats/${userID}`),
+          fetch(`${BASE_URL}/api/learning/summary/${userID}`),
+          fetch(`${BASE_URL}/api/achievements/user/${userID}`),
+          fetch(`${BASE_URL}/api/auth/profile/recent-achievements/${userID}`),
+          fetch(`${BASE_URL}/api/auth/profile/communities/${userID}`),
+          fetch(`${BASE_URL}/api/auth/profile/level-progress/${userID}`),
+          fetch(`${BASE_URL}/api/community/friends/status/${user.id}/${userID}`)
         ]);
         const [barData, perfData, summaryData,
           achRes, recArch, commRes, lvlRes, statusRes] = await Promise.all([
@@ -75,7 +79,7 @@ const CommunityMemberPage = () => {
 
   const handleFriendRequest = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/community/friends/request/${user.id}/${userID}`, {
+      const res = await fetch(`${BASE_URL}/api/community/friends/request/${user.id}/${userID}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -103,7 +107,7 @@ const CommunityMemberPage = () => {
   const respondRequest = async (action) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/community/friends/update`,
+        `${BASE_URL}/api/community/friends/update`,
         {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
@@ -132,7 +136,7 @@ const CommunityMemberPage = () => {
   const removeFriend = async () => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/community/friends/remove/${user.id}/${userID}`,
+        `${BASE_URL}/api/community/friends/remove/${user.id}/${userID}`,
         { method: 'DELETE' }
       );
       if (!res.ok) throw new Error('Remove failed');
@@ -158,35 +162,38 @@ const CommunityMemberPage = () => {
   if (!isViewingOwnProfile && !statusF) {
     friendButtons = (
       <button onClick={handleFriendRequest}
-        className="flex items-center gap-1 px-4 py-2 text-sm rounded-full bg-[#FFD18C] text-white shadow hover:bg-[#f9b54c] transition"
+        className="flex items-center gap-1 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-[#FFD18C] text-white shadow hover:bg-[#f9b54c] transition whitespace-nowrap"
       >
-        <FaPaperPlane /> Request Friend
+        <FaPaperPlane size={12} className="sm:size-3" /> Request Friend
       </button>
     );
   } else if (statusF === 'pending') {
     friendButtons = isInitiator
       ? (
         <button onClick={cancelRequest}
-          className="flex items-center gap-1 px-4 py-2 text-sm rounded-full bg-[#FFD18C] text-white shadow hover:bg-[#f9b54c] transition"        >
-          <FaTimes /> Cancel Request
+          className="flex items-center gap-1 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-[#FFD18C] text-white shadow hover:bg-[#f9b54c] transition whitespace-nowrap"
+        >
+          <FaTimes size={12} className="sm:size-3" /> Cancel Request
         </button>
       )
       : (
-        <>
+        <div className="flex gap-2">
           <button onClick={() => respondRequest('accepted')}
-            className="flex items-center gap-1 px-4 py-2 text-sm rounded-full bg-[#FFD18C] text-white shadow hover:bg-[#f9b54c] transition"          >
-            <FaCheck /> Accept
+            className="flex items-center gap-1 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-[#FFD18C] text-white shadow hover:bg-[#f9b54c] transition whitespace-nowrap"
+          >
+            <FaCheck size={12} className="sm:size-3" /> Accept
           </button>
           <button onClick={() => respondRequest('declined')}
-            className="flex items-center gap-1 px-4 py-2 text-sm rounded-full bg-[#FA8B81] text-white shadow hover:bg-[#f56a5a] transition"          >
-            <FaTimes /> Decline
+            className="flex items-center gap-1 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-[#FA8B81] text-white shadow hover:bg-[#f56a5a] transition whitespace-nowrap"
+          >
+            <FaTimes size={12} className="sm:size-3" /> Decline
           </button>
-        </>
+        </div>
       );
-  } else if (statusF === 'accepted' && !isViewingOwnProfile) {  // Show remove button only for others, not your own profile
+  } else if (statusF === 'accepted' && !isViewingOwnProfile) {
     friendButtons = (
-      <button onClick={removeFriend} className="flex items-center gap-1 px-4 py-2 text-sm rounded-full bg-[#FA8B81] text-white shadow hover:bg-[#f56a5a] transition">
-        <FaUserMinus /> Remove Friend
+      <button onClick={removeFriend} className="flex items-center gap-1 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-[#FA8B81] text-white shadow hover:bg-[#f56a5a] transition whitespace-nowrap">
+        <FaUserMinus size={12} className="sm:size-3" /> Remove Friend
       </button>
     );
   }
@@ -194,62 +201,65 @@ const CommunityMemberPage = () => {
   return (
     <CommunityLayout>
       <Toaster position="top-right" />
-      <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4 dark:bg-gray-900">
+      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6 px-3 sm:px-4 py-4 dark:bg-gray-900">
 
         {/* Profile Banner */}
         <div className="relative">
-          <img src={`/assets/Images/${profileData.banner_image_path}`} alt="banner" className="w-full h-40 object-cover rounded-2xl" />
-          <div className="absolute -bottom-10 left-6 flex items-center gap-4">
+          <img src={`/assets/Images/${profileData.banner_image_path}`} alt="banner" className="w-full h-32 sm:h-40 object-cover rounded-2xl" />
+          <div className="absolute -bottom-8 sm:-bottom-10 left-3 mt-8 sm:left-6 flex items-center gap-2 sm:gap-4">
             <img
               src={`/assets/Images/${profileData.avatar_image_path}`}
               alt="avatar"
-              className="w-28 h-28 rounded-full border-4 border-white dark:border-gray-800 shadow-md object-cover"
+              className="w-16 h-16 sm:w-28 sm:h-28 rounded-full border-4 border-white dark:border-gray-800 shadow-md object-cover"
             />
-            <div className="bg-white dark:bg-gray-800 shadow-md px-4 py-2 rounded-full flex items-center gap-3">
-              <p className="text-lg font-medium text-gray-800 dark:text-gray-200">{profileData?.username || '...'}</p>
-              <p className="text-sm italic text-[#F28B82]">Joined: <span className="font-medium">{profileData && new Date(profileData.created_at).toLocaleDateString('en-GB', {
-                day: '2-digit',
-                month: 'long',
-                year: 'numeric',
-              })}</span></p>
+            <div className="bg-white dark:bg-gray-800 shadow-md px-3 py-1 sm:px-4 sm:py-2 rounded-full flex items-center gap-2 sm:gap-3">
+              <p className="text-sm sm:text-lg font-medium text-gray-800 dark:text-gray-200 truncate max-w-[120px] sm:max-w-none">{profileData?.username || '...'}</p>
+              <p className="hidden xs:inline text-xs sm:text-sm italic text-[#F28B82] whitespace-nowrap">
+                Joined: <span className="font-medium">{profileData && new Date(profileData.created_at).toLocaleDateString('en-GB', {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                })}</span>
+              </p>
             </div>
           </div>
 
-          {/* Action buttons moved to right side */}
-          <div className="absolute right-6 -bottom-10 flex justify-end gap-3">
+          {/* Action buttons */}
+          <div className="absolute right-3 sm:right-6 -bottom-8 sm:-bottom-10 flex justify-end gap-2 sm:gap-3">
             {friendButtons}
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 bg-[#E5E7EB] dark:bg-gray-700 text-[#374151] dark:text-gray-200 px-4 py-2 rounded-full text-sm font-medium hover:bg-[#D1D5DB] dark:hover:bg-gray-600 transition"
+              className="flex items-center gap-1 sm:gap-2 bg-[#E5E7EB] dark:bg-gray-700 text-[#374151] dark:text-gray-200 px-2 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium hover:bg-[#D1D5DB] dark:hover:bg-gray-600 transition whitespace-nowrap"
             >
-              <FaArrowLeft /> Back
+              <FaArrowLeft size={12} className="sm:size-3" /> Back
             </button>
           </div>
         </div>
 
-        {/* XP Progress */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow flex flex-col gap-4 mt-14">
+        {/* XP Progress - Fixed for mobile */}
+        <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow flex flex-col gap-3 sm:gap-4 mt-12 sm:mt-14">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full border-4 border-yellow-400 dark:border-[#FFD18C]  dark:text-[#CF6108] font-bold flex items-center justify-center shadow-sm">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-4 border-yellow-400 dark:border-[#FFD18C] dark:text-[#CF6108] font-bold flex items-center justify-center shadow-sm text-sm sm:text-base">
                 {levelProgress?.level_number ?? '—'}
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">Lv {levelProgress?.tier_status ?? '—'}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{levelProgress
+                <p className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200">Lv {levelProgress?.tier_status ?? '—'}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{levelProgress
                   ? `${levelProgress.points_to_next_tier} points to next tier`
                   : 'Loading...'}</p>
               </div>
             </div>
-            <div className="w-10 h-10 rounded-full bg-[#f8e5b5]  dark:text-[#CF6108] font-bold flex items-center justify-center shadow-sm">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#f8e5b5] dark:text-[#CF6108] font-bold flex items-center justify-center shadow-sm text-sm sm:text-base">
               {levelProgress?.next_level ?? '—'}
             </div>
           </div>
 
-          <div className="relative mt-2">
-            <div className="w-full h-6 bg-yellow-100 dark:bg-[#FFD18C] dark:text-[#CF6108] rounded-full overflow-hidden">
+          {/* Smaller progress bar for mobile only */}
+          <div className="relative mt-1 sm:mt-2">
+            <div className="w-full h-3 sm:h-6 bg-yellow-100 dark:bg-[#FFD18C] rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-yellow-400 to-[#FFFD18C] dark:text-[#CF6108] rounded-full"
+                className="h-full bg-gradient-to-r from-yellow-400 to-[#FFFD18C] rounded-full"
                 style={{
                   width: levelProgress
                     ? `${Math.min(
@@ -260,7 +270,7 @@ const CommunityMemberPage = () => {
                 }}
               />
             </div>
-            <div className="absolute inset-0 flex justify-center items-center text-sm font-semibold text-yellow-700 dark:bg-[#FFD18C] dark:text-[#CF6108]">
+            <div className="absolute inset-0 flex justify-center items-center text-xs font-semibold text-yellow-700 dark:text-[#CF6108] sm:text-sm">
               {levelProgress
                 ? `${levelProgress.current_tier_xp}/${levelProgress.tier_xp_required}`
                 : '...'}
@@ -268,20 +278,20 @@ const CommunityMemberPage = () => {
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Stats - Better spacing for mobile */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
 
-          {/* Performance stats */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm">
-            <div className="flex items-center gap-4 mb-4">
-              <FaChartLine className="text-[#88BC46] text-2xl" />
+          {/* Performance stats - Improved spacing */}
+          <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-sm">
+            <div className="flex items-center gap-3 sm:gap-4 mb-4">
+              <FaChartLine className="text-[#88BC46] text-xl sm:text-2xl" />
               <div>
-                <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">Performance Stats</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">User metrics overview</p>
+                <p className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-200">Performance Stats</p>
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">User metrics overview</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
               {[
                 { value: performanceStats ? `${performanceStats.accuracy}%` : '—', label: 'Accuracy', color: 'text-[#88BC46]' },
                 { value: performanceStats ? `#${performanceStats.leaderboard_rank}` : '—', label: 'Leaderboard', color: 'text-[#72C1F5]' },
@@ -294,42 +304,42 @@ const CommunityMemberPage = () => {
                 { value: (summary.modules - summary.total_quizzes_left), label: 'Modules Learned', color: 'text-[#FF8C3C]' },
                 { value: numComplete, label: 'Achievements', color: 'text-[#EF4444]' },
               ].map((stat, i) => (
-                <div key={i} className="bg-gray-50 dark:bg-gray-700 rounded-xl p-3 text-center">
-                  <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
+                <div key={i} className="bg-gray-50 dark:bg-gray-700 rounded-xl p-3 sm:p-4 text-center">
+                  <div className={`text-lg sm:text-2xl font-bold ${stat.color}`}>{stat.value}</div>
                   <div className="text-xs text-gray-500 dark:text-gray-300 mt-1">{stat.label}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Recent Achievements */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm">
-            <h2 className="text-xl font-bold text-[#1f2937] dark:text-gray-200 mb-4 flex items-center gap-2">
-              <FaMedal className="text-[#FBBF24]" /> Recent Achievements
+          {/* Recent Achievements - Better spacing */}
+          <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-sm">
+            <h2 className="text-lg sm:text-xl font-bold text-[#1f2937] dark:text-gray-200 mb-4 flex items-center gap-2">
+              <FaMedal className="text-[#FBBF24]" size={18} /> Recent Achievements
             </h2>
 
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {recentAchievements.length === 0 ? (
-                <p className="text-sm text-gray-500 dark:text-gray-400 italic text-center">No achievements yet.</p>
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 italic text-center py-2">No achievements yet.</p>
               ) : (
                 recentAchievements.map((item, i) => (
                   <div
                     key={i}
-                    className="flex items-center gap-4 bg-[#FFFFFF] dark:bg-gray-700 p-4 rounded-xl border-2 border-[#FFD18C]"
+                    className="flex items-center gap-3 sm:gap-4 bg-[#FFFFFF] dark:bg-gray-700 p-3 sm:p-4 rounded-xl border-2 border-[#FFD18C]"
                   >
                     <img
                       src={`/assets/Images/${item.icon_image_path}`}
                       alt={item.achievement_title}
-                      className="w-16 h-16 object-contain rounded-full"
+                      className="w-10 h-10 sm:w-16 sm:h-16 object-contain rounded-full flex-shrink-0"
                     />
-                    <div className="flex-1">
-                      <div className="flex justify-between items-center mb-1">
-                        <h3 className="font-medium text-gray-800 dark:text-gray-200">{item.achievement_title}</h3>
-                        <span className="text-xs bg-[#fef9c3] dark:bg-[#FFD18C] dark:text-[#CF6108] text-[#92400e]  px-2 py-1 rounded-full border border-[#fde047]">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col xs:flex-row xs:justify-between xs:items-start mb-1 gap-1">
+                        <h3 className="font-medium text-gray-800 dark:text-gray-200 text-sm sm:text-base truncate">{item.achievement_title}</h3>
+                        <span className="text-xs bg-[#fef9c3] dark:bg-[#FFD18C] dark:text-[#CF6108] text-[#92400e] px-2 py-0.5 rounded-full border border-[#fde047] whitespace-nowrap self-start xs:self-auto">
                           +{item.xp_reward} XP
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 italic">{item.detail}</p>
+                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 italic line-clamp-2 mt-1">{item.detail}</p>
                     </div>
                   </div>
                 )))}
@@ -337,57 +347,57 @@ const CommunityMemberPage = () => {
           </div>
         </div>
 
-        {/* Shared Communities */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-md">
-          <h2 className="text-xl font-bold text-[#1f2937] dark:text-gray-200 mb-6 flex items-center gap-2">
-            <FaCrown className="text-[#fb923c]" /> Shared Communities
+        {/* Shared Communities - Better spacing */}
+        <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-md">
+          <h2 className="text-lg sm:text-xl font-bold text-[#1f2937] dark:text-gray-200 mb-4 sm:mb-6 flex items-center gap-2">
+            <FaCrown className="text-[#fb923c]" size={18} /> Shared Communities
           </h2>
 
-          <div className="space-y-4">
+          <div className="space-y-4 sm:space-y-4">
             {communityData.length === 0 ? (
-              <p className="text-sm text-gray-500 dark:text-gray-400 italic text-center">No communities yet.</p>
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 italic text-center py-3">No communities yet.</p>
             ) : (
               communityData.map((community, i) => (
                 <div
                   key={i}
-                  className="flex justify-between items-center bg-white dark:bg-gray-700 shadow-md rounded-2xl px-4 py-4"
+                  className="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-white dark:bg-gray-700 shadow-md rounded-2xl p-4 sm:p-4 gap-4 sm:gap-0"
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 sm:gap-4">
                     <img
                       src={`/assets/Images/${community.banner}`}
                       alt={community.community_name}
-                      className="w-16 h-16 rounded-full object-cover shadow dark:border dark:border-gray-600"
+                      className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover shadow dark:border dark:border-gray-600 flex-shrink-0"
                     />
-                    <div>
-                      <p className="text-lg font-medium text-gray-800 dark:text-gray-200">{community.community_name}</p>
-                      <div className="flex gap-2 mt-1">
-                        <span className="bg-[#E0F2FE] dark:bg-gray-600 text-[#72C1F5] dark:text-[#B1E1FF] text-xs font-medium px-3 py-1 rounded-full">
+                    <div className="min-w-0">
+                      <p className="text-base sm:text-lg font-medium text-gray-800 dark:text-gray-200 truncate">{community.community_name}</p>
+                      <div className="flex flex-wrap gap-2 sm:gap-2 mt-2">
+                        <span className="bg-[#E0F2FE] dark:bg-gray-600 text-[#72C1F5] dark:text-[#B1E1FF] text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap">
                           {community.member_count} Members
                         </span>
-                        <span className="bg-[#E0F2FE] dark:bg-gray-600 text-[#72C1F5] dark:text-[#B1E1FF] text-xs font-medium px-3 py-1 rounded-full">
+                        <span className="bg-[#E0F2FE] dark:bg-gray-600 text-[#72C1F5] dark:text-[#B1E1FF] text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap">
                           {community.challenge_count} Challenges
                         </span>
-                        <span className="bg-[#FEF9C3] dark:bg-gray-600 text-yellow-500 dark:text-yellow-300 text-xs font-medium px-3 py-1 rounded-full">
+                        <span className="bg-[#FEF9C3] dark:bg-gray-600 text-yellow-500 dark:text-yellow-300 text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap">
                           {Math.round(community.xp_total)} XP
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 mt-2 sm:mt-0">
                     <div className="flex -space-x-2">
-                      {(community.preview_avatars || []).map((src, index) => (
+                      {(community.preview_avatars || []).slice(0, 3).map((src, index) => (
                         <img
                           key={index}
                           src={`/assets/Images/${src}`}
                           alt="avatar"
-                          className="w-8 h-8 rounded-full border-2 border-white dark:border-gray-800"
+                          className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-white dark:border-gray-800"
                         />
                       ))}
                     </div>
                     <Link to={`/community/details/${community.community_name.toLowerCase().replace(/\s+/g, '_')}`}>
-                      <button className="flex items-center gap-2 bg-[#AAD977] text-white font-medium text-sm px-4 py-1.5 rounded-full hover:bg-[#83AB55] transition-all dark:bg-[#BBE48E]">
-                        <FaEye /> View
+                      <button className="flex items-center gap-1 bg-[#AAD977] text-white font-medium text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-1.5 rounded-full hover:bg-[#83AB55] transition-all dark:bg-[#BBE48E] whitespace-nowrap">
+                        <FaEye size={10} className="sm:size-3" /> View
                       </button>
                     </Link>
                   </div>

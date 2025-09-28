@@ -10,6 +10,25 @@ import { BOARD_TILES, BOARD_ORDER } from '../../components/game/data/boardTiles'
 const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const currency = 'R';
 
+// Enhanced card deck system
+const CARD_DECKS = {
+  chance: [
+    { id: 'chance1', title: 'Business Boom', desc: 'All your businesses earn double this round.', effect: 'double_business' },
+    { id: 'chance2', title: 'Stock Windfall', desc: 'Your investments pay off. Collect R2,000.', effect: 'earn', amount: 2000 },
+    { id: 'chance3', title: 'Tax Audit', desc: 'Pay R1,500 in unexpected taxes.', effect: 'pay', amount: 1500 },
+    { id: 'chance4', title: 'Lucky Break', desc: 'Advance 3 spaces.', effect: 'advance', spaces: 3 },
+    { id: 'chance5', title: 'Market Crash', desc: 'Lose R1,000 from your assets.', effect: 'pay', amount: 1000 },
+  ],
+  community: [
+    { id: 'comm1', title: 'Birthday Gift', desc: 'Collect R500 from each player.', effect: 'collect_from_players', amount: 500 },
+    { id: 'comm2', title: 'Charity Event', desc: 'Donate R300 to charity.', effect: 'pay', amount: 300 },
+    { id: 'comm3', title: 'Lottery Win', desc: 'You win R1,500!', effect: 'earn', amount: 1500 },
+    { id: 'comm4', title: 'Car Repair', desc: 'Pay R800 for unexpected repairs.', effect: 'pay', amount: 800 },
+    { id: 'comm5', title: 'Salary Bonus', desc: 'Receive a R1,000 bonus.', effect: 'earn', amount: 1000 },
+  ]
+};
+
+// Tile Effects System: What happens when players land on different board spaces
 function applyTileEffect(player, tile, allPlayers = []) {
   if (!tile || !tile.action) return { text: `Landed on ${tile?.label || 'unknown tile'}`, delta: 0 };
 
@@ -19,7 +38,7 @@ function applyTileEffect(player, tile, allPlayers = []) {
   if (tile.type === 'business' && tile.owner && tile.owner !== player.id) {
     const owner = allPlayers.find(p => p.id === tile.owner);
     if (owner && !owner.bankrupt) {
-      const rent = tile.cost ? Math.floor(tile.cost * 0.1) : 500; // 10% of cost or default
+      const rent = tile.cost ? Math.floor(tile.cost * 0.1) : 500;
       if (player.cash >= rent) {
         player.cash -= rent;
         owner.cash += rent;
@@ -53,7 +72,7 @@ function applyTileEffect(player, tile, allPlayers = []) {
         player.cash -= cost;
         player.assetsValue += Math.round(cost * 0.8);
         player.businesses.push(tile.id);
-        tile.owner = player.id; // Mark as owned
+        tile.owner = player.id;
         return { text: `Bought ${tile.label} for ${currency}${cost.toLocaleString()}`, delta: -cost };
       } else if (tile.owner) {
         return { text: `${tile.label} is already owned`, delta: 0 };
@@ -104,22 +123,76 @@ function applyTileEffect(player, tile, allPlayers = []) {
       const invest = a.invest ?? 500;
       player.cash -= invest;
       player.inventory.insurance = true;
-      return { text: `Invested in insurance (${currency}${invest}) and drew a community card`, delta: -invest };
+      // Draw a community card immediately
+      const communityCard = CARD_DECKS.community[randInt(0, CARD_DECKS.community.length - 1)];
+      player.cards.push(communityCard);
+      return {
+        text: `Invested in insurance (${currency}${invest}) and drew: ${communityCard.title}`,
+        delta: -invest
+      };
+    }
+    case 'draw_community': {
+      const card = CARD_DECKS.community[randInt(0, CARD_DECKS.community.length - 1)];
+      player.cards.push(card);
+      return { text: `Drew Community Card: ${card.title}`, delta: 0 };
+    }
+    case 'draw_chance': {
+      const card = CARD_DECKS.chance[randInt(0, CARD_DECKS.chance.length - 1)];
+      player.cards.push(card);
+      return { text: `Drew Chance Card: ${card.title}`, delta: 0 };
     }
     default:
       return { text: `Landed on ${tile.label}`, delta: 0 };
   }
 }
 
+//  Card System: Chance and Community card functionality
+function applyCardEffect(player, card, allPlayers = []) {
+  switch (card.effect) {
+    case 'earn':
+      player.cash += card.amount;
+      return { text: `Card: ${card.title} - Earned ${currency}${card.amount.toLocaleString()}`, delta: card.amount };
+    case 'pay':
+      player.cash -= card.amount;
+      return { text: `Card: ${card.title} - Paid ${currency}${card.amount.toLocaleString()}`, delta: -card.amount };
+    case 'double_business':
+      player.flags.doubleBusiness = 1;
+      return { text: `Card: ${card.title} - Business income doubled this round`, delta: 0 };
+    case 'advance':
+      player.flags.advanceSpaces = card.spaces;
+      return { text: `Card: ${card.title} - Advance ${card.spaces} spaces`, delta: 0 };
+    case 'collect_from_players':
+      let totalCollected = 0;
+      allPlayers.forEach(p => {
+        if (p.id !== player.id && p.cash >= card.amount) {
+          p.cash -= card.amount;
+          totalCollected += card.amount;
+        }
+      });
+      player.cash += totalCollected;
+      return { text: `Card: ${card.title} - Collected ${currency}${totalCollected.toLocaleString()} from other players`, delta: totalCollected };
+    default:
+      return { text: `Card: ${card.title} played`, delta: 0 };
+  }
+}
+
 const calculateNet = (p) => p.cash + p.assetsValue - p.loanBalance;
+
 
 function Results({ players, onRestart }) {
   const sorted = [...players].sort((a, b) => calculateNet(b) - calculateNet(a));
+  const winner = sorted[0];
+
   return (
     <div className="min-h-screen p-8 bg-gradient-to-br from-sky-50 to-indigo-50 flex items-center justify-center">
       <div className="max-w-4xl w-full mx-auto space-y-6 bg-white p-8 rounded-3xl shadow-2xl">
-        <h1 className="text-4xl font-extrabold text-center text-sky-700">Game Results</h1>
-        <p className="text-gray-600 text-center">Leaderboard after completing the game.</p>
+        <div className="text-center">
+          <h1 className="text-4xl font-extrabold text-sky-700">Game Complete!</h1>
+          <div className="mt-4 p-4 bg-gradient-to-r from-amber-400 to-yellow-300 rounded-2xl">
+            <h2 className="text-2xl font-bold text-white">🏆 Winner: {winner.name} 🏆</h2>
+            <p className="text-white/90">Net Worth: {currency}{calculateNet(winner).toLocaleString()}</p>
+          </div>
+        </div>
 
         <div className="rounded-3xl overflow-hidden border bg-white shadow">
           <table className="w-full">
@@ -132,6 +205,7 @@ function Results({ players, onRestart }) {
                 <th className="text-right p-3">Assets</th>
                 <th className="text-right p-3">Loans</th>
                 <th className="text-right p-3">Businesses</th>
+                <th className="text-right p-3">Cards</th>
                 <th className="text-right p-3">Net Worth</th>
               </tr>
             </thead>
@@ -145,6 +219,7 @@ function Results({ players, onRestart }) {
                   <td className="p-3 text-right">{currency}{p.assetsValue.toLocaleString()}</td>
                   <td className="p-3 text-right text-rose-600">{currency}{p.loanBalance.toLocaleString()}</td>
                   <td className="p-3 text-right">{p.businesses.length}</td>
+                  <td className="p-3 text-right">{p.cards.length}</td>
                   <td className="p-3 text-right font-bold">{currency}{calculateNet(p).toLocaleString()}</td>
                 </tr>
               ))}
@@ -152,12 +227,18 @@ function Results({ players, onRestart }) {
           </table>
         </div>
 
-        <div className="flex justify-center">
+        <div className="flex justify-center gap-4">
           <button
             onClick={onRestart}
             className="px-6 py-3 rounded-2xl bg-emerald-500 text-white font-semibold shadow hover:bg-emerald-600 transition-colors"
           >
             Play Again
+          </button>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 rounded-2xl bg-sky-500 text-white font-semibold shadow hover:bg-sky-600 transition-colors"
+          >
+            Back to Lobby
           </button>
         </div>
       </div>
@@ -165,26 +246,111 @@ function Results({ players, onRestart }) {
   );
 }
 
+// AI decision making for bot players: AI logic for buying properties and using cards
+function makeAIDecision(player, tile, allPlayers) {
+  // Simple AI logic
+  if (tile.type === 'business' && !tile.owner) {
+    // Buy if they have enough cash and it's a good deal
+    if (player.cash > tile.cost * 1.5) {
+      return 'buy';
+    }
+  }
+
+  // Use cards strategically
+  if (player.cards.length > 0) {
+    const positiveCards = player.cards.filter(card =>
+      card.effect === 'earn' || card.effect === 'double_business' || card.effect === 'advance'
+    );
+    if (positiveCards.length > 0 && player.cash < 3000) {
+      return 'use_card';
+    }
+  }
+
+  return 'pass'; // Default action
+}
+
 export default function MockGameSimulation() {
+  // Phase Management: 'lobby', 'playing', 'results'
   const [phase, setPhase] = useState('lobby');
-  const [settings, setSettings] = useState({ players: 4, laps: 5 });
-  const [active, setActive] = useState(0);
+  const [settings, setSettings] = useState({ players: 4, laps: 1 });
+  // Player Turn System: Whose turn it is and movement animation state
+  const [activePlayerIndex, setActivePlayerIndex] = useState(0);
   const [isMoving, setIsMoving] = useState(false);
   const [loadingPhase, setLoadingPhase] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
+  const [currentCard, setCurrentCard] = useState(null);
+  const [showCardModal, setShowCardModal] = useState(false);
+  const [gameLog, setGameLog] = useState(['Game initialized']);
 
-   // Debug logging
-  useEffect(() => {
-    console.log('Current phase:', phase, 'Loading phase:', loadingPhase, 'Progress:', loadingProgress);
-  }, [phase, loadingPhase, loadingProgress]);
-
-  // Initialize players and reset business ownership
+  // Enhanced player initialization with cards and better AI behavior
+  // All player data (position, cash, assets, flags, etc.)
   const [players, setPlayers] = useState(() => {
     const initialPlayers = [
-      { id: 'p1', name: 'lily_rose', characterKey: 'Green_girl', pos: 0, laps: 0, cash: 10000, assetsValue: 1500, loanBalance: 500, salary: 2000, businesses: [], flags: {}, inventory: {} },
-      { id: 'p2', name: 'kevin_park', characterKey: 'Cowboy', pos: 0, laps: 0, cash: 10000, assetsValue: 2000, loanBalance: 1000, salary: 2200, businesses: [], flags: {}, inventory: {} },
-      { id: 'p3', name: 'nile_waters', characterKey: 'Mr_suit', pos: 0, laps: 0, cash: 10000, assetsValue: 1200, loanBalance: 0, salary: 1800, businesses: [], flags: {}, inventory: {} },
-      { id: 'p4', name: 'man_person', characterKey: 'Kimono_girl', pos: 0, laps: 0, cash: 10000, assetsValue: 1800, loanBalance: 800, salary: 2100, businesses: [], flags: {}, inventory: {} },
+      {
+        id: 'p1',
+        name: 'lily_rose',
+        characterKey: 'Green_girl',
+        pos: 0,
+        laps: 0,
+        cash: 10000,
+        assetsValue: 1500,
+        loanBalance: 500,
+        salary: 2000,
+        businesses: [],
+        cards: [],
+        // doubleBusiness, skipTurn, halfSalary, etc.
+        flags: {},
+        inventory: {},
+        isBot: true 
+      },
+      {
+        id: 'p2',
+        name: 'me',
+        characterKey: 'Cowboy',
+        pos: 0,
+        laps: 0,
+        cash: 10000,
+        assetsValue: 2000,
+        loanBalance: 1000,
+        salary: 2200,
+        businesses: [],
+        cards: [],
+        flags: {},
+        inventory: {},
+        isBot: false // Human player
+      },
+      {
+        id: 'p3',
+        name: 'nile_waters',
+        characterKey: 'Mr_suit',
+        pos: 0,
+        laps: 0,
+        cash: 10000,
+        assetsValue: 1200,
+        loanBalance: 0,
+        salary: 1800,
+        businesses: [],
+        cards: [],
+        flags: {},
+        inventory: {},
+        isBot: true
+      },
+      {
+        id: 'p4',
+        name: 'man_person',
+        characterKey: 'Kimono_girl',
+        pos: 0,
+        laps: 0,
+        cash: 10000,
+        assetsValue: 1800,
+        loanBalance: 800,
+        salary: 2100,
+        businesses: [],
+        cards: [],
+        flags: {},
+        inventory: {},
+        isBot: true
+      },
     ];
 
     // Reset business ownership
@@ -197,9 +363,9 @@ export default function MockGameSimulation() {
     return initialPlayers;
   });
 
-  const [log, setLog] = useState([]);
-  const [auto, setAuto] = useState(false);
   const [tilePopup, setTilePopup] = useState({ open: false, data: null });
+  const [autoPlay, setAutoPlay] = useState(true); // Auto-play for demo
+  const [diceResult, setDiceResult] = useState(null);
 
   // Hide viewer's roll button
   useEffect(() => {
@@ -210,49 +376,103 @@ export default function MockGameSimulation() {
   }, []);
 
   const everyoneDone = players.every(p => p.laps >= settings.laps);
-  const currentTileId = useMemo(() => BOARD_ORDER[players[active]?.pos ?? 0], [players, active]);
+  const currentPlayer = players[activePlayerIndex];
+  const currentTileId = useMemo(() => BOARD_ORDER[currentPlayer?.pos ?? 0], [currentPlayer]);
   const currentTile = BOARD_TILES[currentTileId];
 
-  // Enhanced turn function with proper state handling
-  const stepTurn = () => {
-    if (everyoneDone || !players[active]) return;
+  const addGameLog = (message) => {
+    setGameLog(prev => [message, ...prev.slice(0, 50)]); // Keep last 50 messages
+  };
+
+  // Function to handle card usage (renamed from useCard to avoid hook naming convention)
+  const handleUseCard = (card) => {
+    setPlayers(prevPlayers => {
+      const updatedPlayers = prevPlayers.map(p => ({
+        ...p,
+        cards: [...p.cards]
+      }));
+
+      const currentPlayer = updatedPlayers[activePlayerIndex];
+      const cardEffect = applyCardEffect(currentPlayer, card, updatedPlayers);
+
+      // Remove the used card
+      currentPlayer.cards = currentPlayer.cards.filter(c => c.id !== card.id);
+
+      addGameLog(`Card used: ${cardEffect.text}`);
+      setShowCardModal(false);
+
+      return updatedPlayers;
+    });
+  };
+
+  const advanceToNextPlayer = () => {
+    setTimeout(() => {
+      let nextIndex = (activePlayerIndex + 1) % players.length;
+
+      // Skip bankrupt players
+      let attempts = 0;
+      while (players[nextIndex]?.cash <= 0 && attempts < players.length) {
+        nextIndex = (nextIndex + 1) % players.length;
+        attempts++;
+      }
+
+      setActivePlayerIndex(nextIndex);
+      setIsMoving(false);
+      setDiceResult(null);
+    }, 1000);
+  };
+
+  // Enhanced turn function with bot AI and card system
+  const executeTurn = async () => {
+    if (everyoneDone || !currentPlayer) return;
 
     setIsMoving(true);
+    addGameLog(`--- ${currentPlayer.name}'s turn ---`);
+
+    // Bot players auto-play
+    if (currentPlayer.isBot) {
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Brief pause for bot "thinking"
+    }
+
+    // Roll dice
+    const roll = randInt(1, 6);
+    setDiceResult(roll);
+    addGameLog(`${currentPlayer.name} rolled a ${roll}`);
 
     setTimeout(() => {
       setPlayers(prevPlayers => {
         const updatedPlayers = prevPlayers.map(p => ({
           ...p,
           flags: { ...p.flags },
-          businesses: [...p.businesses]
+          businesses: [...p.businesses],
+          cards: [...p.cards]
         }));
 
-        const currentPlayer = updatedPlayers[active];
+        const currentPlayer = updatedPlayers[activePlayerIndex];
         if (!currentPlayer) return updatedPlayers;
 
         // Handle skip turn
         if (currentPlayer.flags.skipTurn) {
           currentPlayer.flags.skipTurn = 0;
-          setLog(prevLog => [`${currentPlayer.name} skips a turn`, ...prevLog]);
-          setActive(prevActive => (prevActive + 1) % settings.players);
-          setIsMoving(false);
+          addGameLog(`${currentPlayer.name} skips a turn`);
+          advanceToNextPlayer();
           return updatedPlayers;
         }
 
-        // Roll dice
-        const baseRoll = randInt(1, 6);
-        let roll = baseRoll;
-        if (currentPlayer.businesses.length >= 2 && Math.random() < 0.3) {
-          roll += 1;
-          setLog(prevLog => [`${currentPlayer.name} gets +1 roll bonus from businesses!`, ...prevLog]);
+        // Apply advance from cards
+        const advanceSpaces = currentPlayer.flags.advanceSpaces || 0;
+        const totalSpaces = roll + advanceSpaces;
+        if (advanceSpaces > 0) {
+          addGameLog(`${currentPlayer.name} advances ${advanceSpaces} extra spaces from card`);
+          currentPlayer.flags.advanceSpaces = 0;
         }
 
         const oldPos = currentPlayer.pos;
-        const newPos = (currentPlayer.pos + roll) % BOARD_ORDER.length;
+        const newPos = (currentPlayer.pos + totalSpaces) % BOARD_ORDER.length;
         currentPlayer.pos = newPos;
 
         // Lap completion
-        if (oldPos + roll >= BOARD_ORDER.length) {
+        if (oldPos + totalSpaces >= BOARD_ORDER.length) {
           currentPlayer.laps += 1;
           let salary = currentPlayer.salary;
           if (currentPlayer.flags.halfSalary) {
@@ -260,100 +480,122 @@ export default function MockGameSimulation() {
             currentPlayer.flags.halfSalary = 0;
           }
           currentPlayer.cash += salary;
-          setLog(prevLog => [
-            `${currentPlayer.name} completed lap ${currentPlayer.laps}! (+${currency}${salary.toLocaleString()} salary)`,
-            ...prevLog
-          ]);
+          addGameLog(`${currentPlayer.name} completed lap ${currentPlayer.laps}! (+${currency}${salary.toLocaleString()} salary)`);
+
+          if (currentPlayer.laps >= settings.laps) {
+            addGameLog(`🎉 ${currentPlayer.name} has finished the game!`);
+          }
         }
 
         // Process tile effect
         const tile = BOARD_TILES[BOARD_ORDER[newPos]];
         if (tile) {
           const effect = applyTileEffect(currentPlayer, tile, updatedPlayers);
-          setLog(prevLog => [
-            `${currentPlayer.name} rolled ${roll} and landed on ${tile.label}. ${effect.text}`,
-            ...prevLog
-          ]);
+          addGameLog(`${currentPlayer.name} landed on ${tile.label}. ${effect.text}`);
           setTilePopup({ open: true, data: tile });
+
+          // AI decision for bot players
+          if (currentPlayer.isBot && tile.action) {
+            const decision = makeAIDecision(currentPlayer, tile, updatedPlayers);
+            if (decision === 'buy' && tile.action.type === 'buy') {
+              const buyEffect = applyTileEffect(currentPlayer, tile, updatedPlayers);
+              addGameLog(`🤖 ${currentPlayer.name} decided to buy: ${buyEffect.text}`);
+            }
+          }
         }
 
         // Business income
         if (!currentPlayer.flags.skipBizPayments && currentPlayer.businesses.length > 0) {
-          const incomePerBusiness = 400;
+          let incomePerBusiness = 400;
+          if (currentPlayer.flags.doubleBusiness) {
+            incomePerBusiness *= 2;
+            currentPlayer.flags.doubleBusiness = 0;
+            addGameLog(`${currentPlayer.name}'s business income was doubled this round!`);
+          }
+
           let totalIncome = incomePerBusiness * currentPlayer.businesses.length;
           if (currentPlayer.flags.reduceBusiness) {
             totalIncome = Math.floor(totalIncome / 2);
             currentPlayer.flags.reduceBusiness = 0;
           }
           currentPlayer.cash += totalIncome;
-          setLog(prevLog => [
-            `${currentPlayer.name} earned ${currency}${totalIncome.toLocaleString()} from ${currentPlayer.businesses.length} businesses`,
-            ...prevLog
-          ]);
+          addGameLog(`${currentPlayer.name} earned ${currency}${totalIncome.toLocaleString()} from ${currentPlayer.businesses.length} businesses`);
         }
 
         if (currentPlayer.flags.skipBizPayments) {
           currentPlayer.flags.skipBizPayments = 0;
         }
 
+        // Handle card usage for bots
+        if (currentPlayer.isBot && currentPlayer.cards.length > 0) {
+          const usableCards = currentPlayer.cards.filter(card =>
+            card.effect === 'earn' || card.effect === 'double_business'
+          );
+          if (usableCards.length > 0 && currentPlayer.cash < 3000) {
+            const cardToUse = usableCards[0];
+            const cardEffect = applyCardEffect(currentPlayer, cardToUse, updatedPlayers);
+            currentPlayer.cards = currentPlayer.cards.filter(c => c.id !== cardToUse.id);
+            addGameLog(`🤖 ${currentPlayer.name} used card: ${cardEffect.text}`);
+          }
+        }
+
         // Handle extra roll
         if (currentPlayer.flags.extraRoll) {
           currentPlayer.flags.extraRoll = 0;
-          setLog(prevLog => [`${currentPlayer.name} gets an extra roll!`, ...prevLog]);
+          addGameLog(`${currentPlayer.name} gets an extra roll!`);
           setIsMoving(false);
           return updatedPlayers;
         }
 
-        // Move to next player
-        setActive(prevActive => (prevActive + 1) % settings.players);
-        setIsMoving(false);
+        advanceToNextPlayer();
         return updatedPlayers;
       });
-    }, 800);
+    }, 1500);
   };
 
-  // Auto-play
+  // Auto-play for demo
   useEffect(() => {
-    if (!auto || phase !== 'playing' || everyoneDone) return;
-    const timer = setTimeout(stepTurn, 1200);
-    return () => clearTimeout(timer);
-  }, [auto, phase, players, active, settings, everyoneDone]);
+    if (autoPlay && phase === 'playing' && !everyoneDone) {
+      const timer = setTimeout(executeTurn, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [autoPlay, phase, players, activePlayerIndex, everyoneDone]);
 
   // Game completion
   useEffect(() => {
     if (phase === 'playing' && everyoneDone) {
-      setAuto(false);
-      setTimeout(() => setPhase('results'), 1000);
+      setAutoPlay(false);
+      addGameLog('🎊 Game completed! All players have finished their laps.');
+      setTimeout(() => setPhase('results'), 3000);
     }
   }, [phase, everyoneDone]);
 
-  const restart = () => {
+  const restartGame = () => {
     setPhase('lobby');
-    setAuto(false);
-    setActive(0);
-    setLog([]);
+    setAutoPlay(false);
+    setActivePlayerIndex(0);
+    setGameLog(['Game restarted']);
     setLoadingPhase(false);
     setLoadingProgress(0);
   };
 
   const startFromLobby = (gameSettings) => {
-    
     setLoadingPhase(true);
     setLoadingProgress(0);
-    
-    // Simulate loading progress
+
     const progressInterval = setInterval(() => {
       setLoadingProgress(prev => {
         if (prev >= 100) {
           clearInterval(progressInterval);
-          
-          // Reset game state after loading completes
+
+          // Reset game state
           const resetPlayers = players.map(p => ({
             ...p,
             pos: 0,
             laps: 0,
             cash: 10000,
             businesses: [],
+            cards: [],
             flags: {},
             inventory: {}
           }));
@@ -366,10 +608,8 @@ export default function MockGameSimulation() {
 
           setPlayers(resetPlayers);
           setSettings(gameSettings);
-          setActive(0);
-          setLog(['Game started!']);
-          
-          // Don't set phase to 'playing' here - let GameLoader handle the countdown
+          setActivePlayerIndex(0);
+          setGameLog(['Game started!']);
           return 100;
         }
         return prev + Math.random() * 15 + 5;
@@ -380,9 +620,10 @@ export default function MockGameSimulation() {
   const handleLoaderComplete = () => {
     setLoadingPhase(false);
     setPhase('playing');
+    addGameLog('Game loaded! Starting now...');
   };
 
-  // render logic
+  // Render logic
   if (phase === 'lobby') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
@@ -412,11 +653,8 @@ export default function MockGameSimulation() {
   }
 
   if (phase === 'results') {
-    return <Results players={players} onRestart={restart} />;
+    return <Results players={players} onRestart={restartGame} />;
   }
-
-  const currentPlayer = players[active];
-  if (!currentPlayer) return null;
 
   const netWorth = calculateNet(currentPlayer);
   const playersSummary = players.map(p => ({
@@ -444,73 +682,135 @@ export default function MockGameSimulation() {
       <HUDPortal>
         <GameHUD
           playerName={currentPlayer.name}
-          playerNumber={active + 1}
+          playerNumber={activePlayerIndex + 1}
           netWorth={netWorth}
-          timePlaying={`Turn ${log.length}`}
+          timePlaying={`Turn ${gameLog.length}`}
           goalLaps={currentPlayer.laps}
           totalLaps={settings.laps}
           businessWorth={currentPlayer.assetsValue}
           loanBalance={currentPlayer.loanBalance}
           assetsValue={currentPlayer.assetsValue}
-          cardsCount={Object.keys(currentPlayer.inventory).length}
+          cardsCount={currentPlayer.cards.length}
           currentBusiness={currentPlayer.businesses.length > 0 ? BOARD_TILES[currentPlayer.businesses[0]]?.label : 'No Business'}
           currentTileLabel={BOARD_TILES[BOARD_ORDER[currentPlayer.pos]]?.label || 'Starting Tile'}
           currency={currency}
-          onRoll={stepTurn}
+          onRoll={executeTurn}
           isMoving={isMoving}
           playersSummary={playersSummary}
           activePlayerId={currentPlayer.id}
+          inventoryCards={currentPlayer.cards}
+          diceToast={diceResult}
         />
       </HUDPortal>
 
-      <div className="fixed top-24 right-6 z-[1000] w-[360px] space-y-3">
+      {/* Enhanced Game Controls Panel */}
+      <div className="fixed top-24 right-6 z-[1000] w-[380px] space-y-3">
         <div className="rounded-2xl overflow-hidden shadow-2xl border bg-white">
-          <div className="px-4 py-2 bg-sky-300 border-b text-white">
+          <div className="px-4 py-2 bg-gradient-to-r from-sky-500 to-blue-500 text-white">
             <div className="text-sm font-extrabold tracking-wide">Game Controls</div>
           </div>
           <div className="p-4 space-y-3">
-            <div className="text-sm text-gray-700">
-              <div><b>Active:</b> <span className="font-bold text-sky-600">{currentPlayer.name}</span></div>
-              <div><b>Tile:</b> {currentTile?.label ?? '—'}</div>
-              <div><b>Lap:</b> {currentPlayer.laps}/{settings.laps}</div>
-              <div><b>Cash:</b> {currency}{currentPlayer.cash.toLocaleString()}</div>
-              <div><b>Businesses:</b> {currentPlayer.businesses.length}</div>
+            <div className="text-sm text-gray-700 grid grid-cols-2 gap-2">
+              <div><b>Active Player:</b></div>
+              <div className="font-bold text-sky-600">{currentPlayer.name}</div>
+
+              <div><b>Tile:</b></div>
+              <div>{currentTile?.label ?? '—'}</div>
+
+              <div><b>Lap:</b></div>
+              <div>{currentPlayer.laps}/{settings.laps}</div>
+
+              <div><b>Cash:</b></div>
+              <div>{currency}{currentPlayer.cash.toLocaleString()}</div>
+
+              <div><b>Businesses:</b></div>
+              <div>{currentPlayer.businesses.length}</div>
+
+              <div><b>Cards:</b></div>
+              <div>{currentPlayer.cards.length}</div>
             </div>
+
             <div className="flex gap-2 flex-wrap">
               <button
-                onClick={stepTurn}
-                disabled={isMoving || everyoneDone}
+                onClick={executeTurn}
+                disabled={isMoving || everyoneDone || currentPlayer.isBot}
                 className="px-3 py-2 rounded-xl bg-amber-400 text-white font-semibold shadow hover:bg-amber-500 disabled:opacity-50"
               >
                 Roll Dice
               </button>
+
               <button
-                onClick={() => setAuto(!auto)}
-                disabled={everyoneDone}
-                className={`px-3 py-2 rounded-xl ${auto ? 'bg-gray-500' : 'bg-emerald-500'
-                  } text-white font-semibold shadow hover:opacity-90 disabled:opacity-50`}
+                onClick={() => setAutoPlay(!autoPlay)}
+                className={`px-3 py-2 rounded-xl ${autoPlay ? 'bg-gray-500' : 'bg-emerald-500'
+                  } text-white font-semibold shadow hover:opacity-90`}
               >
-                {auto ? 'Pause' : 'Auto Play'}
+                {autoPlay ? 'Pause Auto' : 'Resume Auto'}
+              </button>
+
+              {currentPlayer.cards.length > 0 && (
+                <button
+                  onClick={() => {
+                    setCurrentCard(currentPlayer.cards[0]);
+                    setShowCardModal(true);
+                  }}
+                  className="px-3 py-2 rounded-xl bg-purple-500 text-white font-semibold shadow hover:bg-purple-600"
+                >
+                  Use Card
+                </button>
+              )}
+
+              <button
+                onClick={() => setPhase('results')}
+                className="px-3 py-2 rounded-xl bg-rose-500 text-white font-semibold shadow hover:bg-rose-600"
+              >
+                Show Results
               </button>
             </div>
           </div>
         </div>
 
+        {/* Enhanced Game Log */}
         <div className="rounded-2xl overflow-hidden shadow-2xl border bg-white max-h-[40vh]">
-          <div className="px-4 py-2 bg-sky-300 border-b text-white">
+          <div className="px-4 py-2 bg-gradient-to-r from-sky-500 to-blue-500 text-white flex justify-between items-center">
             <div className="text-sm font-extrabold tracking-wide">Game Log</div>
+            <div className="text-xs">Laps: {settings.laps}</div>
           </div>
           <div className="p-3 space-y-2 overflow-auto max-h-[32vh]">
-            {log.length === 0 ? (
-              <div className="text-sm text-gray-500">Click Roll Dice to start!</div>
-            ) : log.map((line, i) => (
-              <div key={i} className="text-sm text-gray-700 p-2 bg-gray-50 rounded-lg">
+            {gameLog.length === 0 ? (
+              <div className="text-sm text-gray-500">Game starting...</div>
+            ) : gameLog.map((line, i) => (
+              <div key={i} className="text-sm p-2 bg-gray-50 rounded-lg border-l-4 border-sky-400">
                 {line}
               </div>
             ))}
           </div>
         </div>
       </div>
+
+      {/* Card Modal */}
+      {showCardModal && currentCard && (
+        <div className="fixed inset-0 z-[1001] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowCardModal(false)} />
+          <div className="relative z-10 bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
+            <h3 className="text-xl font-bold text-sky-700 mb-2">{currentCard.title}</h3>
+            <p className="text-gray-600 mb-4">{currentCard.desc}</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => handleUseCard(currentCard)}
+                className="flex-1 px-4 py-2 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600"
+              >
+                Use Card
+              </button>
+              <button
+                onClick={() => setShowCardModal(false)}
+                className="flex-1 px-4 py-2 bg-gray-500 text-white rounded-xl hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <BoardTileModal
         open={tilePopup.open}

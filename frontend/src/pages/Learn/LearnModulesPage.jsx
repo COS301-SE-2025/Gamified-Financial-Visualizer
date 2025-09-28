@@ -5,6 +5,27 @@ import { createPortal } from 'react-dom';
 import LearnLayout from '../../pages/Learn/LearnLayout';
 import CourseCard from '../../components/cards/CoursesCard';
 
+import banner1 from '../../assets/Images/learn_banners/Budget.png' ;
+import banner2 from '../../assets/Images/learn_banners/Investment.png';
+import banner3 from '../../assets/Images/learn_banners/credit.png';
+import banner4 from '../../assets/Images/learn_banners/Fomo.png';
+import banner5 from '../../assets/Images/learn_banners/retrenchment.png';
+import banner6 from '../../assets/Images/banners/pixelGirl.gif';
+
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
+const bannerImages = {
+  1: banner1,
+  2: banner2,
+  3: banner3,
+  4: banner4,
+  5: banner5,
+  6: banner6
+};
+
+
 /* --------------------------- Reusable Dropdown --------------------------- */
 /** Achievements-style portaled dropdown (keyboard + outside click safe) */
 const CategoryDropdown = ({
@@ -197,7 +218,7 @@ const LearningPage = () => {
   useEffect(() => {
     const fetchModules = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/learning');
+        const response = await fetch(`${BASE_URL}/api/learning`);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         setModulesData(data.data);
@@ -238,10 +259,10 @@ const LearningPage = () => {
 
         {/* Search and Filters */}
         <div className="mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center justify-between mb-4 sm:mb-6">
+          <div className="flex gap-3 items-center justify-between mb-4 sm:mb-6">
             {/* Search Bar */}
             <div className="flex items-center w-full px-3 sm:px-4 py-2 border border-[#76B947] rounded-full bg-white dark:bg-gray-800 shadow-sm dark:border-[#AAD977]">
-              <FaSearch className="text-[#76B947] dark:text-[#AAD977] mr-2 flex-shrink-0" />
+              <FaSearch className="text-[#76B947] dark:text-[#AAD977] mr-2 flex-shrink-0 text-sm sm:text-base" />
               <input
                 type="text"
                 placeholder="Search your modules..."
@@ -251,13 +272,13 @@ const LearningPage = () => {
               />
             </div>
             
-            {/* Filter Button */}
+            {/* Filter Button - Icon only on mobile, text + icon on desktop */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center justify-center gap-2 px-2 sm:px-4 py-2 sm:py-3 bg-white dark:bg-gray-800 border border-[#76B947] dark:border-[#AAD977] rounded-lg shadow-sm hover:bg-lime-100 dark:hover:bg-gray-700 transition-colors flex-shrink-0"
+              className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-gray-800 border border-[#76B947] dark:border-[#AAD977] rounded-lg shadow-sm hover:bg-lime-100 dark:hover:bg-gray-700 transition-colors flex-shrink-0"
             >
               <FaFilter className="text-[#76B947] dark:text-[#AAD977] text-sm sm:text-base" />
-              <span className="text-[#76B947] dark:text-[#AAD977] text-sm sm:text-base whitespace-nowrap">
+              <span className="hidden sm:inline text-[#76B947] dark:text-[#AAD977] text-sm sm:text-base whitespace-nowrap">
                 Filters
               </span>
             </button>

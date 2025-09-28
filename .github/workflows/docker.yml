@@ -1,0 +1,86 @@
+name: Build and Deploy to Azure
+
+on:
+  push:
+    branches:
+      - deploy-frontend-demo4
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Log in to Azure Container Registry
+      uses: azure/docker-login@v1
+      with:
+        login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
+
+    - name: Build and push API Backend
+      run: |
+        docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/gamified-financial-visualizer-api-backend:latest ./api-backend --target production
+        docker push ${{ secrets.ACR_LOGIN_SERVER }}/gamified-financial-visualizer-api-backend:latest
+
+    - name: Build and push AI Service
+      run: |
+        docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/gamified-financial-visualizer-ai-service:latest ./api-backend/modules/ai --target production \
+              --build-arg HF_TOKEN=${{ secrets.HF_TOKEN }}
+        docker push ${{ secrets.ACR_LOGIN_SERVER }}/gamified-financial-visualizer-ai-service:latest
+  
+    - name: Build and push Frontend
+      run: |
+        docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/finance-frontend:latest ./frontend --target production \
+        --build-arg REACT_APP_API_URL=https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net
+        docker push ${{ secrets.ACR_LOGIN_SERVER }}/finance-frontend:latest
+
+
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    # Deploy API Backend to Azure App Service
+    - name: Deploy API Backend
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'gamified-finance-backend'  
+        images: '${{ secrets.ACR_LOGIN_SERVER }}/gamified-financial-visualizer-api-backend:latest'
+
+# Deploy AI Service to Azure App Service  
+    - name: Deploy AI Service
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'gamified-finance-ai'
+        images: '${{ secrets.ACR_LOGIN_SERVER }}/gamified-financial-visualizer-ai-service:latest'
+
+# Deploy Frontend to Azure App Service
+    - name: Deploy Frontend
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'gamified-finance-visualizer'  
+        images: '${{ secrets.ACR_LOGIN_SERVER }}/finance-frontend:latest'
+
+    - name: Restart API Backend Service
+      uses: azure/CLI@v2
+      with:
+        azcliversion: latest
+        inlineScript: |
+          az webapp restart --name gamified-finance-backend --resource-group gamified-finance-visualizer
+
+    - name: Restart AI Service
+      uses: azure/CLI@v2
+      with:
+        azcliversion: latest
+        inlineScript: |
+          az webapp restart --name gamified-finance-ai --resource-group gamified-finance-visualizer
+          
+    - name: Restart Frontend Service
+      uses: azure/CLI@v2
+      with:
+        azcliversion: latest
+        inlineScript: |
+          az webapp restart --name gamified-finance-visualizer --resource-group gamified-finance-visualizer

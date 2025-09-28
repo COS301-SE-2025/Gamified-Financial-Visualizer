@@ -21,14 +21,14 @@ const GoalsViewLayout = ({ children }) => {
 
       <div className={`${isLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'} transition-opacity duration-500`}>
         {/* Top Header */}
-        <div className="px-6 pt-6">
+        <div className="px-4 sm:px-6 pt-4 sm:pt-6">
           <GoalsSidebar />
         </div>
 
         {/* Main Page Content */}
         <div className="flex">
-          <div className="flex-1 flex flex-col h-full pr-6">
-            <div className="px-6 pb-6">
+          <div className="flex-1 flex flex-col h-full pr-4 sm:pr-6">
+            <div className="px-4 sm:px-6 pb-4 sm:pb-6">
               {children}
             </div>
           </div>
