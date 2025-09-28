@@ -729,7 +729,10 @@ const CommunityDetail = () => {
           {/* Contribution Score Card */}
           <div className="bg-white p-6 rounded-2xl shadow border border-[#E5E7EB] dark:bg-gray-800 dark:border-gray-800">
             <h4 className="text-sm font-semibold mb-4 text-[#1F2937] dark:text-gray-300">Top Contributors</h4>
-            {paginatedScores.map((member, index) => (
+            {paginatedScores.length === 0 ? (
+              <p className="text-sm text-gray-500 dark:text-gray-400">No contributions yet.</p>
+            ) : (
+              paginatedScores.map((member, index) => (
               <div key={member.id} className="flex items-center justify-between mb-4">
                 {/* Avatar & Name */}
                 <div className="flex items-center gap-3">
@@ -756,7 +759,8 @@ const CommunityDetail = () => {
                   <span className="text-xs font-semibold text-[#10B981]">{member.score}</span>
                 </div>
               </div>
-            ))}
+            ))
+            )}
             {/* Pagination Controls */}
             {totalPages > 1 && (
               <div className="flex justify-center items-center gap-2 mt-4">

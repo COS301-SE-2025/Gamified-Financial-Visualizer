@@ -24,7 +24,7 @@ const CommunityMemberPage = () => {
 
   // Check if the current user is viewing their own profile
   const isViewingOwnProfile = user?.username === username;
-
+  const id = user?.id;
   useEffect(() => {
     if (!username) return;
     (async () => {
@@ -51,7 +51,7 @@ const CommunityMemberPage = () => {
           fetch(`http://localhost:5000/api/auth/profile/recent-achievements/${userID}`),
           fetch(`http://localhost:5000/api/auth/profile/communities/${userID}`),
           fetch(`http://localhost:5000/api/auth/profile/level-progress/${userID}`),
-          fetch(`http://localhost:5000/api/community/friends/status/${user.id}/${userID}`)
+          fetch(`http://localhost:5000/api/community/friends/status/${id}/${userID}`)
         ]);
         const [barData, perfData, summaryData,
           achRes, recArch, commRes, lvlRes, statusRes] = await Promise.all([
