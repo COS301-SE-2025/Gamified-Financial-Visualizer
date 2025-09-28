@@ -32,9 +32,9 @@ const tutorials = [
     lightColor: '#d8edfd',
     description: 'Track, categorize, and visualize your expenses efficiently.',
     steps: [
-      { image: require('../../assets/Tutorials/transactions/trans1.png'), caption: 'Access Transactions from sidebar.' },
-      { image: require('../../assets/Tutorials/transactions/trans2.png'), caption: 'Add or categorize transactions.' },
-      { image: require('../../assets/Tutorials/transactions/trans3.png'), caption: 'Use Insights & Budget tabs.' }
+      { image: require('../../assets/Tutorials/transactions/trans1.png'), caption: 'Go to the Accounts page.' },
+      { image: require('../../assets/Tutorials/transactions/trans2.png'), caption: 'Click on an account then click on "Add".' },
+      { image: require('../../assets/Tutorials/transactions/trans3.png'), caption: 'Fill out your transaction information.' }
     ],
     video: require('../../assets/Videos/transactions/CreateTransaction.mp4'),
     xp: 25,
@@ -63,10 +63,14 @@ const tutorials = [
     lightColor: '#D8C2FD',
     description: 'Engage with your guild, join quests, and rise up the leaderboard.',
     steps: [
-      { image: require('../../assets/Tutorials/imports/import1.png'), caption: 'View or join communities.' },
-      { image: require('../../assets/Tutorials/imports/import2.png'), caption: 'Participate in group quests.' }
+      { image: require('../../assets/Tutorials/community/community1.png'), caption: 'Go to the Communities page under the Community tab.' },
+      { image: require('../../assets/Tutorials/community/community2.png'), caption: 'Go to the "Discover Communites" section.' },
+      { image: require('../../assets/Tutorials/community/community3.png'), caption: 'View a community.' },
+      { image: require('../../assets/Tutorials/community/community4.png'), caption: 'Request to join the community.' },
+      { image: require('../../assets/Tutorials/community/community5.png'), caption: 'Confirm request to all community members.' },
+      { image: require('../../assets/Tutorials/community/community6.png'), caption: 'Request will be sent to community memebers.' },
     ],
-    video: require('../../assets/Videos/imports/ImportTransactions.mp4'),
+    video: require('../../assets/Videos/community/JoinCommunity.mp4'),
     xp: 15,
     badge: <FaUsers className="text-[#9575CD]" />
   },
@@ -77,10 +81,16 @@ const tutorials = [
     lightColor: '#FFECCF',
     description: 'Complete bite-sized lessons and quizzes to build financial mastery.',
     steps: [
-      { image: require('../../assets/Tutorials/imports/import1.png'), caption: 'Access Learning Modules.' },
-      { image: require('../../assets/Tutorials/imports/import2.png'), caption: 'Complete quizzes to earn XP.' }
+      { image: require('../../assets/Tutorials/learning/learn1.png'), caption: 'Go to the Learn tab.' },
+      { image: require('../../assets/Tutorials/learning/learn2.png'), caption: 'Go to the Modules page.' },
+      { image: require('../../assets/Tutorials/learning/learn3.png'), caption: 'View all available modules of different difficulty.' },
+      { image: require('../../assets/Tutorials/learning/learn4.png'), caption: 'Go into one of the modules.' },
+      { image: require('../../assets/Tutorials/learning/learn5.png'), caption: 'View and read the lessons under the module.' },
+      { image: require('../../assets/Tutorials/learning/learn6.png'), caption: 'Complete a module quiz based on the lessons.' },
+      { image: require('../../assets/Tutorials/learning/learn7.png'), caption: 'Complete a quiz.' },
+      { image: require('../../assets/Tutorials/learning/learn8.png'), caption: 'Pass the quiz to get points.' },
     ],
-    video: require('../../assets/Videos/imports/ImportTransactions.mp4'),
+    video: require('../../assets/Videos/learning/exploreLearn.mp4'),
     xp: 30,
     badge: <FaGraduationCap className="text-[#FFD18C]" />
   },
@@ -91,10 +101,13 @@ const tutorials = [
     lightColor: '#ffd6e5',
     description: 'Unlock badges, complete milestones, and show off your progress.',
     steps: [
-      { image: require('../../assets/Tutorials/imports/import1.png'), caption: 'View your badge collection.' },
-      { image: require('../../assets/Tutorials/imports/import2.png'), caption: 'Hover badges for unlock tips.' }
+      { image: require('../../assets/Tutorials/achievements/achieve1.png'), caption: 'Go to the Achievements tab.' },
+      { image: require('../../assets/Tutorials/achievements/achieve2.png'), caption: 'View all available achievements on the page and the filter.' },
+      { image: require('../../assets/Tutorials/achievements/achieve5.png'), caption: 'View all different filters.' },
+      { image: require('../../assets/Tutorials/achievements/achieve3.png'), caption: 'Go into one of the achievements "Goal Getter".' },
+      { image: require('../../assets/Tutorials/achievements/achieve4.png'), caption: 'View all possible tasks to complete to get an achievement.' }
     ],
-    video: require('../../assets/Videos/imports/ImportTransactions.mp4'),
+    video: require('../../assets/Videos/achievements/achievementsVid.mp4'),
     xp: 12,
     badge: <FaTrophy className="text-[#EF5350]" />
   },
@@ -105,10 +118,14 @@ const tutorials = [
     lightColor: '#A6F5FF',
     description: 'Personalize your avatar and view your journey timeline.',
     steps: [
-      { image: require('../../assets/Tutorials/imports/import1.png'), caption: 'Visit your profile.' },
-      { image: require('../../assets/Tutorials/imports/import2.png'), caption: 'Edit info and change avatar.' }
+      { image: require('../../assets/Tutorials/profile/profile1.png'), caption: 'Click on the avatar icon in the navigation bar.' },
+      { image: require('../../assets/Tutorials/profile/profile2.png'), caption: 'Go to the Profile page.' },
+      { image: require('../../assets/Tutorials/profile/profile3.png'), caption: 'Go to the Settings page.' },
+      { image: require('../../assets/Tutorials/profile/profile4.png'), caption: 'Change the avatar and/or banner.' },
+      { image: require('../../assets/Tutorials/profile/profile5.png'), caption: 'Save and preferences will be saved.' },
+      { image: require('../../assets/Tutorials/profile/profile6.png'), caption: 'View the updated changes on the profile page.' }
     ],
-    video: require('../../assets/Videos/imports/ImportTransactions.mp4'),
+    video: require('../../assets/Videos/profile/customProfile.mp4'),
     xp: 15,
     badge: <FaUser className="text-[#26C6DA]" />
   },
@@ -119,11 +136,11 @@ const tutorials = [
     lightColor: '#EBD7F4',
     description: 'Activate AR to view a futuristic financial dashboard and interact with your data.',
     steps: [
-      { image: require('../../assets/Tutorials/imports/import1.png'), caption: 'Open AR from Dashboard or Profile.' },
-      { image: require('../../assets/Tutorials/imports/import2.png'), caption: 'Point camera at flat surface to place dashboard.' },
-      { image: require('../../assets/Tutorials/imports/import3.png'), caption: 'Interact with data using gestures.' }
+      { image: require('../../assets/Tutorials/arMode/ar1.png'), caption: 'Go to the Home tab and Click the "View in AR" button.' },
+      { image: require('../../assets/Tutorials/arMode/ar2.png'), caption: 'View AR in your space with the QR Code.' },
+      { image: require('../../assets/Tutorials/arMode/ar3.png'), caption: 'View and or read the "How to Use" and "Technical info".' }
     ],
-    video: require('../../assets/Videos/imports/ImportTransactions.mp4'),
+    video: require('../../assets/Videos/arMode/viewAR.mp4'),
     xp: 25,
     badge: <FaMagic className="text-[#AB47BC]" />,
     name: 'AR Adventurer'
@@ -135,11 +152,12 @@ const tutorials = [
     lightColor: '#E0E4F5',
     description: 'Learn how to interact with your personal finance assistant using smart prompts.',
     steps: [
-      { image: require('../../assets/Tutorials/imports/import1.png'), caption: 'Open the AI tab in Transactions or Learn.' },
-      { image: require('../../assets/Tutorials/imports/import2.png'), caption: 'Ask a question like "How can I save more?"' },
-      { image: require('../../assets/Tutorials/imports/import3.png'), caption: 'Apply suggestions and track results.' }
+      { image: require('../../assets/Tutorials/aiAdvisor/ai1.png'), caption: 'Open the Accounts tab.' },
+      { image: require('../../assets/Tutorials/aiAdvisor/ai2.png'), caption: 'Go to the Insights page' },
+      { image: require('../../assets/Tutorials/aiAdvisor/ai3.png'), caption: 'Make a "Quick anaylsis prompt".' },
+      { image: require('../../assets/Tutorials/aiAdvisor/ai4.png'), caption: 'Wait for results from prompt to load.' }
     ],
-    video: require('../../assets/Videos/imports/ImportTransactions.mp4'),
+    video: require('../../assets/Videos/aiAdvisor/aiAdvise.mp4'),
     xp: 20,
     badge: <FaRobot className="text-[#5C6BC0]" />,
     name: 'AI Navigator'
