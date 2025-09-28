@@ -157,7 +157,7 @@ const FAQDetails = () => {
         'View rewards per goal': (
           <>
             <p className="dark:text-gray-300">Every goal can reward you with the following:</p>
-            <div className="grid grid-cols-2 gap-2 mt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
               <div className="bg-yellow-50 dark:bg-yellow-900/30 p-2 rounded">
                 <p className="font-bold text-yellow-500 dark:text-yellow-400">XP Points</p>
                 <p className="dark:text-gray-300">Earned based on progress and completion</p>
@@ -417,7 +417,7 @@ const FAQDetails = () => {
         'Earn XP by completing tracks': (
           <>
             <p className="dark:text-gray-300">XP is awarded for learning actions:</p>
-            <div className="grid grid-cols-2 gap-2 mt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
               <div className="bg-amber-50 dark:bg-amber-900/30 p-2 rounded">
                 <p className="font-bold text-amber-500 dark:text-amber-400">+10 XP</p>
                 <p className="dark:text-gray-300">For each completed lesson</p>
@@ -557,7 +557,7 @@ const FAQDetails = () => {
         'Interpret 3D visuals': (
           <>
             <p className="dark:text-gray-300">Each visual element in AR mode has meaning:</p>
-            <div className="grid grid-cols-2 gap-4 mt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
               <div className="bg-cyan-50 dark:bg-cyan-900/30 p-3 rounded">
                 <p className="font-bold text-cyan-500 dark:text-cyan-400">Bars</p>
                 <p className="dark:text-gray-300">Represent budgets, progress, or XP</p>
@@ -587,38 +587,39 @@ const FAQDetails = () => {
 
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 space-y-10 dark:bg-gray-900">
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-[#88BC46] dark:text-lime-400 mb-2">Knowledge Vault</h1>
-        <p className="text-lg text-[#858584] dark:text-gray-400">Unlock answers and earn rewards!</p>
+    <div className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-8 space-y-6 sm:space-y-10 dark:bg-gray-900">
+      <div className="text-center mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-4xl font-bold text-[#88BC46] dark:text-lime-400 mb-2">Knowledge Vault</h1>
+        <p className="text-base sm:text-lg text-[#858584] dark:text-gray-400">Unlock answers and earn rewards!</p>
       </div>
 
-      <div className="bg-gradient-to-r from-[#88BC46] to-[#98C988] dark:from-lime-600 dark:to-lime-700 rounded-xl p-4 shadow-lg text-white">
-        <div className="flex justify-between items-center">
-          {/**We dont have any logic for streaks , this needs to be removed  */}
-          <div className="flex items-center gap-3">
-            <FaFire className="text-orange-300 text-xl" />
-            <div>
-              <p className="text-xs text-white">Current Streak</p>
-              <p className="font-bold">5 days</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <FaStar className="text-yellow-300 text-xl" />
-            <div>
-              <p className="text-xs text-white">Total XP Earned</p>
-              <p className="font-bold">245 XP</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <FaTrophy className="text-yellow-400 text-xl" />
-            <div>
-              <p className="text-xs text-white">Categories Mastered</p>
-              <p className="font-bold">{masteredCategories.length}/{Object.keys(faqData).length}</p>
-            </div>
-          </div>
-        </div>
+     <div className="bg-gradient-to-r from-[#88BC46] to-[#98C988] dark:from-lime-600 dark:to-lime-700 rounded-xl p-3 sm:p-4 shadow-lg text-white">
+  <div className="grid grid-cols-3 gap-2 sm:gap-3">
+    <div className="flex flex-col items-center text-center">
+      <div className="flex items-center gap-2 mb-1">
+        <FaFire className="text-orange-300 text-base sm:text-lg" />
+        <span className="font-bold text-sm sm:text-base">5 days</span>
       </div>
+      <p className="text-xs text-white/90">Current Streak</p>
+    </div>
+    
+    <div className="flex flex-col items-center text-center">
+      <div className="flex items-center gap-2 mb-1">
+        <FaStar className="text-yellow-300 text-base sm:text-lg" />
+        <span className="font-bold text-sm sm:text-base">245 XP</span>
+      </div>
+      <p className="text-xs text-white/90">Total XP Earned</p>
+    </div>
+    
+    <div className="flex flex-col items-center text-center">
+      <div className="flex items-center gap-2 mb-1">
+        <FaTrophy className="text-yellow-400 text-base sm:text-lg" />
+        <span className="font-bold text-sm sm:text-base">{masteredCategories.length}/7</span>
+      </div>
+      <p className="text-xs text-white/90">Categories Mastered</p>
+    </div>
+  </div>
+</div>
 
       {Object.entries(faqData).map(([category, items]) => {
         const total = items.length;
@@ -634,13 +635,13 @@ const FAQDetails = () => {
             transition={{ duration: 0.3 }}
             className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl shadow-md border border-lime-100 dark:border-gray-700 overflow-hidden"
           >
-            <div className={`p-4 ${complete ? 'bg-gradient-to-r from-yellow-100 dark:from-yellow-900/30 to-yellow-50 dark:to-yellow-800/20' : 'bg-gradient-to-r from-lime-50 dark:from-gray-700 to-lime-50 dark:to-gray-700'}`}>
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold text-lime-700 dark:text-lime-400 flex items-center gap-2">
+            <div className={`p-3 sm:p-4 ${complete ? 'bg-gradient-to-r from-yellow-100 dark:from-yellow-900/30 to-yellow-50 dark:to-yellow-800/20' : 'bg-gradient-to-r from-lime-50 dark:from-gray-700 to-lime-50 dark:to-gray-700'}`}>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
+                <h2 className="text-lg sm:text-xl font-bold text-lime-700 dark:text-lime-400 flex items-center gap-2">
                   {complete && <FaMedal className="text-yellow-500 dark:text-yellow-400" />} {category}
                 </h2>
-                <div className="flex items-center gap-2">
-                  <span className={`text-sm px-3 py-1 rounded-full ${complete ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200' : 'bg-lime-200 dark:bg-lime-900/30 text-lime-800 dark:text-lime-200'}`}>{unlockedCount}/{total} unlocked</span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className={`text-xs sm:text-sm px-2 sm:px-3 py-1 rounded-full ${complete ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200' : 'bg-lime-200 dark:bg-lime-900/30 text-lime-800 dark:text-lime-200'}`}>{unlockedCount}/{total} unlocked</span>
                   {complete && (
                     <span className="text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 px-2 py-1 rounded-full flex items-center gap-1">
                       <FaCheckCircle /> Mastered
@@ -669,18 +670,18 @@ const FAQDetails = () => {
                     key={index}
                     whileHover={{ scale: 1.01 }}
                     onClick={() => toggle(index, category)}
-                    className={`p-4 cursor-pointer transition-all ${isUnlocked ? 'bg-green-50/50 dark:bg-green-900/10' : 'hover:bg-indigo-50/30 dark:hover:bg-gray-700/50'}`}
+                    className={`p-3 sm:p-4 cursor-pointer transition-all ${isUnlocked ? 'bg-green-50/50 dark:bg-green-900/10' : 'hover:bg-indigo-50/30 dark:hover:bg-gray-700/50'}`}
                   >
                     <div className="relative">
                       <AnimatePresence>
                         {showXpToast === index && <XpPopup amount={xpEarned[category] - (xpEarned[category] - 10)} />}
                       </AnimatePresence>
 
-                      <div className="flex justify-between items-center">
-                        <h3 className={`font-medium ${isUnlocked ? 'text-lime-700 dark:text-lime-400' : 'text-gray-800 dark:text-gray-200'}`}>
+                      <div className="flex justify-between items-start sm:items-center gap-2">
+                        <h3 className={`font-medium text-sm sm:text-base ${isUnlocked ? 'text-lime-700 dark:text-lime-400' : 'text-gray-800 dark:text-gray-200'} flex-1`}>
                           {isUnlocked && <FaCheckCircle className="inline mr-2 text-lime-500 dark:text-lime-400" />} {text}
                         </h3>
-                        <div className={`text-lg ${isUnlocked ? 'text-[#6BA226] dark:text-lime-400' : 'text-red-500 dark:text-red-400'}`}>{isOpen ? <FaMinus /> : <FaPlus />}</div>
+                        <div className={`text-base sm:text-lg flex-shrink-0 ${isUnlocked ? 'text-[#6BA226] dark:text-lime-400' : 'text-red-500 dark:text-red-400'}`}>{isOpen ? <FaMinus /> : <FaPlus />}</div>
                       </div>
 
                       {isOpen && (
@@ -690,7 +691,7 @@ const FAQDetails = () => {
                           exit={{ height: 0, opacity: 0 }}
                           className="overflow-hidden"
                         >
-                          <div className="mt-3 pt-3 border-t border-indigo-100/50 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-300">
+                          <div className="mt-3 pt-3 border-t border-indigo-100/50 dark:border-gray-700 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
                             {getFAQContent(text, category)}
                             {!isUnlocked && (
                               <p className="text-xs text-[#FFBF1A] dark:text-yellow-400 mt-2">
@@ -713,13 +714,13 @@ const FAQDetails = () => {
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-gradient-to-r from-yellow-100 dark:from-yellow-900/30 to-yellow-50 dark:to-yellow-800/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4 shadow-sm"
+          className="bg-gradient-to-r from-yellow-100 dark:from-yellow-900/30 to-yellow-50 dark:to-yellow-800/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-3 sm:p-4 shadow-sm"
         >
           <div className="flex items-center gap-3">
-            <FaTrophy className="text-yellow-500 dark:text-yellow-400 text-2xl" />
+            <FaTrophy className="text-yellow-500 dark:text-yellow-400 text-xl sm:text-2xl" />
             <div>
-              <h3 className="font-bold text-yellow-800 dark:text-yellow-200">Mastered Categories</h3>
-              <p className="text-sm text-yellow-700 dark:text-yellow-300">You've completed: {masteredCategories.join(', ')}</p>
+              <h3 className="font-bold text-yellow-800 dark:text-yellow-200 text-sm sm:text-base">Mastered Categories</h3>
+              <p className="text-xs sm:text-sm text-yellow-700 dark:text-yellow-300">You've completed: {masteredCategories.join(', ')}</p>
             </div>
           </div>
         </motion.div>

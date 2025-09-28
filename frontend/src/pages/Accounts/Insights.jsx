@@ -43,8 +43,8 @@ const COLORS = {
 
   avgIncome: '#FF7F9E',      // alias of averageIncome
   avgExpense: '#F68D2B',     // alias of averageExpense
-  you: '#FF8A8A',            // for radar “You”
-  avg: '#93c5fd',            // for radar “Average”
+  you: '#FF8A8A',            // for radar "You"
+  avg: '#93c5fd',            // for radar "Average"
   total: "#7FDD53",          // Replacing total color
   forecast: "#FF7F9E",       // Replacing forecast color
   vol: "rgba(124,58,237,0.25)", // soft purple (unchanged)
@@ -181,7 +181,6 @@ const comparisonData = {
     { category: 'Transport', userSpent: 400, avgSpent: 600, status: 'lower' },
     { category: 'Dining', userSpent: 800, avgSpent: 750, status: 'higher' },
     { category: 'Utilities', userSpent: 1200, avgSpent: 1250, status: 'lower' },
-
   ],
   monthlySpending: {
     user: 8500,
@@ -224,7 +223,7 @@ const InsightsPage = () => {
   const [wealth, setWealthData] = useState([]);
   const [categoryApi, setCategoryApi] = useState(null);
   const [selectedAccount, setSelectedAccount] = useState("all");
-  const [selectedCategories, setSelectedCategories] = useState([]); // will initialize after fetch
+  const [selectedCategories, setSelectedCategories] = useState([]);
   const [radarData, setRadarData] = useState(null);
   const [sentiment, setSentimentData] = useState(null);
   const [trend, setTrendData] = useState(null);
@@ -239,7 +238,6 @@ const InsightsPage = () => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
 
-        // normalize numbers/strings
         data.insights = (data.insights || []).map(r => ({
           ...r,
           month: String(r.month),
@@ -256,39 +254,32 @@ const InsightsPage = () => {
         }
         setApiData(data);
 
-
-        // fetch account wealth data
         const wealthRes = await fetch(`http://localhost:5000/api/insights/wealth/${userId}`);
         if (!wealthRes.ok) throw new Error(`HTTP ${wealthRes.status}`);
         const wealthData = await wealthRes.json();
         setWealthData(wealthData);
 
-        // fetch category data
         const catRes = await fetch(`http://localhost:5000/api/insights/category/${userId}`);
         if (!catRes.ok) throw new Error(`HTTP ${catRes.status}`);
         const categoryData = await catRes.json();
         setCategoryApi(categoryData);
 
-        // fetch radar insights
         const radarRes = await fetch(`http://localhost:5000/api/insights/radar/${userId}`);
         if (!radarRes.ok) throw new Error(`HTTP ${radarRes.status}`);
         const radarData = await radarRes.json();
         setRadarData(radarData);
 
-        // fetch sentiment
-        const monthId = new Date().getMonth() + 1; // 1-based month
+        const monthId = new Date().getMonth() + 1;
         const sentimentRes = await fetch(`http://localhost:5000/api/insights/sentiment/user/${userId}/${monthId}`);
         if (!sentimentRes.ok) throw new Error(`HTTP ${sentimentRes.status}`);
         const sentimentData = await sentimentRes.json();
         setSentimentData(sentimentData);
 
-        // fetch trend data
         const trendRes = await fetch(`http://localhost:5000/api/insights/trends/${userId}`);
         if (!trendRes.ok) throw new Error(`HTTP ${trendRes.status}`);
         const trendData = await trendRes.json();
         setTrendData(trendData);
 
-        // fetch heatmap data
         const heatmapRes = await fetch(`http://localhost:5000/api/insights/transactions/heatmap/${userId}`);
         if (!heatmapRes.ok) throw new Error(`HTTP ${heatmapRes.status}`);
         const heatmap = await heatmapRes.json();
@@ -307,7 +298,6 @@ const InsightsPage = () => {
   const deltaMin = Math.min(0, ...deltas);
   const deltaMax = Math.max(0, ...deltas);
 
-  // list all category options the API knows about (for a small toggle row)
   const allCats = React.useMemo(() => {
     const s = new Set();
     Object.values(trend?.categoryTrends || {}).forEach(cats =>
@@ -316,7 +306,6 @@ const InsightsPage = () => {
     return Array.from(s);
   }, [trend]);
 
-  // Initialize categories (top-N overall) after data arrives
   useEffect(() => {
     if (!categoryApi?.spendingData) return;
     setSelectedCategories(prev =>
@@ -324,10 +313,8 @@ const InsightsPage = () => {
     );
   }, [categoryApi]);
 
-  // Keep category list valid when switching account
   useEffect(() => {
     if (!categoryApi?.spendingData || !selectedCategories.length) return;
-    // ensure selected categories exist in new account context (fallback to topN)
     const union = getCategoryUnion(categoryApi.spendingData, selectedAccount);
     const stillValid = selectedCategories.filter(c => union.includes(c));
     if (stillValid.length) {
@@ -335,17 +322,15 @@ const InsightsPage = () => {
     } else {
       setSelectedCategories(pickTopCategories(categoryApi.spendingData, selectedAccount, 6));
     }
-  }, [selectedAccount]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selectedAccount]);
 
   const [showAvg, setShowAvg] = React.useState(true);
-  const [viewPercent, setViewPercent] = React.useState(false); // if you already had percent view
+  const [viewPercent, setViewPercent] = React.useState(false);
 
-  // If user enables "Compare to Global Avg", force absolute view for clarity
   React.useEffect(() => {
     if (showAvg && viewPercent) setViewPercent(false);
   }, [showAvg, viewPercent]);
 
-  // Build chart rows + colors
   const filteredData = React.useMemo(() => {
     const months = categoryApi?.spendingData ?? [];
     return months.map((m) => {
@@ -353,13 +338,11 @@ const InsightsPage = () => {
 
       let userSelectedTotal = 0;
       selectedCategories.forEach((cat) => {
-        // User values (by account or all)
         const userVal =
           selectedAccount === "all"
             ? Number(m.totals?.[cat] ?? 0)
             : Number(m.accounts?.[selectedAccount]?.[cat] ?? 0);
 
-        // Global average for this category in this month
         const avgVal = Number(m.averages?.[cat] ?? 0);
 
         row[cat] = userVal;
@@ -369,11 +352,10 @@ const InsightsPage = () => {
         row.avgSelectedTotal += avgVal;
       });
 
-      // Optional: percent view (only when NOT showing global avg line)
       if (viewPercent && !showAvg) {
         const denom = userSelectedTotal || 1;
         selectedCategories.forEach((cat) => {
-          row[cat] = row[cat] / denom; // normalize bars to 0..1
+          row[cat] = row[cat] / denom;
         });
       }
 
@@ -386,20 +368,18 @@ const InsightsPage = () => {
 
   const SENTIMENT_ORDER = ["Anxious", "Unstable", "Stable", "Confident"];
 
-  // center the needle in each colored band
   const sentimentToPercent = (s) => {
     const i = SENTIMENT_ORDER.indexOf(s);
-    return i === -1 ? 0.5 : (i + 0.5) / SENTIMENT_ORDER.length; // 0..1
+    return i === -1 ? 0.5 : (i + 0.5) / SENTIMENT_ORDER.length;
   };
+
   const monthlyData = useMemo(() => {
-    // fallback to [] to avoid undefined
     return buildMonthlyData(apiData, viewMode, account || null) || [];
   }, [apiData, viewMode, account]);
 
   const radarStats = useMemo(() => {
     const items = radarData?.radar || [];
     const byAxis = new Map(items.map(p => [p.axis, p]));
-    // enforce order + add descriptions
     return AXIS_ORDER.map(axis => {
       const row = byAxis.get(axis) || { user: 0, average: 0 };
       return {
@@ -440,7 +420,6 @@ const InsightsPage = () => {
     setIsLoading(false);
   };
 
-  // Polished tooltip
   function ChartTooltip({ active, payload, label }) {
     if (!active || !payload || !payload.length) return null;
     const rows = payload
@@ -465,7 +444,6 @@ const InsightsPage = () => {
     );
   }
 
-  // Custom tooltip components
   const CustomPieTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
@@ -499,7 +477,6 @@ const InsightsPage = () => {
   };
 
   const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const ZAR = v => `R${Number(v ?? 0).toLocaleString()}`;
 
   function getTopCategories(trendApi, k = 3) {
     if (!trendApi?.categoryTrends) return [];
@@ -531,8 +508,8 @@ const InsightsPage = () => {
       const base = {
         month: m,
         totalSpending: Number(spending[i] || 0),
-        delta: Number(delta?.[i] ?? 0),        // <— add delta
-        volatility: Number(vol[m] || 0),       // <— already present
+        delta: Number(delta?.[i] ?? 0),
+        volatility: Number(vol[m] || 0),
         anomalies: anomalyCount[m] || 0
       };
       selectedCategories.forEach(cat => (base[cat] = Number(catTrends[m]?.[cat] || 0)));
@@ -544,7 +521,7 @@ const InsightsPage = () => {
         month: "Next",
         totalSpending: null,
         forecast: Number(forecastValue),
-        delta: null,           // <— no delta for forecast stub
+        delta: null,
         volatility: null,
         anomalies: 0,
         ...Object.fromEntries(selectedCategories.map(c => [c, null]))
@@ -556,8 +533,7 @@ const InsightsPage = () => {
   const currencyTick = (v) => `R${Number(v).toLocaleString()}`;
   const tooltipFormatter = (value, name) => [ZAR(value), name];
 
-
-  const [mode, setMode] = useState("count"); // 'count' | 'amount'
+  const [mode, setMode] = useState("count");
 
   const startOfYear = useMemo(
     () => {
@@ -570,22 +546,17 @@ const InsightsPage = () => {
   );
   const today = useMemo(() => new Date(), []);
 
-  // Build the values array CalendarHeatmap expects
-  // (If your source is different, normalize to this shape)
   const values = useMemo(() => {
-    // Accept only arrays for this mapper
     if (!Array.isArray(heatmapData)) return [];
 
-    // Helper: normalize to local YYYY-MM-DD
     const toLocalYMD = (d) => {
-      const dt = new Date(d);              // handles ISO with Z
+      const dt = new Date(d);
       const yyyy = dt.getFullYear();
       const mm = String(dt.getMonth() + 1).padStart(2, "0");
       const dd = String(dt.getDate()).padStart(2, "0");
       return `${yyyy}-${mm}-${dd}`;
     };
 
-    // Aggregate per day in case API returns multiple rows for same date
     const byDay = new Map();
     for (const row of heatmapData) {
       const key = toLocalYMD(row.date);
@@ -601,13 +572,11 @@ const InsightsPage = () => {
     return [...byDay.values()].sort((a, b) => a.date.localeCompare(b.date));
   }, [heatmapData]);
 
-  // Thresholds per mode (tweak to taste)
   const thresholds = useMemo(
     () => (mode === "amount" ? [0, 250, 1000, 2500, 5000] : [0, 2, 5, 10, 15]),
     [mode]
   );
 
-  // Tailwind-driven fill for each day cell
   const fillClassFor = (metric) =>
     metric <= thresholds[1]
       ? "fill-blue-100"
@@ -617,13 +586,12 @@ const InsightsPage = () => {
           ? "fill-blue-400"
           : "fill-blue-600";
 
-  // state + ref near top of component
   const heatmapRef = React.useRef(null);
   const [tip, setTip] = React.useState({ show: false, text: "", x: 0, y: 0 });
 
   const showTip = (e, text) => {
     const box = heatmapRef.current?.getBoundingClientRect();
-    const x = e.clientX - (box?.left ?? 0) + 12; // offset from cursor
+    const x = e.clientX - (box?.left ?? 0) + 12;
     const y = e.clientY - (box?.top ?? 0) + 12;
     setTip({ show: true, text, x, y });
   };
@@ -668,18 +636,15 @@ const InsightsPage = () => {
         onMouseLeave: hideTip,
       },
       <>
-        {/* keep native tooltip as a fallback if you like */}
         <title>{tooltipText}</title>
         {element.props.children}
       </>
     );
   };
 
-  // state near top of component
   const [catOpen, setCatOpen] = useState(false);
   const [catQuery, setCatQuery] = useState("");
 
-  // derive list
   const allCategories = React.useMemo(
     () => getCategoryUnion(categoryApi?.spendingData || [], selectedAccount),
     [categoryApi, selectedAccount]
@@ -690,7 +655,6 @@ const InsightsPage = () => {
     return q ? allCategories.filter(c => c.toLowerCase().includes(q)) : allCategories;
   }, [allCategories, catQuery]);
 
-  // helpers
   const toggleCat = (cat) =>
     setSelectedCategories(prev =>
       prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
@@ -715,35 +679,35 @@ const InsightsPage = () => {
 
   return (
     <AccountsLayout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 dark:bg-gray-900">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-6 sm:space-y-8 dark:bg-gray-900">
         {/* AI Insights Section */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3 mb-4">
-            <h2 className="text-xl font-bold text-gray-800 dark:text-white">AI Financial Advisor</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white">AI Financial Advisor</h2>
           </div>
 
           {/* Prompt Input */}
-          <div className="mb-6">
+          <div className="mb-4 sm:mb-6">
             <label htmlFor="ai-prompt" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Ask for specific analysis:
             </label>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
                 id="ai-prompt"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="E.g. 'How can I improve my savings rate?'"
-                className="flex-1 border border-gray-300 rounded-lg dark:bg-gray-700 px-4 py-3 focus:ring-2 focus:ring-[#7FDD53] focus:border-transparent text-gray-700"
+                className="flex-1 border border-gray-300 rounded-lg dark:bg-gray-700 px-3 sm:px-4 py-2 sm:py-3 focus:ring-2 focus:ring-[#7FDD53] focus:border-transparent text-sm sm:text-base text-gray-700"
               />
               <button
                 onClick={() => getAiAnalysis(prompt)}
                 disabled={!prompt.trim() || isLoading}
-                className="bg-[#7FDD53] text-white px-6 py-3 rounded-lg flex items-center gap-2 disabled:opacity-50 hover:bg-[#7FDD53] transition-colors duration-200"
+                className="bg-[#7FDD53] text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-[#7FDD53] transition-colors duration-200 text-sm sm:text-base"
               >
                 {isLoading ? 'Analyzing...' : (
                   <>
-                    <FaPaperPlane /> Analyze
+                    <FaPaperPlane className="text-xs sm:text-sm" /> Analyze
                   </>
                 )}
               </button>
@@ -756,23 +720,23 @@ const InsightsPage = () => {
           {/* AI Response */}
           {aiResponse && (
             <div className="border-t pt-4 mt-4 border-gray-200 dark:border-gray-700">
-              <div className="flex justify-between items-start mb-3">
-                <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                  <FaLightbulb className="text-yellow-400 dark:text-yellow-500" /> Analysis for: "{aiResponse.prompt}"
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
+                <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2 text-sm sm:text-base">
+                  <FaLightbulb className="text-yellow-400 dark:text-yellow-500 text-sm sm:text-base" /> Analysis for: "{aiResponse.prompt}"
                 </h3>
                 <span className="text-xs text-gray-500 dark:text-gray-400">{aiResponse.generatedAt}</span>
               </div>
 
-              <div className="bg-indigo-50 p-4 rounded-lg mb-4 border-l-4 border-indigo-400">
-                <p className="text-gray-800">{aiResponse.analysis}</p>
+              <div className="bg-indigo-50 p-3 sm:p-4 rounded-lg mb-4 border-l-4 border-indigo-400">
+                <p className="text-gray-800 text-sm sm:text-base">{aiResponse.analysis}</p>
               </div>
 
-              <h4 className="font-medium text-gray-800 mb-2">Recommended Actions:</h4>
+              <h4 className="font-medium text-gray-800 mb-2 text-sm sm:text-base">Recommended Actions:</h4>
               <ul className="space-y-2 pl-2">
                 {aiResponse.actionItems.map((item, index) => (
                   <li key={index} className="flex items-start gap-2">
-                    <FaCheckCircle className="text-indigo-500 mt-1 flex-shrink-0" />
-                    <span className="text-gray-700">{item}</span>
+                    <FaCheckCircle className="text-indigo-500 mt-0.5 sm:mt-1 flex-shrink-0 text-xs sm:text-sm" />
+                    <span className="text-gray-700 text-sm sm:text-base">{item}</span>
                   </li>
                 ))}
               </ul>
@@ -781,7 +745,7 @@ const InsightsPage = () => {
 
           {/* Predefined Quick Prompts */}
           {!aiResponse && (
-            <div className="mt-6">
+            <div className="mt-4 sm:mt-6">
               <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Quick analysis prompts:</h4>
               <div className="flex flex-wrap gap-2">
                 {[
@@ -796,7 +760,7 @@ const InsightsPage = () => {
                       setPrompt(quickPrompt);
                       getAiAnalysis(quickPrompt);
                     }}
-                    className="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 px-3 py-1.5 rounded-lg text-sm transition-colors duration-200 border border-gray-200 dark:border-gray-600"
+                    className="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm transition-colors duration-200 border border-gray-200 dark:border-gray-600"
                   >
                     {quickPrompt}
                   </button>
@@ -807,60 +771,58 @@ const InsightsPage = () => {
         </div>
 
         {/* Motivational Summary */}
-        <div className="bg-white dark:bg-gray-800 text-black dark:text-gray-200 p-6 rounded-xl shadow-lg">
-          <h2 className="text-xl font-bold mb-4">Your Financial Standing</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white dark:bg-gray-800 dark:text-gray-200 p-4 rounded-lg shadow-md border-2 border-[#FF8A8A]/30">
-              <p className="text-sm text-gray-600 mb-1 dark:text-gray-200">Categories Spending Less Than Average</p>
-              <p className="text-2xl font-bold text-[#FF8A8A]"> {/* Red for categories less than average */}
+        <div className="bg-white dark:bg-gray-800 text-black dark:text-gray-200 p-4 sm:p-6 rounded-xl shadow-lg">
+          <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Your Financial Standing</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+            <div className="bg-white dark:bg-gray-800 dark:text-gray-200 p-3 sm:p-4 rounded-lg shadow-md border-2 border-[#FF8A8A]/30">
+              <p className="text-xs sm:text-sm text-gray-600 mb-1 dark:text-gray-200">Categories Spending Less Than Average</p>
+              <p className="text-xl sm:text-2xl font-bold text-[#FF8A8A]">
                 {comparisonData.categorySpending.filter(x => x.status === 'lower').length}
-                <span className="text-lg font-normal">/{comparisonData.categorySpending.length}</span>
+                <span className="text-sm sm:text-lg font-normal">/{comparisonData.categorySpending.length}</span>
               </p>
             </div>
-            <div className="bg-white dark:bg-gray-800 dark:text-gray-200 p-4 rounded-lg shadow-md border-2 border-[#7FDD53]/30">
-              <p className="text-sm text-gray-600 mb-1 dark:text-gray-200">Financial Health Score</p>
-              <p className="text-2xl font-bold flex items-center text-[#7FDD53]"> {/* Green for positive financial health */}
+            <div className="bg-white dark:bg-gray-800 dark:text-gray-200 p-3 sm:p-4 rounded-lg shadow-md border-2 border-[#7FDD53]/30">
+              <p className="text-xs sm:text-sm text-gray-600 mb-1 dark:text-gray-200">Financial Health Score</p>
+              <p className="text-xl sm:text-2xl font-bold flex items-center text-[#7FDD53]">
                 {comparisonData.aiScore.user}
-                <span className="text-sm font-normal ml-2">
+                <span className="text-xs sm:text-sm font-normal ml-2">
                   ({comparisonData.aiScore.user > comparisonData.aiScore.allUsers ? 'Above' : 'Below'} average)
                 </span>
               </p>
             </div>
-            <div className="bg-white dark:bg-gray-800 dark:text-gray-200 p-4 rounded-lg shadow-md border-2 border-[#5FBFFF]/30">
-              <p className="text-sm text-gray-600 mb-1 dark:text-gray-200">Savings Rate Percentile</p>
-              <p className="text-2xl font-bold text-[#5FBFFF]"> {/* Blue for savings rate */}
+            <div className="bg-white dark:bg-gray-800 dark:text-gray-200 p-3 sm:p-4 rounded-lg shadow-md border-2 border-[#5FBFFF]/30">
+              <p className="text-xs sm:text-sm text-gray-600 mb-1 dark:text-gray-200">Savings Rate Percentile</p>
+              <p className="text-xl sm:text-2xl font-bold text-[#5FBFFF]">
                 Top {100 - Math.floor((comparisonData.savingsRate.user / comparisonData.savingsRate.topPercentile) * 100)}%
               </p>
             </div>
           </div>
-          <p className="mt-5 text-sm text-gray-600 dark:text-gray-200 p-3 rounded-lg">
+          <p className="mt-4 sm:mt-5 text-xs sm:text-sm text-gray-600 dark:text-gray-200 p-3 rounded-lg">
             Keep up the good work! You're making better financial decisions than most users in your demographic.
           </p>
         </div>
 
-
         {/* AI-Generated Monthly Summary */}
-        <div className="bg-white dark:bg-gray-800 dark:text-gray-200 text-black p-6 rounded-xl shadow-lg">
-          <div className="flex justify-between items-start">
-            <div>
-              <h2 className="text-xl font-bold mb-3 text-black dark:text-gray-200">AI-Generated Financial Summary</h2>
-              <p className="opacity-90 max-w-2xl dark:text-gray-200 leading-relaxed text-black">
+        <div className="bg-white dark:bg-gray-800 dark:text-gray-200 text-black p-4 sm:p-6 rounded-xl shadow-lg">
+          <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0">
+            <div className="flex-1">
+              <h2 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-black dark:text-gray-200">AI-Generated Financial Summary</h2>
+              <p className="opacity-90 max-w-2xl dark:text-gray-200 leading-relaxed text-black text-sm sm:text-base">
                 Based on your June activity: Your savings rate improved by 2% from last month,
                 but dining expenses increased by 18%. You're on track to complete your emergency
                 fund goal 3 weeks early.
               </p>
 
             </div>
-            <div className="bg-[#7FDD53]/20 p-3 rounded-full text-[#7FDD53]">
-              <FaRobot size={24} />
+            <div className="bg-[#7FDD53]/20 p-2 sm:p-3 rounded-full text-[#7FDD53]">
+              <FaRobot size={20} className="sm:w-6 sm:h-6" />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            {/* Financial Health Score Box */}
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border-2 border-[#7FDD53]/30">
-              <p className="text-sm text-gray-600 mb-1 dark:text-gray-200">Financial Health Score</p>
-              <p className="text-2xl font-bold text-[#7FDD53]">82/100</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-4 sm:mt-6">
+            <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow-md border-2 border-[#7FDD53]/30">
+              <p className="text-xs sm:text-sm text-gray-600 mb-1 dark:text-gray-200">Financial Health Score</p>
+              <p className="text-xl sm:text-2xl font-bold text-[#7FDD53]">82/100</p>
               <p className="text-xs mt-1 text-[#7FDD53]">↑ 5 points from May</p>
 
             </div>
@@ -873,10 +835,9 @@ const InsightsPage = () => {
               <p className="text-xs mt-1 text-[#5FBFFF]">Through budget optimization</p>
             </div>
 
-            {/* Goal Projection Box */}
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border-2 border-[#FF8A8A]/30">
-              <p className="text-sm text-gray-600 mb-1 dark:text-gray-200">Goal Projection</p>
-              <p className="text-2xl font-bold text-[#FF8A8A]">2.1 years</p>
+            <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow-md border-2 border-[#FF8A8A]/30">
+              <p className="text-xs sm:text-sm text-gray-600 mb-1 dark:text-gray-200">Goal Projection</p>
+              <p className="text-xl sm:text-2xl font-bold text-[#FF8A8A]">2.1 years</p>
               <p className="text-xs mt-1 text-[#FF8A8A]">To financial independence</p>
             </div>
           </div>
@@ -885,7 +846,7 @@ const InsightsPage = () => {
         {/* 2-Column Layout for Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Sentiment */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border dark:border-gray-800 border-gray-200 mb-8">
+          <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-md border dark:border-gray-800 border-gray-200">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">Financial Sentiment</h2>
               {
@@ -896,7 +857,6 @@ const InsightsPage = () => {
                 )
               }
             </div>
-
 
             <div className="flex flex-col items-center">
               {!sentiment ? (
@@ -998,23 +958,20 @@ const InsightsPage = () => {
           </div>
 
           {/* Monthly Spending by Category Bar Chart */}
-          <div className="bg-white dark:bg-gray-800  p-6 rounded-xl shadow-md border dark:border-gray-800 border-gray-200 mb-8">
-            {/* Section Heading */}
-            <div className="flex flex-wrap justify-between items-center mb-6">
-              <h2 className="text-xl font-bold dark:text-gray-200 text-gray-800 mb-4">Monthly Spending by Category</h2>
+          <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-md border dark:border-gray-800 border-gray-200">
+            <div className="flex flex-wrap justify-between items-center gap-3 mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-xl font-bold dark:text-gray-200 text-gray-800">Monthly Spending by Category</h2>
 
-              {/* Account select and Percent View toggle */}
-              <div className="flex flex-wrap gap-4 items-center">
-                {/* Account Select Dropdown */}
+              <div className="flex flex-wrap gap-2 sm:gap-4 items-center">
                 <div>
-                  <label htmlFor="account-select" className="block text-sm font-medium dark:text-gray-200 text-gray-700 mb-2">
+                  <label htmlFor="account-select" className="block text-xs sm:text-sm font-medium dark:text-gray-200 text-gray-700 mb-1 sm:mb-2">
                     Account
                   </label>
                   <select
                     id="account-select"
                     value={selectedAccount}
                     onChange={(e) => setSelectedAccount(e.target.value)}
-                    className="border dark:border-gray-700 dark:bg-gray-700 border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="border dark:border-gray-700 dark:bg-gray-700 border-gray-300 rounded-lg px-2 sm:px-3 py-1 sm:py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-xs sm:text-sm"
                   >
                     <option value="all">All Accounts</option>
                     {accounts.map((a) => (
@@ -1024,15 +981,14 @@ const InsightsPage = () => {
 
                 </div>
 
-                {/* Percent View Toggle */}
                 <div>
-                  <label className="block text-sm font-medium dark:text-gray-200 text-gray-700 mb-2">Scale</label>
+                  <label className="block text-xs sm:text-sm font-medium dark:text-gray-200 text-gray-700 mb-1 sm:mb-2">Scale</label>
                   <div className="inline-flex rounded-md overflow-hidden border dark:border-gray-700 border-gray-300">
                     <button
                       type="button"
                       disabled={!showAvg}
                       onClick={() => setViewPercent(false)}
-                      className={`px-3 py-1.5 text-sm ${!viewPercent ? "bg-indigo-100 text-indigo-700" : "bg-white dark:bg-gray-700 dark:text-gray-200 text-gray-700"} ${showAvg ? "opacity-50 cursor-not-allowed" : ""}`}
+                      className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm ${!viewPercent ? "bg-indigo-100 text-indigo-700" : "bg-white dark:bg-gray-700 dark:text-gray-200 text-gray-700"} ${showAvg ? "opacity-50 cursor-not-allowed" : ""}`}
                       title={showAvg ? "Disable Global Avg to use % view" : ""}
                     >
                       Amount
@@ -1041,7 +997,7 @@ const InsightsPage = () => {
                       type="button"
                       disabled={!showAvg}
                       onClick={() => setViewPercent(true)}
-                      className={`px-3 py-1.5 text-sm border-l border-gray-300 ${viewPercent ? "bg-indigo-100 text-indigo-700" : "bg-white text-gray-700"} ${showAvg ? "opacity-50 cursor-not-allowed" : ""}`}
+                      className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border-l border-gray-300 ${viewPercent ? "bg-indigo-100 text-indigo-700" : "bg-white text-gray-700"} ${showAvg ? "opacity-50 cursor-not-allowed" : ""}`}
                       title={showAvg ? "Disable Global Avg to use % view" : ""}
                     >
                       %
@@ -1052,18 +1008,18 @@ const InsightsPage = () => {
             </div>
             {/* Category Multi-select (collapsible) */}
             <div className="w-full">
-              <div className="flex items-center justify-between mb-4">
-                <label className="block text-sm font-medium dark:text-gray-200 text-gray-700">Categories</label>
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <label className="block text-xs sm:text-sm font-medium dark:text-gray-200 text-gray-700">Categories</label>
                 <button
                   type="button"
                   onClick={() => setCatOpen(v => !v)}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-md bg-gray-100 dark:bg-gray-700 dark:text-gray-200 text-gray-700 hover:bg-gray-200"
+                  className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm rounded-md bg-gray-100 dark:bg-gray-700 dark:text-gray-200 text-gray-700 hover:bg-gray-200"
                   aria-expanded={catOpen}
                   aria-controls="category-panel"
                 >
-                  {catOpen ? "Hide" : "Show"} ({selectedCategories.length} selected)
+                  {catOpen ? "Hide" : "Show"} ({selectedCategories.length})
                   <svg
-                    className={`h-4 w-4 transition-transform dark:text-gray-200 ${catOpen ? "rotate-180" : ""}`}
+                    className={`h-3 w-3 sm:h-4 sm:w-4 transition-transform dark:text-gray-200 ${catOpen ? "rotate-180" : ""}`}
                     viewBox="0 0 20 20" fill="currentColor"
                   >
                     <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" />
@@ -1071,31 +1027,28 @@ const InsightsPage = () => {
                 </button>
               </div>
 
-              {/* Collapsible Panel */}
               <div
                 id="category-panel"
-                className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${catOpen ? "max-h-[480px] opacity-100 mt-3" : "max-h-0 opacity-0"}`}
+                className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${catOpen ? "max-h-[320px] sm:max-h-[480px] opacity-100 mt-2 sm:mt-3" : "max-h-0 opacity-0"}`}
               >
-                {/* Controls */}
-                <div className="flex flex-wrap items-center gap-4 mb-4">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
                   <button
                     type="button"
                     onClick={selectAll}
-                    className="px-3 py-1.5 text-xs rounded-md bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
+                    className="px-2 sm:px-3 py-1 text-xs rounded-md bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
                   >
-                    Select all (filtered)
+                    Select all
                   </button>
                   <button
                     type="button"
                     onClick={clearAll}
-                    className="px-3 py-1.5 text-xs rounded-md bg-gray-100 dark:bg-gray-700 dark:text-gray-200 text-gray-700 hover:bg-gray-200"
+                    className="px-2 sm:px-3 py-1 text-xs rounded-md bg-gray-100 dark:bg-gray-700 dark:text-gray-200 text-gray-700 hover:bg-gray-200"
                   >
                     Clear
                   </button>
                 </div>
 
-                {/* Chips */}
-                <div className="flex flex-wrap gap-4 max-w-[640px]">
+                <div className="flex flex-wrap gap-2 sm:gap-4 max-w-full">
                   {filteredCategories.map((category) => {
                     const active = selectedCategories.includes(category);
                     return (
@@ -1103,11 +1056,11 @@ const InsightsPage = () => {
                         key={category}
                         type="button"
                         onClick={() => toggleCat(category)}
-                        className={`px-4 py-1 text-sm rounded-lg flex items-center ${active ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 dark:bg-gray-700 dark:text-gray-200 text-gray-700"}`}
+                        className={`px-2 sm:px-4 py-1 text-xs sm:text-sm rounded-lg flex items-center ${active ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 dark:bg-gray-700 dark:text-gray-200 text-gray-700"}`}
                         title={category}
                       >
                         <span
-                          className="w-2 h-2 rounded-full mr-2"
+                          className="w-2 h-2 rounded-full mr-1 sm:mr-2"
                           style={{ backgroundColor: CATEGORY_COLORS[category] || "#ddd" }}
                         />
                         {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -1115,20 +1068,19 @@ const InsightsPage = () => {
                     );
                   })}
                   {filteredCategories.length === 0 && (
-                    <span className="text-sm dark:text-gray-200text-gray-500">No categories match your search.</span>
+                    <span className="text-xs sm:text-sm dark:text-gray-200 text-gray-500">No categories match your search.</span>
                   )}
                 </div>
               </div>
 
-              {/* Compact Summary Row when collapsed */}
               {!catOpen && selectedCategories.length > 0 && (
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs dark:text-gray-200  text-gray-600">
-                  <span className="opacity-70 ">Selected:</span>
-                  {selectedCategories.slice(0, 6).map(c => (
-                    <span key={c} className="px-2 py-0.5 rounded-full  dark:bg-gray-700 bg-gray-100">{c}</span>
+                <div className="mt-2 sm:mt-3 flex flex-wrap items-center gap-1 sm:gap-2 text-xs dark:text-gray-200 text-gray-600">
+                  <span className="opacity-70">Selected:</span>
+                  {selectedCategories.slice(0, 4).map(c => (
+                    <span key={c} className="px-1.5 sm:px-2 py-0.5 rounded-full dark:bg-gray-700 bg-gray-100 text-xs">{c}</span>
                   ))}
-                  {selectedCategories.length > 6 && (
-                    <span className="opacity-70">+{selectedCategories.length - 6} more</span>
+                  {selectedCategories.length > 4 && (
+                    <span className="opacity-70">+{selectedCategories.length - 4} more</span>
                   )}
                 </div>
               )}
@@ -1256,19 +1208,18 @@ const InsightsPage = () => {
           ) : (
             <>
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={monthlyData} margin={{ top: 16, right: 20, left: 8, bottom: 8 }}>
+                <ComposedChart data={monthlyData} margin={{ top: 16, right: 10, left: 5, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke={COLORS.grid} />
-                  <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#6b7280" }} />
-                  <YAxis tickFormatter={(v) => `R${Number(v).toLocaleString()}`} tick={{ fontSize: 12, fill: "#6b7280" }} />
+                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#6b7280" }} />
+                  <YAxis tickFormatter={(v) => `R${Number(v).toLocaleString()}`} tick={{ fontSize: 11, fill: "#6b7280" }} />
                   <Tooltip content={<ChartTooltip />} />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
 
-                  <Bar dataKey="income" name="Money In" fill={COLORS.income} radius={[6, 6, 0, 0]} maxBarSize={30} />
-                  <Bar dataKey="expense" name="Money Out" fill={COLORS.expense} radius={[6, 6, 0, 0]} maxBarSize={30} />
+                  <Bar dataKey="income" name="Money In" fill={COLORS.income} radius={[4, 4, 0, 0]} maxBarSize={25} />
+                  <Bar dataKey="expense" name="Money Out" fill={COLORS.expense} radius={[4, 4, 0, 0]} maxBarSize={25} />
 
-                  {/* use avgIncome/avgExpense keys that match COLORS */}
-                  <Line type="monotone" dataKey="avgIncome" name="Avg Income" stroke={COLORS.avgIncome} strokeDasharray="6 6" strokeWidth={2} dot={false} connectNulls />
-                  <Line type="monotone" dataKey="avgExpense" name="Avg Expense" stroke={COLORS.avgExpense} strokeDasharray="6 6" strokeWidth={2} dot={false} connectNulls />
+                  <Line type="monotone" dataKey="avgIncome" name="Avg Income" stroke={COLORS.avgIncome} strokeDasharray="4 4" strokeWidth={1.5} dot={false} connectNulls />
+                  <Line type="monotone" dataKey="avgExpense" name="Avg Expense" stroke={COLORS.avgExpense} strokeDasharray="4 4" strokeWidth={1.5} dot={false} connectNulls />
                 </ComposedChart>
               </ResponsiveContainer>
             </>
@@ -1727,11 +1678,11 @@ const InsightsPage = () => {
                   endDate={today}
                   values={values}
                   showWeekdayLabels
-                  gutterSize={2}
+                  gutterSize={1}
                   classForValue={() => ""}
                   transformDayElement={transformDayElement}
-                  weekdayLabelClass="text-[0.625rem] dark:text-gray-200 text-gray-500"
-                  monthLabelClass="text-[0.625rem] dark:bg-gray-700 dark:text-gray-200 text-gray-500"
+                  weekdayLabelClass="text-[0.5rem] sm:text-[0.625rem] dark:text-gray-200 text-gray-500"
+                  monthLabelClass="text-[0.5rem] sm:text-[0.625rem] dark:bg-gray-700 dark:text-gray-200 text-gray-500"
                 />
               </div>
             )}
