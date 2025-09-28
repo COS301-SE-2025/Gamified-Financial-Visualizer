@@ -48,7 +48,7 @@ def parse_transactions(lines: list[str], statement_year: str) -> list[dict]:
    
    for ln in lines:
       # we know clean_lines already only yielded “date | rest…” lines
-      if not ln or "Description" in ln or "Date\s+\|" in ln:
+      if not ln or "Description" in ln or "Date\\s+\\|" in ln:
          continue
 
       if "|" not in ln:

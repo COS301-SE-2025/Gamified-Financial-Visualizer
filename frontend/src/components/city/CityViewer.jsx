@@ -215,6 +215,19 @@ function ThemePanel({ open, setOpen, theme, setTheme, mode, setMode }) {
   const themes = Object.keys(CITY_SCENES)
   const themeHasBoth = !!CITY_SCENES[theme]?.day && !!CITY_SCENES[theme]?.night
 
+  const userTier = JSON.parse(localStorage.getItem('user') || '{}').tier;
+
+const THEME_UNLOCK_MAP = {
+  Wood: ['classic_day'],
+  Bronze: ['classic_day', 'foggy_morning'],
+  Silver: ['classic_day', 'foggy_morning', 'golden_hour'],
+  Gold: ['classic_day', 'foggy_morning', 'golden_hour', 'neon_night'],
+  Platinum: ['classic_day', 'foggy_morning', 'golden_hour', 'neon_night', 'rainy_evening'],
+  Diamond: ['classic_day', 'foggy_morning', 'golden_hour', 'neon_night', 'rainy_evening', 'sunset_pink']
+};
+
+const unlockedThemes = THEME_UNLOCK_MAP[userTier] || [];
+
   return (
     <>
       {!open && (
@@ -237,17 +250,34 @@ function ThemePanel({ open, setOpen, theme, setTheme, mode, setMode }) {
           </div>
 
           {/* Theme chips */}
-          <div className="px-3 pb-3 grid grid-cols-2 gap-2">
-            {themes.map((key) => (
-              <button
-                key={key}
-                onClick={() => setTheme(key)}
-                className={`px-3 py-2 rounded-xl border text-sm text-left shadow-sm ${theme === key ? 'bg-lime-600 text-white border-lime-600' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200'
-                  }`}
-              >
-                {CITY_SCENES[key].name}
-              </button>
-            ))}
+              <div className="grid grid-cols-3 grid-rows-2 gap-3 px-3 pb-3">
+  {Object.keys(CITY_SCENES).map((key) => {
+    const isUnlocked = unlockedThemes.includes(key);
+    const isSelected = theme === key;
+
+    return (
+      <button
+  key={key}
+  onClick={() => setTheme(key)} // Always clickable during dev
+  disabled={false} // Always enabled for dev; use !isUnlocked in production
+  className={`relative px-4 py-2 rounded-lg border text-sm font-medium shadow-sm transition-all duration-200
+    ${isSelected ? 'bg-lime-600 text-white border-lime-600' :
+      isUnlocked ? 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 hover:border-lime-500 hover:shadow-md' :
+      'bg-white/70 dark:bg-gray-700/70 border-gray-300 dark:border-gray-600 text-gray-400 hover:border-gray-400 hover:shadow-sm'}
+  `}
+>
+  {CITY_SCENES[key].name}
+  {!isUnlocked && (
+    <span className="absolute top-1 right-2 text-[10px] font-semibold text-red-500 bg-white dark:bg-gray-900 px-1 rounded">
+      Locked
+    </span>
+  )}
+</button>
+    );
+  })}
+</div>
+          <div className="px-3 pb-3 text-[11px] text-gray-500 dark:text-gray-400 flex items-center gap-1">
+            <FiChevronDown /> Close to see the nav bar
           </div>
         </div>
       )}
@@ -664,9 +694,9 @@ function GameModal({ open, onClose, data, theme }) {
 
               <div className="mt-3 flex items-center justify-between">
                 <Stars />
-                <div className="text-[11px] text-gray-500">Уровень {level.current}/{level.max}</div>
+                <div className="text-[11px] text-gray-500"> {level.current}/{level.max}</div>
               </div>
-              <div className="mt-1 text-[11px] text-gray-500">Размер: {sizeLabel}</div>
+              <div className="mt-1 text-[11px] text-gray-500"> {sizeLabel}</div>
             </div>
 
             <div className="space-y-4">

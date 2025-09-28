@@ -80,7 +80,6 @@ const fallbackColors = [
 const getCategoryColor = (key, idx = 0) =>
   categoryColors[key] || fallbackColors[idx % fallbackColors.length];
 
-/** --- NEW: exact 6-color palette to match Community header --- */
 const STAT_PALETTE = ['#FF8A8A', '#7FDD53', '#5FBFFF', '#FFC541', '#F68D2B', '#FF7F9E'];
 
 /** small helper to get a translucent bg from a hex */
@@ -202,13 +201,11 @@ const AccountsPerformanceHeader = () => {
       total: v.total,
       transactionCount: v.count,
       icon: categoryIcons[key] || categoryIcons.default,
-      // initial color (kept for fallback) — will be overridden by STAT_PALETTE below
       color: getCategoryColor(key, idx),
     }));
 
     rows.sort((a, b) => b.total - a.total);
 
-    // ✅ Apply the exact 6-color palette after sorting (ranked order)
     return rows.slice(0, 6).map((row, idx) => ({
       ...row,
       color: STAT_PALETTE[idx % STAT_PALETTE.length],
@@ -216,121 +213,140 @@ const AccountsPerformanceHeader = () => {
   }, [userTransactions]);
 
   return (
-    <div className="flex flex-wrap justify-between gap-6 items-start w-full mb-6">
-      {/* Left Label */}
-      <div className="text-center lg:text-left">
-        <div className="flex items-center justify-center lg:justify-start gap-2 text-[#B4DFA4] dark:text-[#88BC46]">
-          <FaUsers className="text-6xl" />
-          <h1 className="text-5xl font-light dark:text-white">Accounts</h1>
+    <div className="w-full mb-6">
+      {/* Mobile Only: Clean Header */}
+      <div className="lg:hidden">
+        {/* Page Title at Top Left Corner */}
+        <div className="mb-4">
+          <div className="flex items-center gap-2 text-[#B4DFA4] dark:text-[#88BC46]">
+            <FaUsers className="text-2xl" />
+            <h1 className="text-2xl font-light dark:text-white">Accounts</h1>
+          </div>
+          <div className="mb-6">
+          <p className="text-base text-gray-600 dark:text-gray-300">
+            View and manage all your linked accounts and track recent transactions in one place.
+          </p>
         </div>
-        <p className="text-lg text-gray-400 dark:text-gray-300 mt-1 max-w-xs mx-auto lg:mx-0">
-          View and manage all your linked accounts and track recent transactions in one place.
-        </p>
+        </div>
       </div>
 
-      {/* Right Section (Performance Card + Stat Grid) */}
-      <div className="flex flex-col gap-4 flex-1">
-        {/* Performance Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-4 flex flex-col sm:flex-row items-center justify-between gap-6">
-          {/* Avatar + Info */}
-          <div className="flex items-center gap-6">
-            {performanceSummary?.avatar_image_path ? (
-              <img
-                src={`/assets/Images/${performanceSummary.avatar_image_path}`}
-                className="w-16 h-16 rounded-full object-cover"
-                alt="Avatar"
-              />
-            ) : (
-              <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700" />
-            )}
-            <div>
-              <p className="text-sm text-gray-500">Score</p>
-              <p className="text-2xl font-bold text-gray-800 dark:text-white">{performanceMetrics.score}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{performanceMetrics.description}</p>
-              <p className="text-sm text-[#F97156] dark:text-[#FF955A] font-medium">
-                Lv {performanceMetrics.levelNumber}: {performanceMetrics.level}
-              </p>
-            </div>
+      {/* Desktop Content (hidden on mobile) */}
+      <div className="hidden lg:flex flex-wrap justify-between gap-6 items-start w-full">
+        {/* Left Label */}
+        <div className="text-center lg:text-left">
+          <div className="flex items-center justify-center lg:justify-start gap-2 text-[#B4DFA4] dark:text-[#88BC46]">
+            <FaUsers className="text-6xl" />
+            <h1 className="text-5xl font-light dark:text-white">Accounts</h1>
           </div>
-
-          {/* Progress Bar */}
-          <div className="w-full">
-            <p className="text-sm font-medium text-[#7FBCE9] dark:text-[#5FBFFF] mb-1">Accounts Performance</p>
-            <div className="relative h-4 w-full rounded-full bg-[#f5f5f5] dark:bg-gray-700 overflow-hidden">
-              <div
-                className="h-full rounded-full"
-                style={{
-                  width: `${performanceMetrics.progressPercentage}%`,
-                  background: 'linear-gradient(to right, #4FC3F7, #B3E5FC)',
-                }}
-              />
-              <div
-                className="absolute top-1/2 w-5 h-5 bg-[#B3E5FC] rounded-full border-2 border-white dark:border-gray-800 shadow-md"
-                style={{
-                  left: `calc(${performanceMetrics.progressPercentage}% - 10px)`,
-                  transform: 'translateY(-50%)',
-                }}
-              />
-            </div>
-          </div>
+          <p className="text-lg text-gray-400 dark:text-gray-300 mt-1 max-w-xs mx-auto lg:mx-0">
+            View and manage all your linked accounts and track recent transactions in one place.
+          </p>
         </div>
 
-        {/* Stat Blocks: Top 6 categories with unified palette */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 w-full">
-          {topSixCategories.length === 0 ? (
-            Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="relative bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden opacity-60">
-                <div className="flex items-center justify-between px-4 py-3">
-                  <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700" />
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-gray-900 dark:text-white">R0.00</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">No data</div>
-                  </div>
-                </div>
-                <div className="absolute bottom-0 left-0 h-[5px] w-full rounded-b-xl bg-gray-200 dark:bg-gray-700" />
+        {/* Right Section (Performance Card + Stat Grid) */}
+        <div className="flex flex-col gap-4 flex-1">
+          {/* Performance Card */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-4 flex flex-col sm:flex-row items-center justify-between gap-6">
+            {/* Avatar + Info */}
+            <div className="flex items-center gap-6">
+              {performanceSummary?.avatar_image_path ? (
+                <img
+                  src={`/assets/Images/${performanceSummary.avatar_image_path}`}
+                  className="w-16 h-16 rounded-full object-cover"
+                  alt="Avatar"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700" />
+              )}
+              <div>
+                <p className="text-sm text-gray-500">Score</p>
+                <p className="text-2xl font-bold text-gray-800 dark:text-white">{performanceMetrics.score}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{performanceMetrics.description}</p>
+                <p className="text-sm text-[#F97156] dark:text-[#FF955A] font-medium">
+                  Lv {performanceMetrics.levelNumber}: {performanceMetrics.level}
+                </p>
               </div>
-            ))
-          ) : (
-            topSixCategories.map((category, i) => (
-              <div key={i} className="relative bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-3">
-                  {/* Icon circle with soft background */}
-                  <div
-                    className="w-10 h-10 flex items-center justify-center rounded-full"
-                    style={{ backgroundColor: softBg(category.color) }}
-                  >
-                    <span className="text-xl" style={{ color: category.color }}>
-                      {category.icon}
-                    </span>
-                  </div>
+            </div>
 
-                  {/* Stat content */}
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-gray-900 dark:text-white">
-                      R{category.total.toFixed(2)}
-                    </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {category.name}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bottom colored bar */}
+            {/* Progress Bar */}
+            <div className="w-full">
+              <p className="text-sm font-medium text-[#7FBCE9] dark:text-[#5FBFFF] mb-1">Accounts Performance</p>
+              <div className="relative h-4 w-full rounded-full bg-[#f5f5f5] dark:bg-gray-700 overflow-hidden">
                 <div
-                  className="absolute bottom-0 left-0 h-[5px] w-full rounded-b-xl"
-                  style={{ backgroundColor: category.color }}
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${performanceMetrics.progressPercentage}%`,
+                    background: 'linear-gradient(to right, #4FC3F7, #B3E5FC)',
+                  }}
+                />
+                <div
+                  className="absolute top-1/2 w-5 h-5 bg-[#B3E5FC] rounded-full border-2 border-white dark:border-gray-800 shadow-md"
+                  style={{
+                    left: `calc(${performanceMetrics.progressPercentage}% - 10px)`,
+                    transform: 'translateY(-50%)',
+                  }}
                 />
               </div>
-            ))
+            </div>
+          </div>
+
+          {/* Stat Blocks: Top 6 categories with unified palette */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 w-full">
+            {topSixCategories.length === 0 ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="relative bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden opacity-60">
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700" />
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-gray-900 dark:text-white">R0.00</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">No data</div>
+                    </div>
+                  </div>
+                  <div className="absolute bottom-0 left-0 h-[5px] w-full rounded-b-xl bg-gray-200 dark:bg-gray-700" />
+                </div>
+              ))
+            ) : (
+              topSixCategories.map((category, i) => (
+                <div key={i} className="relative bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3">
+                    {/* Icon circle with soft background */}
+                    <div
+                      className="w-10 h-10 flex items-center justify-center rounded-full"
+                      style={{ backgroundColor: softBg(category.color) }}
+                    >
+                      <span className="text-xl" style={{ color: category.color }}>
+                        {category.icon}
+                      </span>
+                    </div>
+
+                    {/* Stat content */}
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-gray-900 dark:text-white">
+                        R{category.total.toFixed(2)}
+                      </div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        {category.name}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom colored bar */}
+                  <div
+                    className="absolute bottom-0 left-0 h-[5px] w-full rounded-b-xl"
+                    style={{ backgroundColor: category.color }}
+                  />
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Error (if any) */}
+          {error && (
+            <div className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30 px-4 py-3 text-sm text-red-700 dark:text-red-300">
+              {error}
+            </div>
           )}
         </div>
-
-        {/* Error (if any) */}
-        {error && (
-          <div className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30 px-4 py-3 text-sm text-red-700 dark:text-red-300">
-            {error}
-          </div>
-        )}
       </div>
     </div>
   );
