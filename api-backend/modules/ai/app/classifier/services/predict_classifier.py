@@ -1,6 +1,6 @@
 from .preprocessing import normalize_description, keyword_match_category
 from transformers import DistilBertForSequenceClassification, DistilBertTokenizerFast
-import json, torch, pathlib
+import json, torch, pathlib, os
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 from pathlib import Path
@@ -10,20 +10,35 @@ tokenizer = None
 model_ready = False
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# ---------- Load model ----------
 def load_model():
    global model, tokenizer, model_ready
+   model_ready = False  # reset flag
+
+   print("[Model Loader] Attempting to load model...")
+
+   model_path = pathlib.Path("model")
+   device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
    try:
-      print("[Model Loader] Loading model...")
-      model_path = pathlib.Path("model")
+      # Try local model folder first
       tokenizer = AutoTokenizer.from_pretrained(model_path)
       model = AutoModelForSequenceClassification.from_pretrained(model_path).eval()
-      model.to(device)
-      model_ready = True
-      print("[Model Loader] Model is ready.")
-   except Exception as e:
-      print(f"[Model Loader] Failed to load model: {e}")
-      model_ready = False
+      print("[Model Loader] Loaded model from local folder.")
+   except Exception as local_error:
+      print(f"[Model Loader] Local model load failed: {local_error}")
+      try:
+         # Fallback to Hugging Face Hub
+         hf_token = os.getenv("HF_TOKEN", None)
+         tokenizer = AutoTokenizer.from_pretrained("CodeBlooded-capstone/fin-classifier", token=hf_token)
+         model = AutoModelForSequenceClassification.from_pretrained("CodeBlooded-capstone/fin-classifier", token=hf_token).eval()
+         print("[Model Loader] Loaded model from Hugging Face Hub.")
+      except Exception as remote_error:
+         print(f"[Model Loader] Remote model load failed: {remote_error}")
+         return  # model_ready stays False
+
+   model.to(device)
+   model_ready = True
+   print("[Model Loader] Model is ready.")
 
 def is_model_ready():
    return model_ready
