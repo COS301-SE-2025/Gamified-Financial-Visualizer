@@ -1,7 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaChevronDown, FaChevronUp, FaCheckCircle, FaTrophy, FaClock, FaBookOpen } from 'react-icons/fa';
+import {
+  FaChevronDown, FaChevronUp, FaCheckCircle, FaTrophy, FaClock, FaBookOpen,
+  FaChartLine, FaLightbulb, FaExclamationTriangle, FaTools, FaStar,
+  FaMoneyBillWave,
+  FaReceipt,
+  FaShoppingCart,
+  FaShield,
+  FaFileAlt,
+  FaCalculator,
+  FaHospital,
+  FaGraduationCap,
+  FaBriefcase,
+  FaHome,
+  FaKey,
+  FaPlane,
+  FaCar,
+  FaShieldAlt
+} from 'react-icons/fa';
 import LearnLayout from './LearnLayout';
+
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
 
 const colorMap = {
   green: {
@@ -52,17 +73,17 @@ const ModuleLessonsPage = () => {
       try {
         setIsLoading(true);
 
-        const moduleResponse = await fetch(`http://localhost:5000/api/learning/${moduleId}`);
+        const moduleResponse = await fetch(`${BASE_URL}/api/learning/${moduleId}`);
         if (!moduleResponse.ok) throw new Error('Failed to load module');
         const moduleData = await moduleResponse.json();
         setModuleTitle(moduleData.data.module_title);
         setModuleDescription(moduleData.data.module_description || 'Boost your financial knowledge with this module');
 
-        const lessonsResponse = await fetch(`http://localhost:5000/api/learning/${moduleId}/lessons`);
+        const lessonsResponse = await fetch(`${BASE_URL}/api/learning/${moduleId}/lessons`);
         if (!lessonsResponse.ok) throw new Error('Failed to load lessons');
         const lessonsData = await lessonsResponse.json();
 
-        const quizResponse = await fetch(`http://localhost:5000/api/learning/quizzes/${moduleId}`);
+        const quizResponse = await fetch(`${BASE_URL}/api/learning/quizzes/${moduleId}`);
         if (!quizResponse.ok) throw new Error('Failed to load quiz');
         const quizData = await quizResponse.json();
 
@@ -109,7 +130,7 @@ const ModuleLessonsPage = () => {
     });
 
     try {
-      await fetch(`http://localhost:5000/api/learning/quizzes/${moduleId}/submit`, {
+      await fetch(`${BASE_URL}/api/learning/quizzes/${moduleId}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -145,27 +166,351 @@ const ModuleLessonsPage = () => {
     return totalLessons ? Math.round((completed / totalLessons) * 100) : 0;
   };
 
-  const renderLessonContent = (lesson) => {
-    return (
-      <div className="mt-4 space-y-4 animate-fadeIn">
-        <div className="prose prose-sm max-w-none text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
-          {lesson.content}
-        </div>
+const renderLessonContent = (lesson) => {
+  const formatContent = (content) => {
+    if (!content) return [];
+    
+    if (Array.isArray(content)) {
+      return content;
+    }
+    
+    if (typeof content === 'string') {
+      try {
+        if (content.trim().startsWith('[') || content.trim().startsWith('{')) {
+          return JSON.parse(content);
+        }
+      } catch (error) {
+        console.warn('JSON parsing failed, using text parsing:', error);
+      }
+      
+      return parseFormattedText(content);
+    }
+    
+    return [{ type: 'paragraph', text: String(content) }];
+  };
+
+  const parseFormattedText = (text) => {
+    if (!text) return [];
+    
+    // First, clean the text by removing the � characters and replacing with proper emoji detection
+    const cleanedText = text.replace(/�/g, '').trim();
+    
+    const lines = cleanedText.split('\n').filter(line => line.trim());
+    const sections = [];
+    let currentSection = null;
+
+    lines.forEach(line => {
+      const trimmedLine = line.trim();
+      
+      // Enhanced emoji detection - includes all your emojis and handles encoding issues
+      const emojiRegex = /^(?:[\u{1F300}-\u{1F9FF}]|[\u{1F600}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}])/u;
+      const isSectionHeader = emojiRegex.test(trimmedLine) || 
+                             trimmedLine.match(/^[💥📉📈💡🔍🛠️⚡🎯📊💰🔒🚨👑💎🌱🔥🔄📋💳🏠🧾🛒🏦🚗🏡💼🌟🚨🔧1️⃣2️⃣3️⃣📞❌✅🛡️💡🧮💯🔥🚦📱🔍🔼🔽🎯💰🧠🔄📌🚫⚖️🛠️🆘😰💑🛍️🛑💬💥📉🚀📝💔📈📅🚨👩💻🏦💸📊💵⏰💰⚠️🔑🧾💊🏥🚑🚩🎮🗓️🍷💣🗺️🌍♟️🏗️🔢⏳🏆🕵️✈️🥋🍞🍔🎟️🕒🎓💍🛋️🏋️📜🏝️💱📧✍️🏫]/);
+      
+      if (isSectionHeader || (trimmedLine.includes(':') && !trimmedLine.startsWith('•') && !trimmedLine.match(/^\d/))) {
+        if (currentSection) {
+          sections.push(currentSection);
+        }
         
-        <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
-          <button 
-            onClick={() => toggleExpand(lesson.id)}
-            className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 flex items-center transition-colors"
-          >
-            Collapse lesson
-            <FaChevronUp className="ml-1" />
-          </button>
-        </div>
-      </div>
+        currentSection = {
+          type: 'section',
+          title: trimmedLine,
+          content: []
+        };
+      }
+      // Detect bullet points
+      else if (trimmedLine.startsWith('•')) {
+        if (!currentSection) {
+          currentSection = { type: 'section', title: 'Content', content: [] };
+        }
+        
+        const bulletText = trimmedLine.substring(1).trim();
+        currentSection.content.push({
+          type: 'bullet',
+          text: bulletText
+        });
+      }
+      // Detect numbered lists
+      else if (trimmedLine.match(/^\d+\./)) {
+        if (!currentSection) {
+          currentSection = { type: 'section', title: 'Content', content: [] };
+        }
+        
+        currentSection.content.push({
+          type: 'numbered',
+          text: trimmedLine,
+          number: trimmedLine.match(/^\d+/)[0]
+        });
+      }
+      // Detect bold text lines
+      else if (trimmedLine.includes('**') && trimmedLine.length > 4) {
+        if (!currentSection) {
+          currentSection = { type: 'section', title: 'Content', content: [] };
+        }
+        
+        currentSection.content.push({
+          type: 'bold',
+          text: trimmedLine
+        });
+      }
+      // Regular text lines
+      else if (trimmedLine) {
+        if (!currentSection) {
+          currentSection = { type: 'section', title: 'Content', content: [] };
+        }
+        
+        // Check if this continues the previous paragraph
+        const lastItem = currentSection.content[currentSection.content.length - 1];
+        if (lastItem && lastItem.type === 'paragraph') {
+          lastItem.text += ' ' + trimmedLine;
+        } else {
+          currentSection.content.push({
+            type: 'paragraph',
+            text: trimmedLine
+          });
+        }
+      }
+    });
+
+    if (currentSection) {
+      sections.push(currentSection);
+    }
+
+    return sections.length > 0 ? sections : [{ type: 'paragraph', text: cleanedText }];
+  };
+
+  // Comprehensive icon mapping
+  const getIconForTitle = (title) => {
+    const lowerTitle = title.toLowerCase();
+    
+    // Vehicle & Travel
+    if (title.includes('🚗') || lowerTitle.includes('car') || lowerTitle.includes('vehicle') || lowerTitle.includes('travel')) 
+      return <FaCar className="text-[#5FBFFF] mt-0.5" />;
+    if (title.includes('✈️') || lowerTitle.includes('travel') || lowerTitle.includes('flight')) 
+      return <FaPlane className="text-[#B1E1FF] mt-0.5" />;
+    
+    // Home & Property
+    if (title.includes('🏡') || title.includes('🏠') || lowerTitle.includes('home') || lowerTitle.includes('property') || lowerTitle.includes('rent')) 
+      return <FaHome className="text-[#7FDD53] mt-0.5" />;
+    if (title.includes('🔑') || lowerTitle.includes('key') || lowerTitle.includes('access')) 
+      return <FaKey className="text-[#FFD93D] mt-0.5" />;
+    
+    // Work & Business
+    if (title.includes('💼') || lowerTitle.includes('work') || lowerTitle.includes('business') || lowerTitle.includes('job')) 
+      return <FaBriefcase className="text-[#FF6B6B] mt-0.5" />;
+    if (title.includes('🏦') || lowerTitle.includes('bank') || lowerTitle.includes('financial')) 
+      return <FaMoneyBillWave className="text-[#FFC541] mt-0.5" />;
+    
+    // Important & Priority
+    if (title.includes('🌟') || title.includes('💎') || lowerTitle.includes('important') || lowerTitle.includes('priority')) 
+      return <FaStar className="text-[#FFD93D] mt-0.5" />;
+    if (title.includes('🚨') || title.includes('⚠️') || lowerTitle.includes('warning') || lowerTitle.includes('alert') || lowerTitle.includes('risk')) 
+      return <FaExclamationTriangle className="text-[#FF8A8A] mt-0.5" />;
+    
+    // Tools & Solutions
+    if (title.includes('🔧') || title.includes('🛠️') || lowerTitle.includes('tool') || lowerTitle.includes('solution') || lowerTitle.includes('fix')) 
+      return <FaTools className="text-[#7FDD53] mt-0.5" />;
+    if (title.includes('🛡️') || lowerTitle.includes('protection') || lowerTitle.includes('security')) 
+      return <FaShieldAlt className="text-[#5FBFFF] mt-0.5" />;
+    
+    // Time & Schedule
+    if (title.includes('⏰') || title.includes('🕒') || title.includes('📅') || lowerTitle.includes('time') || lowerTitle.includes('schedule') || lowerTitle.includes('deadline')) 
+      return <FaClock className="text-[#B1E1FF] mt-0.5" />;
+    if (title.includes('💥') || lowerTitle.includes('urgent') || lowerTitle.includes('immediate')) 
+      return <FaClock className="text-[#FF6B6B] mt-0.5" />;
+    
+    // Money & Finance
+    if (title.includes('💰') || title.includes('💸') || title.includes('💵') || lowerTitle.includes('money') || lowerTitle.includes('cash') || lowerTitle.includes('finance')) 
+      return <FaMoneyBillWave className="text-[#FFC541] mt-0.5" />;
+    if (title.includes('🧾') || lowerTitle.includes('receipt') || lowerTitle.includes('invoice')) 
+      return <FaReceipt className="text-[#7FDD53] mt-0.5" />;
+    
+    // Shopping & Retail
+    if (title.includes('🛒') || title.includes('🛍️') || lowerTitle.includes('shop') || lowerTitle.includes('retail') || lowerTitle.includes('discount')) 
+      return <FaShoppingCart className="text-[#B1E1FF] mt-0.5" />;
+    
+    // Data & Charts
+    if (title.includes('📈') || title.includes('📉') || title.includes('📊') || lowerTitle.includes('data') || lowerTitle.includes('chart') || lowerTitle.includes('stat')) 
+      return <FaChartLine className="text-[#5FBFFF] mt-0.5" />;
+    
+    // Ideas & Tips
+    if (title.includes('💡') || lowerTitle.includes('tip') || lowerTitle.includes('idea') || lowerTitle.includes('pro tip')) 
+      return <FaLightbulb className="text-[#FFD93D] mt-0.5" />;
+    
+    // Education & Learning
+    if (title.includes('🎓') || title.includes('🏫') || lowerTitle.includes('learn') || lowerTitle.includes('education') || lowerTitle.includes('course')) 
+      return <FaGraduationCap className="text-[#7FDD53] mt-0.5" />;
+    
+    // Health & Medical
+    if (title.includes('💊') || title.includes('🏥') || title.includes('🚑') || lowerTitle.includes('health') || lowerTitle.includes('medical')) 
+      return <FaHospital className="text-[#FF8A8A] mt-0.5" />;
+    
+    // Default icons for common patterns
+    if (lowerTitle.includes('checklist') || lowerTitle.includes('step')) 
+      return <FaFileAlt className="text-[#5FBFFF] mt-0.5" />;
+    if (lowerTitle.includes('calculation') || lowerTitle.includes('math')) 
+      return <FaCalculator className="text-[#B1E1FF] mt-0.5" />;
+    if (lowerTitle.includes('action') || lowerTitle.includes('do this')) 
+      return <FaCheckCircle className="text-[#7FDD53] mt-0.5" />;
+    
+    return <FaFileAlt className="text-[#B1E1FF] mt-0.5" />;
+  };
+
+  // Clean title by removing all emojis and markdown
+  const cleanTitle = (title) => {
+    // Remove all Unicode emojis and specific emoji characters
+    return title
+      .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')
+      .replace(/[\u{1F600}-\u{1F64F}]/gu, '')
+      .replace(/[\u{1F680}-\u{1F6FF}]/gu, '')
+      .replace(/[\u{2600}-\u{26FF}]/gu, '')
+      .replace(/[\u{2700}-\u{27BF}]/gu, '')
+      .replace(/[💥📉📈💡🔍🛠️⚡🎯📊💰🔒🚨👑💎🌱🔥🔄📋💳🏠🧾🛒🏦🚗🏡💼🌟🚨🔧1️⃣2️⃣3️⃣📞❌✅🛡️💡🧮💯🔥🚦📱🔍🔼🔽🎯💰🧠🔄📌🚫⚖️🛠️🆘😰💑🛍️🛑💬💥📉🚀📝💔📈📅🚨👩💻🏦💸📊💵⏰💰⚠️🔑🧾💊🏥🚑🚩🎮🗓️🍷💣🗺️🌍♟️🏗️🔢⏳🏆🕵️✈️🥋🍞🍔🎟️🕒🎓💍🛋️🏋️📜🏝️💱📧✍️🏫]/g, '')
+      .replace(/\*\*/g, '')
+      .replace(/\:$/, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
+  // Process text to handle markdown-like formatting
+  const processText = (text) => {
+    if (!text) return [{ type: 'normal', text: '' }];
+    
+    const parts = [];
+    let currentText = text;
+    
+    while (currentText.includes('**')) {
+      const before = currentText.substring(0, currentText.indexOf('**'));
+      currentText = currentText.substring(currentText.indexOf('**') + 2);
+      const boldText = currentText.substring(0, currentText.indexOf('**'));
+      currentText = currentText.substring(currentText.indexOf('**') + 2);
+      
+      if (before) parts.push({ type: 'normal', text: before });
+      if (boldText) parts.push({ type: 'bold', text: boldText });
+    }
+    
+    if (currentText) parts.push({ type: 'normal', text: currentText });
+    
+    return parts.length > 0 ? parts : [{ type: 'normal', text: text }];
+  };
+
+  const renderTextContent = (text) => {
+    const parts = processText(text);
+    
+    return (
+      <span>
+        {parts.map((part, index) => 
+          part.type === 'bold' ? (
+            <strong key={index} className="text-gray-900 dark:text-gray-100 font-semibold">
+              {part.text}
+            </strong>
+          ) : (
+            <span key={index}>{part.text}</span>
+          )
+        )}
+      </span>
     );
   };
 
-  
+  const renderContentItem = (item, index) => {
+    if (typeof item === 'string') {
+      return (
+        <p key={index} className="text-gray-700 dark:text-gray-300 leading-7 mb-4 last:mb-0">
+          {renderTextContent(item)}
+        </p>
+      );
+    }
+
+    if (item.type === 'section') {
+      const cleanedTitle = cleanTitle(item.title);
+      
+      return (
+        <div key={index} className="mb-6 last:mb-0">
+          {cleanedTitle && (
+            <h4 className="font-semibold text-gray-800 dark:text-gray-200 text-base mb-4 flex items-start gap-3 pb-2 border-b border-gray-200 dark:border-gray-600">
+              {getIconForTitle(item.title)}
+              <span>{renderTextContent(cleanedTitle)}</span>
+            </h4>
+          )}
+          
+          <div className="space-y-3 ml-1">
+            {item.content.map((contentItem, contentIndex) => (
+              <div key={contentIndex} className="flex items-start gap-3">
+                {contentItem.type === 'bullet' && (
+                  <>
+                    <span className="text-[#5FBFFF] dark:text-[#7FDD53] mt-1.5 flex-shrink-0 text-xs">•</span>
+                    <span className="text-gray-700 dark:text-gray-300 leading-7 flex-1">
+                      {renderTextContent(contentItem.text)}
+                    </span>
+                  </>
+                )}
+                
+                {contentItem.type === 'numbered' && (
+                  <>
+                    <span className="text-[#5FBFFF] dark:text-[#7FDD53] font-medium mt-1 flex-shrink-0 text-sm min-w-[20px]">
+                      {contentItem.number}.
+                    </span>
+                    <span className="text-gray-700 dark:text-gray-300 leading-7 flex-1">
+                      {renderTextContent(contentItem.text.replace(/^\d+\.\s*/, ''))}
+                    </span>
+                  </>
+                )}
+                
+                {contentItem.type === 'bold' && (
+                  <div className="w-full bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 dark:border-yellow-300 p-3 rounded-r">
+                    <span className="text-gray-700 dark:text-gray-300 font-medium">
+                      {renderTextContent(contentItem.text)}
+                    </span>
+                  </div>
+                )}
+                
+                {contentItem.type === 'paragraph' && (
+                  <p className="text-gray-700 dark:text-gray-300 leading-7 flex-1">
+                    {renderTextContent(contentItem.text)}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <p key={index} className="text-gray-700 dark:text-gray-300 leading-7 mb-4 last:mb-0">
+        {renderTextContent(item.text || String(item))}
+      </p>
+    );
+  };
+
+  const contentItems = formatContent(lesson.content);
+
+  return (
+    <div className="mt-4 space-y-6 animate-fadeIn">
+      <div className="prose prose-sm max-w-none">
+        {contentItems.length === 0 ? (
+          <p className="text-gray-500 dark:text-gray-400 italic">No content available for this lesson.</p>
+        ) : (
+          contentItems.map((item, index) => (
+            <div key={index} className={`${item.type === 'section' ? 'p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg' : ''}`}>
+              {renderContentItem(item, index)}
+            </div>
+          ))
+        )}
+      </div>
+      
+      <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
+        <button 
+          onClick={() => toggleExpand(lesson.id)}
+          className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 flex items-center transition-colors"
+        >
+          Collapse lesson
+          <FaChevronUp className="ml-1" />
+        </button>
+      </div>
+    </div>
+  );
+};
 
   if (error) {
     return (
@@ -201,24 +546,24 @@ const ModuleLessonsPage = () => {
     <LearnLayout>
       {showCompletion && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full text-center animate-zoomIn">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full text-center animate-zoomIn mx-4 sm:mx-auto">
             <div className="bg-gradient-to-br from-[#FFC54120] to-[#FFC54110] dark:from-[#FFC54110] dark:to-[#FFC54105] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
               <FaTrophy className="text-[#FFC541] text-3xl" />
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Module Complete!</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              You've successfully completed <span className="font-semibold text-gray-800 dark:text-gray-200 dark:bg-gray-700">{moduleTitle}</span> with a score of {quizScore}/{quizData?.max_score} on the quiz.
+            <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm sm:text-base">
+              You've successfully completed <span className="font-semibold text-gray-800 dark:text-gray-200 dark:bg-gray-700 px-1 rounded">{moduleTitle}</span> with a score of {quizScore}/{quizData?.max_score} on the quiz.
             </p>
             <div className="flex flex-col gap-2">
               <button
                 onClick={() => setShowCompletion(false)}
-                className="px-4 py-2 bg-gradient-to-r from-[#5FBFFF] to-[#B1E1FF] dark:from-[#4FAFFF] dark:to-[#A1D1FF] text-white rounded-lg font-medium hover:from-[#4FAFFF] hover:to-[#A1D1FF] dark:hover:from-[#3F9FFF] dark:hover:to-[#91C1FF] transition-all shadow"
+                className="px-4 py-3 sm:py-2 bg-gradient-to-r from-[#5FBFFF] to-[#B1E1FF] dark:from-[#4FAFFF] dark:to-[#A1D1FF] text-white rounded-lg font-medium hover:from-[#4FAFFF] hover:to-[#A1D1FF] dark:hover:from-[#3F9FFF] dark:hover:to-[#91C1FF] transition-all shadow text-sm sm:text-base"
               >
                 Continue Learning
               </button>
               <button
                 onClick={() => navigate('/learn')}
-                className="px-4 py-2 bg-white border border-gray-200 dark:border-gray-600 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-all dark:text-gray-800"
+                className="px-4 py-3 sm:py-2 bg-white border border-gray-200 dark:border-gray-600 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-all dark:text-gray-800 text-sm sm:text-base"
               >
                 Back to Courses
               </button>
@@ -227,92 +572,91 @@ const ModuleLessonsPage = () => {
         </div>
       )}
 
-      <div className="max-w-6xl mx-auto px-6 py-6">
-       {/* Module Header */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+        {/* Module Header */}
         <div className="bg-gradient-to-r from-[#B1E1FF20] to-[#7FDD5320] 
                       dark:bg-gradient-to-br dark:from-[#0F172A] dark:via-[#1E293B] dark:to-[#334155] 
-                      rounded-xl p-6 mb-6 shadow-sm border border-gray-100 dark:border-gray-700/50">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium 
+                      rounded-xl p-4 sm:p-6 mb-4 sm:mb-6 shadow-sm border border-gray-100 dark:border-gray-700/50">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 sm:gap-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium 
                                 bg-[#B1E1FF20] dark:bg-[#88D1FF] text-[#065989] dark:text-[#065989]">
                   Module
                 </span>
-                <span className="text-sm text-gray-500 dark:text-gray-300 flex items-center">
+                <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-300 flex items-center">
                   <FaClock className="mr-1 text-[#F68D2B]" /> {lessons.reduce((acc, lesson) => acc + lesson.estimated_duration, 0)} min
                 </span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">{moduleTitle}</h1>
-              <p className="text-gray-600 dark:text-gray-300">{moduleDescription}</p>
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2 break-words">{moduleTitle}</h1>
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 break-words">{moduleDescription}</p>
             </div>
             <button
               onClick={() => navigate(-1)}
-              className="px-5 py-2 bg-white border border-gray-200 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2"
+              className="px-4 py-2.5 sm:px-5 sm:py-2 bg-white border border-gray-200 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 text-sm sm:text-base whitespace-nowrap mt-3 sm:mt-0"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              Back to Courses
+              <span className="hidden sm:inline">Back to Courses</span>
+              <span className="sm:hidden">Back</span>
             </button>
           </div>
         </div>
 
         {/* Progress Bar */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <div className="flex justify-between items-center mb-2">
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Your Progress</h3>
-            <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            <h3 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Your Progress</h3>
+            <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">
               {readLessons.length + (quizSubmitted ? 1 : 0)} of {lessons.length + (quizData ? 1 : 0)} completed
             </span>
           </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-            <div 
-              className="h-full rounded-full bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53]" 
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 sm:h-2.5">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-[#5FBFFF] to-[#7FDD53]"
               style={{ width: `${calculateProgress()}%` }}
             ></div>
           </div>
         </div>
 
         {/* Lessons List */}
-        <div className="space-y-4 mb-12">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <FaBookOpen className="text-[#B1E1FF] dark:text-[#AAD977]" />
+        <div className="space-y-3 sm:space-y-4 mb-8 sm:mb-12">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <FaBookOpen className="text-[#B1E1FF] dark:text-[#AAD977] text-base sm:text-lg" />
             Lessons
           </h2>
 
           {lessons.map((lesson) => (
             <div
               key={lesson.id}
-              className={`bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200 ${
-                colorMap[lesson.color].border
-              } ${
-                expandedId === lesson.id ? `ring-2 ${colorMap[lesson.color].ring} shadow-md` : ''
-              }`}
+              className={`bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200 ${colorMap[lesson.color].border
+                } ${expandedId === lesson.id ? `ring-2 ${colorMap[lesson.color].ring} shadow-md` : ''
+                }`}
             >
               <div
-                className="flex justify-between items-center p-5 cursor-pointer"
+                className="flex justify-between items-start sm:items-center p-4 sm:p-5 cursor-pointer"
                 onClick={() => toggleExpand(lesson.id)}
               >
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
                   <div
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${colorMap[lesson.color].bg}`}
+                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${colorMap[lesson.color].bg}`}
                   >
-                    <span className={`text-lg font-bold ${colorMap[lesson.color].text}`}>
+                    <span className={`text-base sm:text-lg font-bold ${colorMap[lesson.color].text}`}>
                       {lesson.id}
                     </span>
                   </div>
-                  <div>
-                    <h3 className={`font-semibold text-lg ${colorMap[lesson.color].text}`}>
+                  <div className="flex-1 min-w-0">
+                    <h3 className={`font-semibold text-base sm:text-lg truncate ${colorMap[lesson.color].text}`}>
                       {lesson.title}
                     </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-2">
-                      <span className="flex items-center gap-1">
+                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 flex flex-wrap items-center gap-2">
+                      <span className="flex items-center gap-1 whitespace-nowrap">
                         <FaClock className="text-xs" />
                         {lesson.estimated_duration} min
                       </span>
                       {readLessons.includes(lesson.id) && (
-                        <span className="inline-flex items-center gap-1 text-[#7FDD53] dark:text-[#5FBFFF]">
+                        <span className="inline-flex items-center gap-1 text-[#7FDD53] dark:text-[#5FBFFF] whitespace-nowrap">
                           <FaCheckCircle className="text-xs" />
                           Completed
                         </span>
@@ -320,16 +664,16 @@ const ModuleLessonsPage = () => {
                     </p>
                   </div>
                 </div>
-                <div className="ml-4">
+                <div className="ml-2 sm:ml-4 flex-shrink-0 mt-1 sm:mt-0">
                   {expandedId === lesson.id ? (
-                    <FaChevronUp className="text-gray-400" />
+                    <FaChevronUp className="text-gray-400 text-sm sm:text-base" />
                   ) : (
-                    <FaChevronDown className="text-gray-400" />
+                    <FaChevronDown className="text-gray-400 text-sm sm:text-base" />
                   )}
                 </div>
               </div>
               {expandedId === lesson.id && (
-                <div className="px-5 pb-5">
+                <div className="px-4 sm:px-5 pb-4 sm:pb-5">
                   {renderLessonContent(lesson)}
                 </div>
               )}
@@ -339,79 +683,77 @@ const ModuleLessonsPage = () => {
 
         {/* Quiz Section */}
         {quizData && (
-          <div className="mt-12">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6 flex items-center gap-2">
+          <div className="mt-8 sm:mt-12">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 sm:mb-6 flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#B1E1FF] dark:text-[#AAD977]" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
               </svg>
               Module Quiz
             </h2>
-            
-            <div className={`bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200 ${
-              colorMap.purple.border
-            } ${
-              expandedId === 'quiz' ? `ring-2 ${colorMap.purple.ring} shadow-md` : ''
-            }`}>
+
+            <div className={`bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200 ${colorMap.purple.border
+              } ${expandedId === 'quiz' ? `ring-2 ${colorMap.purple.ring} shadow-md` : ''
+              }`}>
               <div
-                className="flex justify-between items-center p-5 cursor-pointer"
+                className="flex justify-between items-start sm:items-center p-4 sm:p-5 cursor-pointer"
                 onClick={() => setExpandedId(prev => prev === 'quiz' ? null : 'quiz')}
               >
-                <div className="flex items-start gap-4">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${colorMap.purple.bg}`}>
-                    <span className={`text-lg font-bold ${colorMap.purple.text}`}>
+                <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                  <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${colorMap.purple.bg}`}>
+                    <span className={`text-base sm:text-lg font-bold ${colorMap.purple.text}`}>
                       Q
                     </span>
                   </div>
-                  <div>
-                    <h3 className={`font-semibold text-lg ${colorMap.purple.text}`}>
+                  <div className="flex-1 min-w-0">
+                    <h3 className={`font-semibold text-base sm:text-lg truncate ${colorMap.purple.text}`}>
                       Knowledge Check
                     </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
                       {quizData.questions_jsonb.length} questions • Pass score: {quizData.pass_score}/{quizData.max_score}
                       {quizSubmitted && (
-                        <span className={`ml-3 font-medium ${quizScore >= quizData.pass_score ? 'text-[#7FDD53] dark:text-[#5FBFFF]' : 'text-[#FF8A8A] dark:text-[#F97156]'}`}>
+                        <span className={`ml-2 font-medium ${quizScore >= quizData.pass_score ? 'text-[#7FDD53] dark:text-[#5FBFFF]' : 'text-[#FF8A8A] dark:text-[#F97156]'}`}>
                           Your score: {quizScore}/{quizData.max_score}
                         </span>
                       )}
                     </p>
                   </div>
                 </div>
-                <div className="ml-4">
+                <div className="ml-2 sm:ml-4 flex-shrink-0 mt-1 sm:mt-0">
                   {expandedId === 'quiz' ? (
-                    <FaChevronUp className="text-gray-400" />
+                    <FaChevronUp className="text-gray-400 text-sm sm:text-base" />
                   ) : (
-                    <FaChevronDown className="text-gray-400" />
+                    <FaChevronDown className="text-gray-400 text-sm sm:text-base" />
                   )}
                 </div>
               </div>
 
               {expandedId === 'quiz' && (
-                <div className="px-5 pb-5">
+                <div className="px-4 sm:px-5 pb-4 sm:pb-5">
                   {!quizSubmitted ? (
-                    <div className="space-y-6">
+                    <div className="space-y-4 sm:space-y-6">
                       {quizData.questions_jsonb.map((question, qIndex) => (
-                        <div key={qIndex} className="bg-gray-50 dark:bg-gray-700 p-5 rounded-lg border border-gray-100 dark:border-gray-600">
-                          <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-3">
+                        <div key={qIndex} className="bg-gray-50 dark:bg-gray-700 p-4 sm:p-5 rounded-lg border border-gray-100 dark:border-gray-600">
+                          <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-3 text-sm sm:text-base">
                             <span className="text-gray-500 dark:text-gray-400 mr-2">Q{qIndex + 1}:</span>
-                            {question.question} 
-                            <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">({question.points} point{question.points !== 1 ? 's' : ''})</span>
+                            {question.question}
+                            <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 ml-2">({question.points} point{question.points !== 1 ? 's' : ''})</span>
                           </h4>
-                          <div className="space-y-3">
+                          <div className="space-y-2 sm:space-y-3">
                             {question.options.map((option, oIndex) => (
                               <div
                                 key={oIndex}
-                                className="flex items-center space-x-3 cursor-pointer group p-3 rounded-lg hover:bg-gray-100 transition-colors"
+                                className="flex items-center space-x-3 cursor-pointer group p-2 sm:p-3 rounded-lg hover:bg-gray-100 transition-colors"
                                 onClick={() => handleQuizAnswer(qIndex, oIndex)}
                               >
-                                <div className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center ${quizAnswers[qIndex] === oIndex
+                                <div className={`flex-shrink-0 w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 flex items-center justify-center ${quizAnswers[qIndex] === oIndex
                                   ? 'border-[#5FBFFF] bg-[#5FBFFF]'
                                   : 'border-gray-300'
                                   }`}>
                                   {quizAnswers[qIndex] === oIndex && (
-                                    <div className="w-2 h-2 rounded-full bg-white dark:bg-gray-800"></div>
+                                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-white dark:bg-gray-800"></div>
                                   )}
                                 </div>
-                                <span className="text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors">{option}</span>
+                                <span className="text-sm sm:text-base text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors break-words">{option}</span>
                               </div>
                             ))}
                           </div>
@@ -421,45 +763,44 @@ const ModuleLessonsPage = () => {
                       <button
                         onClick={submitQuiz}
                         disabled={Object.keys(quizAnswers).length !== quizData.questions_jsonb.length}
-                        className={`w-full mt-6 px-6 py-3 rounded-lg font-medium text-lg transition-all ${Object.keys(quizAnswers).length === quizData.questions_jsonb.length
-                            ? 'bg-[#5FBFFF] dark:from-[#4FAFFF] dark:to-[#A1D1FF] text-white hover:bg-[#4FAFFF] dark:hover:from-[#3F9FFF] dark:hover:to-[#91C1FF] shadow-md'
-                            : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                        className={`w-full mt-4 sm:mt-6 px-4 sm:px-6 py-3 rounded-lg font-medium text-base sm:text-lg transition-all ${Object.keys(quizAnswers).length === quizData.questions_jsonb.length
+                          ? 'bg-[#5FBFFF] dark:from-[#4FAFFF] dark:to-[#A1D1FF] text-white hover:bg-[#4FAFFF] dark:hover:from-[#3F9FFF] dark:hover:to-[#91C1FF] shadow-md'
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                           }`}
                       >
                         Submit Quiz
                       </button>
                     </div>
                   ) : (
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg text-center border border-gray-100 dark:border-gray-700">
-                      <div className={`text-5xl font-bold mb-3 ${
-                        quizScore >= quizData.pass_score ? 'text-[#7FDD53] dark:text-[#5FBFFF]' : 'text-[#FF8A8A] dark:text-[#F97156]'
-                      }`}>
+                    <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg text-center border border-gray-100 dark:border-gray-700">
+                      <div className={`text-4xl sm:text-5xl font-bold mb-3 ${quizScore >= quizData.pass_score ? 'text-[#7FDD53] dark:text-[#5FBFFF]' : 'text-[#FF8A8A] dark:text-[#F97156]'
+                        }`}>
                         {quizScore}/{quizData.max_score}
                       </div>
-                      <div className="text-xl font-medium mb-4">
+                      <div className="text-lg sm:text-xl font-medium mb-4">
                         {quizScore >= quizData.pass_score ? (
-                          <span className="text-[#7FDD53] dark:text-[#5FBFFF]">Congratulations! You passed! 🎉</span>
+                          <span className="text-[#7FDD53] dark:text-[#5FBFFF] text-sm sm:text-base">Congratulations! You passed! 🎉</span>
                         ) : (
-                          <span className="text-[#FF8A8A] dark:text-[#F97156]">Keep practicing! You'll get it next time! 💪</span>
+                          <span className="text-[#FF8A8A] dark:text-[#F97156] text-sm sm:text-base">Keep practicing! You'll get it next time! 💪</span>
                         )}
                       </div>
-                      <div className="mb-6 text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+                      <div className="mb-4 sm:mb-6 text-gray-600 dark:text-gray-400 max-w-md mx-auto text-sm sm:text-base">
                         <p>
                           {quizScore >= quizData.pass_score
                             ? "You've demonstrated a good understanding of this module's concepts."
                             : "Review the material and try again to improve your score."}
                         </p>
                       </div>
-                      <div className="flex flex-col sm:flex-row justify-center gap-3">
+                      <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-3">
                         <button
                           onClick={resetQuiz}
-                          className="px-6 py-2 bg-[#B1E1FF20] dark:bg-[#AAD97720] text-[#5FBFFF] dark:text-[#7FDD53] rounded-lg font-medium hover:bg-[#B1E1FF30] dark:hover:bg-[#AAD97730] transition-colors"
+                          className="px-4 sm:px-6 py-2.5 sm:py-2 bg-[#B1E1FF20] dark:bg-[#AAD97720] text-[#5FBFFF] dark:text-[#7FDD53] rounded-lg font-medium hover:bg-[#B1E1FF30] dark:hover:bg-[#AAD97730] transition-colors text-sm sm:text-base"
                         >
                           Retake Quiz
                         </button>
                         <button
-                          onClick={() => navigate('/learn')}  // Changed from setExpandedId(null)
-                          className="px-6 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                          onClick={() => navigate('/learn')}
+                          className="px-4 sm:px-6 py-2.5 sm:py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-sm sm:text-base"
                         >
                           Continue Learning
                         </button>

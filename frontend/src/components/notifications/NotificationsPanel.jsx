@@ -6,6 +6,11 @@ import {
   FaCalendarAlt, FaExclamationTriangle, FaCoins, FaMedal, FaFire, FaHeart, FaGem
 } from 'react-icons/fa';
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
+
 const notificationStyles = {
   friend_request: {
     useAvatar: true,
@@ -145,7 +150,7 @@ const NotificationsPanel = ({ onClose }) => {
     if (!user?.id) return;
     (async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/notifications/${user.id}`);
+        const res = await fetch(`${BASE_URL}/api/notifications/${user.id}`);
         const json = await res.json();
         if (json.status === 'success') {
           const sorted = json.data.sort((a, b) => a.priority - b.priority || b.timestamp - a.timestamp);
@@ -153,7 +158,7 @@ const NotificationsPanel = ({ onClose }) => {
 
           // fire-and-forget "viewed" mark
           const stamps = sorted.map(n => n.timestamp);
-          fetch(`http://localhost:5000/api/notifications/${user.id}/viewed`, {
+          fetch(`${BASE_URL}/api/notifications/${user.id}/viewed`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ timestamps: stamps }),
@@ -170,7 +175,7 @@ const NotificationsPanel = ({ onClose }) => {
 
   const respondRequest = async (action, friendId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/community/friends/update`, {
+      const res = await fetch(`${BASE_URL}/api/community/friends/update`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: user.id, friend_id: friendId, action })
@@ -187,11 +192,11 @@ const dismiss = async (key, timestamp) => {
   try {
     let res;
     if (key) {
-      res = await fetch(`http://localhost:5000/api/notifications/${user.id}/key/${encodeURIComponent(key)}`, {
+      res = await fetch(`${BASE_URL}/api/notifications/${user.id}/key/${encodeURIComponent(key)}`, {
         method: 'DELETE'
       });
     } else {
-      res = await fetch(`http://localhost:5000/api/notifications/${user.id}/${timestamp}`, { method: 'DELETE' });
+      res = await fetch(`${BASE_URL}/api/notifications/${user.id}/${timestamp}`, { method: 'DELETE' });
     }
     if (!res.ok) throw new Error();
     setNotes(ns => ns.filter(n => n.timestamp !== timestamp)); // optimistic remove

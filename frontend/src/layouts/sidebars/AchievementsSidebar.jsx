@@ -9,6 +9,10 @@ import {
   FaBan
 } from 'react-icons/fa';
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
 
 const performance = {
   score: 350,
@@ -28,12 +32,12 @@ const AccountsPerformanceHeader = () => {
     if (!user?.id) return;
 
     // Fetch user stats
-    fetch(`http://localhost:5000/api/achievements/performance/${user.id}`)
+    fetch(`${BASE_URL}/api/achievements/performance/${user.id}`)
       .then(res => res.json())
       .then(data => setUserStats(data.data))
       .catch(err => console.error('User stats error:', err));
 
-    fetch(`http://localhost:5000/api/achievements/user/${user.id}`)
+    fetch(`${BASE_URL}/api/achievements/user/${user.id}`)
       .then(res => res.json())
       .then(data => {
         const complete = data?.data.filter(a => a.achievement_status === 'complete');
@@ -43,14 +47,32 @@ const AccountsPerformanceHeader = () => {
       });
 
     // Fetch level progress
-    fetch(`http://localhost:5000/api/auth/profile/level-progress/${user.id}`)
+    fetch(`${BASE_URL}/api/auth/profile/level-progress/${user.id}`)
       .then(res => res.json())
       .then(res => setLevelProgress(res.data))
       .catch(err => console.error('Failed to load level progress:', err));
   }, []);
 
   return (
-    <div className="flex flex-wrap justify-between gap-6 items-start w-full mb-6">
+      <div className="w-full mb-6">
+           {/* Mobile Only: Clean Header */}
+           <div className="lg:hidden">
+             {/* Page Title at Top Left Corner */}
+             <div className="mb-4">
+               <div className="flex items-center gap-2 text-[#B4DFA4] dark:text-[#88BC46]">
+                 <FaUsers className="text-2xl" />
+                 <h1 className="text-2xl font-light dark:text-white">Achievements</h1>
+               </div>
+               <div className="mb-6">
+               <p className="text-base text-gray-600 dark:text-gray-300">
+                  Celebrate your progress and unlock achievements as you level up your financial journey.
+               </p>
+             </div>
+             </div>
+             
+           </div>
+       
+    <div className="hidden lg:flex flex-wrap justify-between gap-6 items-start w-full">
       {/* Left Label */}
       <div className="text-center lg:text-left">
         <div className="flex items-center justify-center lg:justify-start gap-2 text-[#B4DFA4]">
@@ -158,6 +180,7 @@ const AccountsPerformanceHeader = () => {
           ))}
         </div>
       </div>
+    </div>
     </div>
   );
 };

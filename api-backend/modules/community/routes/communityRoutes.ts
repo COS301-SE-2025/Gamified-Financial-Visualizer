@@ -9,6 +9,26 @@ import { error } from 'console';
 
 const router = Router();
 
+// dynanmic lani\ding page
+router.get('/landing-page', async (req: Request, res: Response) => {
+  try {
+    const cacheKey = 'community_landing_page';
+    const cachedData = await redisClient.get(cacheKey);
+
+    if (cachedData) {
+      logger.info('[Community] Serving landing page data from cache');
+       res.status(200).json({ status: 'success', data: JSON.parse(cachedData) });
+       return;
+    }
+
+    const stats = await communityService.landingPageStats();
+    await redisClient.set(cacheKey, JSON.stringify(stats), { EX: 3600 }); // Cache for 1 hour
+
+    res.status(200).json({ status: 'success', data: stats });
+  } catch (err) {
+    logger.error('[Community] Failed to fetch landing page data:', err);
+  }
+});
 // Post Feature Routes
 
 // POST community/api/social/posts
@@ -78,7 +98,8 @@ router.get('/social/feed/:userId', async (req: Request, res: Response) => {
     const userId = parseInt(req.params.userId);
     
     if (isNaN(userId)) {
-      return res.status(400).json({ status: 'error', message: 'Invalid user ID' });
+     res.status(400).json({ status: 'error', message: 'Invalid user ID' });
+     return;
     }
 
     const posts = await communityService.getFriendFeed(userId);
@@ -605,6 +626,16 @@ router.get('/friends/all/members', async (req, res) => {
   }
 });
 
+router.get('/friends/all/memberss', async (req, res) => {
+  try {
+    const members = await communityService.fetchAllUserss();
+    res.status(200).json({ status: 'success', data: members });
+  } catch (err) {
+    logger.error('[Community] Failed to fetch all members:', err);
+    res.status(500).json({ status: 'error', message: 'Could not fetch members.' });
+  }
+});
+
 /**
  * @route GET /api/community/friends/recommendations/:userId
  * @desc Get recommended friends based on mutuals and tier
@@ -634,7 +665,7 @@ router.get('/friends/status/:userId/:friendId', async (req, res) => {
     res.status(400).json({ status: 'error', message: 'Invalid user ID' });
     return;
   }
-
+  logger.info(`[Community] Fetching friendship status between user ${userID} and friend ${friendID}`);
   try {
     const result = await communityService.getFriendshipStatus(userID, friendID);
     const isInitiator = result.user_id === userID;

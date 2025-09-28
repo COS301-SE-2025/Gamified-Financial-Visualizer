@@ -151,7 +151,7 @@ const expiresAt = new Date(Date.now() + TOKEN_TTL * 1000);
     res.json({
       status: 'success',
       data: {
-        user:   { id: user.user_id, username: user.username },
+        user:   { id: user.user_id, username: user.username, tier_status: user.tier_status },
         token,  expires_at: expiresAt.toISOString(),
       },
     });

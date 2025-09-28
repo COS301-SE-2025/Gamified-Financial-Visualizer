@@ -6,6 +6,9 @@ import { redisClient } from '../../../config/redis';
 import * as insightsService from '../services/insights.service';
 const router = express.Router();
 
+const AI_URL = process.env.AI_SERVICE_URL || 'https://gamified-finance-ai-avf0gsfrf5a4b9cj.southafricanorth-01.azurewebsites.net';
+// const AI_URL = 'http://localhost:6000'; 
+
 // Endpoint to fetch user insights on income and expenses per month in the current year
 router.get('/transactions/:userId', async (req, res) => {
    const { userId } = req.params;
@@ -495,7 +498,7 @@ router.get('/radar/:userId', async (req, res) => {
    }
 });
 
-const INSIGHTS_BASE = "http://localhost:6000/insights";
+const INSIGHTS_BASE = `${AI_URL}/insights`;
 
 // 1) Month + User → Wrapped insights
 //    e.g. GET /sentiment/user/42/7  → proxies to GET http://localhost:6000/insights/42/7
@@ -534,8 +537,12 @@ router.get("/sentiment/user/:userId/:month", async (req, res) => {
 
       // send JSON to Python endpoint
       const { data } = await axios.post(
-         `http://localhost:6000/insights/user/${userId}/${month}`,
-         userData
+         `${AI_URL}/insights/user/${userId}/${month}`,
+         userData,
+         {
+            timeout: 300000, // 12 seconds timeout
+            validateStatus: (status) => status < 500 // Accept all HTTP status codes
+         }
       );
 
       res.status(200).json(data);
@@ -663,8 +670,14 @@ router.get('/trends/:userId', async (req, res) => {
       };
 
       // Fetch trends data from the database
-      const trends = await axios.post(`http://localhost:6000/insights/trends/`,
-         userData
+
+      const trends = await axios.post(`${AI_URL}/insights/trends`,
+         userData,
+         {
+            timeout: 120000, // 2 minutes
+            validateStatus: (status) => status < 500
+         }
+
       );
 
       if (!trends.data) {

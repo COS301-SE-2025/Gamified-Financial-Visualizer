@@ -10,6 +10,10 @@ import {
 } from 'react-icons/fa';
 import avatar from '../../assets/Images/avatars/BlueSky.png';
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
 const AccountsPerformanceHeader = () => {
   const [sidebarStats, setSidebarStats] = useState(null);
   const [performanceSummary, setPerformanceSummary] = useState(null);
@@ -18,12 +22,12 @@ const AccountsPerformanceHeader = () => {
   const fetchSidebarData = () => {
     if (!user?.id) return;
 
-    fetch(`http://localhost:5000/api/auth/sidebar/${user.id}`)
+    fetch(`${BASE_URL}/api/auth/sidebar/${user.id}`)
       .then(res => res.json())
       .then(data => setSidebarStats(data.data))
       .catch(err => console.error('Sidebar stats error:', err));
 
-    fetch(`http://localhost:5000/api/auth/profile/performance-summary/${user.id}`)
+    fetch(`${BASE_URL}/api/auth/profile/performance-summary/${user.id}`)
       .then(res => res.json())
       .then(data => setPerformanceSummary(data.data))
       .catch(err => console.error('Performance summary error:', err));
@@ -39,7 +43,24 @@ const AccountsPerformanceHeader = () => {
   }, []);
 
   return (
-    <div className="flex flex-wrap justify-between gap-6 items-start w-full mb-6">
+     <div className="w-full mb-6">
+           {/* Mobile Only: Clean Header */}
+           <div className="lg:hidden">
+             {/* Page Title at Top Left Corner */}
+             <div className="mb-4">
+               <div className="flex items-center gap-2 text-[#B4DFA4] dark:text-[#88BC46]">
+                 <FaUsers className="text-2xl" />
+                 <h1 className="text-2xl font-light dark:text-white">Profile</h1>
+               </div>
+               <div className="mb-6">
+               <p className="text-base text-gray-600 dark:text-gray-300">
+                 Manage your personal details, track XP, and monitor progress toward your goals and achievements.
+               </p>
+             </div>
+             </div>
+           </div>
+
+    <div className="hidden lg:flex flex-wrap justify-between gap-6 items-start w-full mb-6">
       {/* Left Label */}
       <div className="text-center lg:text-left">
         <div className="flex items-center justify-center lg:justify-start gap-2 text-[#B4DFA4]">
@@ -122,6 +143,7 @@ const AccountsPerformanceHeader = () => {
         </div>
 
       </div>
+    </div>
     </div>
   );
 };

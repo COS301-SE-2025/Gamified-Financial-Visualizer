@@ -223,6 +223,10 @@ def get_trends(user_data: UserData):
         print(f"Error generating trends for user: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "service": "ai-service"}
+
 
 
 

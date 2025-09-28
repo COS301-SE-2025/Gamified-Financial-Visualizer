@@ -35,7 +35,7 @@ router.post('/', async (req: Request, res: Response) => {
       data: { budget_id }
     });
   } catch (error: any) {
-    logger.error('[Budget] Create failed', error);
+  //  logger.error('[Budget] Create failed', error);
     res.status(500).json({ status: 'error', message: error.message || 'Server error' });
   }
 });

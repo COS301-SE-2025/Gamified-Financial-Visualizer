@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Button } from '../../components/ui/Button';
 import { motion } from "framer-motion";
 import { FaTrophy, FaUserGraduate, FaPuzzlePiece, FaUserFriends, FaChartLine, FaArrowUp, FaArrowDown, FaRocket, FaCoins, FaShieldAlt, FaArrowRight, FaMedal } from "react-icons/fa";
+import CountUp from 'react-countup';
 
 // Image imports
 import YohaliImg from '../../assets/Team Profiles/Malaika.png';
@@ -11,13 +12,20 @@ import NobuhleImg from '../../assets/Team Profiles/Nobuhle.png';
 import AundreaImg from '../../assets/Team Profiles/Aundrea.png';
 
 // Testimonial imports
-import avatar1 from '../../assets/Images/avatars/BeachShore.png';
-import avatar2 from '../../assets/Images/avatars/CityBuilding.png';
-import avatar3 from '../../assets/Images/avatars/Lily.png';
+import avatar1 from '../../assets/Images/avatars/Skull.png';
+import avatar2 from '../../assets/Images/avatars/Lily.png';
+import avatar3 from '../../assets/Images/avatars/Totoro.png';
 
 // Banner header images 
 import heroGif from '../../assets/Images/banners/pixelOffice.gif';
 import gemImg from '../../assets/Images/Logo1.png';
+
+
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
+
 
 const AchievementBadge = ({ title, description, icon, color }) => (
     <motion.div
@@ -122,6 +130,79 @@ const ScrollNavigation = ({ sections }) => {
 
 export default function LandingPage() {
     const [activeTestimonial, setActiveTestimonial] = React.useState(0);
+    const [dynamicDataStats, setDynamicDataStats] = useState(null);
+
+
+    // Fetch dynamic data stats
+    const fetchDynamicDataStats = async () => {
+        try {
+            const response = await fetch(`${BASE_URL}/api/community/landing-page`);
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                return data.data;
+            } else {
+                throw new Error(data.message);
+            }
+        } catch (error) {
+            console.error('Error fetching dynamic data stats:', error);
+            return null;
+        }
+    };
+    useEffect(() => {
+        const getData = async () => {
+            const stats = await fetchDynamicDataStats();
+            setDynamicDataStats(stats);
+        };
+        getData();
+    }, []);
+
+    const formatCompactNumber = (value) => {
+        const num = typeof value === 'string' ? parseFloat(value) : value;
+        if (isNaN(num)) return "0";
+
+        if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(1) + "B";
+        if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + "M";
+        if (num >= 1_000) return (num / 1_000).toFixed(1) + "K";
+        return num.toFixed(2);
+    };
+
+
+    const StatCard = React.memo(({ icon, value, label, isCurrency = false, isStatic = false }) => {
+        if (!value || !label || !icon) return null;
+
+        return (
+            <motion.div
+                className="text-center p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20"
+                initial={false}
+
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
+            >
+                <div className="text-3xl font-bold flex items-center justify-center gap-2">
+                    {icon}
+                    {isStatic ? (
+                        value
+                    ) : value ? (
+                        <>
+                            {isCurrency && "R"}
+                            <CountUp
+                                end={parseFloat(value)}
+                                duration={2}
+                                formattingFn={formatCompactNumber}
+                                enableScrollSpy={true}
+                            />
+                        </>
+                    ) : (
+                        isCurrency ? "R0" : "0"
+                    )}
+                </div>
+                <div className="text-sm opacity-90 mt-1">{label}</div>
+            </motion.div>
+        );
+    });
+
 
     //Team members 
     const team = [
@@ -137,7 +218,7 @@ export default function LandingPage() {
             role: 'Services Engineer, Systems Architect',
             image: LebogangImg,
             github: 'https://github.com/B-WayneZA',
-            linkedin: 'https://www.linkedin.com/in/lebogang-masenya/',
+            linkedin: 'http://linkedin.com/in/lebogang-masenya-298772382',
         },
         {
             name: 'Mpho Siminya',
@@ -165,19 +246,19 @@ export default function LandingPage() {
     // testimonials
     const testimonials = [
         {
-            name: "yummy",
+            name: "kevin_park",
             role: "Financial Beginner",
             quote: "I went from avoiding my finances to checking them daily thanks to the game elements!",
             avatar: avatar1
         },
         {
-            name: "mike_t",
+            name: "sarah_williams",
             role: "Small Business Owner",
             quote: "The goal quests helped me finally organize my business finances in a way that stuck.",
             avatar: avatar2
         },
         {
-            name: "lily_luna",
+            name: "satoshi_nak",
             role: "College Student",
             quote: "Earning badges for saving money made budgeting actually fun for the first time.",
             avatar: avatar3
@@ -275,7 +356,7 @@ export default function LandingPage() {
                             onClick={() => window.location.href = '/login'}
                         >
                             <span className="flex items-center gap-2">
-                                Continue Playing <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+                                Login <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
                             </span>
                         </Button>
                     </motion.div>
@@ -327,7 +408,7 @@ export default function LandingPage() {
                             onClick={() => window.location.href = '/register'}
                         >
                             <span className="flex items-center gap-2">
-                                Start Your Quest <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+                                Register Now <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
                             </span>
                         </Button>
                     </motion.div>
@@ -338,24 +419,40 @@ export default function LandingPage() {
             <section ref={statsRef} className="py-7 bg-gradient-to-r from-[#4B6343] to-[#AAD977] text-white shadow-lg">
                 <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 px-6">
                     {[
-                        { value: "100+", label: "Active Players", icon: <FaUserFriends /> },
-                        { value: "500+", label: "XP Earned Daily", icon: <FaChartLine /> },
-                        { value: "30+", label: "Unique Achievements", icon: <FaTrophy /> },
-                        { value: "R100K+", label: "Collectively Saved", icon: <FaCoins /> }
+                        {
+                            value: dynamicDataStats?.activePlayers,
+                            label: "Active Players",
+                            icon: <FaUserFriends />,
+                            isCurrency: false
+                        },
+                        {
+                            value: dynamicDataStats?.totalXPEarned,
+                            label: "XP Earned",
+                            icon: <FaChartLine />,
+                            isCurrency: false
+                        },
+                        {
+                            value: "30+",
+                            label: "Unique Achievements",
+                            icon: <FaTrophy />,
+                            isCurrency: false,
+                            isStatic: true
+                        },
+                        {
+                            value: dynamicDataStats?.totalAccountValue,
+                            label: "Collectively Tracked",
+                            icon: <FaCoins />,
+                            isCurrency: true
+                        }
                     ].map((stat, i) => (
-                        <motion.div
+                        <StatCard
                             key={i}
-                            className="text-center p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20"
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.1 }}
-                            viewport={{ once: true }}
-                        >
-                            <div className="text-3xl font-bold flex items-center justify-center gap-2">
-                                {stat.icon} {stat.value}
-                            </div>
-                            <div className="text-sm opacity-90 mt-1">{stat.label}</div>
-                        </motion.div>
+                            icon={stat.icon}
+                            label={stat.label}
+                            value={stat.value}
+                            isCurrency={stat.isCurrency}
+                            isStatic={stat.isStatic}
+                        />
                     ))}
                 </div>
             </section>
@@ -667,11 +764,11 @@ export default function LandingPage() {
                                         className="bg-gradient-to-r from-[#4B6343] to-[#AAD977] hover:from-[#4B6343] hover:to-[#AAD977] text-white px-6 py-3 font-bold shadow-md hover:shadow-lg transition-all"
                                         onClick={() => window.location.href = '/register'}
                                     >
-                                        Start Your Quest
+                                        Register
                                     </Button>
                                     <Button
                                         variant="outline"
-                                        className="border-lime-500 text-lime-600 hover:bg-lime-500 hover:text-white px-6 py-3 font-medium"
+                                        className="border-lime-600 text-lime-600 hover:bg-[#6b905f] hover:text-white px-6 py-3 font-medium"
                                         onClick={() => window.location.href = '/features'}
                                     >
                                         Explore Features
@@ -839,7 +936,6 @@ export default function LandingPage() {
                             { name: "Node.js", icon: "nodejs", description: "Runtime environment" },
                             { name: "PostgreSQL", icon: "postgresql", description: "Database" },
                             { name: "Python", icon: "python", description: "Backend services" },
-                            { name: "Unity", icon: "unity", description: "AR engine" },
                             { name: "Figma", icon: "figma", description: "Design tool" },
                             { name: "TypeScript", icon: "typescript", description: "Typed JavaScript" },
                             { name: "Express.js", icon: "express", description: "Web framework" },
@@ -852,8 +948,9 @@ export default function LandingPage() {
                             { name: "Pytorch", icon: "pytorch", description: "AI model" },
                             { name: "Tensorflow", icon: "tensorflow", description: "AI model" },
                             { name: "Supabase", icon: "supabase", description: "Deployment" },
-                            { name: "Kafka", icon: "kafka", description: "Event Bus" },
-                            { name: "Redis", icon: "redis", description: "Caching" }
+                            { name: "Blender", icon: "blender", description: "3D Modeling" },
+                            { name: "Redis", icon: "redis", description: "Caching" },
+                            { name: "Azure", icon: "azure", description: "Deployment" }
                         ].map((tech, i) => (
                             <motion.div
                                 key={i}
@@ -1004,7 +1101,7 @@ export default function LandingPage() {
                             onClick={() => window.location.href = '/register'}
                         >
                             <span className="flex items-center gap-2">
-                                Start Your Free Quest <FaArrowRight />
+                                Register Now <FaArrowRight />
                             </span>
                         </Button>
                         {/* <Button

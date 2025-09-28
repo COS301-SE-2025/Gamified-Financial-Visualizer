@@ -11,15 +11,22 @@
     "@types/react": "^19.1.4",
     "@types/react-dom": "^19.1.5",
     "axios": "^1.10.0",
+    "classnames": "^2.5.1",
+    "date-fns": "^4.1.0",
     "framer-motion": "^12.12.2",
     "react": "^19.1.0",
+    "react-calendar-heatmap": "^1.10.0",
     "react-copy-to-clipboard": "^5.1.0",
+    "react-countup": "^6.5.3",
     "react-dev-utils": "^12.0.1",
     "react-dom": "^19.1.0",
+    "react-gauge-chart": "^0.5.1",
+    "react-hot-toast": "^2.6.0",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.6.0",
     "react-scripts": "^5.0.1",
     "react-spinners": "^0.17.0",
+    "react-toastify": "^10.0.6",
     "recharts": "^2.15.3",
     "socket.io-client": "^4.8.1",
     "three": "^0.178.0",
@@ -33,7 +40,9 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "docker:install": "npm install --legacy-peer-deps",
+    "docker:build": "CI=false npm run build"
   },
   "eslintConfig": {
     "extends": [

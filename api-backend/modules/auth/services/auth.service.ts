@@ -43,6 +43,32 @@ export async function createUser(user: UserRecord) {
       user.full_name,
       user.hashed_password,
     ]);
+
+    // Add default preferences only if not already present
+    const prefCheck = await pool.query(
+      'SELECT 1 FROM user_preferences WHERE user_id = $1',
+      [result.rows[0].user_id]
+    );
+    if (prefCheck.rows.length === 0) {
+      await pool.query(`
+      INSERT INTO user_preferences (user_id, theme, avatar_id, banner_id, in_app_notifications_enabled, ar_customizations_jsonb)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      `, [result.rows[0].user_id, 'light', 2, 2, true, '{}']);
+    }
+
+    // Add default points entry only if not already present
+    const pointsCheck = await pool.query(
+      'SELECT 1 FROM user_points WHERE user_id = $1',
+      [result.rows[0].user_id]
+    );
+    if (pointsCheck.rows.length === 0) {
+      await pool.query(`
+      INSERT INTO user_points (user_id, total_points)
+      VALUES ($1, $2)
+      `, [result.rows[0].user_id, 0]);
+    }
+
+    logger.info(`[AuthService] User registered: ${user.username} (${user.email})`);
     return result.rows[0];
   } catch (err) {
     logger.error('[AuthService] Registration failed:', err);
@@ -131,9 +157,19 @@ export async function getUserByEmail(email: string) {
 }
 
 export async function getUserByUsername(username: string) {
-  const query = 'SELECT * FROM users WHERE username = $1';
+
+  const query = `
+  SELECT *
+  FROM users
+  WHERE username = $1
+`;
+
   try {
     const result = await pool.query(query, [username]);
+    if (result.rows.length === 0) {
+      throw new Error(`User with username '${username}' not found`);
+    }
+  
     return result.rows[0];
   } catch (err) {
     logger.error(`[AuthService] Failed to fetch user by username ${username}:`, err);

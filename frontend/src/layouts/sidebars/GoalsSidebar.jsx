@@ -10,6 +10,9 @@ import {
 } from 'react-icons/fa';
 import avatar from '../../assets/Images/avatars/BlueSky.png';
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
 
 const AccountsPerformanceHeader = () => {
   const user = JSON.parse(localStorage.getItem('user'));
@@ -29,8 +32,8 @@ const AccountsPerformanceHeader = () => {
     const fetchStatsAndScore = async () => {
       try {
         const [summaryRes, performanceRes] = await Promise.all([
-          fetch(`http://localhost:5000/api/goal/${user.id}/summary`),
-          fetch(`http://localhost:5000/api/goal/${user.id}/performance`)
+          fetch(`${BASE_URL}/api/goal/${user.id}/summary`),
+          fetch(`${BASE_URL}/api/goal/${user.id}/performance`)
         ]);
 
         const summaryData = await summaryRes.json();
@@ -43,13 +46,13 @@ const AccountsPerformanceHeader = () => {
       }
     };
 
-    fetch(`http://localhost:5000/api/community/performance-summary/${user.id}`)
+    fetch(`${BASE_URL}/api/community/performance-summary/${user.id}`)
       .then(res => res.json())
       .then(data => setPerformance(data.data))
       .catch(err => console.error('Community performance summary error:', err));
 
     // Fetch level progress
-    fetch(`http://localhost:5000/api/auth/profile/level-progress/${user.id}`)
+    fetch(`${BASE_URL}/api/auth/profile/level-progress/${user.id}`)
       .then(res => res.json())
       .then(res => setLevelProgress(res.data))
       .catch(err => console.error('Failed to load level progress:', err));
@@ -58,7 +61,24 @@ const AccountsPerformanceHeader = () => {
   }, [user?.id]);
 
   return (
-    <div className="flex flex-wrap justify-between gap-6 items-start w-full mb-6">
+    <div className="w-full mb-6">
+          {/* Mobile Only: Clean Header */}
+          <div className="lg:hidden">
+            {/* Page Title at Top Left Corner */}
+            <div className="mb-4">
+              <div className="flex items-center gap-2 text-[#B4DFA4] dark:text-[#88BC46]">
+                <FaUsers className="text-2xl" />
+                <h1 className="text-2xl font-light dark:text-white">Goals</h1>
+              </div>
+              <div className="mb-6">
+              <p className="text-base text-gray-600 dark:text-gray-300">
+                 Set savings goals and milestones, monitor your progress, and earn XP as you achieve them.
+              </p>
+            </div>
+            </div>
+          </div>
+    
+    <div className="hidden lg:flex flex-wrap justify-between gap-6 items-start w-full mb-6">
       {/* Left Label */}
       <div className="text-center lg:text-left">
         <div className="flex items-center justify-center lg:justify-start gap-2 text-[#B4DFA4]">
@@ -194,6 +214,7 @@ const AccountsPerformanceHeader = () => {
           ))}
         </div>
       </div>
+    </div>
     </div>
   );
 };
