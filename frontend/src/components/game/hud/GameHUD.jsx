@@ -93,7 +93,7 @@ export default function GameHUD({
       'p3': 'bg-lime-500', // Blue
       'p4': 'bg-amber-500', // Yellow
       'p5': 'bg-red-500', // Red
-      'p6': 'bg-indigo-500', // Purple
+      'p6': '#5F27CD', // Purple
     };
     return colors[playerId] || 'bg-gray-400'; // Default gray
   };
@@ -119,7 +119,7 @@ export default function GameHUD({
           {/* Player Icon */}
           <div className="flex items-center gap-2">
             <div
-              className={`w-10 h-10 rounded-full border-2 border-sky-400 flex items-center justify-center text-white font-bold shadow-sm ${getPlayerColor('p6')}`}
+              className={`w-10 h-10 rounded-full border-2 border-sky-400 flex items-center justify-center text-white font-bold shadow-sm ${getPlayerColor('p2')}`}
             >
               {playerName.charAt(0).toUpperCase()}
             </div>
