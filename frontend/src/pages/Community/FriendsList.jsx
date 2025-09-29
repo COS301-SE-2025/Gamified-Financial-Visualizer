@@ -208,7 +208,7 @@ const FriendsList = () => {
                   />
                   <div>
                     <p className="text-sm font-semibold text-[#111827] dark:text-gray-200">{person.username}</p>
-                    <p className="text-xs text-[#6B7280] dark:text-gray-400">{person.tier_status || 'Unranked'}</p>
+                    <p className="text-xs text-[#6B7280] dark:text-gray-400">{person?.tier_status || 'Unranked'}</p>
                   </div>
                 </div>
                 <div className="flex gap-2">

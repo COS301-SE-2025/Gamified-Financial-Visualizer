@@ -11,6 +11,10 @@ from pydantic import BaseModel
 from typing import List
 from typing import Optional
 
+# For AI advisor
+from transformers import pipeline
+from itertools import groupby
+
 # ---- Service-layer functions ----
 from app.classifier.services.predict_classifier import classify_batch
 from app.classifier.services.train_classifier import main as train_model
@@ -87,6 +91,53 @@ class UserData(BaseModel):
     goals: List[Goal]
     budgets: List[Budget]
 
+
+# --- Chat endpoint schema ---
+class ChatRequest(BaseModel):
+    question: str
+
+class ChatResponse(BaseModel):
+    response: str
+
+# --- Load GPT model once at startup ---
+# MODEL_NAME = "openai-community/gpt2"
+# MODEL_NAME = "openai/gpt-oss-20b" // lighter model
+MODEL_NAME = "openai/gpt-oss-120b"
+generator = pipeline('text-generation', model=MODEL_NAME)
+
+@app.post("/chat", response_model=ChatResponse)
+def chat(req: ChatRequest):
+    try:
+        user_input = req.question.strip()
+        if not user_input:
+            raise HTTPException(status_code=400, detail="No question provided")
+        
+        # Generate text
+        result = generator(
+            user_input,
+            max_new_tokens=250,
+            num_return_sequences=1,
+            temperature=0.7,
+            top_p=0.95,
+            do_sample=True,
+            pad_token_id=generator.tokenizer.eos_token_id,
+        )
+
+        text = result[0]['generated_text'].strip()
+
+        # Remove repeated consecutive words/phrases
+        words = text.split()
+        text = " ".join(k for k,_ in itertools.groupby(words))
+
+        # Cut at last sentence-ending punctuation
+        last_punct = max(text.rfind("."), text.rfind("?"), text.rfind("!"))
+        if last_punct != -1:
+            text = text[:last_punct + 1]
+
+        return ChatResponse(response=text)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # ---- Endpoints ----
 @app.post("/classifier/predict", response_model=PredictRes)
@@ -186,6 +237,9 @@ def get_trends(user_data: UserData):
 @app.get("/health")
 async def health_check():
     return {"status": "ok", "ready": is_model_ready()}
+
+
+
 
 
 # --- serve ---

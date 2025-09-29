@@ -28,7 +28,7 @@ const CommunityMemberPage = () => {
 
   // Check if the current user is viewing their own profile
   const isViewingOwnProfile = user?.username === username;
-
+  const id = user?.id;
   useEffect(() => {
     if (!username) return;
     (async () => {

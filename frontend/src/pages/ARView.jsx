@@ -1,7 +1,7 @@
 // src/pages/ARView.jsx
 import { useMemo, useRef, useEffect, useState } from 'react';
-import { FaBuilding, FaBullseye, FaCamera, FaCheck, FaGamepad, FaInfoCircle, FaMobileAlt, FaPhoneAlt, FaVideo } from 'react-icons/fa';
-import { useSearchParams, Link } from 'react-router-dom';
+import { FaBuilding, FaBullseye, FaCamera, FaCheck, FaGamepad, FaHandPointer, FaInfoCircle, FaMobileAlt, FaPhoneAlt, FaVideo } from 'react-icons/fa';
+import { useSearchParams, Link, Navigate } from 'react-router-dom';
 
 // EXACT theme matching with CityViewer
 const detectThemeFromPath = (glbPath) => {
@@ -95,7 +95,12 @@ function QRCode({ url, size = 200 }) {
   );
 }
 
-
+// Auth check function
+const checkAuthStatus = () => {
+  // Check if user is logged in - you might want to replace this with your actual auth check
+  const userData = localStorage.getItem('user');
+  return !!userData; // Returns true if user data exists
+};
 
 export default function ARView() {
   const [params] = useSearchParams();
@@ -111,8 +116,17 @@ export default function ARView() {
   const [arReady, setArReady] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [arStatus, setArStatus] = useState('initializing');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
+    // Check authentication status
+    const authStatus = checkAuthStatus();
+    setIsAuthenticated(authStatus);
+    setAuthChecked(true);
+
+    if (!authStatus) return; // Don't proceed if not authenticated
+
     setIsIOS(/iPad|iPhone|iPod/i.test(navigator.userAgent));
     checkUSDZExists(usdzSrc).then(setHasUSDZ);
 
@@ -180,6 +194,23 @@ export default function ARView() {
     }
     return 'scene-viewer webxr';
   }, [isIOS, hasUSDZ]);
+
+  // Redirect to login if not authenticated
+  if (authChecked && !isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Show loading while checking auth
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-white">
@@ -261,7 +292,7 @@ export default function ARView() {
                 ar-placement={themeSettings.arPlacement}
                 stabilization-degree="0.5"
 
-                // Improved interaction
+                // Improved interaction with better camera control
                 camera-controls
                 touch-action="pan-y"
                 reveal="auto"
@@ -275,16 +306,18 @@ export default function ARView() {
                 shadow-softness="0.5"
                 tone-mapping="neutral"
 
-                // Camera and view settings - RESTRICTED TO PREVENT LOOKING UNDER
-                camera-orbit="0deg 75deg 105%"
-                field-of-view="30deg"
-                min-camera-orbit="0deg 60deg 100%"
-                max-camera-orbit="360deg 90deg 400%"
-                min-field-of-view="25deg"
-                max-field-of-view="35deg"
+                // EXPANDED Camera and view settings for better zoom and rotation
+                camera-orbit="0deg 75deg 200%" // Increased default distance
+                field-of-view="45deg" // Wider field of view
+                min-camera-orbit="0deg 45deg 100%" // Allow more vertical rotation
+                max-camera-orbit="360deg 90deg 500%" // Allow more zoom out
+                min-field-of-view="20deg" // Allow more zoom in
+                max-field-of-view="60deg" // Allow more zoom out
+                camera-target="0m 0m 0m"
 
-                // Disable interaction below the model
+                // Better interaction controls
                 interaction-policy="allow-when-focused"
+                bounds="tight"
 
                 style={{
                   width: '100%',
@@ -298,14 +331,14 @@ export default function ARView() {
                   slot="ar-button"
                   className="absolute bottom-6 left-1/2 transform -translate-x-1/2 px-8 py-4 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-lg shadow-2xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 flex items-center gap-3"
                 >
-                  <span className="text-xl">👆</span>
+                  <span className="text-xl"><FaHandPointer /></span>
                   View in AR
-                  <span className="text-sm opacity-90">({isIOS ? 'Quick Look' : 'WebXR'})</span>
+                  <span className="text-sm opacity-90"></span>
                 </button>
 
                 {/* Theme Badge */}
                 <div className="absolute top-6 left-6 bg-black/80 text-white px-4 py-3 rounded-full text-sm font-semibold backdrop-blur-sm border border-white/20 flex items-center gap-2">
-                  <span className="text-xl text-sky-300">
+                  <span className="text-xl text-sky-400">
                     <FaBuilding />
                   </span>
                   <span className="capitalize">{currentTheme.replace(/_/g, ' ')}</span>
@@ -313,10 +346,15 @@ export default function ARView() {
 
                 {/* Loading Progress */}
                 <div slot="progress-bar" className="ar-progress-bar"></div>
+
+                {/* Camera Control Instructions */}
+                <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-lg text-sm backdrop-blur-sm border border-white/20 text-center">
+                  Pinch to zoom • Drag to rotate
+                </div>
               </model-viewer>
             </div>
 
-            {/* Instructions Card - Now properly placed below the AR viewer */}
+            {/* Instructions Card */}
             <div className="rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-2xl p-6">
               <h4 className="font-bold text-lg mb-4 flex items-center gap-2">
                 <span className="text-xl text-sky-300"><FaBullseye /></span>
@@ -339,6 +377,12 @@ export default function ARView() {
                   <span className="bg-sky-100 dark:bg-sky-700 rounded-full w-6 h-6 flex items-center justify-center text-sky-600 dark:text-sky-300 font-bold text-xs mt-0.5 flex-shrink-0">4</span>
                   <p>Walk around and explore!</p>
                 </div>
+              </div>
+              <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <p className="text-sm text-blue-800 dark:text-blue-300 flex items-center gap-2">
+                  <span className="text-lg">💡</span>
+                  <strong>Tip:</strong> Use pinch gestures to zoom in/out and drag to rotate the view
+                </p>
               </div>
             </div>
           </div>
@@ -389,6 +433,10 @@ export default function ARView() {
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">Model Format:</span>
                   <span className="font-medium">{hasUSDZ ? 'GLB + USDZ' : 'GLB'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">Camera Control:</span>
+                  <span className="font-medium">Full Zoom & Rotate</span>
                 </div>
               </div>
             </div>

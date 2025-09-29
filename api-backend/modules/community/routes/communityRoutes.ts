@@ -626,6 +626,16 @@ router.get('/friends/all/members', async (req, res) => {
   }
 });
 
+router.get('/friends/all/memberss', async (req, res) => {
+  try {
+    const members = await communityService.fetchAllUserss();
+    res.status(200).json({ status: 'success', data: members });
+  } catch (err) {
+    logger.error('[Community] Failed to fetch all members:', err);
+    res.status(500).json({ status: 'error', message: 'Could not fetch members.' });
+  }
+});
+
 /**
  * @route GET /api/community/friends/recommendations/:userId
  * @desc Get recommended friends based on mutuals and tier
@@ -655,7 +665,7 @@ router.get('/friends/status/:userId/:friendId', async (req, res) => {
     res.status(400).json({ status: 'error', message: 'Invalid user ID' });
     return;
   }
-
+  logger.info(`[Community] Fetching friendship status between user ${userID} and friend ${friendID}`);
   try {
     const result = await communityService.getFriendshipStatus(userID, friendID);
     const isInitiator = result.user_id === userID;
