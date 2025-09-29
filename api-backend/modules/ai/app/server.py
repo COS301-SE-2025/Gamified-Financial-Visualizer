@@ -13,7 +13,6 @@ from typing import Optional
 
 # For AI advisor
 from transformers import pipeline
-from itertools import groupby
 
 # ---- Service-layer functions ----
 from app.classifier.services.predict_classifier import classify_batch
@@ -100,9 +99,10 @@ class ChatResponse(BaseModel):
     response: str
 
 # --- Load GPT model once at startup ---
-# MODEL_NAME = "openai-community/gpt2"
+MODEL_NAME = "openai-community/gpt2"
 # MODEL_NAME = "openai/gpt-oss-20b" // lighter model
-MODEL_NAME = "openai/gpt-oss-120b"
+# MODEL_NAME = "openai/gpt-oss-120b"
+# MODEL_NAME = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
 generator = pipeline('text-generation', model=MODEL_NAME)
 
 @app.post("/chat", response_model=ChatResponse)
@@ -115,29 +115,29 @@ def chat(req: ChatRequest):
         # Generate text
         result = generator(
             user_input,
-            max_new_tokens=250,
+            max_new_tokens=250,  # use max_new_tokens instead of max_length
             num_return_sequences=1,
             temperature=0.7,
             top_p=0.95,
             do_sample=True,
-            pad_token_id=generator.tokenizer.eos_token_id,
+            pad_token_id=generator.tokenizer.eos_token_id
         )
 
         text = result[0]['generated_text'].strip()
 
-        # Remove repeated consecutive words/phrases
-        words = text.split()
-        text = " ".join(k for k,_ in itertools.groupby(words))
-
-        # Cut at last sentence-ending punctuation
-        last_punct = max(text.rfind("."), text.rfind("?"), text.rfind("!"))
-        if last_punct != -1:
-            text = text[:last_punct + 1]
+        # Post-process: cut at last full stop
+        if "." in text:
+            last_full_stop = text.rfind(".")
+            text = text[:last_full_stop + 1]  # include the period
+        else:
+            # fallback if no full stop found
+            text = text
 
         return ChatResponse(response=text)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 # ---- Endpoints ----
 @app.post("/classifier/predict", response_model=PredictRes)
