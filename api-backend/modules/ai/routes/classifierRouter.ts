@@ -10,8 +10,8 @@ import { getCategories, createTransaction, getTransaction } from '../../transact
 import { cp } from 'fs';
 import { ExtractorContext } from '../strategies/strategy_context';
 
-const AI_URL = process.env.AI_SERVICE_URL || 'https://gamified-finance-ai-avf0gsfrf5a4b9cj.southafricanorth-01.azurewebsites.net';
-// const AI_URL = 'http://localhost:6000'; 
+//const AI_URL = process.env.AI_SERVICE_URL || 'https://gamified-finance-ai-avf0gsfrf5a4b9cj.southafricanorth-01.azurewebsites.net';
+const AI_URL = 'http://localhost:6000'; 
 
 
 interface HealthCheckResponse {
