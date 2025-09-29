@@ -115,6 +115,7 @@ This table provides quick access to the key documents and planning resources for
 |[<img src="https://img.icons8.com/ios-filled/20/88BC46/play-button-circled.png"/> Demo 1 Video](https://drive.google.com/drive/u/0/folders/11WsEpVxedP9OobPVyirSWup9hacDLVAH) | [Demo 1 Documentation](https://drive.google.com/drive/u/0/folders/1oXzqPzukLE2dVK9OftUkWXMTAlR7tb4I) |
 |[<img src="https://img.icons8.com/ios-filled/20/88BC46/play-button-circled.png"/> Demo 2 Video](https://drive.google.com/file/d/152yEfAs2liL6fUAY6_nJPMdphsqQRPw6/view?usp=drive_link) | [Demo 2 Documentation](https://drive.google.com/drive/u/2/folders/1qBoA2zMqF3u-Fo400Q0mdA1-wOFhmfVY) |
 |[<img src="https://img.icons8.com/ios-filled/20/88BC46/play-button-circled.png"/> Demo 3 Video](https://drive.google.com/drive/folders/17R40RsQUSfzsPa6zXZv1KLLmsTFbqvlR?usp=sharing) | [Demo 3 Documentation](https://drive.google.com/drive/folders/1FOvvIB2v0AfdCQubxC_2sZO0DH0l7eHS?usp=sharing) |
+|[<img src="https://img.icons8.com/ios-filled/20/88BC46/play-button-circled.png"/> Demo 4 Video](https://drive.google.com/drive/folders/1-C3OTJhAgyh_056odSlRm9rBBBY6NNFz) | [Demo 4 Documentation](https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/tree/main/documentation/Demo%204) |
 
 </div>
 
