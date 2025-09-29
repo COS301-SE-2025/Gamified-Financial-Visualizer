@@ -118,13 +118,8 @@ const CommunityDetail = () => {
   const handleAddMember = async (friend) => {
     try {
       const res = await fetch(
-
         `${BASE_URL}/api/community/${communityData.community_id}/members/${friend.user_id}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        }
-
+        { method: 'POST', headers: { 'Content-Type': 'application/json' } }
       );
       const json = await res.json();
       if (!res.ok) throw new Error(json.message || 'Failed to add member');
@@ -207,25 +202,11 @@ const CommunityDetail = () => {
                 const currentUser = JSON.parse(localStorage.getItem('user'));
                 await Promise.all(
                   members.map((m) =>
-
-                    fetch(
-                      `${BASE_URL}/api/community/friends/request/${currentUser.id}/${m.user_id}`,
-                      {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' }
-                      }
-                    )
+                    fetch(`${BASE_URL}/api/community/friends/request/${currentUser.id}/${m.user_id}`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' }
+                    })
                   )
-                  ,
-                  fetch(`${BASE_URL}/api/community/membership/request`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      community_id: communityData.community_id,
-                      user_id: currentUser.id,
-                    }),
-                  })
-
                 );
                 toast.success('Friend requests sent to all community members!');
               } catch (err) {
@@ -254,7 +235,6 @@ const CommunityDetail = () => {
   };
 
   const removeMember = async (userId) => {
-
     try {
       const res = await fetch(
         `${BASE_URL}/api/community/${communityData.community_id}/members/${userId}`,
@@ -266,9 +246,9 @@ const CommunityDetail = () => {
     } catch (err) {
       toast.error('Failed to remove member');
       console.error(err);
-    };
-  }
-  
+    }
+  };
+
   const handleSave = async () => {
     const payload = {
       community_name: communityData.community_name,
@@ -276,13 +256,11 @@ const CommunityDetail = () => {
     };
 
     try {
-      const res = await fetch(
-        `${BASE_URL}/api/community/${communityData.community_id}`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
+      const res = await fetch(`${BASE_URL}/api/community/${communityData.community_id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
       if (!res.ok) throw new Error('Update failed');
       const json = await res.json();
       setCommunityData(json.data);
@@ -297,40 +275,6 @@ const CommunityDetail = () => {
   const handleCancel = () => {
     setIsEditing(false);
   };
-
-  const handleAccept = async (userId) => {
-
-    try {
-      const response = await fetch(`${BASE_URL}/api/community/membership/respond/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ community_id: communityData.community_id, user_id: userId, response: 'accept' }),
-      });
-      if (!response.ok) throw new Error('Failed to accept invite');
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-  }
-
-  const handleReject = async (userId) => {
-    try {
-      const response = await fetch(`${BASE_URL}/api/community/membership/respond/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ community_id: communityId, user_id: userId, response: 'reject' }),
-      });
-      if (!response.ok) throw new Error('Failed to reject invite');
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-  }
-
 
   const selectedBanner = bannerOptions.find(b => b.id === communityData.bannerId)?.src || banner;
 

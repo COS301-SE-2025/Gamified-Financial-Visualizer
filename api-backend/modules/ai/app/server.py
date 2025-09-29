@@ -26,7 +26,17 @@ from app.insights.services.insights_engine import (
     generate_wrapped_insights,
 )
 
+from app.classifier.services.predict_classifier import is_model_ready, load_model
+
 app = FastAPI(title="AI Service")
+
+@app.on_event("startup")
+async def startup_event():
+    load_model()
+    if not is_model_ready():
+        print("Warning: Model failed to load at startup.")
+    else:
+        print("Model loaded successfully at startup.")
 
 # --- Classifier API ---
 # ---- Request/Response Schemas ----
@@ -226,7 +236,7 @@ def get_trends(user_data: UserData):
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "service": "ai-service"}
+    return {"status": "ok", "ready": is_model_ready()}
 
 
 

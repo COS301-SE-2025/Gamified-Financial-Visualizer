@@ -22,7 +22,7 @@ interface HealthCheckResponse {
 async function checkAIServiceHealth(maxRetries: number = 3, retryDelay: number = 5000): Promise<boolean> {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      console.log(`[AI Health Check] Attempt ${attempt}/${maxRetries}`);
+      logger.info(`[AI Health Check] Attempt ${attempt}/${maxRetries}`);
 
       const response = await axios.get<HealthCheckResponse>(`${AI_URL}/health`, {
         timeout: 5000,
@@ -30,23 +30,23 @@ async function checkAIServiceHealth(maxRetries: number = 3, retryDelay: number =
       });
 
       if (response.status === 200 && response.data.ready) {
-        console.log('[AI Health Check] Service is ready');
+        logger.info('[AI Health Check] Service is ready');
         return true;
       }
 
-      console.log(`[AI Health Check] Service not ready: ${response.data.status}`);
+      logger.warn(`[AI Health Check] Service not ready: ${response.data.status}`);
 
     } catch (error: any) {
-      console.log(`[AI Health Check] Attempt ${attempt} failed:`, error.message);
+      logger.error(`[AI Health Check] Attempt ${attempt} failed: ${error.message}`);
     }
 
     if (attempt < maxRetries) {
-      console.log(`[AI Health Check] Waiting ${retryDelay / 1000}s before retry...`);
+      logger.info(`[AI Health Check] Waiting ${retryDelay / 1000}s before retry...`);
       await new Promise(resolve => setTimeout(resolve, retryDelay));
     }
   }
 
-  console.error('[AI Health Check] Service not ready after all attempts');
+  logger.error('[AI Health Check] Service not ready after all attempts');
   return false;
 }
 
