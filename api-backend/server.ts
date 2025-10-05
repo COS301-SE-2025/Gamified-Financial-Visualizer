@@ -33,7 +33,7 @@ import { registerCityModule } from './modules/city';
 import { registerGameModule } from './modules/game';
 import { registerGameSocketHandlers } from './modules/game/socket-handlers';
 const app: Application = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 const corsOrigins = [
   'https://gamified-finance-visualizer-c5djg3fhcnhqfyfj.canadacentral-01.azurewebsites.net',  // Frontend URL (Azure)
