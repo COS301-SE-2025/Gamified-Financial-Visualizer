@@ -40,6 +40,7 @@ const corsOrigins = [
   'http://localhost:3000', // for local dev
   'http://localhost:8080', // for local dev alternative port
   'http://localhost:80',
+  'http://localhost',      // for local dev
   process.env.CORS_ORIGIN     // Use environment variable from docker-compose
 ].filter((origin): origin is string => Boolean(origin));
 
