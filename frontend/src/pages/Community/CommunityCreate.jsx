@@ -7,6 +7,11 @@ import {
   FaPlusCircle, FaSearch, FaArrowLeft, FaUsers,
 } from 'react-icons/fa';
 
+import banner from '../../assets/Images/banners/pixelStudents.jpeg';
+import banner1 from '../../assets/Images/banners/pixelGirlAlly.gif';
+import banner2 from '../../assets/Images/banners/pixelApartment.gif';
+import banner3 from '../../assets/Images/banners/pixelStore.gif';
+
 const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
 // const BASE_URL = "http://localhost:3000";
 // const BASE_URL = "http://localhost:5000";
@@ -18,9 +23,16 @@ const CommunityCreate = () => {
   useEffect(() => {
     const fetchAssets = async () => {
       try {
-        const bannersRes = await fetch('${BASE_URL}/api/community/banners');
+        const bannersRes = await fetch('${BASE_URL}/api/community/banners/banners');
         const bannersData = await bannersRes.json();
-        setBannerOptions(bannersData.data || []);
+        const bannerOptions = [
+  { id: 1, label: 'Pixel Students', src: banner },
+  { id: 2, label: 'Pixel Ally', src: banner1 },
+  { id: 3, label: 'Pixel Apartment', src: banner2 },
+  { id: 4, label: 'Pixel Store', src: banner3 },
+];
+
+        setBannerOptions(bannerOptions);
 
         const user = JSON.parse(localStorage.getItem('user'));
         if (user?.id) {
@@ -29,7 +41,7 @@ const CommunityCreate = () => {
           setFriendsList(friendsData.data || []);
         }
       } catch (err) {
-        toast.error("Failed to load banners or friends.");
+        toast.error("Failed to load banners or friends. " + err.message);
       }
     };
 

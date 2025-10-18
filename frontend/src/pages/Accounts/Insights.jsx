@@ -414,7 +414,7 @@ const InsightsPage = () => {
     setIsLoading(true);
     setAiResponse(null); // reset previous response
     try {
-      const res = await fetch('http://localhost:5000/api/insights/chat', {
+      const res = await fetch(`${BASE_URL}/api/insights/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -829,6 +829,7 @@ const InsightsPage = () => {
         </div>
 
         {/* AI-Generated Monthly Summary */}
+        {/*
         <div className="bg-white dark:bg-gray-800 dark:text-gray-200 text-black p-4 sm:p-6 rounded-xl shadow-lg">
           <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0">
             <div className="flex-1">
@@ -854,7 +855,6 @@ const InsightsPage = () => {
             </div>
 
 
-            {/* Savings Potential Box */}
             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border-2 border-[#5FBFFF]/30">
               <p className="text-sm text-gray-600 mb-1 dark:text-gray-200 ">Savings Potential</p>
               <p className="text-2xl font-bold text-[#5FBFFF]">R1,200/mo</p>
@@ -868,6 +868,7 @@ const InsightsPage = () => {
             </div>
           </div>
         </div>
+      */}
 
         {/* 2-Column Layout for Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

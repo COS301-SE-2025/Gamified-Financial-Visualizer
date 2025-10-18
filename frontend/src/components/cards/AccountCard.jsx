@@ -145,10 +145,6 @@ const AccountCard = ({
                 {symbol}{Number(available ?? 0).toLocaleString()}
               </p>
               <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Available</p>
-              <p className="text-sm sm:text-md text-gray-700 dark:text-gray-300 mt-0.5 sm:mt-1">
-                {symbol}{Number(balance ?? 0).toFixed(2)}
-              </p>
-              <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-500">Balance</p>
             </div>
           </div>
 
