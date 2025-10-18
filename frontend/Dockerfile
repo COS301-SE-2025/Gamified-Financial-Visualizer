@@ -48,12 +48,9 @@ COPY nginx.conf /etc/nginx/nginx.conf
 
 
 # Copy built files
-# COPY --from=build /app/build /usr/share/nginx/html
-# RUN echo "✅ Files copied successfully"
+COPY --from=build /app/build /usr/share/nginx/html
+RUN echo "✅ Files copied successfully"
 
-# temporarily copy only main JS file to verify build correctness
-COPY --from=build /app/build/static/js/main*.js /usr/share/nginx/html/
-RUN echo "✅ JS copied successfully"
 
 # Set proper permissions
 RUN chown -R nginx:nginx /var/cache/nginx && \
