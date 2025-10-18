@@ -1,5 +1,6 @@
 // GoalCreatePage.jsx
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { toast } from 'react-toastify';
 import { FaChevronDown } from 'react-icons/fa';
 import { createPortal } from 'react-dom';
 import goal1 from '../../assets/Images/banners/pixelApartment.gif';
@@ -37,7 +38,6 @@ const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Selec
     return () => document.removeEventListener('pointerdown', onPointerDown, true);
   }, []);
 
-  // ✅ Smart placement: below with offset; flip up if space is tight; clamp horizontally
   useLayoutEffect(() => {
     if (!open || !btnRef.current) return;
 
@@ -260,8 +260,10 @@ const GoalCreatePage = () => {
 
       const data = await res.json();
       if (res.ok) {
+        toast.success('Goal created successfully');
         window.location.href = '/goals';
       } else {
+        toast.error(`Failed to create goal`);
         console.error(`Failed to create goal: ${data.message}`);
       }
     } catch (err) {
@@ -317,6 +319,7 @@ const GoalCreatePage = () => {
                 value={form.amount}
                 onChange={handleChange}
                 min="0"
+                max="1000000"
                 className="rounded-xl px-4 py-2 border dark:border-gray-600 shadow dark:shadow-none w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>

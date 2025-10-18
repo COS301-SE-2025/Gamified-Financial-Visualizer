@@ -66,7 +66,7 @@ const CommunityDetail = () => {
         const response = await fetch(`${BASE_URL}/api/community/membership/requests/${communityId}`);
         if (!response.ok) throw new Error('Failed to fetch pending invites');
         const data = await response.json();
-        setPendingInvites(data.data || []);
+        setPendingInvites(data.data);
       } catch (error) {
         console.error(error);
         setPendingInvites([]);
@@ -132,6 +132,29 @@ const CommunityDetail = () => {
       toast.error(err.message);
     }
   };
+
+  const handleMembershipRequest = async (action, userId) => {
+    try {
+      const res = await fetch(`${BASE_URL}/api/community/membership/respond`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          community_id: communityData.community_id,
+          user_id: userId,
+          action 
+        })
+      });
+
+      const json = await res.json();
+      if (json.ok) {
+        toast.success(`Membership ${action}ed successfully`);
+      } else {
+        toast.error(json.message || `Failed to ${action} membership`);
+      }
+    } catch (err)  {
+      console.error(err);
+    }
+  }
 
   if (!communityData) {
     return (
@@ -234,19 +257,46 @@ const CommunityDetail = () => {
     setCommunityData({ ...communityData, [name]: value });
   };
 
-  const removeMember = async (userId) => {
-    try {
-      const res = await fetch(
-        `${BASE_URL}/api/community/${communityData.community_id}/members/${userId}`,
-        { method: 'DELETE' }
-      );
-      if (!res.ok) throw new Error('Remove failed');
-      setMembers((prev) => prev.filter((m) => m.user_id !== userId));
-      toast.success('Member removed successfully');
-    } catch (err) {
-      toast.error('Failed to remove member');
-      console.error(err);
-    }
+  const removeMember = (userId) => {
+    toast.custom((t) => (
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 rounded-xl shadow-lg max-w-sm w-full space-y-3 mx-4 sm:mx-0">
+        <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+          Remove this member?
+        </p>
+        <div className="flex gap-2 justify-end">
+          <button
+            disabled={isMember(currentUser.id) ? false : true}
+            onClick={async () => {
+              toast.dismiss(t.id);
+              try {
+                const res = await fetch(
+                  `${BASE_URL}/api/community/${communityData.community_id}/members/${userId}`,
+                  { method: 'DELETE' }
+                );
+                if (!res.ok) {
+                  const json = await res.json().catch(() => ({}));
+                  throw new Error(json.message || 'Remove failed');
+                }
+                setMembers((prev) => prev.filter((m) => m.user_id !== userId));
+                toast.success('Member removed successfully');
+              } catch (err) {
+                console.error(err);
+                toast.error(err.message || 'Failed to remove member');
+              }
+            }}
+            className="bg-[#ED5E52] hover:bg-[#FE9B90] text-white px-4 py-1.5 text-sm rounded-full font-medium"
+          >
+            Confirm
+          </button>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 px-4 py-1.5 text-sm rounded-full font-medium"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    ), { duration: 10000, position: 'top-center' });
   };
 
   const handleSave = async () => {
@@ -555,17 +605,17 @@ const CommunityDetail = () => {
         </div>
 
         {/* Pending Invitations */}
-        {isMember(currentUser?.id) && pendingInvites.length > 0 && (
+        {isMember(currentUser?.id) && pendingInvites?.length > 0 && (
           <div className="mt-6">
             <h3 className="text-base sm:text-lg font-semibold mb-3 text-[#4B5563] dark:text-gray-300">Pending Invitations</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
               {pendingInvites.map((invite, i) => (
                 <div key={i} className="flex flex-col justify-between bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-2xl shadow-sm border dark:border-gray-700">
                   <div className="flex items-center gap-3 mb-3">
-                    <img src={invite.avatar} className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border object-cover" alt={invite.username} />
+                    <img src={invite.avatar_image_path} className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border object-cover" alt={invite.username} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-[#374151] dark:text-gray-200 truncate">{invite.username}</p>
-                      <p className="text-xs text-[#6B7280] dark:text-gray-400">{invite.level}</p>
+                      <p className="text-xs text-[#6B7280] dark:text-gray-400">{invite.total_points} pts</p>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -574,10 +624,10 @@ const CommunityDetail = () => {
                         <FaEye size={12} /> View
                       </button>
                     </Link>
-                    <button className="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-green-500 text-white rounded-full hover:bg-green-600 transition">
+                    <button className="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-green-500 text-white rounded-full hover:bg-green-600 transition" onClick={() => handleMembershipRequest('accepted', invite.user_id)}>
                       Accept
                     </button>
-                    <button className="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-red-500 text-white rounded-full hover:bg-red-600 transition">
+                    <button className="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-red-500 text-white rounded-full hover:bg-red-600 transition" onClick={() => handleMembershipRequest('declined', invite.user_id)}>
                       Reject
                     </button>
                   </div>
