@@ -28,6 +28,8 @@ ENV REACT_APP_API_URL=${REACT_APP_API_URL}
 ENV REACT_APP_AI_API_URL=${REACT_APP_AI_API_URL}
 
 RUN npm run build --verbose
+# Verify build output
+RUN du -sh /app/build && ls -lh /app/build
 
 # Production stage with nginx
 FROM nginx:alpine AS production
@@ -44,8 +46,6 @@ RUN if ! getent group nginx; then addgroup -g 1001 -S nginx; fi && \
 # Copy custom nginx config
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Verify build output
-RUN du -sh /app/build && ls -lh /app/build
 
 # Copy built files
 # COPY --from=build /app/build /usr/share/nginx/html
