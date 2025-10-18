@@ -13,7 +13,7 @@ import { DefaultEventsMap, Server, Socket } from 'socket.io';
 import http from 'http';
 import { V3 } from 'paseto';
 import './jobs/resetBudgets'; // auto-schedules your budget reset job
-import { authenticateToken } from 'middleware/auth';
+import { authenticateToken } from './middleware/auth';
 
 
 // 🔌 module registrars
@@ -203,21 +203,6 @@ bootstrap().catch(err => {
   process.exit(1);
 });
 
-// Register all your feature modules
-registerAuthModule(app);
-
-app.use(authenticateToken); // Protect all routes below this line
-
-registerTransactionModule(app);
-registerGoalModule(app);
-registerLearningModule(app);
-registerClassifierModule(app);
-registerInsightsModule(app);
-registerCommunityModule(app);
-registerAchievementModule(app);
-registerNotificationsModule(app);
-registerCityModule(app);
-
 // Health check
 app.get('/health', async (_req, res) => {
   try {
@@ -230,6 +215,34 @@ app.get('/health', async (_req, res) => {
     res.status(503).json({ status: 'unavailable', db: 'disconnected' });
   }
 });
+
+// Register all your feature modules
+registerAuthModule(app);
+
+app.get('/health', async (_req, res) => {
+  try {
+    const db = await pool.connect();
+    await db.query('SELECT 1');
+    db.release();
+    res.status(200).json({ status: 'OK', db: 'connected' });
+  } catch (err) {
+    logger.error('DB health check failed:', err);
+    res.status(503).json({ status: 'unavailable', db: 'disconnected' });
+  }
+});
+
+app.use('/api', authenticateToken); // Protect all routes below this line
+
+registerTransactionModule(app);
+registerGoalModule(app);
+registerLearningModule(app);
+registerClassifierModule(app);
+registerInsightsModule(app);
+registerCommunityModule(app);
+registerAchievementModule(app);
+registerNotificationsModule(app);
+registerCityModule(app);
+
 
 // Global error handler
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
