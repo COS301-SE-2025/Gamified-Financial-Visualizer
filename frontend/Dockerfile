@@ -18,6 +18,8 @@ CMD ["npm", "start"]
 
 # Build stage
 FROM base AS build
+COPY package*.json ./
+RUN npm install --legacy-peer-deps --no-audit --no-fund
 COPY . .
 
 # Build with production environment variables

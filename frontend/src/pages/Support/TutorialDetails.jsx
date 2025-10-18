@@ -20,7 +20,7 @@ const tutorials = [
       { image: require('../../assets/Tutorials/goals/goal2.png'), caption: 'Click "Create Goal".' },
       { image: require('../../assets/Tutorials/goals/goal3.png'), caption: 'Fill out your goal information.' }
     ],
-    video: require('../../assets/Videos/goals/CreateGoal.mp4'),
+    video: require('/assets/Videos/goals/CreateGoal.mp4'),
     xp: 20,
     badge: <FaBullseye className="text-[#66BB6A]" />,
     name: 'Goal Setter'
@@ -36,7 +36,7 @@ const tutorials = [
       { image: require('../../assets/Tutorials/transactions/trans2.png'), caption: 'Click on an account then click on "Add".' },
       { image: require('../../assets/Tutorials/transactions/trans3.png'), caption: 'Fill out your transaction information.' }
     ],
-    video: require('../../assets/Videos/transactions/CreateTransaction.mp4'),
+    video: require('/assets/Videos/transactions/CreateTransaction.mp4'),
     xp: 25,
     badge: <FaWallet className="text-[#72C1F5]" />
   },
@@ -52,7 +52,7 @@ const tutorials = [
       { image: require('../../assets/Tutorials/imports/import3.png'), caption: 'Monitor your widgets.' },
       { image: require('../../assets/Tutorials/imports/import4.png'), caption: 'Monitor your widgets.' }
     ],
-    video: require('../../assets/Videos/imports/ImportTransactions.mp4'),
+    video: require('/assets/Videos/imports/ImportTransactions.mp4'),
     xp: 10,
     badge: <FaChartPie className="text-[#FF4C28]" />
   },
@@ -70,7 +70,7 @@ const tutorials = [
       { image: require('../../assets/Tutorials/community/community5.png'), caption: 'Confirm request to all community members.' },
       { image: require('../../assets/Tutorials/community/community6.png'), caption: 'Request will be sent to community memebers.' },
     ],
-    video: require('../../assets/Videos/community/JoinCommunity.mp4'),
+    video: require('/assets/Videos/community/JoinCommunity.mp4'),
     xp: 15,
     badge: <FaUsers className="text-[#9575CD]" />
   },
@@ -90,7 +90,7 @@ const tutorials = [
       { image: require('../../assets/Tutorials/learning/learn7.png'), caption: 'Complete a quiz.' },
       { image: require('../../assets/Tutorials/learning/learn8.png'), caption: 'Pass the quiz to get points.' },
     ],
-    video: require('../../assets/Videos/learning/exploreLearn.mp4'),
+    video: require('/assets/Videos/learning/exploreLearn.mp4'),
     xp: 30,
     badge: <FaGraduationCap className="text-[#FFD18C]" />
   },
@@ -107,7 +107,7 @@ const tutorials = [
       { image: require('../../assets/Tutorials/achievements/achieve3.png'), caption: 'Go into one of the achievements "Goal Getter".' },
       { image: require('../../assets/Tutorials/achievements/achieve4.png'), caption: 'View all possible tasks to complete to get an achievement.' }
     ],
-    video: require('../../assets/Videos/achievements/achievementsVid.mp4'),
+    video: require('/assets/Videos/achievements/achievementsVid.mp4'),
     xp: 12,
     badge: <FaTrophy className="text-[#EF5350]" />
   },
@@ -125,7 +125,7 @@ const tutorials = [
       { image: require('../../assets/Tutorials/profile/profile5.png'), caption: 'Save and preferences will be saved.' },
       { image: require('../../assets/Tutorials/profile/profile6.png'), caption: 'View the updated changes on the profile page.' }
     ],
-    video: require('../../assets/Videos/profile/customProfile.mp4'),
+    video: require('/assets/Videos/profile/customProfile.mp4'),
     xp: 15,
     badge: <FaUser className="text-[#26C6DA]" />
   },
@@ -140,7 +140,7 @@ const tutorials = [
       { image: require('../../assets/Tutorials/arMode/ar2.png'), caption: 'View AR in your space with the QR Code.' },
       { image: require('../../assets/Tutorials/arMode/ar3.png'), caption: 'View and or read the "How to Use" and "Technical info".' }
     ],
-    video: require('../../assets/Videos/arMode/viewAR.mp4'),
+    video: require('/assets/Videos/arMode/viewAR.mp4'),
     xp: 25,
     badge: <FaMagic className="text-[#AB47BC]" />,
     name: 'AR Adventurer'
@@ -157,7 +157,7 @@ const tutorials = [
       { image: require('../../assets/Tutorials/aiAdvisor/ai3.png'), caption: 'Make a "Quick anaylsis prompt".' },
       { image: require('../../assets/Tutorials/aiAdvisor/ai4.png'), caption: 'Wait for results from prompt to load.' }
     ],
-    video: require('../../assets/Videos/aiAdvisor/aiAdvise.mp4'),
+    video: require('/assets/Videos/aiAdvisor/aiAdvise.mp4'),
     xp: 20,
     badge: <FaRobot className="text-[#5C6BC0]" />,
     name: 'AI Navigator'
