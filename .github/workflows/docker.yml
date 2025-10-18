@@ -69,6 +69,10 @@ jobs:
         app-name: 'gamified-finance-visualizer'  
         images: '${{ secrets.ACR_LOGIN_SERVER }}/finance-frontend:latest'
 
+    - name: Clean up Docker space
+      run: |
+        docker system prune -af
+        
     - name: Restart API Backend Service
       uses: azure/CLI@v2
       with:
