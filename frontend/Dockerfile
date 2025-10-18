@@ -44,9 +44,16 @@ RUN if ! getent group nginx; then addgroup -g 1001 -S nginx; fi && \
 # Copy custom nginx config
 COPY nginx.conf /etc/nginx/nginx.conf
 
+# Verify build output
+RUN du -sh /app/build && ls -lh /app/build
+
 # Copy built files
-COPY --from=build /app/build /usr/share/nginx/html
-RUN echo "✅ Files copied successfully"
+# COPY --from=build /app/build /usr/share/nginx/html
+# RUN echo "✅ Files copied successfully"
+
+# temporarily copy only main JS file to verify build correctness
+COPY --from=build /app/build/static/js/main*.js /usr/share/nginx/html/
+RUN echo "✅ JS copied successfully"
 
 # Set proper permissions
 RUN chown -R nginx:nginx /var/cache/nginx && \
