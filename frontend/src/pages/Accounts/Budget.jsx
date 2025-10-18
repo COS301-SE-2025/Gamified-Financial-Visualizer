@@ -296,6 +296,7 @@ const BudgetForm = ({
                       className="w-full p-2.5 sm:p-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#467D35] focus:border-[#467D35] dark:bg-gray-700 dark:text-gray-200 text-sm"
                       required
                       min="0"
+                      max="1000000"
                       step="0.01"
                       placeholder="0.00"
                     />

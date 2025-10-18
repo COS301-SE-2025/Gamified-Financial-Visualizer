@@ -4,6 +4,7 @@ import AccountCard from '../../components/cards/AccountCard';
 import AddAccountModal from '../../components/modals/AddAccountModal';
 import EditAccountModal from '../../components/modals/EditAccountModal';
 import RecentTransactionsTable from '../../components/tables/RecentTransactionsTable';
+import toast, { Toaster } from 'react-hot-toast';
 
 const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
 // const BASE_URL = "http://localhost:3000";
@@ -264,8 +265,11 @@ const AccountsPage = () => {
       setAccounts((prev) => [...prev, newAccountWithId]);
       setCurrentAccountPage(Math.ceil((accounts.length + 1) / accountsPerPage));
       setShowModal(false);
+      // show confirmation toast
+      toast.success('Account created successfully');
     } catch (err) {
       setError(err.message);
+      toast.error(`Error creating account: ${err.message}`);
       console.error('Error creating account:', err);
     }
   };
@@ -297,6 +301,8 @@ const AccountsPage = () => {
       if (indexToDelete === selectedAccountIndex) {
         setSelectedAccountIndex(null);
       }
+      // show confirmation toast
+      toast.success('Account deleted successfully');
     } catch (err) {
       setError(err.message);
       console.error('Error deleting account:', err);
