@@ -35,7 +35,7 @@ jobs:
       run: |
         set -e
         echo "Starting frontend build..."
-        docker build --progress=plain \
+        docker build --no-cache --progress=plain \
           -t ${{ secrets.ACR_LOGIN_SERVER }}/finance-frontend:latest ./frontend \
           --target production \
           --build-arg REACT_APP_API_URL=https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net
