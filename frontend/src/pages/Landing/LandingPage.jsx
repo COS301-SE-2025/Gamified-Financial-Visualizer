@@ -797,7 +797,7 @@ export default function LandingPage() {
                                             <div className="relative w-full h-[360px] flex items-center justify-center">
                                                 <video
                                                     className="w-full h-full object-cover rounded-b-lg"
-                                                    src={require('../../assets/Videos/demoPreview.mp4')}
+                                                    src="/assets/Videos/demoPreview.mp4"
                                                     autoPlay
                                                     muted
                                                     loop
