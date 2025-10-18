@@ -13,10 +13,7 @@ import { DefaultEventsMap, Server, Socket } from 'socket.io';
 import http from 'http';
 import { V3 } from 'paseto';
 import './jobs/resetBudgets'; // auto-schedules your budget reset job
-// (Optional but recommended for horizontal scale)
-
-//import { createAdapter } from '@socket.io/redis-adapter';
-// please consider this as well - const { createAdapter } = require('@socket.io/redis-adapter');
+import { authenticateToken } from 'middleware/auth';
 
 
 // 🔌 module registrars
@@ -208,6 +205,9 @@ bootstrap().catch(err => {
 
 // Register all your feature modules
 registerAuthModule(app);
+
+app.use(authenticateToken); // Protect all routes below this line
+
 registerTransactionModule(app);
 registerGoalModule(app);
 registerLearningModule(app);
