@@ -18,7 +18,6 @@ CMD ["npm", "start"]
 
 # Build stage
 FROM base AS build
-RUN npm install --legacy-peer-deps --no-audit --no-fund
 COPY . .
 
 # Build with production environment variables
@@ -35,9 +34,7 @@ RUN du -sh /app/build && ls -lh /app/build
 FROM nginx:alpine AS production
 
 # Install security updates
-RUN apk update && apk upgrade && \
-    apk add --no-cache curl && \
-    rm -rf /var/cache/apk/*
+RUN apk add --no-cache curl
 
 # Create non-root user and group, but check if they already exist
 RUN if ! getent group nginx; then addgroup -g 1001 -S nginx; fi && \
