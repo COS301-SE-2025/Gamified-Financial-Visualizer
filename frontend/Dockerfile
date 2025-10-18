@@ -46,6 +46,7 @@ COPY nginx.conf /etc/nginx/nginx.conf
 
 # Copy built files
 COPY --from=build /app/build /usr/share/nginx/html
+RUN echo "✅ Files copied successfully"
 
 # Set proper permissions
 RUN chown -R nginx:nginx /var/cache/nginx && \
