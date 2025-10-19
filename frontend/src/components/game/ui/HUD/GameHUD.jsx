@@ -8,9 +8,9 @@ import {
 
 /* ----------------------------- Image imports ----------------------------- */
 
-import artBusiness from '../../../assets/hud/Business Card.png';
-import artChance from '../../../assets/hud/Chance Card.png';
-import artCommunity from '../../../assets/hud/Community Card.png';
+import artBusiness from '../../../../assets/hud/Business Card.png';
+import artChance from '../../../../assets/hud/Chance Card.png';
+import artCommunity from '../../../../assets/hud/Community Card.png';
 
 function IconImg({ src, alt = '', className = 'w-5 h-5' }) {
   return <img src={src} alt={alt} className={`inline-block object-contain ${className}`} aria-hidden="true" />;

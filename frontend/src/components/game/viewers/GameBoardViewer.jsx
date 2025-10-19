@@ -3,8 +3,8 @@ import React, { Suspense, useEffect, useMemo, useRef, useState, useCallback } fr
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls, Html, useGLTF, useProgress, AdaptiveDpr, Preload, useAnimations } from "@react-three/drei";
 import * as THREE from "three";
-import BoardTileModal from "./BoardTileModal";
-import { BOARD_TILES, BOARD_ORDER } from "../../components/game/data/boardTiles";
+import BoardTileModal from "../ui/BoardTileModal";
+import { BOARD_TILES, BOARD_ORDER } from "../data/boardTiles";
 import { FaDice } from "react-icons/fa";
 
 useGLTF.preload("/game/Monopoly_Game.glb");

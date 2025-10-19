@@ -1,12 +1,11 @@
 // GameLobby.jsx (inline panels version)
 import { useEffect, useMemo, useState } from 'react'
 import {
-    FaPlay, FaRandom, FaUserPlus, FaLink, FaInfoCircle, FaBookOpen, FaCrown, FaCoins,
-    FaUsers, FaUser, FaLock, FaDoorOpen, FaSignOutAlt, FaSyncAlt, FaKey, FaClipboard, FaClipboardCheck
+    FaPlay, FaRandom, FaUserPlus, FaInfoCircle, FaBookOpen, FaCrown, FaCoins,
+    FaUsers, FaUser, FaLock, FaDoorOpen, FaSyncAlt, FaKey, FaClipboard, FaClipboardCheck
 } from 'react-icons/fa'
 
-import CharacterSelectViewer from '../CharacterSelectViewer'
-import { io } from 'socket.io-client';
+import CharacterSelectViewer from '../viewers/CharacterSelectViewer'
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { getSocket } from '../socket';
 
