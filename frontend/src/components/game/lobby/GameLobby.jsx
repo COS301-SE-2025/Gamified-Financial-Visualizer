@@ -577,6 +577,44 @@ export default function GameLobby({
                         <div className="text-gray-500">No players in lobby yet</div>
                     )}
 
+                    {/* Play against Bots */}
+                    <div className="bg-sky-50/70 p-4 rounded-2xl border border-sky-100 md:col-span-2 mt-4">
+                        <div className="text-sky-400 font-semibold mb-3">Play against Bots</div>
+
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label className="block text-sm text-gray-700 mb-2">Number of Bots: {players - 1}</label>
+                                <input
+                                    type="range" min={1} max={5} value={players - 1}
+                                    onChange={(e) => setPlayers(Number(e.target.value) + 1)}
+                                    className="w-full accent-sky-500"
+                                />
+                                <div className="text-xs text-gray-500 mt-1">Total players: {players} (You + {players - 1} bots)</div>
+                            </div>
+                            <div>
+                                <label className="block text-sm text-gray-700 mb-2">Game laps</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {lapOptions.map(n => (
+                                        <button
+                                            key={n} onClick={() => setLaps(n)}
+                                            className={`px-3 py-1.5 rounded-xl border ${laps === n ? 'bg-amber-400 text-white' : 'bg-white hover:bg-sky-50'}`}
+                                        >
+                                            {n}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={() => onStart?.({ players, laps, mode: 'bots' }, character?.key)}
+                            disabled={!character}
+                            className="w-full px-6 py-3 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 disabled:opacity-50"
+                        >
+                            Start Bot Game
+                        </button>
+                    </div>
+
                     {/* Start game */}
                     <div className="mt-2 flex items-center justify-center">
                         {/*Room code */}

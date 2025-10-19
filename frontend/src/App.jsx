@@ -22,7 +22,6 @@ import Dashboard from './pages/Dashboard/DashboardPage';
 import ARView from './pages/ARView';
 
 // Game (updated paths after refactor)
-import MockGameSimulation from './components/game/modes/MockGameSimulation';
 import MockGame from './components/game/modes/MockGame';
 
 // The Profile Page Routes
@@ -160,7 +159,6 @@ function App() {
           
           {/* Game entry points */}
           <Route path="/community/game" element={<MockGame />} />
-          <Route path="/community/game/sim" element={<MockGameSimulation />} />
 
           {/* Routes for the goals page */}
           <Route path="/goals" element={<GoalsPage />} />

@@ -5,6 +5,16 @@ function applyTileEffect(player, tile, allPlayers = []) {
   if (!tile || !tile.action) return { text: `Landed on ${tile?.label || 'unknown tile'}`, delta: 0 };
   const a = tile.action;
 
+  // Handle card drawing
+  if (a.type === 'draw_chance' || a.type === 'draw_community') {
+    const deck = a.type === 'draw_chance' ? 'chance' : 'community';
+    const card = drawCard(deck);
+    if (card) {
+      player.cards.push(card);
+      return { text: `Drew ${deck} card: ${card.title}`, delta: 0 };
+    }
+  }
+
   // Pay rent to owner if landing on their business
   if (tile.type === 'business' && tile.owner && tile.owner !== player.id) {
     const owner = allPlayers.find(p => p.id === tile.owner);
@@ -84,6 +94,26 @@ function applyCardEffect(player, card, allPlayers = []) {
     default:
       return { text: `Card: ${card.title} played`, delta: 0 };
   }
+}
+
+// Helper function to draw cards
+function drawCard(deckType) {
+  const decks = {
+    chance: [
+      { id: 'chance1', title: 'Business Boom', desc: 'All your businesses earn double this round.', effect: 'double_business' },
+      { id: 'chance2', title: 'Stock Windfall', desc: 'Your investments pay off. Collect R2,000.', effect: 'earn', amount: 2000 },
+      { id: 'chance3', title: 'Tax Audit', desc: 'Pay R1,500 in unexpected taxes.', effect: 'pay', amount: 1500 },
+    ],
+    community: [
+      { id: 'comm1', title: 'Birthday Gift', desc: 'Collect R500 from each player.', effect: 'collect_from_players', amount: 500 },
+      { id: 'comm2', title: 'Charity Donation', desc: 'Pay R700 to charity.', effect: 'pay', amount: 700 },
+    ],
+  };
+
+  const deck = decks[deckType];
+  if (!deck || deck.length === 0) return null;
+
+  return deck[Math.floor(Math.random() * deck.length)];
 }
 
 module.exports = { applyTileEffect, applyCardEffect };
