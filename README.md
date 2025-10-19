@@ -49,12 +49,12 @@ Gamified Financial Visualizer revolutionizes the way people interact with their 
 
 <h3 align="center">Frontend: Next-Level User Experiences</h3>
 <p align="center">
-  <img src="https://skillicons.dev/icons?i=react,tailwindcss,figma,javascript,threejs" />
+  <img src="https://skillicons.dev/icons?i=react,tailwindcss,figma,javascript" />
 </p>
 
 <h3 align="center">3D & Interactive Visualization</h3>
 <p align="center">
-  <img src="https://skillicons.dev/icons?i=blender,unity" />
+  <img src="https://skillicons.dev/icons?i=blender,threejs" />
 </p>
 
 <h3 align="center">Backend: Rock-Solid Foundation</h3>
@@ -65,12 +65,12 @@ Gamified Financial Visualizer revolutionizes the way people interact with their 
 
 <h3 align="center">DevOps: Enterprise-Grade Delivery</h3>
 <p align="center">
-  <img src="https://skillicons.dev/icons?i=githubactions,docker,supabase,vercel,azure" />
+  <img src="https://skillicons.dev/icons?i=githubactions,docker,supabase,azure" />
 </p>
 
 <h3 align="center">Testing: For Smooth System Delivery</h3>
 <p align="center">
-  <img src="https://skillicons.dev/icons?i=jest,babel,cypress,sentry" />
+  <img src="https://skillicons.dev/icons?i=jest,babel,cypress" />
 </p>
 
 <h3 align="center">Project Management: With Modern Technology</h3>
@@ -88,18 +88,20 @@ This table provides quick access to the key documents and planning resources for
 
 | Resource Name | Description | Link |
 |---------------|-------------|------|
-| **Software Requirements Specification (SRS)** | Outlines the functional and non-functional requirements of the system. | [View SRS](https://drive.google.com/file/d/1TalTYrt6JzCrcwr8y9srv5HlJVF9D2y5/view?usp=drive_link) |
-| **Architectural Requirements Specification (ARS)** | Describes system architecture, service design, and technology stack. | [View ARS](https://drive.google.com/file/d/1HgHw0pO71GXVudRQZ-zVCWl2GoR2UEHm/view?usp=drive_link) |
-| **User Stories** | User-focused feature breakdown using Agile methodology. | [View User Stories](https://drive.google.com/file/d/1eLtt5LrXVqmp16dYSmBIRXonsUrRRjNT/view?usp=drive_link) |
-| **Use Cases** | Details of system interactions between users and core features. | [View Use Cases](https://drive.google.com/file/d/1Bptk20z983p5lF79e3MVSbXkqGS2Hn1l/view?usp=sharing) |
+| **Software Requirements Specification (SRS)** | Outlines the functional and non-functional requirements of the system. | [View SRS](https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/blob/main/documentation/Demo%204/System%20Requirements%20specifications%20.pdf) |
+| **Architectural Requirements Specification (ARS)** | Describes system architecture, service design, and technology stack. | [View ARS](https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/blob/main/documentation/Demo%204/User%20Stories.pdf) |
+| **User Stories** | User-focused feature breakdown using Agile methodology. | [View User Stories](https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/blob/main/documentation/Demo%204/User%20Stories.pdf) |
+| **Use Cases** | Details of system interactions between users and core features. | [View Use Cases](https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/blob/main/documentation/Demo%204/Use%20Cases.pdf) |
 | **Project Board & Sprint Tracker** | A live board displaying tasks, issues, and sprint progress. | [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/140) |
-| **Domain Model** | A visual representation of key entities and their relationships. | [View Domain Model](https://drive.google.com/drive/folders/1DQmIiDWRnHQmnQpzgAyw23VIWb4kCm4y?usp=sharing) |
+| **Domain Model** | A visual representation of key entities and their relationships. | [View Domain Model](https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/blob/main/documentation/Demo%204/Domain_Model.jpg) |
 | **Deployment Model** | A visual representation of the infrastructure setup that shows how different system components are distributed across nodes or services. | [View Deployment Model](https://drive.google.com/drive/folders/1I8rBQ23P1d6jqJhyn7CxGLl-4KW3LwsJ?usp=sharing) |
 | **Project / Group Framework** | Overview of team structure, responsibilities, and collaboration tools. | [View Group Framework](https://www.notion.so/Gamified-Financial-Visualizer-1f842477e71680879e19d535dcb688dc?pvs=4) |
-| **Coding Standards** | This document outlines the coding conventions and styles used across the project to promote uniformity, clarity, flexibility, reliability, and efficiency. | [View Coding Standards](https://drive.google.com/drive/folders/1nxFz-W9G-qbLN8TvGWwgk3uLCxURO-uv?usp=sharing) |
-| **Service Contract** |  It serves as a formal agreement between backend service providers and frontend/service consumers, ensuring that all endpoints, data formats, authentication mechanisms, and error responses are well-documented and traceable. | [View Service Contract](https://drive.google.com/drive/folders/1uMm1lL_FnIjSP8c2eXFI3WC96dK0-Ekd?usp=sharing) |
-| **Technical Installation** |  Step-by-step guide to set up and run the project on Windows, macOS, or Linux. Covers prerequisites, installing Node/Python/PostgreSQL/Redis, configuring environment variables, starting frontend/API/AI services, and notes for Azure deployment & CI/CD. | [View Technical Installation](https://drive.google.com/drive/folders/17MMg3Fh6O4WM_D6UKOXQCcKBrIh-Mc5E?usp=sharing) |
-| **User Manual** |  End-user guide to the app’s features and workflows. Explains navigation, learning modules and quizzes, goals, accounts & transactions, budgets, challenges, community posts, and achievements—with screenshots, tips, and troubleshooting. | [View User Manual](https://drive.google.com/drive/folders/1eGzi0SqqqJy4BXIT63ev2gV0308Xb6rm?usp=sharing) |
+| **Coding Standards** | This document outlines the coding conventions and styles used across the project to promote uniformity, clarity, flexibility, reliability, and efficiency. | [View Coding Standards](https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/blob/main/documentation/Demo%204/Coding%20Standards.pdf) |
+| **Service Contract** |  It serves as a formal agreement between backend service providers and frontend/service consumers, ensuring that all endpoints, data formats, authentication mechanisms, and error responses are well-documented and traceable. | [View Service Contract](https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/blob/main/documentation/Demo%204/API%20SPECIFICATION%20-%20SERVICE%20CONTRACT%20v1.3.0.pdf) |
+| **Technical Installation** |  Step-by-step guide to set up and run the project on Windows, macOS, or Linux. Covers prerequisites, installing Node/Python/PostgreSQL/Redis, configuring environment variables, starting frontend/API/AI services, and notes for Azure deployment & CI/CD. | [View Technical Installation](https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/blob/main/documentation/Demo%204/Technical%20Installation%20Manual.pdf) |
+| **User Manual** |  End-user guide to the app’s features and workflows. Explains navigation, learning modules and quizzes, goals, accounts & transactions, budgets, challenges, community posts, and achievements—with screenshots, tips, and troubleshooting. | [View User Manual](https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/blob/main/documentation/Demo%204/GF%20-%20User%20Manual.pdf) |
+| **AI Hugging face Model** | An AI model that classifies financial transactions into meaningful categories, helping users better understand and manage their spending | [View AI Model](https://huggingface.co/CodeBlooded-capstone/fin-classifier) |
+| **Testing Policy** | We maintain a consistent testing policy with unit, integration, and end-to-end tests to ensure reliability, catch regressions early, and keep the system stable.| [View Testing Policy](https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/blob/main/documentation/Demo%204/Testing%20Policy%20Document.pdf)
 
 <p align="center">
   <img src="./assests/greenBar.png" alt="divider" width="100%"/>
@@ -113,6 +115,7 @@ This table provides quick access to the key documents and planning resources for
 |[<img src="https://img.icons8.com/ios-filled/20/88BC46/play-button-circled.png"/> Demo 1 Video](https://drive.google.com/drive/u/0/folders/11WsEpVxedP9OobPVyirSWup9hacDLVAH) | [Demo 1 Documentation](https://drive.google.com/drive/u/0/folders/1oXzqPzukLE2dVK9OftUkWXMTAlR7tb4I) |
 |[<img src="https://img.icons8.com/ios-filled/20/88BC46/play-button-circled.png"/> Demo 2 Video](https://drive.google.com/file/d/152yEfAs2liL6fUAY6_nJPMdphsqQRPw6/view?usp=drive_link) | [Demo 2 Documentation](https://drive.google.com/drive/u/2/folders/1qBoA2zMqF3u-Fo400Q0mdA1-wOFhmfVY) |
 |[<img src="https://img.icons8.com/ios-filled/20/88BC46/play-button-circled.png"/> Demo 3 Video](https://drive.google.com/drive/folders/17R40RsQUSfzsPa6zXZv1KLLmsTFbqvlR?usp=sharing) | [Demo 3 Documentation](https://drive.google.com/drive/folders/1FOvvIB2v0AfdCQubxC_2sZO0DH0l7eHS?usp=sharing) |
+|[<img src="https://img.icons8.com/ios-filled/20/88BC46/play-button-circled.png"/> Demo 4 Video](https://drive.google.com/drive/folders/1-C3OTJhAgyh_056odSlRm9rBBBY6NNFz) | [Demo 4 Documentation](https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/tree/main/documentation/Demo%204) |
 
 </div>
 
