@@ -99,9 +99,9 @@ class ChatResponse(BaseModel):
     response: str
 
 # --- Load GPT model once at startup ---
-MODEL_NAME = "openai-community/gpt2"
+# MODEL_NAME = "openai-community/gpt2"
 # MODEL_NAME = "openai/gpt-oss-20b" // lighter model
-# MODEL_NAME = "openai/gpt-oss-120b"
+MODEL_NAME = "openai/gpt-oss-120b"
 # MODEL_NAME = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
 generator = pipeline('text-generation', model=MODEL_NAME)
 
@@ -111,10 +111,12 @@ def chat(req: ChatRequest):
         user_input = req.question.strip()
         if not user_input:
             raise HTTPException(status_code=400, detail="No question provided")
-        
+
+        system_prompt = "You are a personal financial advisor. Only answer questions related to personal finance. Your goal is help users manage their finances effectively. Politely refuse anything else."
+
         # Generate text
         result = generator(
-            user_input,
+            system_prompt + "\nUser: " + user_input,
             max_new_tokens=250,  # use max_new_tokens instead of max_length
             num_return_sequences=1,
             temperature=0.7,
