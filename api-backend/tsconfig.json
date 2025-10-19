@@ -8,16 +8,9 @@
     "forceConsistentCasingInFileNames": true,
       "outDir": "dist",
      "rootDir": ".", 
-    "baseUrl": ".",
-    "typeRoots": [
-      "./node_modules/@types",
-      "./api-backend/types"
-    ] 
+    "baseUrl": ".", 
    },
    "include": [
       "./**/*.ts",
    ],
-   "ts-node": {
-    "files": true
-  }
 }
