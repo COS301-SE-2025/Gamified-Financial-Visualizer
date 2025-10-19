@@ -4,16 +4,16 @@ import { logger } from '../../../config/logger';
 import * as notifSvc from '../services/notifications.services'; // <- fixed path
 
 // Extend Express Request interface to include 'user'
-// declare global {
-//   namespace Express {
-//     interface User {
-//       id: number;
-//     }
-//     interface Request {
-//       user: User;
-//     }
-//   }
-// }
+declare global {
+  namespace Express {
+    interface User {
+      id: number;
+    }
+    interface Request {
+      user: User;
+    }
+  }
+}
 
 const router = Router();
 

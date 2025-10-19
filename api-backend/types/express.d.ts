@@ -1,15 +1,15 @@
-declare global {
-  namespace Express {
-    interface User {
-      user_id: number;
-      exp: string;
-      id?: number;  // Keep as optional alias for backward compatibility
-    }
+// declare global {
+//   namespace Express {
+//     interface User {
+//       user_id: number;
+//       exp: string;
+//       id?: number;  // Keep as optional alias for backward compatibility
+//     }
     
-    interface Request {
-      user?: User;
-    }
-  }
-}
+//     interface Request {
+//       user?: User;
+//     }
+//   }
+// }
 
-export {};
+// export {};

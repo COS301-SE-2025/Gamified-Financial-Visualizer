@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+/* import { Request, Response, NextFunction } from 'express';
 import { V3 } from 'paseto';
 import { logger } from '../config/logger';
 
@@ -47,4 +47,4 @@ export const authenticateToken = async (
     logger.error('[Auth Middleware] Token verification failed:', error);
     res.status(403).json({ status: 'error', message: 'Invalid token. Please log in again.' });
   }
-};
+}; */
