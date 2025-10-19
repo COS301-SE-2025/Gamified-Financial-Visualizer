@@ -178,7 +178,7 @@ export default function MockGame() {
     setWaitingForHuman(false);
     
     // Move to next player after a short delay
-    setTimeout(moveToNextPlayer, 1000);
+    setTimeout(moveToNextPlayer, 3000);
   }, [moveToNextPlayer]);
 
   // Handle human roll
@@ -252,10 +252,10 @@ export default function MockGame() {
     }, 1200);
   };
 
-  // Execute bot turn
+// Execute bot turn
   const executeBotTurn = useCallback(() => {
     const currentPlayer = playersRef.current[activePlayerIndexRef.current];
-    if (!currentPlayer?.isBot || waitingForHuman) return;
+    if (!currentPlayer?.isBot || waitingForHuman || isMoving) return;
 
     console.log(`Bot ${currentPlayer.name} taking turn...`);
     
@@ -276,8 +276,6 @@ export default function MockGame() {
 
         const current = updated[activePlayerIndexRef.current];
         if (!current) {
-          setIsMoving(false);
-          moveToNextPlayer();
           return prev;
         }
 
@@ -285,8 +283,6 @@ export default function MockGame() {
         if (current.flags.skipTurn) {
           current.flags.skipTurn = 0;
           addGameLog(`${current.name} skips their turn`);
-          setIsMoving(false);
-          moveToNextPlayer();
           return updated;
         }
 
@@ -331,17 +327,21 @@ export default function MockGame() {
             addGameLog(`${current.name} landed on ${tile.label}. ${eff.text}`);
           }
         }
-
-        setIsMoving(false);
-        
-        // Move to next player after a short delay
-        setTimeout(moveToNextPlayer, 1500);
         
         return updated;
       });
-    }, 1200);
-  }, [moveToNextPlayer, waitingForHuman]);
 
+      // Complete the bot turn after player state updates
+      setTimeout(() => {
+        setIsMoving(false);
+        setTurnPhase(TURN.COMPLETE);
+        
+        // Move to next player
+        setTimeout(moveToNextPlayer, 800);
+      }, 200);
+    }, 1200);
+  }, [moveToNextPlayer, waitingForHuman, isMoving]);
+  
   // Handle tile popup actions (for human decisions)
   const handleTileAction = (tile) => {
     if (tile.type === 'business' && !tile.owner && tile.action?.type === 'buy') {
