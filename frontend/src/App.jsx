@@ -21,8 +21,8 @@ import Dashboard from './pages/Dashboard/DashboardPage';
 // The AR Routes
 import ARView from './pages/ARView';
 
-// The Gmae Routes
-import MockGameSimulation from './components/game/MockGameSimulation';
+// Game (updated paths after refactor)
+import MockGame from './components/game/modes/MockGame';
 
 // The Profile Page Routes
 import Overview from './pages/Profile/Overview';
@@ -64,8 +64,6 @@ import ChallengesPage from './pages/Community/ChallengesPage';
 import CommunityMemberPage from './pages/Community/CommunityMemberPage';
 import CommunityCreate from './pages/Community/CommunityCreate';
 import ChallengeCreate from './pages/Community/ChallengeCreate';
-import CommunityGameRoom from './pages/Community/CommunityGameRoom';
-import MockGame from './components/game/MockGame';
 
 // The Achievements Page Routes
 import AchievementsPage from './pages/Achievements/AchievementsPage';
@@ -98,7 +96,7 @@ function App() {
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/landing" element={<LandingPage />} />
-        <Route path="/features" element={<FeaturesPage />}/>
+        <Route path="/features" element={<FeaturesPage />} />
         <Route path="/landingAchievements" element={<LandingAchievements />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
@@ -110,17 +108,21 @@ function App() {
           {/* Routes for the home page */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/transactions" element={<TransactionPage />} />
+          
+          {/* Routes for the Accounts pages */}
+          <Route path="/transactions" element={<TransactionPage />} />
+          <Route path="/transactions/insights" element={<AccountInsights />} />
+          <Route path="/transactions/budget" element={<AccountBudget />} />
+          <Route path="/transactions/import" element={<AccountsImport />} />
 
           {/* Routes for the AR */}
           <Route path="/ar" element={<ARView />} />
 
           {/* Routes for the learn page */}
           <Route path="/learn" element={<LearningPage />} />
-
           <Route path="/learn/complete" element={<CompleteCourses />} />
           <Route path="/learn/incomplete" element={<IncompleteCourses />} />
           <Route path="/modules/:moduleId/lessons" element={<LessonsModulesDetailPage />} />
-
           <Route path="/learn/complete" element={<CompleteCourses />} />
           <Route path="/learn/incomplete" element={<IncompleteCourses />} />
           <Route path="/modules/:moduleId/lessons" element={<LessonsModulesDetailPage />} />
@@ -136,7 +138,6 @@ function App() {
             </Route>
             <Route path="tutorials" element={<TutorialDetails />} />
           </Route>
-
 
 
           {/* Routes for the Achievements page */}
@@ -155,13 +156,9 @@ function App() {
           <Route path="/community/challenges/:id" element={<ChallengeDetail />} />
           <Route path="/community/create" element={<CommunityCreate />} />
           <Route path="/community/challenges/create" element={<ChallengeCreate />} />
+          
+          {/* Game entry points */}
           <Route path="/community/game" element={<MockGame />} />
-
-          {/* Routes for the Accounts pages */}
-          <Route path="/transactions" element={<TransactionPage />} />
-          <Route path="/transactions/insights" element={<AccountInsights />} />
-          <Route path="/transactions/budget" element={<AccountBudget />} />
-          <Route path="/transactions/import" element={<AccountsImport />} />
 
           {/* Routes for the goals page */}
           <Route path="/goals" element={<GoalsPage />} />
