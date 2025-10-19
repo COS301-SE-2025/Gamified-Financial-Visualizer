@@ -233,7 +233,7 @@ export default function GameHUD({
           <div className="px-4 py-2 bg-gradient-to-r from-sky-500 to-blue-500 border-b text-white">
             <div className="text-sm font-extrabold tracking-wide">Current Business</div>
           </div>
-          <div className="p-4 bg-sky-50 text-sm space-y-3">
+          <div className="p-2 bg-sky-50 text-sm space-y-3">
             <div className="text-center py-2 bg-white rounded-xl font-semibold text-sky-700 border border-sky-200">
               {currentBusiness}
             </div>
@@ -242,7 +242,7 @@ export default function GameHUD({
               <span className="font-semibold text-gray-800">{currency}{businessWorth.toLocaleString()}</span>
             </div>
             <div className="flex justify-center">
-              <img src={artBusiness} alt="Business" className="w-24 h-24 object-contain" />
+              <img src={artBusiness} alt="Business" className="w-14 h-14 object-contain" />
             </div>
             <button
               className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl border shadow-sm bg-lime-500 text-white hover:bg-lime-600 transition-colors"
@@ -290,9 +290,9 @@ export default function GameHUD({
 
       {/* === Right Drawer: Inventory with Carousel === */}
       {drawerOpen && showInventory && (
-        <div className="fixed inset-0 z-[1000]">
+        <div className="fixed inset-0 z-[10000]">
           <div className="absolute inset-0 bg-black/40" onClick={() => setDrawerOpen(false)} />
-          <div className="absolute right-0 top-0 h-full w-[420px] bg-white border-l shadow-2xl p-4">
+          <div className="absolute right-0 top-16 h-full w-[420px] bg-white border-l shadow-2xl p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="text-lg font-extrabold text-sky-700">Your Deck</div>
               <button onClick={() => setDrawerOpen(false)} className="px-3 py-1 rounded-lg bg-sky-50 border">Close</button>

@@ -609,9 +609,12 @@ export default function GameLobby({
                         <button
                             onClick={() => onStart?.({ players, laps, mode: 'bots' }, character?.key)}
                             disabled={!character}
-                            className="w-full px-6 py-3 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 disabled:opacity-50"
+                            className="px-10 py-4 mt-2 justify-center rounded-3xl text-white shadow-xl transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100
+               bg-gradient-to-r from-[#AAD977] to-lime-300 hover:from-lime-300 hover:to-[#AAD977] hover:shadow-2xl
+               flex items-center gap-3 text-xl font-extrabold tracking-wide relative overflow-hidden group"
                         >
-                            Start Bot Game
+                            <span className="absolute inset-0 bg-white/10 group-hover:bg-white/0 transition-all transform group-hover:scale-150"></span>
+                            <FaPlay className="text-sm" /> Start Bot Game
                         </button>
                     </div>
 

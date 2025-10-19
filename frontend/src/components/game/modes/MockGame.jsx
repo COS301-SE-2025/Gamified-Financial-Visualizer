@@ -81,6 +81,7 @@ export default function MockGame() {
   const [turnPhase, setTurnPhase] = useState(TURN.AWAIT_ROLL);
   const [pendingTile, setPendingTile] = useState(null);
   const [gameLog, setGameLog] = useState([]);
+  const [waitingForHuman, setWaitingForHuman] = useState(false);
 
   // Add game log function
   const addGameLog = (message) => {
@@ -155,16 +156,30 @@ export default function MockGame() {
 
   const currentPlayer = players[activePlayerIndex];
 
-  // Move to next player
+  // Move to next player - only called when current turn is COMPLETELY finished
   const moveToNextPlayer = useCallback(() => {
+    console.log('Moving to next player...');
     setActivePlayerIndex(prev => {
       const nextIndex = (prev + 1) % players.length;
-      console.log(`Moving to player ${nextIndex}: ${players[nextIndex]?.name}`);
+      console.log(`Player ${prev} -> ${nextIndex}: ${players[nextIndex]?.name}`);
       setTurnPhase(TURN.AWAIT_ROLL);
       setDiceResult(null);
+      setWaitingForHuman(false);
       return nextIndex;
     });
   }, [players.length]);
+
+  // Complete human turn - called when human has finished all actions
+  const completeHumanTurn = useCallback(() => {
+    console.log('Completing human turn, moving to next player');
+    setIsMoving(false);
+    setTurnPhase(TURN.AWAIT_ROLL);
+    setTilePopup({ open: false, data: null });
+    setWaitingForHuman(false);
+    
+    // Move to next player after a short delay
+    setTimeout(moveToNextPlayer, 1000);
+  }, [moveToNextPlayer]);
 
   // Handle human roll
   const handleHumanRoll = () => {
@@ -176,6 +191,7 @@ export default function MockGame() {
     addGameLog(`${currentPlayer.name} rolled a ${roll}`);
     setIsMoving(true);
     setTurnPhase(TURN.MOVING);
+    setWaitingForHuman(true);
 
     setTimeout(() => {
       setPlayers(prev => {
@@ -222,17 +238,13 @@ export default function MockGame() {
             const eff = applyTileEffect(me, tile, updated);
             addGameLog(`${me.name} landed on ${tile.label}. ${eff.text}`);
             setTilePopup({ open: true, data: tile });
-            // Auto-close popup and move to next player after human sees it
-            setTimeout(() => {
-              setTilePopup({ open: false, data: null });
-              setIsMoving(false);
-              moveToNextPlayer();
-            }, 2000);
+            // Auto-close popup but wait for human to acknowledge
+            setTurnPhase(TURN.CARD_DECISION);
           }
         } else {
-          // No special tile - move to next player
+          // No special tile - human turn complete
           setIsMoving(false);
-          moveToNextPlayer();
+          setTurnPhase(TURN.COMPLETE);
         }
 
         return updated;
@@ -243,7 +255,7 @@ export default function MockGame() {
   // Execute bot turn
   const executeBotTurn = useCallback(() => {
     const currentPlayer = playersRef.current[activePlayerIndexRef.current];
-    if (!currentPlayer?.isBot) return;
+    if (!currentPlayer?.isBot || waitingForHuman) return;
 
     console.log(`Bot ${currentPlayer.name} taking turn...`);
     
@@ -311,6 +323,8 @@ export default function MockGame() {
               current.cash -= (tile.cost || 0);
               current.assetsValue += (tile.cost || 0);
               addGameLog(`${current.name} bought ${tile.label} for ${CURRENCY}${(tile.cost || 0).toLocaleString()}`);
+            } else {
+              addGameLog(`${current.name} decided not to buy ${tile.label}`);
             }
           } else {
             const eff = applyTileEffect(current, tile, updated);
@@ -326,7 +340,7 @@ export default function MockGame() {
         return updated;
       });
     }, 1200);
-  }, [moveToNextPlayer]);
+  }, [moveToNextPlayer, waitingForHuman]);
 
   // Handle tile popup actions (for human decisions)
   const handleTileAction = (tile) => {
@@ -348,16 +362,27 @@ export default function MockGame() {
       });
     }
     
-    setTilePopup({ open: false, data: null });
-    setIsMoving(false);
-    moveToNextPlayer();
+    // Complete the human turn after decision
+    completeHumanTurn();
   };
 
-  // Handle tile popup close (human decided not to buy)
+  // Handle tile popup close (human decided not to buy or viewed tile)
   const handleTilePopupClose = () => {
     setTilePopup({ open: false, data: null });
-    setIsMoving(false);
-    moveToNextPlayer();
+    
+    // If human was in tile decision phase (business purchase), complete turn
+    if (turnPhase === TURN.TILE_DECISION) {
+      addGameLog(`${currentPlayer.name} decided not to buy ${pendingTile?.label}`);
+      completeHumanTurn();
+    } else if (turnPhase === TURN.CARD_DECISION) {
+      // If human was just viewing a tile, complete turn
+      completeHumanTurn();
+    }
+  };
+
+  // Handle card decision complete
+  const handleCardDecisionComplete = () => {
+    completeHumanTurn();
   };
 
   // Function to handle card usage
@@ -375,21 +400,22 @@ export default function MockGame() {
       currentPlayer.cards = currentPlayer.cards.filter(c => c.id !== card.id);
 
       setShowCardModal(false);
+      addGameLog(`${currentPlayer.name} used card: ${card.title}`);
 
       return updatedPlayers;
     });
   };
 
-  // Auto-play for bots
+  // Auto-play for bots - ONLY when it's a bot's turn and not waiting for human
   useEffect(() => {
-    if (phase === 'playing' && !everyoneDone && !isMoving) {
+    if (phase === 'playing' && !everyoneDone && !isMoving && !waitingForHuman) {
       if (currentPlayer.isBot && turnPhase === TURN.AWAIT_ROLL) {
         console.log(`Auto-playing bot: ${currentPlayer.name}`);
         const timer = setTimeout(executeBotTurn, 1000);
         return () => clearTimeout(timer);
       }
     }
-  }, [phase, activePlayerIndex, everyoneDone, isMoving, turnPhase, currentPlayer, executeBotTurn]);
+  }, [phase, activePlayerIndex, everyoneDone, isMoving, turnPhase, currentPlayer, executeBotTurn, waitingForHuman]);
 
   // Game completion
   useEffect(() => {
@@ -450,6 +476,7 @@ export default function MockGame() {
     setTurnPhase(TURN.AWAIT_ROLL);
     setDiceResult(null);
     setIsMoving(false);
+    setWaitingForHuman(false);
     setGameLog(['Game started! Human player goes first.']);
   };
 
@@ -535,10 +562,11 @@ export default function MockGame() {
           inventoryCards={currentPlayer.cards}
           diceToast={diceResult}
           playerColors={playerColors}
-          canRoll={!currentPlayer.isBot && !isMoving && turnPhase === TURN.AWAIT_ROLL}
+          canRoll={!currentPlayer.isBot && !isMoving && turnPhase === TURN.AWAIT_ROLL && !waitingForHuman}
           players={players}
           currentPlayer={currentPlayer}
           onLeaveGame={handleLeaveGame}
+          onCardDecisionComplete={handleCardDecisionComplete}
         />
       </HUDPortal>
 
@@ -549,11 +577,12 @@ export default function MockGame() {
         <div>Active Player: {currentPlayer?.name} ({(currentPlayer?.isBot ? 'Bot' : 'Human')})</div>
         <div>Player Index: {activePlayerIndex}</div>
         <div>Moving: {isMoving ? 'YES' : 'NO'}</div>
+        <div>Waiting for Human: {waitingForHuman ? 'YES' : 'NO'}</div>
         <div>Everyone Done: {everyoneDone ? 'YES' : 'NO'}</div>
       </div>
 
       {/* Game Controls */}
-      <div className="pointer-events-auto fixed bottom-32 right-4 z-[1000] w-[360px] space-y-4">
+      <div className="pointer-events-auto fixed bottom-32 right-4 z-[10] w-[360px] space-y-4">
         <div className="rounded-2xl overflow-hidden shadow-2xl border bg-white">
           <div className="px-4 py-2 bg-gradient-to-r from-sky-500 to-blue-500 text-white">
             <div className="text-sm font-extrabold tracking-wide">Game Controls</div>
@@ -565,8 +594,8 @@ export default function MockGame() {
                 <span className="font-bold text-sky-600">{currentPlayer.name}</span>
               </div>
               <div className="flex justify-between mb-2">
-                <span><strong>Type:</strong></span>
-                <span>{currentPlayer.isBot ? 'Bot' : 'Human'}</span>
+                <span><strong>Turn Phase:</strong></span>
+                <span>{turnPhase}</span>
               </div>
               <div className="flex justify-between mb-2">
                 <span><strong>Lap:</strong></span>
@@ -597,14 +626,17 @@ export default function MockGame() {
             {!currentPlayer.isBot && (
               <button
                 onClick={handleHumanRoll}
-                disabled={isMoving || turnPhase !== TURN.AWAIT_ROLL}
+                disabled={isMoving || turnPhase !== TURN.AWAIT_ROLL || waitingForHuman}
                 className="w-full px-3 py-2 rounded-xl bg-blue-500 text-white font-semibold shadow hover:bg-blue-600 disabled:opacity-50"
               >
-                {isMoving ? 'Moving...' : 'Roll Dice'}
+                {isMoving ? 'Moving...' : 
+                 waitingForHuman ? 'Processing...' : 
+                 turnPhase !== TURN.AWAIT_ROLL ? 'Complete Turn First' : 
+                 'Roll Dice'}
               </button>
             )}
 
-            {currentPlayer.cards.length > 0 && (
+            {currentPlayer.cards.length > 0 && !currentPlayer.isBot && (
               <button
                 onClick={() => {
                   setCurrentCard(currentPlayer.cards[0]);
@@ -613,6 +645,15 @@ export default function MockGame() {
                 className="w-full px-3 py-2 rounded-xl bg-purple-500 text-white font-semibold shadow hover:bg-purple-600"
               >
                 Use Card ({currentPlayer.cards.length})
+              </button>
+            )}
+
+            {!currentPlayer.isBot && turnPhase === TURN.CARD_DECISION && (
+              <button
+                onClick={handleCardDecisionComplete}
+                className="w-full px-3 py-2 rounded-xl bg-emerald-500 text-white font-semibold shadow hover:bg-emerald-600"
+              >
+                Continue
               </button>
             )}
           </div>
