@@ -6,8 +6,8 @@ import { redisClient } from '../../../config/redis';
 import * as insightsService from '../services/insights.service';
 const router = express.Router();
 
-// const AI_URL = process.env.AI_SERVICE_URL || 'https://gamified-finance-ai-avf0gsfrf5a4b9cj.southafricanorth-01.azurewebsites.net';
-const AI_URL = 'http://localhost:6000'; 
+ const AI_URL = process.env.AI_SERVICE_URL || 'https://gamified-finance-ai-avf0gsfrf5a4b9cj.southafricanorth-01.azurewebsites.net';
+//const AI_URL = 'http://localhost:6000'; 
 
 // Endpoint to fetch user insights on income and expenses per month in the current year
 router.get('/transactions/:userId', async (req, res) => {

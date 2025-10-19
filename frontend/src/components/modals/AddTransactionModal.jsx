@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { FaSave, FaTimes, FaChevronDown } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 
 const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
 // const BASE_URL = "http://localhost:3000";
@@ -418,8 +419,10 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
         budget: '',
       });
       onClose?.();
+      toast.success('Transaction created successfully');
     } catch (err) {
       console.error('Error creating transaction:', err);
+      toast.error(err.message || 'Failed to create transaction');
       setError(err.message || 'Failed to create transaction');
     } finally {
       setLoading(false);
@@ -523,7 +526,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
               value={form.amount}
               onChange={handleChange}
               placeholder="0.00"
-              inputProps={{ step: '0.01', min: '0', inputMode: 'decimal' }}
+              inputProps={{ step: '0.01', min: '0', max: '1000000', inputMode: 'decimal' }}
             />
           </div>
 

@@ -1,10 +1,8 @@
 # Frontend production build
-FROM node:20-alpine AS base
+FROM node:18-alpine AS base
 
 # Install security updates
-RUN apk update && apk upgrade && \
-    apk add --no-cache python3 make g++ && \
-    rm -rf /var/cache/apk/*
+RUN apk add --no-cache python3 make g++
 
 WORKDIR /app
 
