@@ -59,8 +59,7 @@ Gamified Financial Visualizer revolutionizes the way people interact with their 
 
 <h3 align="center">Backend: Rock-Solid Foundation</h3>
 <p align="center">
-  <img src="https://skillicons.dev/icons?i=nodejs,express,postgres,typescript,redis" /><br>
-  <img src="https://skillicons.dev/icons?i=python,sklearn,pytorch" />
+  <img src="https://skillicons.dev/icons?i=nodejs,express,postgres,typescript,redis,python,sklearn,pytorch" /><br>
 </p>
 
 <h3 align="center">DevOps: Enterprise-Grade Delivery</h3>
