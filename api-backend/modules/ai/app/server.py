@@ -32,7 +32,7 @@ app = FastAPI(title="AI Service")
 
 @app.on_event("startup")
 async def startup_event():
-     # load_model()
+    load_model()
     if not is_model_ready():
         print("Warning: Model failed to load at startup.")
     else:
@@ -104,7 +104,12 @@ MODEL_NAME = "openai-community/gpt2"
 # MODEL_NAME = "openai/gpt-oss-20b" # lighter model
 #MODEL_NAME = "openai/gpt-oss-120b"
 # MODEL_NAME = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
-generator = pipeline('text-generation', model=MODEL_NAME)
+try:
+    generator = pipeline('text-generation', model=MODEL_NAME)
+except Exception as e:
+    print(f"Model load failed: {e}")
+    generator = None
+
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(req: ChatRequest):
