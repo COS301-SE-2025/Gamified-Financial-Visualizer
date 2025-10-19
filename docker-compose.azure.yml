@@ -12,10 +12,10 @@ services:
     restart: unless-stopped
     environment:
       # Keep all your existing database settings
-      - DB_HOST=aws-0-eu-central-1.pooler.supabase.com
+      - DB_HOST=${DB_HOST}
       - DB_PORT=5432
-      - DB_USER=postgres.bgvnazsftrpstqzltkeu
-      - DB_PASSWORD=iO9LfSRK2cBvGStl
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
       - DATABASE_URL=${DATABASE_URL}
       - REDIS_URL=redis://redis:6379
       # Update only the CORS origins
