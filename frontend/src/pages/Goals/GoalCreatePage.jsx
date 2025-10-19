@@ -1,5 +1,6 @@
 // GoalCreatePage.jsx
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { toast } from 'react-toastify';
 import { FaChevronDown } from 'react-icons/fa';
 import { createPortal } from 'react-dom';
 import goal1 from '../../assets/Images/banners/pixelApartment.gif';
@@ -9,6 +10,10 @@ import goal4 from '../../assets/Images/banners/pixelStore.gif';
 import goal5 from '../../assets/Images/banners/pixelGirlAlly.gif';
 import goal6 from '../../assets/Images/banners/pixelStudents.jpeg';
 import GoalsViewLayout from './GoalsViewLayout';
+
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
 
 const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Select...' }) => {
   const [open, setOpen] = useState(false);
@@ -33,7 +38,6 @@ const CategoryDropdown = ({ name, value, onChange, options, placeholder = 'Selec
     return () => document.removeEventListener('pointerdown', onPointerDown, true);
   }, []);
 
-  // ✅ Smart placement: below with offset; flip up if space is tight; clamp horizontally
   useLayoutEffect(() => {
     if (!open || !btnRef.current) return;
 
@@ -212,7 +216,7 @@ const GoalCreatePage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/transactions/categories');
+        const res = await fetch(`${BASE_URL}/api/transactions/categories`);
         const data = await res.json();
         setCategories(data.data || []);
       } catch (err) {
@@ -248,7 +252,7 @@ const GoalCreatePage = () => {
     };
 
     try {
-      const res = await fetch('http://localhost:5000/api/goal', {
+      const res = await fetch(`${BASE_URL}/api/goal`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(goalPayload)
@@ -256,8 +260,10 @@ const GoalCreatePage = () => {
 
       const data = await res.json();
       if (res.ok) {
+        toast.success('Goal created successfully');
         window.location.href = '/goals';
       } else {
+        toast.error(`Failed to create goal`);
         console.error(`Failed to create goal: ${data.message}`);
       }
     } catch (err) {
@@ -313,6 +319,7 @@ const GoalCreatePage = () => {
                 value={form.amount}
                 onChange={handleChange}
                 min="0"
+                max="1000000"
                 className="rounded-xl px-4 py-2 border dark:border-gray-600 shadow dark:shadow-none w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>

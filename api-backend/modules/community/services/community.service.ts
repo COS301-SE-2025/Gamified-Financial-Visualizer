@@ -1007,6 +1007,27 @@ export async function fetchAllUsers() {
     throw err;
   }
 }
+export async function fetchAllUserss() {
+  const query = `
+    SELECT 
+      u.user_id,  
+      u.username,
+      ai.avatar_image_path,
+      up.tier_status
+    FROM users u
+    JOIN user_preferences pref ON pref.user_id = u.user_id  
+    JOIN avatar_images ai ON pref.avatar_id = ai.avatar_id
+    ORDER BY u.username;
+  `;
+
+  try {
+    const result = await pool.query(query);
+    return result.rows;
+  } catch (err) {
+    logger.error('[CommunityService] Failed to fetch all users:', err);
+    throw err;
+  }
+}
 
 // Get friend recommendations based on mutual friends and tier status
 export async function getFriendRecommendations(user_id: number, limit: number = 5) {
@@ -1128,16 +1149,17 @@ export async function getFriendshipStatus(user_id: number, friend_id: number) {
   const query = `
     SELECT user_id, friend_id, relationship_status AS status
     FROM friendships
-    WHERE user_id = $1
-    AND friend_id = $2
+    WHERE (user_id = $1 AND friend_id = $2)
+       OR (user_id = $2 AND friend_id = $1)
+    LIMIT 1
   `;
 
   try {
     const result = await pool.query(query, [ user_id, friend_id ]);
-    logger.info(`[CommunityService] Fetched friend request `);
-    return result.rows[ 0 ];
+    logger.info(`[CommunityService] Fetched friendship status between ${user_id} and ${friend_id}`);
+    return result.rows[0] || null;
   } catch (error) {
-    logger.error(`[CommunityService] Failed to get friend requests`, error);
+    logger.error(`[CommunityService] Failed to get friendship status`, error);
     throw error;
   }
 }

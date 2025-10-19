@@ -4,7 +4,7 @@ import { FaChevronLeft, FaCheck, FaTrophy } from 'react-icons/fa';
 import AchievementsLayout from '../../pages/Achievements/AchievementsLayout';
 import toast from 'react-hot-toast';
 
-// Badges (full set + accepted.png for “Speed Runner”)
+// Badges (full set + accepted.png for "Speed Runner")
 import badge1 from '../../assets/Images/badges/coin.png';
 import badge2 from '../../assets/Images/badges/banknote.png';
 import badge3 from '../../assets/Images/badges/target.png';
@@ -30,6 +30,10 @@ import badge22 from '../../assets/Images/badges/profit.png';
 import badge23 from '../../assets/Images/badges/start-up.png';
 import badge24 from '../../assets/Images/badges/support.png';
 import badge26 from '../../assets/Images/badges/accepted.png';
+
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
 
 // Deterministic title → { color, badge } (case-insensitive)
 const TITLE_META = {
@@ -77,21 +81,21 @@ const colorMap = {
 // Drop-in dark palette
 const colorMapDark = {
   red: {
-    // a muted “tomato/brick”
+    // a muted "tomato/brick"
     hex: '#fe9994ff',                                   // main accent
     gradient: 'linear-gradient(to right, #fb927dff, #fbe5adff)',
     bg: 'bg-[rgba(184,93,88,0.15)]',                  // soft tinted surface
     text: 'text-rose-300'                             // readable on dark bg
   },
   blue: {
-    // a calm “steel blue”
+    // a calm "steel blue"
     hex: '#5A7FA6',
     gradient: 'linear-gradient(to right, #5FBFFF, #B1E1FF)',
     bg: 'bg-[rgba(90,127,166,0.15)]',
     text: 'text-sky-300'
   },
   green: {
-    // a dusky “olive/sage”
+    // a dusky "olive/sage"
     hex: '#6F8F4E',
     gradient: 'linear-gradient(to right, #88BC46, #CBEEA5)',
     bg: 'bg-[rgba(111,143,78,0.15)]',
@@ -130,31 +134,35 @@ const BadgeTaskCard = ({ task, colorInfo, image }) => {
   const progressPercent = Math.min((task.progress / Math.max(1, task.total)) * 100, 100);
   const isComplete = progressPercent >= 100;
   return (
-    <div className={`flex items-center justify-between p-5 rounded-xl shadow-sm transition-all hover:shadow-md ${colorInfo.bg} border-l-4`} style={{ borderLeftColor: colorInfo.hex }}>
-      <div className="flex items-center gap-4 w-full">
-        <div className={`relative flex-shrink-0 w-16 h-16 flex items-center justify-center rounded-full ${isComplete ? 'ring-2 ring-yellow-400' : ''}`} style={{ backgroundColor: `${colorInfo.hex}20` }}>
-          <img src={image} alt={task.title} className="w-10 h-10 object-contain" />
+    <div className={`flex items-center justify-between p-4 sm:p-5 rounded-xl shadow-sm transition-all hover:shadow-md ${colorInfo.bg} border-l-4`} style={{ borderLeftColor: colorInfo.hex }}>
+      <div className="flex items-center gap-3 sm:gap-4 w-full">
+        <div className={`relative flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center rounded-full ${isComplete ? 'ring-2 ring-yellow-400' : ''}`} style={{ backgroundColor: `${colorInfo.hex}20` }}>
+          <img src={image} alt={task.title} className="w-6 h-6 sm:w-10 sm:h-10 object-contain" />
           {isComplete && (
-            <div className="absolute -top-2 -right-2 bg-yellow-400 rounded-full w-6 h-6 flex items-center justify-center">
+            <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-yellow-400 rounded-full w-4 h-4 sm:w-6 sm:h-6 flex items-center justify-center">
               <FaCheck className="text-white text-xs" />
             </div>
           )}
         </div>
-        <div className="flex-grow">
-          <div className="flex items-center justify-between">
-            <h3 className={`text-lg font-semibold ${colorInfo.text}`}>{task.title}</h3>
-            <span className={`text-sm font-medium ${colorInfo.text}`}>{task.points_awarded} XP</span>
+        <div className="flex-grow min-w-0">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
+            <h3 className={`text-base sm:text-lg font-semibold ${colorInfo.text} truncate`}>{task.title}</h3>
+            <span className={`text-sm font-medium ${colorInfo.text} whitespace-nowrap`}>{task.points_awarded} XP</span>
           </div>
           <div className="mt-2">
-            <div className="flex justify-between text-sm mb-1">
+            <div className="flex justify-between text-xs sm:text-sm mb-1">
               <span className="text-gray-600 dark:text-gray-300">Progress</span>
               <span className="font-medium">({Math.round(progressPercent)}%)</span>
             </div>
-            <div className="w-full bg-gray-200 h-2.5 rounded-full dark:bg-gray-700">
-              <div className="h-2.5 rounded-full " style={{ width: `${progressPercent}%`, background: colorInfo.gradient }} />
+            <div className="w-full bg-gray-200 h-2 sm:h-2.5 rounded-full dark:bg-gray-700">
+              <div className="h-2 sm:h-2.5 rounded-full" style={{ width: `${progressPercent}%`, background: colorInfo.gradient }} />
             </div>
           </div>
-          {task.description && <p className="text-sm text-gray-600 mt-2 dark:text-gray-300">{task.description}</p>}
+          {task.description && (
+            <p className="text-xs sm:text-sm text-gray-600 mt-2 dark:text-gray-300 line-clamp-2">
+              {task.description}
+            </p>
+          )}
         </div>
       </div>
     </div>
@@ -192,8 +200,8 @@ const AchievementDetailPage = () => {
 
         // 1) Fetch achievement info
         const infoUrl = isNumeric
-          ? `http://localhost:5000/api/achievements/by-id/${id}/${user.id}`
-          : `http://localhost:5000/api/achievements/by-title/${encodeURIComponent(id)}/${user.id}`;
+          ? `${BASE_URL}/api/achievements/by-id/${id}/${user.id}`
+          : `${BASE_URL}/api/achievements/by-title/${encodeURIComponent(id)}/${user.id}`;
 
         const infoRes = await fetch(infoUrl);
         if (!infoRes.ok) throw new Error('Failed to fetch achievement info');
@@ -203,7 +211,7 @@ const AchievementDetailPage = () => {
 
         // 2) Fetch tasks by TITLE from the server response
         const tRes = await fetch(
-          `http://localhost:5000/api/achievements/task/${encodeURIComponent(ach.achievement_title)}/${user.id}`
+          `${BASE_URL}/api/achievements/task/${encodeURIComponent(ach.achievement_title)}/${user.id}`
         );
         if (!tRes.ok) throw new Error('Failed to fetch tasks');
         const tJson = await tRes.json();
@@ -222,7 +230,7 @@ const AchievementDetailPage = () => {
   useEffect(() => {
     const maxPage = Math.max(1, Math.ceil(tasks.length / pageSize));
     if (page > maxPage) setPage(1);
-  }, [tasks, pageSize]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [tasks, pageSize]);
 
   const totalTasks = tasks.length;
   const totalPages = Math.max(1, Math.ceil(totalTasks / pageSize));
@@ -233,69 +241,77 @@ const AchievementDetailPage = () => {
   const completedTasks = tasks.filter(t => (t.progress || 0) >= Math.max(1, t.total || 0)).length;
   const completionPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
-
   return (
     <AchievementsLayout>
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="max-w-4xl mx-auto p-4 sm:p-6">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 mb-6 px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300"
+          className="flex items-center gap-2 mb-4 sm:mb-6 px-3 py-2 sm:px-4 sm:py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300 text-sm sm:text-base"
         >
           <FaChevronLeft className="text-gray-500 dark:text-gray-400" />
           <span className="font-medium">Back to Achievements</span>
         </button>
 
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100 dark:bg-gray-800 dark:border-gray-800">
-          <div className="flex flex-col md:flex-row gap-6 items-start">
-            <div className="flex-shrink-0">
-              <div className={`w-24 h-24 rounded-full flex items-center justify-center ${colorInfo.bg}`}>
-                <img src={badgeImage} alt={title} className="w-16 h-16 object-contain" />
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-4 sm:mb-6 border border-gray-100 dark:bg-gray-800 dark:border-gray-800">
+          <div className="flex flex-col md:flex-row gap-4 sm:gap-6 items-start">
+            <div className="flex-shrink-0 mx-auto sm:mx-0">
+              <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center ${colorInfo.bg}`}>
+                <img src={badgeImage} alt={title} className="w-12 h-12 sm:w-16 sm:h-16 object-contain" />
               </div>
             </div>
 
-            <div className="flex-grow">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2 dark:text-gray-200">{title}</h1>
+            <div className="flex-grow w-full text-center sm:text-left">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 dark:text-gray-200 break-words">
+                {title}
+              </h1>
 
               {achievement?.achievement_description && (
-                <p className="text-gray-600 mb-4 dark:text-gray-300">{achievement.achievement_description}</p>
+                <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4 dark:text-gray-300">
+                  {achievement.achievement_description}
+                </p>
               )}
 
-              <div className="flex flex-wrap gap-4">
-                <div className="bg-gray-50 px-4 py-2 rounded-lg dark:bg-gray-700">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Category</p>
-                  <p className={`font-medium ${colorInfo.text}`}>{colorKey[0].toUpperCase() + colorKey.slice(1)}</p>
-                </div>
+              {/* Updated: Horizontal table-like layout for mobile, grid for desktop */}
+              <div className="overflow-x-auto"> {/* Added for horizontal scrolling on very small screens */}
+                <div className="grid grid-cols-3 gap-2 min-w-max sm:min-w-0 sm:grid-cols-3 sm:gap-3">
+                  <div className="bg-gray-50 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg dark:bg-gray-700 text-center min-w-[100px]">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Category</p>
+                    <p className={`font-medium text-xs sm:text-sm ${colorInfo.text}`}>
+                      {colorKey[0].toUpperCase() + colorKey.slice(1)}
+                    </p>
+                  </div>
 
-                <div className="bg-gray-50 px-4 py-2 rounded-lg dark:bg-gray-700">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Total XP</p>
-                  <p className="font-medium text-gray-900 dark:text-gray-100">
-                    {tasks.reduce((sum, t) => sum + (t.points_awarded || 0), 0)} XP
-                  </p>
-                </div>
+                  <div className="bg-gray-50 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg dark:bg-gray-700 text-center min-w-[100px]">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total XP</p>
+                    <p className="font-medium text-xs sm:text-sm text-gray-900 dark:text-gray-100">
+                      {tasks.reduce((sum, t) => sum + (t.points_awarded || 0), 0)} XP
+                    </p>
+                  </div>
 
-                <div className="bg-gray-50 px-4 py-2 rounded-lg dark:bg-gray-700">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Completion</p>
-                  <p className="font-medium text-gray-900 dark:text-gray-100">
-                    {completedTasks}/{totalTasks} tasks ({completionPercentage}%)
-                  </p>
+                  <div className="bg-gray-50 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg dark:bg-gray-700 text-center min-w-[100px]">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Completion</p>
+                    <p className="font-medium text-xs sm:text-sm text-gray-900 dark:text-gray-100">
+                      {completedTasks}/{totalTasks}<br className="sm:hidden"/>({completionPercentage}%)
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Header row for tasks with pagination controls */}
-        <div className="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2 dark:text-gray-200">
+        {/* Header row for tasks - Left aligned */}
+        <div className="mb-4">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 flex items-center gap-2 dark:text-gray-200 justify-start">
             <FaTrophy className={colorInfo.text} />
             <span>Tasks</span>
           </h2>
         </div>
 
-        {/* Tasks list  */}
-        <div className="mb-6">
+        {/* Tasks list */}
+        <div className="mb-4 sm:mb-6">
           {totalTasks > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {paginatedTasks.map((t, idx) => (
                 <BadgeTaskCard
                   key={t.task_id ?? t.id ?? `${t.title}-${startIdx + idx}`}
@@ -312,23 +328,27 @@ const AchievementDetailPage = () => {
               ))}
             </div>
           ) : (
-            <div className="bg-gray-50 rounded-lg p-8 text-center dark:bg-gray-800">
-              <p className="text-gray-500 dark:text-gray-200">No tasks found for this achievement</p>
+            <div className="bg-gray-50 rounded-lg p-6 sm:p-8 text-center dark:bg-gray-800">
+              <p className="text-gray-500 dark:text-gray-200 text-sm sm:text-base">
+                No tasks found for this achievement
+              </p>
             </div>
           )}
         </div>
 
         {/* Tips box */}
-        <div className="bg-blue-50 border-l-4 border-sky-400 p-4 rounded-r-lg dark:bg-[#0b2535] dark:border-sky-600">
+        <div className="bg-blue-50 border-l-4 border-sky-400 p-3 sm:p-4 rounded-r-lg dark:bg-[#0b2535] dark:border-sky-600">
           <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-sky-500" viewBox="0 0 20 20" fill="currentColor">
+            <div className="flex-shrink-0 mt-0.5">
+              <svg className="h-4 w-4 sm:h-5 sm:w-5 text-sky-500" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clipRule="evenodd" />
               </svg>
             </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-sky-700 dark:text-sky-300">How to earn this achievement</h3>
-              <div className="mt-2 text-sm text-sky-700 dark:text-sky-200">
+            <div className="ml-2 sm:ml-3 flex-1">
+              <h3 className="text-xs sm:text-sm font-medium text-sky-700 dark:text-sky-300">
+                How to earn this achievement
+              </h3>
+              <div className="mt-1 sm:mt-2 text-xs sm:text-sm text-sky-700 dark:text-sky-200">
                 <p>Complete all the tasks listed above to unlock this achievement. Each completed task earns you XP. Check back regularly as new tasks may be added!</p>
               </div>
             </div>

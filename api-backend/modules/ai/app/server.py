@@ -11,6 +11,9 @@ from pydantic import BaseModel
 from typing import List
 from typing import Optional
 
+# For AI advisor
+from transformers import pipeline
+
 # ---- Service-layer functions ----
 from app.classifier.services.predict_classifier import classify_batch
 from app.classifier.services.train_classifier import main as train_model
@@ -22,7 +25,18 @@ from app.insights.services.insights_engine import (
     generate_wrapped_insights,
 )
 
+from app.classifier.services.predict_classifier import is_model_ready, load_model
+
 app = FastAPI(title="AI Service")
+
+
+@app.on_event("startup")
+async def startup_event():
+     # load_model()
+    if not is_model_ready():
+        print("Warning: Model failed to load at startup.")
+    else:
+        print("Model loaded successfully at startup.")
 
 # --- Classifier API ---
 # ---- Request/Response Schemas ----
@@ -76,6 +90,54 @@ class UserData(BaseModel):
     transactions: List[Transaction1]
     goals: List[Goal]
     budgets: List[Budget]
+
+
+# --- Chat endpoint schema ---
+class ChatRequest(BaseModel):
+    question: str
+
+class ChatResponse(BaseModel):
+    response: str
+
+# --- Load GPT model once at startup ---
+MODEL_NAME = "openai-community/gpt2"
+# MODEL_NAME = "openai/gpt-oss-20b" // lighter model
+# MODEL_NAME = "openai/gpt-oss-120b"
+# MODEL_NAME = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+generator = pipeline('text-generation', model=MODEL_NAME)
+
+@app.post("/chat", response_model=ChatResponse)
+def chat(req: ChatRequest):
+    try:
+        user_input = req.question.strip()
+        if not user_input:
+            raise HTTPException(status_code=400, detail="No question provided")
+        
+        # Generate text
+        result = generator(
+            user_input,
+            max_new_tokens=250,  # use max_new_tokens instead of max_length
+            num_return_sequences=1,
+            temperature=0.7,
+            top_p=0.95,
+            do_sample=True,
+            pad_token_id=generator.tokenizer.eos_token_id
+        )
+
+        text = result[0]['generated_text'].strip()
+
+        # Post-process: cut at last full stop
+        if "." in text:
+            last_full_stop = text.rfind(".")
+            text = text[:last_full_stop + 1]  # include the period
+        else:
+            # fallback if no full stop found
+            text = text
+
+        return ChatResponse(response=text)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ---- Endpoints ----
@@ -172,6 +234,13 @@ def get_trends(user_data: UserData):
     except Exception as e:
         print(f"Error generating trends for user: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok", "ready": is_model_ready()}
+
+
+
 
 
 # --- serve ---

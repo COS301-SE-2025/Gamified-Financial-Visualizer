@@ -1,0 +1,34 @@
+# Simplified docker-compose.azure.yml - keeping Redis in Docker
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  api-backend:
+    image: your-registry.azurecr.io/finance-api:latest
+    restart: unless-stopped
+    environment:
+      # Keep all your existing database settings
+      - DB_HOST=aws-0-eu-central-1.pooler.supabase.com
+      - DB_PORT=5432
+      - DB_USER=postgres.bgvnazsftrpstqzltkeu
+      - DB_PASSWORD=iO9LfSRK2cBvGStl
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=redis://redis:6379
+      # Update only the CORS origins
+      - CORS_ORIGIN=${FRONTEND_URL}
+
+  ai-service:
+    image: your-registry.azurecr.io/finance-ai:latest
+    restart: unless-stopped
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+
+  frontend:
+    image: your-registry.azurecr.io/finance-frontend:latest
+    restart: unless-stopped
+    ports:
+      - "80:8080"

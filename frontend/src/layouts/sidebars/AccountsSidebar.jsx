@@ -21,6 +21,8 @@ import {
   FaMoneyBillWave,
 } from 'react-icons/fa';
 
+
+
 /** --- Category icon mapping --- */
 const categoryIcons = {
   groceries: <FaUtensils />,
@@ -46,6 +48,10 @@ const categoryIcons = {
   charity: <FaHandsHelping />,
   default: <FaMoneyBillWave />,
 };
+
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
 
 /** --- (kept) category colors + fallback (unused for the top-6 palette now) --- */
 const categoryColors = {
@@ -121,14 +127,14 @@ const AccountsPerformanceHeader = () => {
     if (!userId) return;
 
     setError('');
-    fetch(`http://localhost:5000/api/auth/profile/performance-summary/${userId}`)
+    fetch(`${BASE_URL}/api/auth/profile/performance-summary/${userId}`)
       .then(res => res.json())
       .then(json => setPerformanceSummary(json?.data ?? null))
       .catch(err => console.error('Performance summary error:', err));
 
     (async () => {
       try {
-        const resp = await fetch(`http://localhost:5000/api/transactions/user/${userId}`);
+        const resp = await fetch(`${BASE_URL}/api/transactions/user/${userId}`);
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const json = await resp.json();
         if (json?.status === 'success') {

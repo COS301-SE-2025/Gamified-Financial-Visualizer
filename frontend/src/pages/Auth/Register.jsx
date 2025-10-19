@@ -4,7 +4,9 @@ import AuthLayout from '../../components/AuthLayout';
 import logoImg from '../../assets/Images/Logo.png';
 import { FaEye, FaEyeSlash, FaCheckCircle, FaTimesCircle, FaExclamationCircle } from 'react-icons/fa';
 
-const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -71,7 +73,7 @@ const Register = () => {
     }
 
     try {
-      const res = await fetch(`http://localhost:5000/api/auth/register`, {
+      const res = await fetch(`${BASE_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

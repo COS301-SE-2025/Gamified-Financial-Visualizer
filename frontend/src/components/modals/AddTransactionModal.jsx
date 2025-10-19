@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { FaSave, FaTimes, FaChevronDown } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
 
 /* ───────────────────────── Shared Helpers ───────────────────────── */
 
@@ -258,7 +264,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
     const fetchCategories = async () => {
       setLoadingCats(true);
       try {
-        const res = await fetch('http://localhost:5000/api/transactions/categories');
+        const res = await fetch(`${BASE_URL}/api/transactions/categories`);
         const data = await res.json();
         setCategories(Array.isArray(data?.data) ? data.data : []);
       } catch { setCategories([]); } finally { setLoadingCats(false); }
@@ -268,7 +274,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
       if (!uid) return setBudgets([]);
       setLoadingBudgets(true);
       try {
-        const res = await fetch(`http://localhost:5000/api/budget/user/${uid}`);
+        const res = await fetch(`${BASE_URL}/api/budget/user/${uid}`);
         const data = await res.json();
         setBudgets(Array.isArray(data?.data) ? data.data : []);
       } catch { setBudgets([]); } finally { setLoadingBudgets(false); }
@@ -278,7 +284,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
       if (!uid) return setGoals([]);
       setLoadingGoals(true);
       try {
-        const res = await fetch(`http://localhost:5000/api/goal/user/${uid}`);
+        const res = await fetch(`${BASE_URL}/api/goal/user/${uid}`);
         const data = await res.json();
         setGoals(Array.isArray(data?.data) ? data.data : []);
       } catch { setGoals([]); } finally { setLoadingGoals(false); }
@@ -288,7 +294,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
       if (!uid) return setChallenges([]);
       setLoadingChallenges(true);
       try {
-        const res = await fetch(`http://localhost:5000/api/community/challenges/user/${uid}`);
+        const res = await fetch(`${BASE_URL}/api/community/challenges/user/${uid}`);
         const data = await res.json();
         setChallenges(Array.isArray(data?.data?.active) ? data.data.active : []);
       } catch { setChallenges([]); } finally { setLoadingChallenges(false); }
@@ -352,7 +358,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
         points_awarded: 0,
       };
 
-      const resp = await fetch('http://localhost:5000/api/transactions', {
+      const resp = await fetch(`${BASE_URL}/api/transactions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -413,8 +419,10 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
         budget: '',
       });
       onClose?.();
+      toast.success('Transaction created successfully');
     } catch (err) {
       console.error('Error creating transaction:', err);
+      toast.error(err.message || 'Failed to create transaction');
       setError(err.message || 'Failed to create transaction');
     } finally {
       setLoading(false);
@@ -518,7 +526,7 @@ const AddTransactionModal = ({ isOpen, onClose, onAdd, activeAccount }) => {
               value={form.amount}
               onChange={handleChange}
               placeholder="0.00"
-              inputProps={{ step: '0.01', min: '0', inputMode: 'decimal' }}
+              inputProps={{ step: '0.01', min: '0', max: '1000000', inputMode: 'decimal' }}
             />
           </div>
 

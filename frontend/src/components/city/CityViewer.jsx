@@ -81,6 +81,11 @@ import civicOfficesSunset from '../../assets/Building Images/Sunset Pink/civic-o
 import cafeSunset from '../../assets/Building Images/Sunset Pink/cafe.png';
 
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
+
 /* ===========================
    YOUR THEMED CITY SCENES (swap GLBs)
    Put files in /public/models/ and adjust paths if needed.
@@ -244,6 +249,7 @@ const unlockedThemes = THEME_UNLOCK_MAP[userTier] || [];
         <div className="fixed top-24 right-4 z-[700] w-[320px] rounded-2xl bg-white/95 dark:bg-gray-800/95 text-gray-800 dark:text-gray-100 shadow-xl border border-black/10 backdrop-blur">
           <div className="flex items-center justify-between px-3 py-2">
             <div className="font-semibold">Scene Style</div>
+            <p><i>All scenes are unlocked just for Project Day. Enjoy.</i></p>
             <button onClick={() => setOpen(false)} className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/10" aria-label="Close">
               <FiX />
             </button>
@@ -1299,9 +1305,9 @@ export default function CityViewer() {
     // Fetch building data for the selected user
     const fetchBuildingData = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/city/buildings/${user.id}`);
-        const data = await response.json();
-        setBuildings(data);
+      const response = await fetch(`${BASE_URL}/api/city/buildings/${user.id}`);
+      const data = await response.json();
+      setBuildings(data);
       } catch (error) {
         console.error('Error fetching building data:', error);
       }

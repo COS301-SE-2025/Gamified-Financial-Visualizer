@@ -17,12 +17,13 @@ Pillow==10.2.0  # Required by pdf2image and pytesseract
 
 # Data Handling
 pandas==2.1.0
+pyarrow>=12.0.0,<15.0.0  # Compatible with datasets 2.14.5
 
 # Utilities
 python-dotenv==1.0.0
 pytest ==8.4.0
 # machine learning utilities
-scikit-learn==1.4.0
+scikit-learn==1.7.0
 scipy==1.11.4
 numpy==1.26.4
-pandas==2.1.0
+

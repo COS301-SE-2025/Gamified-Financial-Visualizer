@@ -5,6 +5,10 @@ import { FaSearch, FaEye, FaUserMinus, FaPaperPlane } from 'react-icons/fa';
 import CommunityLayout from '../../pages/Community/CommunityLayout';
 import CommunityHeader from '../../layouts/headers/CommunityHeader';
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
 const FriendsList = () => {
   const [yourFriends, setYourFriends] = useState([]);
   const [recommended, setRecommended] = useState([]);
@@ -22,9 +26,9 @@ const FriendsList = () => {
     const fetchFriendsAndRecommendations = async () => {
       try {
         const [friendsRes, recsRes, members] = await Promise.all([
-          fetch(`http://localhost:5000/api/community/friends/${user.id}`),
-          fetch(`http://localhost:5000/api/community/friends/recommendations/${user.id}`),
-          fetch(`http://localhost:5000/api/community/friends/all/members`)
+          fetch(`${BASE_URL}/api/community/friends/${user.id}`),
+          fetch(`${BASE_URL}/api/community/friends/recommendations/${user.id}`),
+          fetch(`${BASE_URL}/api/community/friends/all/members`)
         ]);
 
         const friendsData = await friendsRes.json();
@@ -55,7 +59,7 @@ const FriendsList = () => {
     const currentUser = JSON.parse(localStorage.getItem('user'));
     openModal(`Send a friend request to @${user.username}?`, user, async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/community/friends/request/${currentUser.id}/${user.user_id}`, {
+        const res = await fetch(`${BASE_URL}/api/community/friends/request/${currentUser.id}/${user.user_id}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
         });
@@ -86,7 +90,7 @@ const FriendsList = () => {
     const currentUser = JSON.parse(localStorage.getItem('user'));
     openModal(`Remove @${user.username} from your friends list?`, user, async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/community/friends`, {
+        const res = await fetch(`${BASE_URL}/api/community/friends`, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -134,7 +138,7 @@ const FriendsList = () => {
 
   return (
     <CommunityLayout>
-      <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-4 dark:bg-gray-900">
+      <div className="max-w-6xl mx-auto space-y-6 px-4 dark:bg-gray-900">
         <Toaster position="top-right" />
 
         {/* Search bar */}
@@ -173,15 +177,15 @@ const FriendsList = () => {
                   </div>
                   <div className="flex gap-2">
                     <Link to={`/community/member/${friend.username}`}>
-                      <button className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#AAD977] text-white hover:bg-[#83AB55] dark:bg-[#BBE48E] dark:hover:bg-[#88BC46]">
-                        <FaEye /> View
+                      <button className="flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-[#AAD977] text-white hover:bg-[#83AB55] dark:bg-[#BBE48E] dark:hover:bg-[#88BC46]">
+                        <FaEye size={10} /> View
                       </button>
                     </Link>
                     <button
                       onClick={() => handleRemoveFriend(friend)}
-                      className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#FA8B81] text-white hover:bg-[#F87171] dark:bg-[#FE9B90] dark:hover:bg-[#E55C4C]"
+                      className="flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-[#FA8B81] text-white hover:bg-[#F87171] dark:bg-[#FE9B90] dark:hover:bg-[#E55C4C]"
                     >
-                      <FaUserMinus /> Remove
+                      <FaUserMinus size={10} /> Remove
                     </button>
                   </div>
                 </div>
@@ -204,20 +208,20 @@ const FriendsList = () => {
                   />
                   <div>
                     <p className="text-sm font-semibold text-[#111827] dark:text-gray-200">{person.username}</p>
-                    <p className="text-xs text-[#6B7280] dark:text-gray-400">{person.tier_status || 'Unranked'}</p>
+                    <p className="text-xs text-[#6B7280] dark:text-gray-400">{person?.tier_status || 'Unranked'}</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
                   <Link to={`/community/member/${person.username}`}>
-                    <button className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#AAD977] text-white hover:bg-[#83AB55] dark:bg-[#BBE48E] dark:hover:bg-[#88BC46]">
-                      <FaEye /> View
+                    <button className="flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-[#AAD977] text-white hover:bg-[#83AB55] dark:bg-[#BBE48E] dark:hover:bg-[#88BC46]">
+                      <FaEye size={10} /> View
                     </button>
                   </Link>
                   <button
                     onClick={() => handleFriendRequest(person)}
-                    className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-[#72C1F5] text-white hover:bg-[#5CA8D8] dark:bg-[#88D1FF] dark:hover:bg-[#6BB7F5]"
+                    className="flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-[#72C1F5] text-white hover:bg-[#5CA8D8] dark:bg-[#88D1FF] dark:hover:bg-[#6BB7F5]"
                   >
-                    <FaPaperPlane /> Request
+                    <FaPaperPlane size={10} /> Request
                   </button>
                 </div>
               </div>
@@ -239,13 +243,13 @@ const FriendsList = () => {
             <div className="flex justify-center gap-4">
               <button
                 onClick={onConfirm}
-                className="bg-[#AAD977] hover:bg-[#83AB55] text-white px-4 py-2 rounded-full font-medium dark:bg-[#A0E555] dark:hover:bg-[#88BC46]"
+                className="bg-[#AAD977] hover:bg-[#83AB55] text-white px-3 py-1.5 rounded-full font-medium text-sm dark:bg-[#A0E555] dark:hover:bg-[#88BC46]"
               >
                 Yes
               </button>
               <button
                 onClick={() => setModalOpen(false)}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-full font-medium dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-gray-200"
+                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1.5 rounded-full font-medium text-sm dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-gray-200"
               >
                 Cancel
               </button>

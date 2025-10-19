@@ -14,7 +14,10 @@ import http from 'http';
 import { V3 } from 'paseto';
 import './jobs/resetBudgets'; // auto-schedules your budget reset job
 // (Optional but recommended for horizontal scale)
-// import { createAdapter } from '@socket.io/redis-adapter';
+
+//import { createAdapter } from '@socket.io/redis-adapter';
+// please consider this as well - const { createAdapter } = require('@socket.io/redis-adapter');
+
 
 // 🔌 module registrars
 import { registerAuthModule } from './modules/auth';
@@ -32,20 +35,32 @@ import { registerGameSocketHandlers } from './modules/game/socket-handlers';
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
 
+const corsOrigins = [
+  'https://gamified-finance-visualizer-c5djg3fhcnhqfyfj.canadacentral-01.azurewebsites.net',  // Frontend URL (Azure)
+  'http://localhost:3000', // for local dev
+  'http://localhost:8080', // for local dev alternative port
+  'http://localhost:80',
+  'http://localhost',      // for local dev
+  process.env.CORS_ORIGIN     // Use environment variable from docker-compose
+].filter((origin): origin is string => Boolean(origin));
+
 app.use(cors({
-  origin: ['http://localhost:3000'],
+  origin: corsOrigins,
   credentials: true,
   methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type','Authorization']
 }));
+
 app.use(helmet());
 app.use(express.json());
 // app.get('/ping', (req, res) => res.send('pong'));
 
+
+
 const httpServer = http.createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: 'http://localhost:3000',
+    origin: corsOrigins,
     methods: ['GET','POST'],
     credentials: true
   },
@@ -223,7 +238,8 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 });
 
 // Start HTTP + WebSocket server
-httpServer.listen(PORT, () => {
+const portNumber = typeof PORT === 'string' ? parseInt(PORT, 10) : PORT;
+httpServer.listen(portNumber, '0.0.0.0', () => {
   logger.info(`Monolith listening on port ${PORT} (with Socket.IO)`);
 });
 

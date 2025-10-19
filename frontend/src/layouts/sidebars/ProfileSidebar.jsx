@@ -10,6 +10,10 @@ import {
 } from 'react-icons/fa';
 import avatar from '../../assets/Images/avatars/BlueSky.png';
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net';
+// const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:5000";
+
 const AccountsPerformanceHeader = () => {
   const [sidebarStats, setSidebarStats] = useState(null);
   const [performanceSummary, setPerformanceSummary] = useState(null);
@@ -18,12 +22,12 @@ const AccountsPerformanceHeader = () => {
   const fetchSidebarData = () => {
     if (!user?.id) return;
 
-    fetch(`http://localhost:5000/api/auth/sidebar/${user.id}`)
+    fetch(`${BASE_URL}/api/auth/sidebar/${user.id}`)
       .then(res => res.json())
       .then(data => setSidebarStats(data.data))
       .catch(err => console.error('Sidebar stats error:', err));
 
-    fetch(`http://localhost:5000/api/auth/profile/performance-summary/${user.id}`)
+    fetch(`${BASE_URL}/api/auth/profile/performance-summary/${user.id}`)
       .then(res => res.json())
       .then(data => setPerformanceSummary(data.data))
       .catch(err => console.error('Performance summary error:', err));

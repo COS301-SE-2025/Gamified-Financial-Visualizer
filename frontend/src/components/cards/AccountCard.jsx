@@ -23,7 +23,7 @@ function hashString(str = '') {
 }
 
 const AccountCard = ({
-  accountId,          // <-- NEW (recommended to pass)
+  accountId,          
   bank,
   accountName,
   type,
@@ -127,7 +127,7 @@ const AccountCard = ({
     <>
       <div
         onClick={onClick}
-        className={`w-full bg-white dark:bg-gray-800 flex flex-col rounded-2xl shadow-md border-2 dark:border-gray-700 p-5 transition-all cursor-pointer ${
+        className={`w-full bg-white dark:bg-gray-800 flex flex-col rounded-2xl shadow-md border-2 dark:border-gray-700 p-2 sm:p-5 transition-all cursor-pointer ${
           isActive
             ? 'border-[#7FBCE9] ring-2 ring-white bg-[#eef6f7]'
             : 'border-gray-200 hover:border-gray-300 hover:shadow-lg'
@@ -136,63 +136,59 @@ const AccountCard = ({
         {/* Top row */}
         <div className="flex justify-between items-start w-full">
           {/* Left info block */}
-          <div className="flex-1 min-w-0">
-            <h4 className="text-base font-semibold text-gray-900 dark:text-white">{bank}</h4>
-            <p className="text-sm text-gray-600 dark:text-gray-300">{accountName}</p>
+          <div className="flex-1 min-w-2">
+            <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">{bank}</h4>
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">{accountName}</p>
 
-            <div className="mt-2">
-              <p className="text-xl font-bold text-gray-800 dark:text-white">
+            <div className="mt-1 sm:mt-2">
+              <p className="text-base sm:text-xl font-bold text-gray-800 dark:text-white">
                 {symbol}{Number(available ?? 0).toLocaleString()}
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Available</p>
-              <p className="text-md text-gray-700 dark:text-gray-300 mt-1">
-                {symbol}{Number(balance ?? 0).toFixed(2)}
-              </p>
-              <p className="text-sm text-gray-400 dark:text-gray-500">Balance</p>
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Available</p>
             </div>
           </div>
 
           {/* Right type and card */}
-          <div className="flex flex-col items-end ml-4">
+          <div className="flex flex-col items-end ml-2 sm:ml-4">
             <div className="text-right">
-              <p className="text-sm font-semibold text-black dark:text-white">{type}</p>
-              <p className={`text-sm ${isActive ? 'text-[#76B947] font-bold' : 'text-gray-500 dark:text-[#A1E358]'}`}>
+              <p className="text-xs sm:text-sm font-semibold text-black dark:text-white">{type}</p>
+              <p className={`text-xs sm:text-sm ${isActive ? 'text-[#76B947] font-bold' : 'text-gray-500 dark:text-[#A1E358]'}`}>
                 {isActive ? 'Active (Viewing)' : 'Active'}
               </p>
             </div>
 
-            <div className={`mt-3 w-[160px] h-[90px] ${chosenBg} rounded-xl relative overflow-hidden shadow`}>
-              <div className="absolute top-2 left-3 text-xs font-bold text-white">VISA</div>
-              <div className="absolute bottom-2 right-3 text-sm font-semibold text-white tracking-widest">•••• 5678</div>
-              <div className={`absolute top-0 right-0 w-1/2 h-full ${chosenOverlay} opacity-50 rounded-r-xl`} />
+            <div className={`mt-2 sm:mt-3 w-[100px] h-[60px] sm:w-[160px] sm:h-[90px] ${chosenBg} rounded-lg sm:rounded-xl relative overflow-hidden shadow`}>
+              <div className="absolute top-1 sm:top-2 left-1.5 sm:left-3 text-xs font-bold text-white">VISA</div>
+              <div className="absolute bottom-1 sm:bottom-2 right-1.5 sm:right-3 text-xs sm:text-sm font-semibold text-white tracking-tight sm:tracking-widest">•••• 5678</div>
+              <div className={`absolute top-0 right-0 w-1/2 h-full ${chosenOverlay} opacity-50 rounded-r-lg sm:rounded-r-xl`} />
             </div>
           </div>
         </div>
 
         {/* Action buttons */}
-        <div className="flex justify-start gap-2 mt-5">
+        <div className="flex justify-start gap-1 sm:gap-2 mt-3 sm:mt-5">
           <button
             onClick={openConfirm}
             disabled={isDeleting}
-            className={`flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-full ${
+            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm font-medium rounded-full ${
               isDeleting 
                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
                 : 'bg-red-100 text-red-600 hover:bg-red-200 dark:bg-[#FF7768] dark:text-white'
             }`}
           >
-            <FaTrash className="text-sm" /> 
+            <FaTrash className="text-xs sm:text-sm" /> 
             {isDeleting ? 'Deleting...' : 'Delete'}
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); onEdit(); }}
             disabled={isDeleting}
-            className={`flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-full ${
+            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm font-medium rounded-full ${
               isDeleting 
                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
                 : 'bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-[#88D1FF] dark:text-white'
             }`}
           >
-            <FaEdit className="text-sm" /> Edit
+            <FaEdit className="text-xs sm:text-sm" /> Edit
           </button>
         </div>
       </div>
@@ -200,7 +196,7 @@ const AccountCard = ({
       {/* Confirm Delete Modal */}
       {confirmOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center"
+          className="fixed inset-0 z-50 flex items-center justify-center px-4"
           onClick={closeConfirm}
         >
           {/* Backdrop */}
@@ -208,14 +204,14 @@ const AccountCard = ({
 
           {/* Dialog */}
           <div
-            className="relative z-10 w-[92%] max-w-md rounded-2xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 p-6"
+            className="relative z-10 w-full max-w-md rounded-2xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 p-4 sm:p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-600">
-                <FaTrash />
+              <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-red-100 text-red-600">
+                <FaTrash className="text-sm" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
                 Delete account?
               </h3>
             </div>
@@ -225,10 +221,10 @@ const AccountCard = ({
               Are you sure you want to continue?
             </p>
 
-            <div className="mt-6 flex flex-wrap gap-3 justify-end">
+            <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-end">
               <button
                 onClick={closeConfirm}
-                className="px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                className="w-full sm:w-auto px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                 disabled={isDeleting}
               >
                 Cancel
@@ -236,7 +232,7 @@ const AccountCard = ({
               <button
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className={`px-4 py-2 rounded-full text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-red-400
+                className={`w-full sm:w-auto px-4 py-2 rounded-full text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-red-400
                   ${isDeleting ? 'bg-red-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'}`}
               >
                 {isDeleting ? 'Deleting...' : 'Yes, delete'}
