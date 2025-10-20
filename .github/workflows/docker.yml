@@ -2,85 +2,133 @@ name: Build and Deploy to Azure
 
 on:
   push:
-    branches:
-      - deploy-frontend-demo4
+    branches: [ deploy-frontend-demo4 ]
+
+env:
+  ACR: ${{ secrets.ACR_LOGIN_SERVER }}
+  IMAGE_TAG: ${{ github.sha }}
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
-  build-and-deploy:
+  build-backend:
+    name: Build & Push API Backend
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-    - name: Log in to Azure Container Registry
-      uses: azure/docker-login@v1
-      with:
-        login-server: ${{ secrets.ACR_LOGIN_SERVER }}
-        username: ${{ secrets.ACR_USERNAME }}
-        password: ${{ secrets.ACR_PASSWORD }}
+      # Buildx builds & pushes directly (no local image kept)
+      - uses: docker/setup-buildx-action@v3
 
-    - name: Build and push API Backend
-      run: |
-        docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/gamified-financial-visualizer-api-backend:latest ./api-backend --target production
-        docker push ${{ secrets.ACR_LOGIN_SERVER }}/gamified-financial-visualizer-api-backend:latest
+      - name: Login to ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.ACR }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
 
-    - name: Build and push AI Service
-      run: |
-        docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/gamified-financial-visualizer-ai-service:latest ./api-backend/modules/ai --target production \
-              --build-arg HF_TOKEN=${{ secrets.HF_TOKEN }}
-        docker push ${{ secrets.ACR_LOGIN_SERVER }}/gamified-financial-visualizer-ai-service:latest
-  
-    - name: Build and push Frontend
-      run: |
-        docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/finance-frontend:latest ./frontend --target production \
-        --build-arg REACT_APP_API_URL=https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net
-        docker push ${{ secrets.ACR_LOGIN_SERVER }}/finance-frontend:latest
+      - name: Build & push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./api-backend
+          target: production
+          push: true
+          tags: |
+            ${{ env.ACR }}/gamified-financial-visualizer-api-backend:latest
+            ${{ env.ACR }}/gamified-financial-visualizer-api-backend:${{ env.IMAGE_TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
+  build-ai:
+    name: Build & Push AI Service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Login to ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.ACR }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+      - name: Build & push AI image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./api-backend/modules/ai
+          target: production
+          push: true
+          build-args: |
+            HF_TOKEN=${{ secrets.HF_TOKEN }}
+          tags: |
+            ${{ env.ACR }}/gamified-financial-visualizer-ai-service:latest
+            ${{ env.ACR }}/gamified-financial-visualizer-ai-service:${{ env.IMAGE_TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-    - name: Login to Azure
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+  build-frontend:
+    name: Build & Push Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Login to ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.ACR }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+      - name: Build & push frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          target: production
+          push: true
+          build-args: |
+            REACT_APP_API_URL=https://gamified-finance-backend-d2a3hnatafa7h8bw.southafricanorth-01.azurewebsites.net
+          tags: |
+            ${{ env.ACR }}/finance-frontend:latest
+            ${{ env.ACR }}/finance-frontend:${{ env.IMAGE_TAG }}
+          no-cache: true           # keep this if you deliberately want cold builds
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-    # Deploy API Backend to Azure App Service
-    - name: Deploy API Backend
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: 'gamified-finance-backend'  
-        images: '${{ secrets.ACR_LOGIN_SERVER }}/gamified-financial-visualizer-api-backend:latest'
+  deploy:
+    name: Deploy to Azure App Service
+    runs-on: ubuntu-latest
+    needs: [ build-backend, build-ai, build-frontend ]
+    steps:
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-# Deploy AI Service to Azure App Service  
-    - name: Deploy AI Service
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: 'gamified-finance-ai'
-        images: '${{ secrets.ACR_LOGIN_SERVER }}/gamified-financial-visualizer-ai-service:latest'
+      # WebApp for Containers pulls from ACR – using 'latest' tags here.
+      - name: Deploy API Backend
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: gamified-finance-backend
+          images: ${{ env.ACR }}/gamified-financial-visualizer-api-backend:latest
 
-# Deploy Frontend to Azure App Service
-    - name: Deploy Frontend
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: 'gamified-finance-visualizer'  
-        images: '${{ secrets.ACR_LOGIN_SERVER }}/finance-frontend:latest'
+      - name: Deploy AI Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: gamified-finance-ai
+          images: ${{ env.ACR }}/gamified-financial-visualizer-ai-service:latest
 
-    - name: Restart API Backend Service
-      uses: azure/CLI@v2
-      with:
-        azcliversion: latest
-        inlineScript: |
-          az webapp restart --name gamified-finance-backend --resource-group gamified-finance-visualizer
+      - name: Deploy Frontend
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: gamified-finance-visualizer
+          images: ${{ env.ACR }}/finance-frontend:latest
 
-    - name: Restart AI Service
-      uses: azure/CLI@v2
-      with:
-        azcliversion: latest
-        inlineScript: |
-          az webapp restart --name gamified-finance-ai --resource-group gamified-finance-visualizer
-          
-    - name: Restart Frontend Service
-      uses: azure/CLI@v2
-      with:
-        azcliversion: latest
-        inlineScript: |
-          az webapp restart --name gamified-finance-visualizer --resource-group gamified-finance-visualizer
+      # Optional: explicit restarts (usually not needed; deploy triggers restart)
+      - name: Restart apps
+        uses: azure/CLI@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az webapp restart --name gamified-finance-backend --resource-group gamified-finance-visualizer
+            az webapp restart --name gamified-finance-ai --resource-group gamified-finance-visualizer
+            az webapp restart --name gamified-finance-visualizer --resource-group gamified-finance-visualizer

@@ -7,10 +7,12 @@ import HUDPortal from '../ui/HUD/HUDPortal';
 import BoardTileModal from '../ui/BoardTileModal';
 import Results from '../ui/Results';
 import { BOARD_TILES, BOARD_ORDER } from '../data/boardTiles';
+
 import { CURRENCY } from '../core/rules';
 import { calculateNet } from '../core/selectors';
 import { applyTileEffect, applyCardEffect } from '../core/tileEffects.jsx';
 import { makeAIDecision } from '../core/ai';;
+
 
 const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 

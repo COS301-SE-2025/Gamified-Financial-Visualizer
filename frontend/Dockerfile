@@ -18,6 +18,7 @@ CMD ["npm", "start"]
 
 # Build stage
 FROM base AS build
+COPY package*.json ./
 RUN npm install --legacy-peer-deps --no-audit --no-fund
 COPY . .
 
@@ -27,15 +28,15 @@ ARG REACT_APP_AI_API_URL
 ENV REACT_APP_API_URL=${REACT_APP_API_URL}
 ENV REACT_APP_AI_API_URL=${REACT_APP_AI_API_URL}
 
-RUN npm run build
+RUN npm run build --verbose
+# Verify build output
+RUN du -sh /app/build && ls -lh /app/build
 
 # Production stage with nginx
 FROM nginx:alpine AS production
 
 # Install security updates
-RUN apk update && apk upgrade && \
-    apk add --no-cache curl && \
-    rm -rf /var/cache/apk/*
+RUN apk add --no-cache curl
 
 # Create non-root user and group, but check if they already exist
 RUN if ! getent group nginx; then addgroup -g 1001 -S nginx; fi && \
@@ -44,8 +45,11 @@ RUN if ! getent group nginx; then addgroup -g 1001 -S nginx; fi && \
 # Copy custom nginx config
 COPY nginx.conf /etc/nginx/nginx.conf
 
+
 # Copy built files
 COPY --from=build /app/build /usr/share/nginx/html
+RUN echo "✅ Files copied successfully"
+
 
 # Set proper permissions
 RUN chown -R nginx:nginx /var/cache/nginx && \

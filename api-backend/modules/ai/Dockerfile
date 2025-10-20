@@ -1,78 +1,103 @@
-# Based on your existing Dockerfile with production improvements
-FROM python:3.11-slim AS base
+# syntax=docker/dockerfile:1.7
 
-# Install system dependencies (keeping your existing ones + security updates)
-RUN apt-get update && apt-get install -y \
-    tesseract-ocr \
-    tesseract-ocr-eng \
-    poppler-utils \
-    libgl1-mesa-dev \
-    libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
-    libgomp1 \
-    curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+########################
+# Base
+########################
+FROM python:3.11-slim-bookworm AS base
 
-# Create non-root user (production security)
+# Avoid interactive tzdata etc.
+ENV DEBIAN_FRONTEND=noninteractive \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DEFAULT_TIMEOUT=1000 \
+    # Where HF downloads will be stored if you prefetch models at build or runtime
+    HF_HOME=/app/.cache/huggingface \
+    TRANSFORMERS_CACHE=/app/.cache/huggingface \
+    PYTHONUNBUFFERED=1
+
+# Install only runtime libs (drop *-dev to shrink)
+# BuildKit's apt cache mount keeps runner disk low and speeds repeated builds
+RUN --mount=type=cache,target=/var/cache/apt \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+      tesseract-ocr \
+      tesseract-ocr-eng \
+      poppler-utils \
+      libgl1 \
+      libglib2.0-0 \
+      libsm6 \
+      libxext6 \
+      libxrender1 \
+      libgomp1 \
+      ca-certificates \
+      curl && \
+    rm -rf /var/lib/apt/lists/*
+
+# Create non-root
 RUN groupadd -r appuser && useradd -r -g appuser appuser
-
 WORKDIR /app
 
-# Dependencies stage (keeping your optimized approach)
+########################
+# Deps
+########################
 FROM base AS deps
-COPY app/requirements.txt ./
 
-# Upgrade pip first (keeping your approach)
-RUN pip install --upgrade pip
+ARG TORCH_VER=2.1.0
+# Use official CPU wheel index so pip never tries to compile Torch
+ARG TORCH_INDEX=https://download.pytorch.org/whl/cpu
 
-# Install the heaviest dependencies first with extended timeout (your approach)
-RUN pip install --no-cache-dir --timeout=1000 torch==2.1.0
+# Copy minimal dependency manifest early for caching
+COPY app/requirements.txt ./requirements.txt
 
-# Install transformers separately (your approach)  
-RUN pip install --no-cache-dir --timeout=1000 transformers==4.33.2
+# Use BuildKit pip cache, prefer wheels only to avoid builds from source
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python -m pip install --upgrade pip && \
+    python -m pip install --prefer-binary --only-binary=:all: --index-url $TORCH_INDEX \
+        torch==${TORCH_VER} && \
+    python -m pip install --prefer-binary --only-binary=:all: \
+        "transformers==4.33.2" \
+        "pyarrow>=12.0.0,<15.0.0" && \
+    python -m pip install --prefer-binary -r requirements.txt
 
-# Fix PyArrow compatibility issue (your approach)
-RUN pip install --no-cache-dir "pyarrow>=12.0.0,<15.0.0"
-
-# Install remaining dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Development stage
+########################
+# Dev image (optional)
+########################
 FROM base AS development
-COPY --from=deps /usr/local/lib/python3.11/site-packages/ /usr/local/lib/python3.11/site-packages/
-COPY --from=deps /usr/local/bin/ /usr/local/bin/
+COPY --from=deps /usr/local /usr/local
 COPY . .
 RUN chown -R appuser:appuser /app
 USER appuser
 ENV PYTHONPATH=/app
 EXPOSE 6000
-CMD ["uvicorn", "app.server:app", "--host", "0.0.0.0", "--port", "6000", "--reload"]
+CMD ["uvicorn","app.server:app","--host","0.0.0.0","--port","6000","--reload"]
 
-# Production stage
+########################
+# (Optional) Prefetch models at build
+# This prevents runtime HF downloads and avoids timeouts in App Service.
+# Comment this stage out if you want to keep the image smaller.
+########################
+
+
+########################
+# Production
+########################
 FROM base AS production
 
-# Copy dependencies from deps stage (your approach)
-COPY --from=deps /usr/local/lib/python3.11/site-packages/ /usr/local/lib/python3.11/site-packages/
-COPY --from=deps /usr/local/bin/ /usr/local/bin/
+# Bring in Python deps (includes torch, transformers)
+COPY --from=deps /usr/local /usr/local
+# If you used prefetch stage above, copy its cache into the final image:
+# (uncomment next line if you used the prefetch stage)
+# COPY --from=prefetch /app/.cache/huggingface /app/.cache/huggingface
 
-# Copy application code
+# Copy app code
 COPY --chown=appuser:appuser . .
 
-# Switch to non-root user (production security)
 USER appuser
-
-# Set environment
 ENV PYTHONPATH=/app
-
-# Expose port
 EXPOSE 6000
 
-# Health check (production monitoring)
+# Healthcheck uses Python stdlib http.client (avoid adding 'requests' just for HC)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD python -c "import requests; requests.get('http://localhost:6000/health', timeout=5)"
+  CMD python -c "import http.client; c = http.client.HTTPConnection('localhost', 6000, timeout=5); c.request('GET', '/health'); r = c.getresponse(); exit(0 if r.status==200 else 1)"
 
-# Production command - keeping single worker due to ML model memory usage
-CMD ["uvicorn", "app.server:app", "--host", "0.0.0.0", "--port", "6000", "--workers", "1"]
+CMD ["uvicorn","app.server:app","--host","0.0.0.0","--port","6000","--workers","1"]
