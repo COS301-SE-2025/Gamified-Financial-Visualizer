@@ -1,5 +1,5 @@
 import React from 'react';
-import { calculateNet } from '../core';
+import { calculateNet } from '../core/index';
 
 export default function Results({ players = [], onRestart, onLobby }) {
   const sorted = [...players].sort((a, b) => calculateNet(b) - calculateNet(a));

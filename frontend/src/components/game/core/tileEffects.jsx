@@ -1,7 +1,7 @@
 // Lifted & centralized: tile + card effects used by MockGame & MockSimulation (CommonJS)
-const { CURRENCY } = require('./rules');
+import { CURRENCY } from './rules';
 
-function applyTileEffect(player, tile, allPlayers = []) {
+export const applyTileEffect = (player, tile, allPlayers = []) => {
   if (!tile || !tile.action) return { text: `Landed on ${tile?.label || 'unknown tile'}`, delta: 0 };
   const a = tile.action;
 
@@ -57,7 +57,7 @@ function applyTileEffect(player, tile, allPlayers = []) {
   }
 }
 
-function applyCardEffect(player, card, allPlayers = []) {
+export const applyCardEffect = (player, card, allPlayers = []) =>  {
   if (!card) return { text: 'No card played', delta: 0 };
 
   switch (card.effect) {
@@ -116,4 +116,3 @@ function drawCard(deckType) {
   return deck[Math.floor(Math.random() * deck.length)];
 }
 
-module.exports = { applyTileEffect, applyCardEffect };
