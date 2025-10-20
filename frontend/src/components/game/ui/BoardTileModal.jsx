@@ -6,6 +6,7 @@ import { FaCoins, FaTimes } from "react-icons/fa"
  * Uniform tooltip/modal for board tiles.
  * Works with objects from /game/boardTiles.js
  */
+
 export default function BoardTileModal({ open, data, onClose, onAction }) {
   if (!open || !data) return null
 
