@@ -4,6 +4,11 @@
 </p>
 
 <h1 align="center">From Zero to Financial Hero</h1>
+
+<p align="center">
+  🚀 <a href="https://gamified-finance-visualizer-c5djg3fhcnhqfyfj.canadacentral-01.azurewebsites.net" target="_blank">Explore here</a>
+</p>
+
 <!-- Our logo needs to go here to the right of the following sentence -->
 <h2 align="center">
   Presented by <strong>CodeBlooded</strong><br/>
