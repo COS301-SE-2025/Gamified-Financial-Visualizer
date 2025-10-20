@@ -3,8 +3,8 @@ import React, { Suspense, useEffect, useMemo, useRef, useState, useCallback } fr
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls, Html, useGLTF, useProgress, AdaptiveDpr, Preload, useAnimations } from "@react-three/drei";
 import * as THREE from "three";
-import BoardTileModal from "./BoardTileModal";
-import { BOARD_TILES, BOARD_ORDER } from "../../components/game/data/boardTiles";
+import BoardTileModal from "../ui/BoardTileModal";
+import { BOARD_TILES, BOARD_ORDER } from "../data/boardTiles";
 import { FaDice } from "react-icons/fa";
 
 useGLTF.preload("/game/Monopoly_Game.glb");
@@ -326,7 +326,7 @@ export default function GameBoardViewer({
   selectedCharacter = "Cowboy",
   camera = { position: [0, 26, 42], fov: 38 },
   exposure = 1.1,
-  pawns_v = [] // [{ key:'p1', character:'Cowboy', index: 0 }, ...]
+  pawns = [] // [{ key:'p1', character:'Cowboy', index: 0 }, ...]
 }) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [boardSurfaceY, setBoardSurfaceY] = useState(0.0);
@@ -367,23 +367,7 @@ export default function GameBoardViewer({
     setActiveTile(BOARD_TILES[tileId]);
     setModalOpen(true);
   };
-// Assign character keys for all available characters
 
-  const characterKeys = [
-      {  characterKey: 'Green_girl'} , 
-      {  characterKey: 'Cowboy'} ,
-      {  characterKey: 'Mr_suit'} ,
-      {  characterKey: 'Kimono_girl'} ,
-      {  characterKey:  'Lilac_girl'} ,
-      {  characterKey: 'Mr_suit'} ,
-      {  characterKey: 'Ninja.001'} ,
-    ];
-
-    const pawns = pawns_v.map((p, index) => ({
-      ...p,
-      characterKey: p.characterKey || characterKeys[index % characterKeys.length], // Assign unique character key
-    }));
-    
   /* Grounding helpers */
   const raycaster = useMemo(() => new THREE.Raycaster(), []);
   const down = useMemo(() => new THREE.Vector3(0, -1, 0), []);
