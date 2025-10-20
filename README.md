@@ -44,6 +44,11 @@ Gamified Financial Visualizer revolutionizes the way people interact with their 
 | **Goal Gamification** | Earn rewards for financial milestones | Smart Algorithms |
 | **Bank-Grade Security** | Read-only access protects user data | OAuth 2.0, Encryption |
 
+### Research Contribution & Background
+ Summarizes the research conducted during the project, including gamification, AI models, and visualization methods explored. Details the project’s academic and technical contributions to financial education, AI-driven insights, and immersive visualization. 
+ |
+ [View Research Contribution](https://github.com/COS301-SE-2025/Gamified-Financial-Visualizer/blob/main/documentation/Project%20Day/Research.md) |
+
 </div>
 
 <p align="center">
