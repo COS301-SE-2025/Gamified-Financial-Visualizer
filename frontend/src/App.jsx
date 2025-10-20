@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import ProtectedRoute from './components/ProtectedRoute';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -102,7 +103,7 @@ function App() {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
+<Route element={<ProtectedRoute />}>
         {/* Protected Routes inside shared Layout */}
         <Route element={<Layout />}>
           {/* Routes for the home page */}
@@ -171,6 +172,8 @@ function App() {
             <Route path="settings" element={<Settings />} />
           </Route>
         </Route>
+</Route>
+
       </Routes>
     </Router>
   );
