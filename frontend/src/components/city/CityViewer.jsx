@@ -1305,12 +1305,16 @@ export default function CityViewer() {
     // Fetch building data for the selected user
     const fetchBuildingData = async () => {
       try {
-      const response = await fetch(`${BASE_URL}/api/city/buildings/${user.id}`);
-      const data = await response.json();
-      setBuildings(data);
-      } catch (error) {
-        console.error('Error fetching building data:', error);
-      }
+    const response = await fetch(`${BASE_URL}/api/city/buildings/${user.id}`);
+    const result = await response.json();
+    
+    // Extract the data array from the response
+    setBuildings(result.data || []); // Changed from result to result.data
+    
+  } catch (error) {
+    console.error('Error fetching building data:', error);
+    setBuildings([]); // Ensure array on error
+  }
     };
 
     fetchBuildingData();

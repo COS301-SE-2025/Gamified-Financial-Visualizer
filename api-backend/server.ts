@@ -241,4 +241,3 @@ const portNumber = typeof PORT === 'string' ? parseInt(PORT, 10) : PORT;
 httpServer.listen(portNumber, '0.0.0.0', () => {
   logger.info(`Monolith listening on port ${PORT} (with Socket.IO)`);
 });
-

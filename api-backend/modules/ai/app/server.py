@@ -29,9 +29,10 @@ from app.classifier.services.predict_classifier import is_model_ready, load_mode
 
 app = FastAPI(title="AI Service")
 
+
 @app.on_event("startup")
 async def startup_event():
-    load_model()
+     # load_model()
     if not is_model_ready():
         print("Warning: Model failed to load at startup.")
     else:
